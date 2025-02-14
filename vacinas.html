@@ -14,7 +14,7 @@
       padding: 0;
     }
     .container {
-      max-width: 800px;
+      max-width: 550px;
       margin: 50px auto;
       padding: 20px;
       background: white;
@@ -51,11 +51,8 @@
     .tab-button:hover {
       background-color: #388e3c;
     }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
+    .tab-button.active {
+      background-color: #2e7d32;
     }
     label {
       display: block;
@@ -71,6 +68,22 @@
       border-radius: 5px;
       font-size: 16px;
       box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1b5e20;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #388e3c;
     }
     .resultado {
       margin-top: 20px;
@@ -92,6 +105,13 @@
       font-size: 14px;
       border-radius: 5px;
     }
+    .formol-section {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 5px;
+      border: 2px solid #1b5e20;
+    }
   </style>
 </head>
 <body>
@@ -100,125 +120,108 @@
     <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
     <h2>Calculadora de Vacinas</h2>
 
-    <!-- Abas -->
+    <!-- Botões para Vacina Canina e Bovina -->
     <div class="tabs">
-      <button class="tab-button" onclick="openTab('bovinos')">Vacina Bovinos</button>
-      <button class="tab-button" onclick="openTab('caninos')">Vacina Caninos</button>
+      <button class="tab-button active" onclick="selecionarTipo('bovinos')">Vacina Bovina</button>
+      <button class="tab-button" onclick="selecionarTipo('caninos')">Vacina Canina</button>
     </div>
 
-    <!-- Conteúdo da aba Bovinos -->
-    <div id="bovinos" class="tab-content active">
-      <label for="papiloma-bovinos">Papiloma (g):</label>
-      <input type="number" id="papiloma-bovinos" placeholder="Digite a quantidade de papiloma">
+    <!-- Campos de Entrada -->
+    <label for="papiloma">Papiloma (g):</label>
+    <input type="number" id="papiloma" placeholder="Digite a quantidade de papiloma">
 
-      <label for="vacinas-bovinos">Quantidade de Vacinas:</label>
-      <input type="number" id="vacinas-bovinos" placeholder="Digite a quantidade de vacinas">
+    <label for="vacinas">Quantidade de Vacinas:</label>
+    <input type="number" id="vacinas" placeholder="Digite a quantidade de vacinas">
 
-      <button onclick="calcularBovinos()">Calcular</button>
+    <!-- Botão de Calcular -->
+    <button onclick="calcularVacinas()">Calcular</button>
 
-      <div id="resultado-bovinos" class="resultado"></div>
+    <!-- Resultado do Cálculo -->
+    <div id="resultado" class="resultado"></div>
 
-      <div class="instrucoes">
-        <strong>Instruções:</strong><br>
-        - Caixas em VERMELHO = ERRO<br>
-        - Caixas em AZUL = COLOCAR MANUALMENTE<br>
-        - Identificar a amostra com SV completo<br>
-        - Essa é uma tabela automatizada. Após digitar as informações, clique no botão para salvar.<br>
-        - NÃO SALVE DE OUTRA MANEIRA
-      </div>
+    <!-- Calculadora de Formol -->
+    <div class="formol-section">
+      <h3>Calculadora de Formol</h3>
+      <label for="volume-recuperado">Volume Recuperado (ml):</label>
+      <input type="number" id="volume-recuperado" placeholder="Digite o volume recuperado">
+      <button onclick="calcularFormol()">Calcular Formol</button>
+      <div id="resultado-formol" class="resultado" style="margin-top: 10px;"></div>
     </div>
 
-    <!-- Conteúdo da aba Caninos -->
-    <div id="caninos" class="tab-content">
-      <label for="papiloma-caninos">Papiloma (g):</label>
-      <input type="number" id="papiloma-caninos" placeholder="Digite a quantidade de papiloma">
-
-      <label for="vacinas-caninos">Quantidade de Vacinas:</label>
-      <input type="number" id="vacinas-caninos" placeholder="Digite a quantidade de vacinas">
-
-      <button onclick="calcularCaninos()">Calcular</button>
-
-      <div id="resultado-caninos" class="resultado"></div>
-
-      <div class="instrucoes">
-        <strong>Instruções:</strong><br>
-        - Caixas em VERMELHO = ERRO<br>
-        - Caixas em AZUL = COLOCAR MANUALMENTE<br>
-        - Identificar a amostra com SV completo<br>
-        - Essa é uma tabela automatizada. Após digitar as informações, clique no botão para salvar.<br>
-        - NÃO SALVE DE OUTRA MANEIRA
-      </div>
+    <!-- Instruções -->
+    <div class="instrucoes">
+      <strong>Instruções:</strong><br>
+      - Coloque a quantidade de papilomas recebidos EM GRAMAS<br>
+      - Coloque a quantidade de vacinas requisitadas<br>
+      - Clique em Calcular<br>
+      - Os resultados aparecerão logo abaixo<br>
+      - Aproveite! :)
     </div>
   </div>
 
   <script>
-    // Função para alternar entre as abas
-    function openTab(tabName) {
-      // Esconde todas as abas
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
+    let tipoVacina = 'bovinos'; // Tipo de vacina selecionada (padrão: bovinos)
+
+    // Função para selecionar o tipo de vacina
+    function selecionarTipo(tipo) {
+      tipoVacina = tipo;
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
       });
-
-      // Mostra a aba selecionada
-      document.getElementById(tabName).classList.add('active');
+      document.querySelector(`button[onclick="selecionarTipo('${tipo}')"]`).classList.add('active');
+      document.getElementById('resultado').innerHTML = '';
     }
 
-    // Função para calcular os valores para Bovinos
-    function calcularBovinos() {
-      const papiloma = parseFloat(document.getElementById('papiloma-bovinos').value);
-      const vacinas = parseFloat(document.getElementById('vacinas-bovinos').value);
+    // Função para calcular os valores das vacinas
+    function calcularVacinas() {
+      const papiloma = parseFloat(document.getElementById('papiloma').value);
+      const vacinas = parseFloat(document.getElementById('vacinas').value);
 
       if (isNaN(papiloma) || isNaN(vacinas)) {
         alert("Por favor, insira valores válidos.");
         return;
       }
 
-      const papilomaNecessario = vacinas * 5;
-      const sobrou = Math.floor((papiloma - papilomaNecessario) / 5);
-      const hanks = vacinas * 5 * 4;
-      const cloroformio = vacinas * 5;
-      const volumeNecessario = vacinas * 15;
-      const formol = (volumeNecessario * 0.5) / 100;
+      let papilomaNecessario, sobrou, hanks, cloroformio, volumeNecessario, formol;
 
-      const resultado = `
+      if (tipoVacina === 'bovinos') {
+        papilomaNecessario = vacinas * 5; // 5g por vacina
+        sobrou = Math.floor((papiloma - papilomaNecessario) / 5); 
+        hanks = vacinas * 20; // 20ml por vacina
+        cloroformio = vacinas * 5; // 5ml por vacina
+        volumeNecessario = vacinas * 15; // 15ml por vacina
+      } else {
+        papilomaNecessario = vacinas * 1; // 1g por vacina
+        sobrou = Math.floor((papiloma - papilomaNecessario) / 1); 
+        hanks = vacinas * 10; // 10ml por vacina
+        cloroformio = vacinas * 1; // 1ml por vacina
+        volumeNecessario = vacinas * 6; // 6ml por vacina
+      }
+
+      const resultadoDiv = document.getElementById('resultado');
+      resultadoDiv.innerHTML = `
         <strong>Papiloma Necessário:</strong> ${papilomaNecessario} g<br>
-        <strong>Quanto Sobrou:</strong> ${sobrou} vacinas<br>
+        <strong>Vacinas que Sobram:</strong> ${sobrou}<br>
         <strong>Solução de Hanks:</strong> ${hanks} ml<br>
         <strong>Clorofórmio:</strong> ${cloroformio} ml<br>
         <strong>Volume Necessário:</strong> ${volumeNecessario} ml<br>
         <strong>Formol:</strong> ${formol.toFixed(2)} ml<br>
       `;
-
-      document.getElementById('resultado-bovinos').innerHTML = resultado;
     }
 
-    // Função para calcular os valores para Caninos
-    function calcularCaninos() {
-      const papiloma = parseFloat(document.getElementById('papiloma-caninos').value);
-      const vacinas = parseFloat(document.getElementById('vacinas-caninos').value);
-
-      if (isNaN(papiloma) || isNaN(vacinas)) {
-        alert("Por favor, insira valores válidos.");
+    // Função para calcular o formol
+    function calcularFormol() {
+      const volumeRecuperado = parseFloat(document.getElementById('volume-recuperado').value);
+      
+      if (isNaN(volumeRecuperado)) {
+        alert("Por favor, insira um valor válido para o volume recuperado.");
         return;
       }
 
-      const papilomaNecessario = vacinas * 1;
-      const sobrou = Math.floor((papiloma - papilomaNecessario) / 1);
-      const hanks = vacinas * 1 * 10;
-      const cloroformio = vacinas * 1;
-      const volumeNecessario = vacinas * 6;
-      const formol = (volumeNecessario * 0.5) / 100;
-
-      const resultado = `
-        <strong>Papiloma Necessário:</strong> ${papilomaNecessario} g<br>
-        <strong>Quanto Sobrou:</strong> ${sobrou} vacinas<br>
-        <strong>Solução de Hanks:</strong> ${hanks} ml<br>
-        <strong>Clorofórmio:</strong> ${cloroformio} ml<br>
-        <strong>Volume Necessário:</strong> ${volumeNecessario} ml<br>
-        <strong>Formol:</strong> ${formol.toFixed(2)} ml<br>
+      const formol = (volumeRecuperado * 0.5) / 100; // 0.5% do volume recuperado
+      document.getElementById('resultado-formol').innerHTML = `
+        <strong>Formol Necessário:</strong> ${formol.toFixed(2)} ml<br>
       `;
-
-      document.getElementById('resultado-caninos').innerHTML = resultado;
     }
   </script>
 </body>
