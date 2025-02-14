@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Uso Viral - SN</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #1b5e20, #66bb6a);
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 550px;
+      margin: 50px auto;
+      padding: 20px;
+      background: white;
+      color: #1b5e20;
+      border-radius: 10px;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    .logo {
+      width: 100%;
+      max-width: 200px;
+      margin: 10px auto;
+      display: block;
+    }
+    h2 {
+      color: #1b5e20;
+      text-align: center;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: left;
+    }
+    input {
+      width: calc(100% - 24px); /* Ajuste para considerar o padding */
+      padding: 10px;
+      margin: 5px 0;
+      border: 2px solid #1b5e20;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box; /* Garante que o padding não aumente o tamanho */
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1b5e20;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #388e3c;
+    }
+    .resultado {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f5e9;
+      color: #1b5e20;
+      border-left: 5px solid #388e3c;
+      text-align: left;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    .ajuda {
+      text-align: left;
+      cursor: pointer;
+      color: #388e3c;
+      font-weight: bold;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .ajuda span {
+      margin-left: 5px;
+    }
+    .explicacao, .detalhesCalculo, .etapasSoroneutralizacao, .observacoesTeste {
+      display: none;
+      background: #f1f8e9;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      text-align: left;
+      font-size: 14px;
+      color: #2e7d32;
+      border-left: 5px solid #2e7d32;
+    }
+    .imagemLink {
+      color: red;
+      text-decoration: underline;
+      cursor: pointer;
+      margin-left: auto;
+      text-align: right;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo -->
+    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
+    <h2>Calculadora de Uso Viral - SN</h2>
+    
+    <label for="titulacao">Titulação Viral (Ex: 10^2 ou 10^6,1):</label>
+    <input type="text" id="titulacao" placeholder="Digite a titulação viral">
+    
+    <label for="amostras">Número de Amostras:</label>
+    <input type="number" id="amostras" placeholder="Digite o número de amostras">
+    
+    <button onclick="calcular()">Calcular</button>
+    
+    <!-- Resultado do cálculo -->
+    <div id="resultado" class="resultado"></div>
+    
+    <div class="ajuda" onclick="toggleAjuda()">
+      ❓ <span>Como funciona o cálculo?</span>
+    </div>
+    <div id="explicacao" class="explicacao">
+      - O título viral é convertido para número decimal.<br>
+      - O volume do vírus é obtido dividindo o valor decimal por 2000.<br>
+      - Calcula-se o número de placas: a primeira placa comporta 6 amostras; as demais, 12 cada.<br>
+      - Cada placa tem 5 ml, determinando o volume total necessário.<br>
+      - Para titulação baixa (virusVolume &lt; 1 ml):<br>
+      &nbsp;&nbsp;raw = (virusVolume em µL) / (volumeTotal em ml) e fator = 100.<br>
+      - Para titulação alta (virusVolume ≥ 1 ml):<br>
+      &nbsp;&nbsp;raw = (volumeTotal em ml / virusVolume em ml) × 1000 e fator = 10.<br>
+      - A Solução Viral Total é raw × fator (truncada para 3 casas decimais).<br>
+      - O MEI é a diferença entre o volume total e a Solução Viral Total.<br>
+      - O Cultivo Celular é calculado como (número de placas × 4,8 ml).<br>
+    </div>
+    
+    <div class="ajuda" onclick="toggleEtapasSoroneutralizacao()">
+      🧪 <span>Etapas Soroneutralização</span>
+    </div>
+    <div id="etapasSoroneutralizacao" class="etapasSoroneutralizacao">
+      <strong>Etapas Soroneutralização:</strong><br>
+      1º 50µl de MEM A-H(1-12) - Toda a placa<br>
+      2º 50µl de Soro - Região das Amostras A(5-10)<br>
+      3º 50µl Controle Positivo A(11)<br>
+      4º 50µl MEM - Controle Negativo A(12)<br>
+      5º Diluição do Soro e controles<br>
+      6º Vírus -1 -2 -3 A(1-3)<br>
+      7º Vírus Calculado Diluído A(5-12)<br>
+      8º Estufa CO₂- 2 horas<br>
+      9º Células A-H(1-12) - Toda a placa CC > -3 -2 -1 > de baixo pra cima<br>
+      10º Estufa CO₂- 72-96 horas<br>
+      <span class="imagemLink" onclick="abrirImagem()">Abrir imagem</span>
+    </div>
+    
+    <div class="ajuda" onclick="toggleObservacoesTeste()">
+      ⚠️ <span>Observações do Teste</span>
+    </div>
+    <div id="observacoesTeste" class="observacoesTeste">
+      <strong>Observações do Teste:</strong><br>
+      * Trocar ponteiras a cada diluição<br>
+      * Antes de pipetar sempre ressuspender o conteúdo<br>
+      * Cuidado na hora de colocar o vírus (proteger e pipetar de baixo pra cima)<br>
+      * Na hora de colocar células, primeiro coloque no controle celular e depois no -3, -2, -1 e depois nas amostras e controles<br>
+      * Antes de pipetar, ressuspender as células na calha<br>
+    </div>
+    
+    <div class="ajuda" onclick="toggleDetalhes()">
+      🔍 <span>Ver cálculo detalhado</span>
+    </div>
+    <div id="detalhesCalculo" class="detalhesCalculo"></div>
+  </div>
+  
+  <script>
+    // Função para truncar um número para 3 casas decimais (sem arredondar)
+    function truncateToThree(num) {
+      return Math.floor(num * 1000) / 1000;
+    }
+    
+    function calcular() {
+      // Reinicia os resultados para novos cálculos
+      document.getElementById("resultado").innerHTML = "";
+      document.getElementById("detalhesCalculo").innerHTML = "";
+      
+      let titulacao = document.getElementById("titulacao").value;
+      let amostras = parseInt(document.getElementById("amostras").value);
+      let resultadoDiv = document.getElementById("resultado");
+      let detalhesDiv = document.getElementById("detalhesCalculo");
+      
+      if (!titulacao || isNaN(amostras) || amostras <= 0) {
+        resultadoDiv.innerHTML = "<strong>Por favor, insira valores válidos.</strong>";
+        return;
+      }
+      
+      // Permite a entrada com vírgula: substitui vírgula por ponto
+      titulacao = titulacao.replace(",", ".");
+      
+      // Processar a titulação: espera entrada do tipo "10^2" ou "10^6.1"
+      let expoente = parseFloat(titulacao.replace("10^", "").replace("^", ""));
+      let titulacaoDecimal = Math.pow(10, expoente);
+      
+      // Cálculo do volume do vírus
+      // virusVolumeMl = titulacaoDecimal / 2000 (em ml)
+      let virusVolumeMl = titulacaoDecimal / 2000;
+      let virusVolumeUl = virusVolumeMl * 1000;  // em µL
+      
+      // Número de placas: se amostras <= 6, usa 1; senão, 1 + ceil((amostras - 6)/12)
+      let placas = (amostras <= 6) ? 1 : (1 + Math.ceil((amostras - 6) / 12));
+      
+      // Volume total necessário: cada placa = 5 ml
+      let volumeTotalMl = placas * 5;
+      let volumeTotalUl = volumeTotalMl * 1000;
+      
+      let raw, formulaUtilizada = "";
+      
+      // Se virusVolumeMl < 1 → titulação baixa; se ≥ 1 → titulação alta
+      if (virusVolumeMl < 1) {
+        // Fórmula baixa: raw = (virusVolume em µL) / (volumeTotal em ml)
+        raw = virusVolumeUl / volumeTotalMl;
+        formulaUtilizada = "Fórmula baixa: (virusVolumeUl / volumeTotalMl)";
+      } else {
+        // Fórmula alta: raw = (volumeTotal em ml / virusVolume em ml) × 1000
+        raw = (volumeTotalMl / virusVolumeMl) * 1000;
+        formulaUtilizada = "Fórmula alta: (volumeTotalMl / virusVolumeMl) × 1000";
+      }
+      
+      raw = truncateToThree(raw);
+      
+      // Cálculo do fator de escala dinâmico
+      let exponent = 0;
+      if (raw > 0) {
+        while (raw * Math.pow(10, exponent) < 100) {
+          exponent++;
+        }
+      }
+      let scale_factor = Math.pow(10, exponent);
+      let solucaoViralTotalUl = truncateToThree(raw * scale_factor);
+      
+      // Calcular o texto da diluição
+      let dilutionText = `Diluir em 10⁻${exponent}`;
+      
+      // Calcular o volume de MEI (em µL)
+      let volumeMEI = volumeTotalUl - solucaoViralTotalUl;
+      
+      // Calcular o Cultivo Celular: cada placa recebe 4,8 ml
+      let cultivoCelularMl = placas * 4.8;
+      let cultivoCelularUl = cultivoCelularMl * 1000;
+      
+      // Exibir os resultados resumidos
+      resultadoDiv.innerHTML = `
+        <strong>Número de Placas:</strong> ${placas} <br>
+        <strong>Solução Viral Total:</strong> ${solucaoViralTotalUl} µL <br>
+        <strong>Volume de MEI:</strong> ${volumeMEI.toFixed(3)} µL <br>
+        <strong>Cultivo Celular:</strong> ${cultivoCelularUl} µL (${cultivoCelularMl} ml) <br>
+        <strong>${dilutionText}</strong>
+      `;
+      
+      // Exibir o detalhamento do cálculo
+      detalhesDiv.innerHTML = `
+        <strong>Detalhamento do Cálculo:</strong><br>
+        1. Titulação: 10^${expoente} = ${titulacaoDecimal}<br>
+        2. Volume do vírus: ${titulacaoDecimal} / 2000 = ${virusVolumeMl.toFixed(3)} ml = ${virusVolumeUl.toFixed(3)} µL<br>
+        3. Número de Amostras: ${amostras} → Placas: ${placas} (1ª placa: 6; demais: 12 cada)<br>
+        4. Volume Total Necessário: ${placas} × 5 ml = ${volumeTotalMl} ml = ${volumeTotalUl} µL<br>
+        5. Fórmula Utilizada: ${formulaUtilizada}<br>
+        6. Valor Raw: ${raw} µL<br>
+        7. Aplicando fator de escala (${scale_factor}): ${solucaoViralTotalUl} µL<br>
+        8. Volume de MEI: ${volumeTotalUl} µL - ${solucaoViralTotalUl} µL = ${volumeMEI.toFixed(3)} µL<br>
+        9. Cultivo Celular: ${placas} × 4.8 ml = ${cultivoCelularMl} ml = ${cultivoCelularUl} µL<br>
+      `;
+      
+      // Esconde o detalhamento após o cálculo; o usuário pode exibi-lo clicando em "Ver cálculo detalhado"
+      detalhesDiv.style.display = "none";
+    }
+    
+    function toggleAjuda() {
+      let explicacao = document.getElementById("explicacao");
+      explicacao.style.display = (explicacao.style.display === "block") ? "none" : "block";
+    }
+    
+    function toggleEtapasSoroneutralizacao() {
+      let etapas = document.getElementById("etapasSoroneutralizacao");
+      etapas.style.display = (etapas.style.display === "block") ? "none" : "block";
+    }
+    
+    function toggleObservacoesTeste() {
+      let observacoes = document.getElementById("observacoesTeste");
+      observacoes.style.display = (observacoes.style.display === "block") ? "none" : "block";
+    }
+    
+    function toggleDetalhes() {
+      let detalhes = document.getElementById("detalhesCalculo");
+      detalhes.style.display = (detalhes.style.display === "block") ? "none" : "block";
+    }
+    
+    function abrirImagem() {
+      window.open("https://i.pinimg.com/736x/5b/09/2b/5b092b1687e129c5f6714bf69bf1b3f1.jpg", "_blank");
+    }
+  </script>
+</body>
+</html>
