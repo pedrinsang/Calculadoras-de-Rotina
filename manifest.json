@@ -1,7 +1,7 @@
 {
   "name": "Calculadoras",
   "short_name": "Calculadoras",
-  "start_url": "/", // Caminho raiz do site
+  "start_url": "/", 
   "display": "standalone",
   "background_color": "#1b5e20",
   "theme_color": "#1b5e20",
