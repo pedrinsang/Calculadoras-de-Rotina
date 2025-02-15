@@ -52,7 +52,7 @@
       background-color: #388e3c;
     }
     .tab-button.active {
-      background-color: #2e7d32;
+      background-color: #4CAF50; /* Verde mais vibrante */
     }
     label {
       display: block;
@@ -182,7 +182,7 @@
         return;
       }
 
-      let papilomaNecessario, sobrou, hanks, cloroformio, volumeNecessario, formol;
+      let papilomaNecessario, sobrou, hanks, cloroformio, volumeNecessario;
 
       if (tipoVacina === 'bovinos') {
         papilomaNecessario = vacinas * 5; // 5g por vacina
@@ -205,7 +205,6 @@
         <strong>Solução de Hanks:</strong> ${hanks} ml<br>
         <strong>Clorofórmio:</strong> ${cloroformio} ml<br>
         <strong>Volume Necessário:</strong> ${volumeNecessario} ml<br>
-        <strong>Formol:</strong> ${formol.toFixed(2)} ml<br>
       `;
     }
 
