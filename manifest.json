@@ -1,6 +1,6 @@
 {
-  "name": "Calculadoras",
-  "short_name": "Calculadoras",
+  "name": "Calculadoras de Rotina",
+  "short_name": "Calcs Rotina",
   "start_url": "./index.html", 
   "display": "standalone",
   "background_color": "#1b5e20",
