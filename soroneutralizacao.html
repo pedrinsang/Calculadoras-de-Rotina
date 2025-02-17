@@ -110,23 +110,71 @@
 </head>
 <body>
   <div class="container">
-    <!-- Logo -->
-    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
-    <h2>Calculadora de Soroneutralização</h2>
+  <!-- Logo -->
+  <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
+  <h2>Calculadora de Soroneutralização</h2>
 
-    <!-- Campos de Entrada -->
-    <label for="titulacao">Titulação Viral (Ex: 10^2 ou 10^6,1):</label>
-    <input type="text" id="titulacao" placeholder="Digite a titulação viral">
+  <!-- Campos de Entrada -->
+  <label for="titulacao">Titulação Viral (Ex: 10^2 ou 10^6,1):</label>
+  <input type="text" id="titulacao" placeholder="Digite a titulação viral">
 
-    <label for="amostras">Número de Amostras:</label>
-    <input type="number" id="amostras" placeholder="Digite o número de amostras">
+  <label for="amostras">Número de Amostras:</label>
+  <input type="number" id="amostras" placeholder="Digite o número de amostras">
 
-    <!-- Botão de Calcular -->
-    <button onclick="calcular()">Calcular</button>
+  <!-- Botão de Calcular -->
+  <button onclick="calcular()">Calcular</button>
 
-    <!-- Resultado do Cálculo -->
-    <div id="resultado" class="resultado"></div>
+  <!-- Resultado do Cálculo -->
+  <div id="resultado" class="resultado"></div>
+
+  <!-- Seções de Ajuda -->
+  <div class="ajuda" onclick="toggleAjuda()">
+    ❓ <span>Como funciona o cálculo?</span>
   </div>
+  <div id="explicacao" class="explicacao">
+    - O título viral é convertido para número decimal.<br>
+    - O volume do vírus é obtido dividindo o valor decimal por 2000.<br>
+    - Calcula-se o número de placas: a primeira placa comporta 6 amostras; as demais, 12 cada.<br>
+    - Cada placa tem 5 ml, determinando o volume total necessário.<br>
+    - Para titulação baixa (virusVolume &lt; 1 ml):<br>
+    &nbsp;&nbsp;raw = (virusVolume em µL) / (volumeTotal em ml) e fator = 100.<br>
+    - Para titulação alta (virusVolume ≥ 1 ml):<br>
+    &nbsp;&nbsp;raw = (volumeTotal em ml / virusVolume em ml) × 1000 e fator = 10.<br>
+    - A Solução Viral Total é raw × fator (truncada para 3 casas decimais).<br>
+    - O MEI é a diferença entre o volume total e a Solução Viral Total.<br>
+    - O Cultivo Celular é calculado como (número de placas × 4,8 ml).<br>
+  </div>
+
+  <div class="ajuda" onclick="toggleEtapasSoroneutralizacao()">
+    🧪 <span>Etapas Soroneutralização</span>
+  </div>
+  <div id="etapasSoroneutralizacao" class="etapasSoroneutralizacao">
+    <strong>Etapas Soroneutralização:</strong><br>
+    1º 50µl de MEM A-H(1-12) - Toda a placa<br>
+    2º 50µl de Soro - Região das Amostras A(5-10)<br>
+    3º 50µl Controle Positivo A(11)<br>
+    4º 50µl MEM - Controle Negativo A(12)<br>
+    5º Diluição do Soro e controles<br>
+    6º Vírus -1 -2 -3 A(1-3)<br>
+    7º Vírus Calculado Diluído A(5-12)<br>
+    8º Estufa CO₂- 2 horas<br>
+    9º Células A-H(1-12) - Toda a placa CC > -3 -2 -1 > de baixo pra cima<br>
+    10º Estufa CO₂- 72-96 horas<br>
+    <span class="imagemLink" onclick="abrirImagem()">Abrir imagem</span>
+  </div>
+
+  <div class="ajuda" onclick="toggleObservacoesTeste()">
+    ⚠️ <span>Observações do Teste</span>
+  </div>
+  <div id="observacoesTeste" class="observacoesTeste">
+    <strong>Observações do Teste:</strong><br>
+    * Trocar ponteiras a cada diluição<br>
+    * Antes de pipetar sempre ressuspender o conteúdo<br>
+    * Cuidado na hora de colocar o vírus (proteger e pipetar de baixo pra cima)<br>
+    * Na hora de colocar células, primeiro coloque no controle celular e depois no -3, -2, -1 e depois nas amostras e controles<br>
+    * Antes de pipetar, ressuspender as células na calha<br>
+  </div>
+</div>
 
   <script>
     // Função para calcular os valores
