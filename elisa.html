@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de ELISA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #1b5e20, #66bb6a);
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 550px;
+      margin: 50px auto;
+      padding: 20px;
+      background: white;
+      color: #1b5e20;
+      border-radius: 10px;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    .logo {
+      width: 100%;
+      max-width: 200px;
+      margin: 10px auto;
+      display: block;
+    }
+    h2 {
+      color: #1b5e20;
+      text-align: center;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: left;
+    }
+    input {
+      width: calc(100% - 24px);
+      padding: 10px;
+      margin: 5px 0;
+      border: 2px solid #1b5e20;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1b5e20;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #388e3c;
+    }
+    .resultado {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f5e9;
+      color: #1b5e20;
+      border-left: 5px solid #388e3c;
+      text-align: left;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo -->
+    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
+    <h2>Calculadora de ELISA</h2>
+
+    <!-- Campos de Entrada -->
+    <label for="amostras">Número de Amostras:</label>
+    <input type="number" id="amostras" placeholder="Digite o número de amostras">
+
+    <label for="replicatas">Número de Replicatas:</label>
+    <input type="number" id="replicatas" placeholder="Digite o número de replicatas">
+
+    <!-- Botão de Calcular -->
+    <button onclick="calcularElisa()">Calcular</button>
+
+    <!-- Resultado do Cálculo -->
+    <div id="resultado" class="resultado"></div>
+  </div>
+
+  <script>
+    function calcularElisa() {
+      const amostras = parseFloat(document.getElementById('amostras').value);
+      const replicatas = parseFloat(document.getElementById('replicatas').value);
+
+      if (isNaN(amostras) || isNaN(replicatas)) {
+        alert("Por favor, insira valores válidos.");
+        return;
+      }
+
+      // Cálculos fictícios (substitua pela lógica real)
+      const placas = Math.ceil((amostras * replicatas) / 96); // 96 poços por placa
+      const reagente = placas * 10; // 10ml de reagente por placa
+
+      const resultadoDiv = document.getElementById('resultado');
+      resultadoDiv.innerHTML = `
+        <strong>Número de Placas:</strong> ${placas}<br>
+        <strong>Reagente Necessário:</strong> ${reagente} ml<br>
+      `;
+    }
+  </script>
+</body>
+</html>
