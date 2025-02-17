@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- Otimização para mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Calculadora de Soroneutralização</title>
   <style>
     /* ===== Reset de Margens ===== */
@@ -17,31 +17,84 @@
       background: linear-gradient(to right, #1b5e20, #66bb6a);
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
+      justify-content: center; /* Centralização horizontal */
       align-items: center; /* Centralização vertical */
     }
 
     .container {
       width: 100%;
-      max-width: 100%; /* Remove limite máximo */
-      padding: 15px; /* Reduz padding para mobile */
+      max-width: 550px; /* Largura máxima para desktop */
+      padding: 20px;
       background: white;
       color: #1b5e20;
+      border-radius: 10px;
       box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      margin: 0 auto; /* Centralização horizontal */
+      margin: 20px; /* Espaçamento externo */
     }
 
     .logo {
       width: 100%;
-      max-width: 150px; /* Reduz tamanho para mobile */
+      max-width: 200px;
       margin: 10px auto;
       display: block;
+    }
+
+    h2 {
+      color: #1b5e20;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    input {
+      width: calc(100% - 24px);
+      padding: 10px;
+      margin: 5px 0;
+      border: 2px solid #1b5e20;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1b5e20;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #388e3c;
+    }
+
+    .resultado {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f5e9;
+      color: #1b5e20;
+      border-left: 5px solid #388e3c;
+      text-align: left;
+      border-radius: 5px;
+      font-size: 16px;
     }
 
     /* ===== Ajustes para Telas Pequenas ===== */
     @media (max-width: 480px) {
       .container {
-        padding: 10px;
+        padding: 15px;
+        margin: 10px; /* Reduz margem em mobile */
         border-radius: 0; /* Remove bordas em mobile */
       }
 
@@ -53,13 +106,45 @@
         font-size: 1.5rem; /* Título mais compacto */
       }
     }
-
-    /* ... (mantenha o restante do seu CSS existente) ... */
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Seu conteúdo existente -->
+    <!-- Logo -->
+    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
+    <h2>Calculadora de Soroneutralização</h2>
+
+    <!-- Campos de Entrada -->
+    <label for="titulacao">Titulação Viral (Ex: 10^2 ou 10^6,1):</label>
+    <input type="text" id="titulacao" placeholder="Digite a titulação viral">
+
+    <label for="amostras">Número de Amostras:</label>
+    <input type="number" id="amostras" placeholder="Digite o número de amostras">
+
+    <!-- Botão de Calcular -->
+    <button onclick="calcular()">Calcular</button>
+
+    <!-- Resultado do Cálculo -->
+    <div id="resultado" class="resultado"></div>
   </div>
+
+  <script>
+    // Função para calcular os valores
+    function calcular() {
+      const titulacao = document.getElementById('titulacao').value;
+      const amostras = parseInt(document.getElementById('amostras').value);
+
+      if (!titulacao || isNaN(amostras) {
+        alert("Por favor, insira valores válidos.");
+        return;
+      }
+
+      // Lógica de cálculo (substitua pela sua lógica)
+      const resultadoDiv = document.getElementById('resultado');
+      resultadoDiv.innerHTML = `
+        <strong>Resultado:</strong> Cálculo realizado com sucesso!<br>
+      `;
+    }
+  </script>
 </body>
 </html>
