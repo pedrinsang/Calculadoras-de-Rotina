@@ -59,7 +59,7 @@ body {
 }
 
 .splash-logo {
-  width: 60%;
+  width: 100%;
   max-width: 200px;
   animation: pulse 1.5s infinite;
 }
@@ -77,18 +77,6 @@ body {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
   }
 }
 
