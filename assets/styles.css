@@ -86,7 +86,7 @@ body {
   pointer-events: none;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 1080px) {
   body {
     padding: 10px;
     align-items: flex-start;
