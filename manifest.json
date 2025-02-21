@@ -16,5 +16,10 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "splash_screen": {
+    "image": "assets/splash.png",
+    "resize": "cover",
+    "background_color": "#1b5e20"
+  }
 }
