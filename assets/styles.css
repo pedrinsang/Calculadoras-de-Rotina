@@ -59,7 +59,8 @@ body {
 }
 
 .splash-logo {
-  width: 150px;
+  width: 60%;
+  max-width: 200px;
   animation: pulse 1.5s infinite;
 }
 
