@@ -12,7 +12,7 @@ body {
 }
 
 /* Splash Screen */
-.splash-screen {
+#splash-screen {
   position: fixed;
   top: 0;
   left: 0;
