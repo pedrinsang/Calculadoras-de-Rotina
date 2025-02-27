@@ -222,26 +222,32 @@
       // Cálculos baseados no protocolo
       const totalPocos = amostras + controles;
 
-      // Volume de solução de lavagem para lavar os poços
-      const volumeLavagemPorPoco = 300; // µL por lavagem (3 lavagens de 100 µL cada)
-      const numeroLavagens = 3; // Cada poço é lavado 3 vezes
-      const volumeTotalLavagemPocos = totalPocos * volumeLavagemPorPoco * numeroLavagens; // em µL
+      // Volume de solução de lavagem por poço
+      const volumeLavagemPorPoco = 50 + 900 + 900; // 50 µL (passo 2) + 900 µL (passo 8) + 900 µL (passo 11)
+      const volumeTotalLavagem = totalPocos * volumeLavagemPorPoco; // em µL
 
-      // Volume de solução de lavagem para preparar o conjugado
-      const volumeConjugadoPorPoco = 100; // µL por poço
+      // Volume de conjugado diluído por poço
+      const volumeConjugadoPorPoco = 100; // 100 µL por poço
       const volumeTotalConjugado = totalPocos * volumeConjugadoPorPoco; // em µL
 
-      // Volume total de solução de lavagem (lavagem dos poços + preparo do conjugado)
-      const volumeTotalLavagem = volumeTotalLavagemPocos + volumeTotalConjugado; // em µL
+      // Volume de concentrado de lavagem necessário (diluição 1:10)
+      const volumeConcentradoLavagem = volumeTotalLavagem / 10; // em µL
+
+      // Volume de concentrado de conjugado necessário (diluição 1:100)
+      const volumeConcentradoConjugado = volumeTotalConjugado / 100; // em µL
 
       // Converter para mL
       const volumeTotalLavagemML = volumeTotalLavagem / 1000;
+      const volumeConcentradoLavagemML = volumeConcentradoLavagem / 1000;
       const volumeTotalConjugadoML = volumeTotalConjugado / 1000;
+      const volumeConcentradoConjugadoML = volumeConcentradoConjugado / 1;
 
       const resultadoDiv = document.getElementById('resultado');
       resultadoDiv.innerHTML = `
         <strong>Volume Total de Solução de Lavagem:</strong> ${volumeTotalLavagemML.toFixed(2)} mL<br>
-        <strong>Volume Total de Conjugado:</strong> ${volumeTotalConjugadoML.toFixed(2)} mL<br>
+        <strong>Volume de Concentrado de Lavagem (1:10):</strong> ${volumeConcentradoLavagemML.toFixed(2)} mL<br>
+        <strong>Volume Total de Conjugado Diluído:</strong> ${volumeTotalConjugadoML.toFixed(2)} mL<br>
+        <strong>Volume de Concentrado de Conjugado (1:100):</strong> ${volumeConcentradoConjugadoML.toFixed(2)} µL<br>
       `;
     }
 
