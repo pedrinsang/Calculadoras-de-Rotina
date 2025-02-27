@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Calculadora de Soroneutralização</title>
+  <title>Calculadora de ELISA</title>
   <style>
     /* ===== Reset de Margens ===== */
     * {
@@ -89,7 +89,7 @@
       border-radius: 5px;
     }
 
-    .ajuda {
+    .ajuda, .passo-a-passo {
       margin-top: 20px;
       padding: 10px;
       background: #e8f5e9;
@@ -100,20 +100,44 @@
       font-weight: bold;
     }
 
-    .explicacao, .etapasSoroneutralizacao, .observacoesTeste {
+    .explicacao, .etapasELISA {
       display: none;
       margin-top: 10px;
-      padding: 15px;
+      padding: 25px;
       background: #f1f8e9;
       color: #1b5e20;
       border-left: 5px solid #388e3c;
       border-radius: 5px;
     }
 
-    .imagemLink {
-      color: #1b5e20;
-      text-decoration: underline;
+    .etapasELISA ol {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .etapasELISA li {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .etapasELISA input[type="checkbox"] {
+      margin-right: 10px;
       cursor: pointer;
+      width: 20px; /* Ajuste este valor conforme necessário */
+      height: 20px; /* Ajuste este valor conforme necessário */
+      flex-shrink: 0; /* Impede que o checkbox diminua de tamanho */
+    }
+
+    .etapasELISA span {
+      flex: 1;
+
+    }
+
+    .etapasELISA input[type="checkbox"]:checked + span {
+      text-decoration: line-through;
+      color: #888;
+
     }
 
     @media (max-width: 480px) {
@@ -139,35 +163,104 @@
     <label for="amostras">Número de Amostras:</label>
     <input type="number" id="amostras" placeholder="Digite o número de amostras">
 
-    <label for="replicatas">Número de Replicatas:</label>
-    <input type="number" id="replicatas" placeholder="Digite o número de replicatas">
+    <label for="controles">Número de Controles (Positivos + Negativos):</label>
+    <input type="number" id="controles" placeholder="Digite o número de controles">
 
     <!-- Botão de Calcular -->
-    <button onclick="calcularElisa()">Calcular</button>
+    <button onclick="calcularReagentes()">Calcular</button>
 
     <!-- Resultado do Cálculo -->
     <div id="resultado" class="resultado"></div>
+
+    <!-- Instruções -->
+    <div class="ajuda" onclick="toggleInstrucoes()">Instruções de Uso</div>
+    <div id="instrucoes" class="explicacao">
+      <h3>Instruções Passo a Passo:</h3>
+      <ol>
+        <li>Insira o número de amostras e controles (positivos + negativos) nos campos acima.</li>
+        <li>Clique em "Calcular" para obter a quantidade de solução de lavagem e conjugado necessários.</li>
+        <li>Prepare os reagentes conforme as quantidades calculadas.</li>
+        <li>Siga o protocolo ELISA para realizar o teste.</li>
+      </ol>
+    </div>
+
+    <!-- Passo a Passo do Teste ELISA -->
+    <div class="passo-a-passo" onclick="togglePassoAPasso()">Passo a Passo do Teste ELISA</div>
+    <div id="etapasELISA" class="etapasELISA">
+      <h3>Passo a Passo do Teste ELISA:</h3>
+      <ol>
+        <li><input type="checkbox"><span>Prepare os reagentes conforme descrito no protocolo.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL de solução de lavagem em cada poço da placa.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL do Controle Negativo (NC) em duplicata.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL do Controle Positivo (PC) em duplicata.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL das amostras nos poços restantes.</span></li>
+        <li><input type="checkbox"><span>Misture o conteúdo dos poços batendo suavemente na placa ou usando um agitador de microplacas.</span></li>
+        <li><input type="checkbox"><span>Cubra a placa e incubue por 30 minutos a 18–26°C.</span></li>
+        <li><input type="checkbox"><span>Remova a solução e lave cada poço com aproximadamente 300 µL de solução de lavagem três vezes.</span></li>
+        <li><input type="checkbox"><span>Bata a placa em material absorvente após a lavagem final para remover qualquer resíduo.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL do Conjugado diluído em cada poço.</span></li>
+        <li><input type="checkbox"><span>Cubra a placa e incubue por 1 hora a 18–26°C.</span></li>
+        <li><input type="checkbox"><span>Repita o processo de lavagem.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL do Substrato TMB N.9 em cada poço.</span></li>
+        <li><input type="checkbox"><span>Incube por 20 minutos a 18–26°C, longe da luz direta.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL da Solução de Parada N.3 em cada poço.</span></li>
+        <li><input type="checkbox"><span>Meça e registre os valores de absorbância a 450 nm.</span></li>
+      </ol>
+    </div>
   </div>
 
   <script>
-    function calcularElisa() {
+    function calcularReagentes() {
       const amostras = parseFloat(document.getElementById('amostras').value);
-      const replicatas = parseFloat(document.getElementById('replicatas').value);
+      const controles = parseFloat(document.getElementById('controles').value);
 
-      if (isNaN(amostras) || isNaN(replicatas)) {
+      if (isNaN(amostras) || isNaN(controles)) {
         alert("Por favor, insira valores válidos.");
         return;
       }
 
-      // Cálculos fictícios (substitua pela lógica real)
-      const placas = Math.ceil((amostras * replicatas) / 96); // 96 poços por placa
-      const reagente = placas * 10; // 10ml de reagente por placa
+      // Cálculos baseados no protocolo
+      const totalPocos = amostras + controles;
+
+      // Volume de solução de lavagem para lavar os poços
+      const volumeLavagemPorPoco = 300; // µL por lavagem (3 lavagens de 100 µL cada)
+      const numeroLavagens = 3; // Cada poço é lavado 3 vezes
+      const volumeTotalLavagemPocos = totalPocos * volumeLavagemPorPoco * numeroLavagens; // em µL
+
+      // Volume de solução de lavagem para preparar o conjugado
+      const volumeConjugadoPorPoco = 100; // µL por poço
+      const volumeTotalConjugado = totalPocos * volumeConjugadoPorPoco; // em µL
+
+      // Volume total de solução de lavagem (lavagem dos poços + preparo do conjugado)
+      const volumeTotalLavagem = volumeTotalLavagemPocos + volumeTotalConjugado; // em µL
+
+      // Converter para mL
+      const volumeTotalLavagemML = volumeTotalLavagem / 1000;
+      const volumeTotalConjugadoML = volumeTotalConjugado / 1000;
 
       const resultadoDiv = document.getElementById('resultado');
       resultadoDiv.innerHTML = `
-        <strong>Número de Placas:</strong> ${placas}<br>
-        <strong>Reagente Necessário:</strong> ${reagente} ml<br>
+        <strong>Volume Total de Solução de Lavagem:</strong> ${volumeTotalLavagemML.toFixed(2)} mL<br>
+        <strong>Volume Total de Conjugado:</strong> ${volumeTotalConjugadoML.toFixed(2)} mL<br>
       `;
+    }
+
+    function toggleInstrucoes() {
+      const instrucoesDiv = document.getElementById('instrucoes');
+      if (instrucoesDiv.style.display === "none" || instrucoesDiv.style.display === "") {
+        instrucoesDiv.style.display = "block";
+      } else {
+        instrucoesDiv.style.display = "none";
+      }
+    }
+
+    function togglePassoAPasso() {
+      const etapasELISADiv = document.getElementById('etapasELISA');
+      if (etapasELISADiv.style.display === "none" || etapasELISADiv.style.display === "") {
+        etapasELISADiv.style.display = "block";
+      } else {
+        etapasELISADiv.style.display = "none";
+      }
     }
   </script>
 </body>
