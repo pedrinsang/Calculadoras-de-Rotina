@@ -1,4 +1,11 @@
 <script>
+  // Mostra a splash screen ao carregar
+  document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(() => {
+      document.getElementById("splash-screen").classList.add("hide");
+    }, 3000); // Espera 3 segundos antes de sumir
+  });
+  
   // Função para calcular os valores
   function calcular() {
     const titulacao = document.getElementById('titulacao').value;
