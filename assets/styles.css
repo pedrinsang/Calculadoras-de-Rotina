@@ -14,6 +14,9 @@ html, body {
     font-family: Arial, sans-serif;
     text-align: center;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Ajusta a splash screen para cobrir toda a tela */
@@ -29,28 +32,28 @@ html, body {
     background-color: #4a9146;
     z-index: 9999;
     flex-direction: column;
+    padding: 20px;
 }
 
 /* Ajuste para a imagem centralizada e ocupando a largura correta */
 .splash-logo {
-    max-width: 90%;
-    width: auto;
+    max-width: 60%;
+    width: 100%;
     height: auto;
-    object-fit: contain; /* Mantém a proporção da imagem */
+    margin-bottom: 20px; /* Espaço abaixo do logo */
 }
 
-/* Ajuste do loader para ficar acima do logo da universidade */
+/* Ajuste do loader para ficar ENTRE os dois logos */
 .splash-loader {
-    position: absolute;
-    top: 55%; /* Ajusta a altura */
-    transform: translateY(-50%);
     width: 50px;
     height: 50px;
     border: 5px solid rgba(255, 255, 255, 0.3);
     border-top: 5px solid #ffffff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
+    margin-bottom: 20px; /* Espaço abaixo do loader */
 }
+
 /* Animação de rotação do loader */
 @keyframes spin {
     to {
@@ -95,27 +98,11 @@ html, body {
 
 /* Responsividade */
 @media (max-width: 1080px) {
-    body {
-        padding: 10px;
-        align-items: flex-start;
-    }
-
-    .container {
-        padding: 15px;
-    }
-
-    .button {
-        font-size: 14px;
-        padding: 10px;
-    }
-
     .splash-logo {
         max-width: 80%; /* Mantém o tamanho adequado em telas menores */
     }
 
-
     .splash-loader {
-        top: 50%; /* Ajusta posição do loader */
         width: 40px;
         height: 40px;
     }
