@@ -19,60 +19,74 @@ html, body {
     justify-content: center;
 }
 
-/* SPLASH SCREEN - cobre toda a tela */
+/* Ajusta a splash screen para cobrir toda a tela */
 #splash-screen {
     position: fixed;
     width: 100vw;
     height: 100vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: #4a9146;
     z-index: 9999;
-    overflow: hidden;
 }
 
-/* IMAGEM PARA PC */
-.splash-logo.desktop {
-    display: block;
+/* Imagem da splash screen */
+.splash-logo {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
+    height: auto;
+    max-width: 1080px;
+    object-fit: contain;
 }
 
-/* IMAGEM PARA CELULAR */
+/* Diferentes imagens para PC e celular */
+.splash-logo.pc {
+    display: block;
+}
+
 .splash-logo.mobile {
     display: none;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 
-/* Loader giratório - CENTRALIZADO na tela */
+/* Ajuste do loader */
 .splash-loader {
     position: absolute;
     width: 50px;
-    height: 25px;
+    height: 50px;
     border: 5px solid rgba(255, 255, 255, 0.3);
     border-top: 5px solid #ffffff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
+    top: 50%;  /* Centralizado no PC */
+    transform: translateY(-50%);
 }
 
-/* Animação do loader */
+/* No celular, muda a posição para 1/4 da tela */
+@media (max-width: 768px) {
+    .splash-loader {
+        top: 25vh;  /* 1/4 da altura da tela */
+        transform: translateY(0);
+    }
+
+    /* Troca a imagem no celular */
+    .splash-logo.pc {
+        display: none;
+    }
+    
+    .splash-logo.mobile {
+        display: block;
+    }
+}
+
+/* Animação de rotação do loader */
 @keyframes spin {
     to {
         transform: rotate(360deg);
     }
 }
 
-/* Oculta a splash screen com fade-out */
+/* Esconder splash screen após carregamento */
 #splash-screen.hide {
     opacity: 0;
     pointer-events: none;
@@ -105,20 +119,4 @@ html, body {
 
 .button:hover {
     background: #388e3c;
-}
-
-/* Muda a imagem no celular */
-@media (max-width: 768px) {
-    .splash-logo.desktop {
-        display: none;
-    }
-    
-    .splash-logo.mobile {
-        display: block;
-    }
-
-    .splash-loader {
-        width: 40px;
-        height: 40px;
-    }
 }
