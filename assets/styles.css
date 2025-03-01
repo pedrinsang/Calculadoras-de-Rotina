@@ -63,13 +63,14 @@ html, body {
 /* No celular, oculta completamente a imagem do PC e exibe apenas a do celular */
 @media (max-width: 768px) {
     .splash-logo.pc {
-        display: none; /* Esconde completamente */
-        visibility: hidden;
-        position: absolute;
+        display: none !important; /* Garante que a imagem do PC seja ocultada */
     }
 
     .splash-logo.mobile {
-        display: block;
+        display: block !important; /* Garante que a imagem do celular seja exibida */
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
     }
 }
 
