@@ -39,15 +39,6 @@ html, body {
     object-fit: cover;
 }
 
-/* Diferentes imagens para PC e celular */
-.splash-logo.pc {
-    display: block;
-}
-
-.splash-logo.mobile {
-    display: none;
-}
-
 /* Ajuste do loader */
 .splash-loader {
     position: absolute;
@@ -58,24 +49,6 @@ html, body {
     border-radius: 50%;
     animation: spin 1s linear infinite;
     bottom: 25vh;
-}
-
-/* No celular, oculta completamente a imagem do PC e exibe apenas a do celular */
-@media (max-width: 768px) {
-    .splash-logo.pc {
-        display: none !important;
-        visibility: hidden;
-        position: absolute;
-        width: 0;
-        height: 0;
-    }
-
-    .splash-logo.mobile {
-        display: block !important;
-        width: 100vw;
-        height: 100vh;
-        object-fit: cover;
-    }
 }
 
 /* Animação de rotação do loader */
@@ -91,7 +64,6 @@ html, body {
     pointer-events: none;
     transition: opacity 0.5s ease-out;
 }
-
 
 /* CONTEÚDO PRINCIPAL */
 .container {
