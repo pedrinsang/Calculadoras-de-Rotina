@@ -37,7 +37,7 @@ html, body {
     width: 100%;
     height: auto;
     max-width: 1080px;
-    object-fit: contain;
+    object-fit: cover;
 }
 
 /* Diferentes imagens para PC e celular */
@@ -59,7 +59,6 @@ html, body {
     border-radius: 50%;
     animation: spin 1s linear infinite;
     top: 50%;  /* Centralizado no PC */
-    transform: translateY(-50%);
 }
 
 /* No celular, muda a posição para 1/4 da tela */
