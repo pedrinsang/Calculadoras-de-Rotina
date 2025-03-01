@@ -19,30 +19,32 @@ html, body {
     justify-content: center;
 }
 
-/* Ajusta a splash screen para cobrir toda a tela */
+/* SPLASH SCREEN - cobre toda a tela */
 #splash-screen {
     position: fixed;
     width: 100vw;
     height: 100vh;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: #4a9146;
     z-index: 9999;
+    overflow: hidden;
 }
 
-
-/* Ajuste para a imagem centralizada e ocupando a largura correta */
+/* Ajusta a imagem para cobrir a tela corretamente */
 .splash-logo {
-    max-width: 90%;
-    height: auto;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz a imagem preencher a tela */
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-/* Ajuste do loader para ficar ENTRE os dois logos */
+/* Loader giratório - CENTRALIZADO na imagem */
 .splash-loader {
-    margin-top: 20px;
+    position: absolute;
     width: 50px;
     height: 50px;
     border: 5px solid rgba(255, 255, 255, 0.3);
@@ -50,14 +52,15 @@ html, body {
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
-/* Animação de rotação do loader */
+
+/* Animação do loader */
 @keyframes spin {
     to {
         transform: rotate(360deg);
     }
 }
 
-/* Esconder splash screen após carregamento */
+/* Oculta a splash screen com fade-out */
 #splash-screen.hide {
     opacity: 0;
     pointer-events: none;
@@ -95,7 +98,8 @@ html, body {
 /* Responsividade */
 @media (max-width: 1080px) {
     .splash-logo {
-        max-width: 80%; /* Mantém o tamanho adequado em telas menores */
+        width: 100%;
+        height: 100%;
     }
 
     .splash-loader {
