@@ -7,19 +7,53 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="stylesheet" href="assets/styles.css">
   <link rel="manifest" href="manifest.json">
+  <style>
+    /* Estilização da splash screen */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black; /* Cor de fundo opcional */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #splash-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .splash-loader {
+      position: absolute;
+      bottom: 20px;
+      width: 40px;
+      height: 40px;
+      border: 5px solid white;
+      border-top: 5px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Esconder a splash screen após carregamento */
+    .hide {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <body>
   <div id="splash-screen">
-    <!-- Imagem para PC -->
-    <img src="assets/imagem_pc.png" class="splash-logo desktop" alt="Splash Screen PC">
-
-    <!-- Imagem para Celular -->
-    <img src="assets/splash-portrait.png" class="splash-logo mobile" alt="Splash Screen Mobile">
-    
-    <!-- Loader giratório -->
+    <img id="splash-logo" alt="Splash Screen">
     <div class="splash-loader"></div>
-</div>
   </div>
 
   <div class="container">
@@ -41,12 +75,18 @@
         .then(() => console.log('Service Worker registrado com sucesso!'))
         .catch((error) => console.log('Erro ao registrar Service Worker:', error));
     }
-     // Esconder splash screen após o carregamento
-    window.addEventListener('load', () => {
-      const splashScreen = document.getElementById('splash-screen');
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const isMobile = window.innerWidth <= 768; // Considera mobile se a tela for menor que 768px
+      const splashImage = document.getElementById("splash-logo");
+
+      // Define a imagem correta
+      splashImage.src = isMobile ? "assets/splash-portrait.png" : "assets/imagem_pc.png";
+
+      // Esconder a splash screen após 2 segundos
       setTimeout(() => {
-        splashScreen.classList.add('hide');
-      }, 2000); // 2 segundos de exibição
+        document.getElementById("splash-screen").classList.add("hide");
+      }, 2000);
     });
   </script>
 </body>
