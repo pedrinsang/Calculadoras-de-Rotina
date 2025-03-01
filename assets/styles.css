@@ -48,7 +48,7 @@ html, body {
     border-top: 5px solid #ffffff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    bottom: 50vh;
+    bottom: 25vh;
 }
 
 /* Animação de rotação do loader */
