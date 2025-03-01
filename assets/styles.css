@@ -34,9 +34,8 @@ html, body {
 
 /* Imagem da splash screen */
 .splash-logo {
-    width: 100%;
-    height: auto;
-    max-width: 1080px;
+    width: 100vw;
+    height: 100vh;
     object-fit: cover;
 }
 
@@ -58,14 +57,13 @@ html, body {
     border-top: 5px solid #ffffff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    top: 50%;  /* Centralizado no PC */
+    bottom: 10vh; /* Agora está fixo na parte de baixo */
 }
 
-/* No celular, muda a posição para 1/4 da tela */
+/* No celular, muda a posição e imagem */
 @media (max-width: 768px) {
     .splash-loader {
-        top: 25vh;  /* 1/4 da altura da tela */
-        transform: translateY(0);
+        bottom: 10vh; /* Mantendo consistente para celular */
     }
 
     /* Troca a imagem no celular */
