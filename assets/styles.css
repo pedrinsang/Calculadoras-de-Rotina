@@ -57,7 +57,7 @@ html, body {
     border-top: 5px solid #ffffff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    bottom: 10vh;
+    bottom: 25vh;
 }
 
 /* No celular, oculta completamente a imagem do PC e exibe apenas a do celular */
