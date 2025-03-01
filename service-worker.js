@@ -1,11 +1,18 @@
 <script>
-  // Mostra a splash screen ao carregar
   document.addEventListener("DOMContentLoaded", function() {
+    // Verifica se o usuário está em um dispositivo móvel
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const splashImage = document.getElementById("splash-logo");
+
+    // Define a imagem correta
+    splashImage.src = isMobile ? "caminho/para/imagem-mobile.jpg" : "caminho/para/imagem-pc.jpg";
+
+    // Mostra a splash screen e esconde após 3 segundos
     setTimeout(() => {
       document.getElementById("splash-screen").classList.add("hide");
-    }, 3000); // Espera 3 segundos antes de sumir
+    }, 3000);
   });
-  
+
   // Função para calcular os valores
   function calcular() {
     const titulacao = document.getElementById('titulacao').value;
