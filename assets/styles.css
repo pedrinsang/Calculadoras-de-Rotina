@@ -32,17 +32,29 @@ html, body {
     overflow: hidden;
 }
 
-/* Ajusta a imagem para cobrir a tela corretamente */
-.splash-logo {
+/* IMAGEM PARA PC */
+.splash-logo.desktop {
+    display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Faz a imagem preencher a tela */
+    object-fit: cover;
     position: absolute;
     top: 0;
     left: 0;
 }
 
-/* Loader giratório - CENTRALIZADO na imagem */
+/* IMAGEM PARA CELULAR */
+.splash-logo.mobile {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Loader giratório - CENTRALIZADO na tela */
 .splash-loader {
     position: absolute;
     width: 50px;
@@ -95,11 +107,14 @@ html, body {
     background: #388e3c;
 }
 
-/* Responsividade */
-@media (max-width: 1080px) {
-    .splash-logo {
-        width: 100%;
-        height: 100%;
+/* Muda a imagem no celular */
+@media (max-width: 768px) {
+    .splash-logo.desktop {
+        display: none;
+    }
+    
+    .splash-logo.mobile {
+        display: block;
     }
 
     .splash-loader {
