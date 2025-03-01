@@ -63,7 +63,7 @@ html, body {
 /* No celular, muda a posição e imagem */
 @media (max-width: 768px) {
     .splash-loader {
-        bottom: 10vh; /* Mantendo consistente para celular */
+        bottom: 25vh; /* Mantendo consistente para celular */
     }
 
     /* Troca a imagem no celular */
@@ -72,7 +72,7 @@ html, body {
     }
     
     .splash-logo.mobile {
-        display: block;
+        display: none;
     }
 }
 
