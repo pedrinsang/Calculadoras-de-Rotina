@@ -58,7 +58,7 @@ html, body {
 .splash-loader {
     position: absolute;
     width: 50px;
-    height: 50px;
+    height: 25px;
     border: 5px solid rgba(255, 255, 255, 0.3);
     border-top: 5px solid #ffffff;
     border-radius: 50%;
@@ -119,6 +119,6 @@ html, body {
 
     .splash-loader {
         width: 40px;
-        height: 20px;
+        height: 40px;
     }
 }
