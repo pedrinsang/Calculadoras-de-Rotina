@@ -57,22 +57,19 @@ html, body {
     border-top: 5px solid #ffffff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    bottom: 10vh; /* Agora está fixo na parte de baixo */
+    bottom: 10vh;
 }
 
-/* No celular, muda a posição e imagem */
+/* No celular, oculta completamente a imagem do PC e exibe apenas a do celular */
 @media (max-width: 768px) {
-    .splash-loader {
-        bottom: 25vh; /* Mantendo consistente para celular */
+    .splash-logo.pc {
+        display: none; /* Esconde completamente */
+        visibility: hidden;
+        position: absolute;
     }
 
-    /* Troca a imagem no celular */
-    .splash-logo.pc {
-        display: none;
-    }
-    
     .splash-logo.mobile {
-        display: none;
+        display: block;
     }
 }
 
@@ -89,6 +86,7 @@ html, body {
     pointer-events: none;
     transition: opacity 0.5s ease-out;
 }
+
 
 /* CONTEÚDO PRINCIPAL */
 .container {
