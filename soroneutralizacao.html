@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Calculadora de Soroneutralização</title>
   <style>
-    /* ===== Reset de Margens ===== */
     * {
       margin: 0;
       padding: 0;
@@ -116,7 +115,7 @@
       cursor: pointer;
     }
 
-       @media (max-width: 480px) {
+    @media (max-width: 480px) {
       body {
         padding: 10px;
       }
@@ -151,15 +150,15 @@
 
     <div id="resultado" class="resultado"></div>
 
-    <!-- Seções de Ajuda -->
     <div class="ajuda" onclick="toggleAjuda()">
       ❓ Como funciona o cálculo?
     </div>
     <div id="explicacao" class="explicacao">
       - O título viral é convertido para número decimal<br>
       - Volume do vírus = valor decimal / 2000<br>
-      - Número de placas: primeira placa = 6 amostras, demais = 12 cada<br>
-      - Volume total = número de placas × 5 ml<br>
+      - Primeira placa = 6 amostras (5ml)<br>
+      - Placas adicionais = 0.4167ml por amostra<br>
+      - Volume total = volume calculado + 20% de margem<br>
       - Titulação baixa (&lt;1 ml): raw = (µL / ml) × 100<br>
       - Titulação alta (≥1 ml): raw = (ml / ml) × 1000 × 10<br>
       - Solução Viral Total = raw × fator (3 decimais)<br>
@@ -171,16 +170,18 @@
       🧪 Etapas Soroneutralização
     </div>
     <div id="etapasSoroneutralizacao" class="etapasSoroneutralizacao">
-      1º 50µl de MEM A-H(1-12)<br>
-      2º 50µl de Soro (A5-10)<br>
+      1º 50µl de MEM em todos os poços<br>
+      2º 50µl de Soro (A5-A10)<br>
       3º 50µl Controle Positivo (A11)<br>
       4º 50µl MEM (A12)<br>
-      5º Diluir Soro e controles<br>
-      6º Vírus -1 -2 -3 (A1-3)<br>
-      7º Vírus Diluído (A5-12)<br>
-      8º Estufa CO₂ (2h)<br>
-      9º Células A-H(1-12)<br>
-      10º Estufa CO₂ (72-96h)<br>
+      5º Diluir em série o Soro e controles<br>
+      6º Preparar solução viral e retitulações<br>
+      7º Pipetar a reitulação viral nos poços -1 -2 -3 (A1-3)<br>
+      8º Pipetar o vírus diluído (A5-12)<br>
+      9º Estufa CO₂ (2h)<br>
+      10º Preparar solução de celulas<br>
+      11º Células A-H(1-12)<br>
+      12º Estufa CO₂ (72-96h)<br>
       <span class="imagemLink" onclick="abrirImagem()">Abrir imagem</span>
     </div>
 
@@ -188,6 +189,8 @@
       ⚠️ Observações do Teste
     </div>
     <div id="observacoesTeste" class="observacoesTeste">
+      * SEMPRE cuidar/manter um bom estoque de Vírus<br>
+      * antes de qualquer SN confira o estado e quantidade de suas células<br>
       * Trocar ponteiras sempre<br>
       * Ressuspender antes de pipetar<br>
       * Proteger vírus na pipetagem<br>
@@ -198,17 +201,69 @@
 
   <script>
     function calcular() {
-      const titulacao = document.getElementById('titulacao').value;
-      const amostras = parseInt(document.getElementById('amostras').value);
+        const titulacaoInput = document.getElementById('titulacao').value.trim();
+        const amostras = parseInt(document.getElementById('amostras').value);
 
-      if (!titulacao || isNaN(amostras)) {
-        alert("Preencha todos os campos!");
-        return;
-      }
+        if (!titulacaoInput || isNaN(amostras) || amostras < 1) {
+            alert("Preencha todos os campos corretamente!");
+            return;
+        }
 
-      // Exemplo de cálculo
-      const resultadoDiv = document.getElementById('resultado');
-      resultadoDiv.innerHTML = `<strong>Resultado:</strong> ${amostras} amostras processadas`;
+        // Converter titulação para potência de 10
+        let expoente = parseFloat(titulacaoInput.replace("10^", "").replace(",", "."));
+        const valorDecimal = Math.pow(10, expoente);
+        const volumeVirus = valorDecimal / 2000;
+
+        // Cálculo de volume preciso por amostra
+        let volumeTotal = 0;
+        if (amostras <= 6) {
+            // Primeira placa completa (5ml)
+            volumeTotal = 5000;
+        } else {
+            // Primeira placa (6 amostras)
+            volumeTotal = 5000;
+            
+            // Amostras restantes
+            const amostrasRestantes = amostras - 6;
+            
+            // Calcular volume para placas adicionais (0.4167ml por amostra)
+            const volumePorAmostra = 5000 / 12; // ~416.67µl por amostra
+            volumeTotal += Math.ceil(amostrasRestantes * volumePorAmostra);
+        }
+
+        // Aplicar margem de segurança de 20%
+        const volumeComMargem = Math.ceil(volumeTotal * 1.2);
+
+        // Calcular quantidade inicial
+        let quantidadeInicial = volumeComMargem / volumeVirus;
+        
+        // Calcular diluições
+        let diluicoes = [];
+        let fatorDiluicao = 1;
+        diluicoes.push({fator: fatorDiluicao, valor: quantidadeInicial});
+
+        while (quantidadeInicial < 100) {
+            quantidadeInicial *= 10;
+            fatorDiluicao *= 10;
+            diluicoes.push({fator: fatorDiluicao, valor: quantidadeInicial});
+        }
+
+        // Construir resultado
+        let resultadoHTML = `
+            <strong>Titulação:</strong> 10<sup>${expoente}</sup> = ${valorDecimal.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
+            <strong>Volume Viral:</strong> ${valorDecimal.toLocaleString('pt-BR')} / 2000 = ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
+            <strong>Amostras:</strong> ${amostras}<br>
+            <strong>Volume Base:</strong> ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
+            <strong>Volume com Margem:</strong> ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
+            <strong>Cálculo Inicial:</strong> ${volumeComMargem.toLocaleString('pt-BR')} µl / ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})} = ${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br><br>
+            <strong>Diluições Necessárias:</strong> ${diluicoes.length-1}<br>`;
+
+        diluicoes.forEach((dil, index) => {
+            let notacao = index === 0 ? '' : `×10${index > 1 ? `<sup>${index}</sup>` : ''}`;
+            resultadoHTML += `10<sup>${expoente}</sup> ${notacao} → ${dil.valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br>`;
+        });
+
+        document.getElementById('resultado').innerHTML = resultadoHTML;
     }
 
     function toggleAjuda() {
