@@ -99,10 +99,10 @@
       font-weight: bold;
     }
 
-    .explicacao, .etapasSoroneutralizacao, .observacoesTeste {
+    .explicacao, .etapasSoroneutralizacao, .observacoesTeste, .passoAPasso {
       display: none;
       margin-top: 10px;
-      padding: 15px;
+      padding: 25px;
       background: #f1f8e9;
       color: #1b5e20;
       border-left: 5px solid #388e3c;
@@ -113,6 +113,62 @@
       color: #1b5e20;
       text-decoration: underline;
       cursor: pointer;
+    }
+
+    .diluicoes {
+        background: #dcedc8;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+
+    .etapa {
+        color: #2e7d32;
+        font-weight: bold;
+        display: inline-block;
+        width: 120px;
+    }
+
+    #passoAPasso ol {
+        counter-reset: step;
+        padding-left: 50px;
+    }
+
+    #passoAPasso li {
+        margin: 15px 0;
+        padding: 15px;
+        background: #f1f8e9;
+        border-radius: 5px;
+        list-style-type: none;
+        position: relative;
+    }
+
+    #passoAPasso li:before {
+        content: counter(step);
+        counter-increment: step;
+        background: #2e7d32;
+        color: white;
+        font-weight: bold;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        text-align: center;
+        display: inline-block;
+        position: absolute;
+        left: -45px;
+        top: 50%;
+        transform: translateY(-50%);
+        line-height: 30px; /* Igual à altura */
+        padding: 0; /* Remove qualquer padding */
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .etapasSoroneutralizacao li {
+        margin-bottom: 20px;
+        padding: 10px;
+        background: #f8fdf9;
+        border-radius: 10px;
     }
 
     @media (max-width: 480px) {
@@ -129,6 +185,12 @@
       }
       h2 {
         font-size: 1.5rem;
+      }
+       #passoAPasso li:before {
+        left: -40px; /* Ajuste para mobile */
+        width: 25px;
+        height: 25px;
+        line-height: 25px;
       }
     }
   </style>
@@ -150,56 +212,174 @@
 
     <div id="resultado" class="resultado"></div>
 
-    <div class="ajuda" onclick="toggleAjuda()">
-      ❓ Como funciona o cálculo?
+    <!-- Nova seção de ajuda para o passo a passo -->
+    <div class="ajuda" onclick="togglePassoAPasso()">
+      📝 Passo a Passo do Cálculo
     </div>
-    <div id="explicacao" class="explicacao">
-      - O título viral é convertido para número decimal<br>
-      - Volume do vírus = valor decimal / 2000<br>
-      - Primeira placa = 6 amostras (5ml)<br>
-      - Placas adicionais = 0.4167ml por amostra<br>
-      - Volume total = volume calculado + 20% de margem<br>
-      - Titulação baixa (&lt;1 ml): raw = (µL / ml) × 100<br>
-      - Titulação alta (≥1 ml): raw = (ml / ml) × 1000 × 10<br>
-      - Solução Viral Total = raw × fator (3 decimais)<br>
-      - MEI = volume total - Solução Viral Total<br>
-      - Cultivo Celular = placas × 4.8 ml
+    <div id="passoAPasso" class="passoAPasso">
+        <h3>Etapas do Cálculo:</h3>
+        <ol>
+            <li>
+                <strong>Conversão da Titulação</strong><br>
+                <em>Exemplo: 10<sup>6.3</sup></em><br>
+                • Valor decimal = 10<sup>expoente</sup><br>
+                • Resultado: 1.995.262,3149
+            </li>
+            
+            <li>
+                <strong>Volume Viral</strong><br>
+                <em>Fórmula:</em> Valor Decimal ÷ 2000<br>
+                • 1.995.262,3149 ÷ 2000 = 997,6311 µl/ml
+            </li>
+
+            <li>
+                <strong>Cálculo de Placas</strong><br>
+                • 1ª placa: 6 amostras (5.000 µl)<br>
+                • Amostras extras: 0,4167 ml por amostra<br>
+                <em>Exemplo para 8 amostras:</em><br>
+                • 5.000 µl + (2 × 416,67 µl) = 5.833,34 µl
+            </li>
+
+            <li>
+                <strong>Margem de Segurança</strong><br>
+                • Volume total × 1,2<br>
+                • 5.833,34 × 1,2 ≅ 7.000 µl 
+            </li>
+
+            <li>
+                <strong>Volume do Vírus</strong><br>
+                <em>Fórmula:</em> Volume com margem ÷ Volume Viral<br>
+                • 7.000 ÷ 997,6311 = 7,0165 µl
+            </li>
+
+            <li>
+                <strong>Diluições para melhor pipetagem:</strong><br>
+                <div class="diluicoes">
+                    <span class="etapa">1ª Diluição (×10):</span> 7,0165 µl → 70,165 µl<br>
+                    <span class="etapa">2ª Diluição (×100):</span> 70,165 µl → 701,65 µl<br>
+                    <br>
+                    <em>Lembre sempre de retirar a quantidade relativa de MEM para colocar o vírus.</em>
+                </div>
+            </li>
+        </ol>
+
+        <h3>Legenda:</h3>
+        <ol>
+            <li>µl = microlitros</li>
+            <li>ml = mililitros (1 ml = 1.000 µl)</li>
+            <li>MEM = Meio Essencial Mínimo</li>
+        </ol>
     </div>
 
     <div class="ajuda" onclick="toggleEtapasSoroneutralizacao()">
-      🧪 Etapas Soroneutralização
+        🧪 Protocolo Completo de Soroneutralização
     </div>
     <div id="etapasSoroneutralizacao" class="etapasSoroneutralizacao">
-      1º 50µl de MEM em todos os poços<br>
-      2º 50µl de Soro (A5-A10)<br>
-      3º 50µl Controle Positivo (A11)<br>
-      4º 50µl MEM (A12)<br>
-      5º Diluir em série o Soro e controles<br>
-      6º Preparar solução viral e retitulações<br>
-      7º Pipetar a reitulação viral nos poços -1 -2 -3 (A1-3)<br>
-      8º Pipetar o vírus diluído (A5-12)<br>
-      9º Estufa CO₂ (2h)<br>
-      10º Preparar solução de celulas<br>
-      11º Células A-H(1-12)<br>
-      12º Estufa CO₂ (72-96h)<br>
-      <span class="imagemLink" onclick="abrirImagem()">Abrir imagem</span>
+        <strong>Pré-requisitos:</strong><br>
+        1. Inativar amostras a 56°C em banho-maria por 30 minutos<br>
+        2. Preparar materiais:<br>
+        <div class="diluicoes">
+        • Calha • Pipetadores (1000µl, 200µl, multicanal e elétrico)<br>
+        • Ponteiras (1 caixa/placa + reserva) • Eppendorfs • Falcon<br>
+        • Agitador • Canhão • MEM • Placas de 96 poços<br>
+        • Ligar UV por 15 minutos antes do início
+        </div>
+
+        <ol>
+            <li>
+                <strong>Preparação da Placa</strong><br>
+                1. Identifique a placa com:<br>
+                - Nome - Data - Tipo de teste<br>
+                - Controles - Amostras - Retitulações<br>
+                <span class="imagemLink" onclick="abrirImagem()">Abrir diagrama da placa</span><br>
+                2. Adicione 50µl de MEM em todos os poços<br>
+                3. Adicione +50µl extra no controle celular (A4)
+            </li>
+
+            <li>
+                <strong>Aplicação das Amostras</strong><br>
+                1. Primeira placa:<br>
+                - Amostras de A5 a A10<br>
+                - Controle positivo (A11)<br>
+                - Controle negativo/MEM (A12)<br>
+                2. Demais placas:<br>
+                - Amostras na linha A completa
+            </li>
+
+            <li>
+                <strong>Diluição em Série</strong><br>
+                1. Diluir amostras e controles:<br>
+                - Transferir 50µl entre poços consecutivos<br>
+                - Homogeneizar 3x a cada transferência<br>
+                2. Descartar 50µl do último poço
+            </li>
+
+            <li>
+                <strong>Preparo Viral</strong><br>
+                1. Preparar solução mãe viral:<br>
+                - Volume conforme cálculo da calculadora<br>
+                - Manter em banho de gelo<br>
+                2. Preparar retitulações (-1, -2, -3):<br>
+                - 900µl MEM + 100µl da solução anterior
+            </li>
+
+            <li>
+                <strong>Aplicação do Vírus</strong><br>
+                1. Pipetar 50µl das retitulações:<br>
+                - -1 na coluna 1<br>
+                - -2 na coluna 2<br>
+                - -3 na coluna 3<br>
+                2. Pipetar 50µl da solução mãe viral:<br>
+                - Todos poços exceto controle celular
+            </li>
+
+            <li>
+                <strong>Incubação e Células</strong><br>
+                1. Incubar 2h em estufa CO₂ (37°C)<br>
+                2. Preparar solução celular:<br>
+                <div class="diluicoes">
+                • Volume = volume total viral<br>
+                • 10% soro fetal bovino<br>
+                • Completar com MEM<br>
+                • 300µl/placa
+                </div>
+                3. Após as 2 horas, adicionar 50µl de células em todos os poços
+            </li>
+
+            <li>
+                <strong>Leitura Final</strong><br>
+                1. Incubar por 96h em estufa CO₂<br>
+                2. Analisar efeito citopático (ECP)<br>
+                3. Calcular título neutralizante
+            </li>
+        </ol>
+
+        <strong>⚠️ ATENÇÃO:</strong><br>
+        • Mantenha vírus no -80 até sua manipulação<br>
+        • Troque ponteiras entre amostras<br>
     </div>
 
     <div class="ajuda" onclick="toggleObservacoesTeste()">
       ⚠️ Observações do Teste
     </div>
     <div id="observacoesTeste" class="observacoesTeste">
-      * SEMPRE cuidar/manter um bom estoque de Vírus<br>
-      * antes de qualquer SN confira o estado e quantidade de suas células<br>
-      * Trocar ponteiras sempre<br>
-      * Ressuspender antes de pipetar<br>
-      * Proteger vírus na pipetagem<br>
-      * Sequência correta de células<br>
-      * Ressuspender células na calha
+      • SEMPRE manter um bom estoque de vírus<br>
+      • Antes de qualquer SN confira o estado e quantidade de suas células<br>
+      • Trocar ponteiras sempre<br>
+      • Ressuspender antes de pipetar<br>
+      • Sempre proteger o Controle Celular na pipetagem<br>
+      • Pipete as celulas da linha mais diluida (H) para a menos diluida (A)<br>
+      • Ressuspender células na calha<br>
+
     </div>
   </div>
 
   <script>
+    function togglePassoAPasso() {
+        const div = document.getElementById('passoAPasso');
+        div.style.display = div.style.display === 'block' ? 'none' : 'block';
+    }
+
     function calcular() {
         const titulacaoInput = document.getElementById('titulacao').value.trim();
         const amostras = parseInt(document.getElementById('amostras').value);
@@ -251,11 +431,11 @@
         // Construir resultado
         let resultadoHTML = `
             <strong>Titulação:</strong> 10<sup>${expoente}</sup> = ${valorDecimal.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
-            <strong>Volume Viral:</strong> ${valorDecimal.toLocaleString('pt-BR')} / 2000 = ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
+            <strong>Ajuste TCID₅₀:</strong> ${valorDecimal.toLocaleString('pt-BR')} / 2000 = ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
             <strong>Amostras:</strong> ${amostras}<br>
             <strong>Volume Base:</strong> ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
             <strong>Volume com Margem:</strong> ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
-            <strong>Cálculo Inicial:</strong> ${volumeComMargem.toLocaleString('pt-BR')} µl / ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})} = ${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br><br>
+            <strong>Volume Viral:</strong> ${volumeComMargem.toLocaleString('pt-BR')} µl / ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})} = ${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br><br>
             <strong>Diluições Necessárias:</strong> ${diluicoes.length-1}<br>`;
 
         diluicoes.forEach((dil, index) => {
