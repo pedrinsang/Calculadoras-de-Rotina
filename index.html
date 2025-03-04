@@ -49,6 +49,72 @@
     .hide {
       display: none;
     }
+
+    /* Estilos do Botão do Mural */
+    .mural-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Estilos do Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 600px;
+    }
+
+    .close {
+      float: right;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* Estilos do Formulário */
+    #mural-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #mural-form input, #mural-form select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    /* Estilos da Lista de Amostras */
+    #mural-list {
+      margin-top: 20px;
+    }
+
+    .amostra-item {
+      background-color: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -58,6 +124,9 @@
   </div>
 
   <div class="container">
+    <!-- Botão do Mural -->
+    <button id="mural-button" class="mural-button">Abrir Mural</button>
+
     <!-- Logo -->
     <img src="assets/logo.png" alt="Logo do Projeto" class="logo">
 
@@ -67,6 +136,43 @@
     <a href="soroneutralizacao.html" class="button">Calculadora de Soroneutralização</a>
     <a href="vacinas.html" class="button">Calculadora de Vacinas</a>
     <a href="elisa.html" class="button">Calculadora de ELISA</a>
+  </div>
+
+  <!-- Modal do Mural -->
+  <div id="mural-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Mural de Amostras</h2>
+      
+      <!-- Formulário de Entrada -->
+      <form id="mural-form">
+        <label for="id">Número de Identificação:</label>
+        <input type="text" id="id" name="id" required>
+
+        <label for="tipo">Tipo de Amostra:</label>
+        <select id="tipo" name="tipo" required>
+          <option value="ELISA Leucose">ELISA Leucose</option>
+          <option value="ELISA BVDV">ELISA BVDV</option>
+          <option value="SN BVDV">SN BVDV</option>
+          <option value="SN IBR">SN IBR</option>
+          <option value="Vacina">Vacina</option>
+        </select>
+
+        <label for="quantidade">Quantidade:</label>
+        <input type="number" id="quantidade" name="quantidade" required>
+
+        <label for="gramatura">Gramatura (apenas para Vacina):</label>
+        <input type="number" id="gramatura" name="gramatura" disabled>
+
+        <label for="data">Data de Recebimento:</label>
+        <input type="date" id="data" name="data" required>
+
+        <button type="submit">Adicionar ao Mural</button>
+      </form>
+
+      <!-- Lista de Amostras -->
+      <div id="mural-list"></div>
+    </div>
   </div>
 
   <script>
@@ -88,6 +194,85 @@
       setTimeout(() => {
         document.getElementById("splash-screen").classList.add("hide");
       }, 2000);
+
+      // Controle do Modal do Mural
+      const modal = document.getElementById("mural-modal");
+      const btn = document.getElementById("mural-button");
+      const span = document.getElementsByClassName("close")[0];
+      const form = document.getElementById("mural-form");
+      const muralList = document.getElementById("mural-list");
+
+      // Abrir modal
+      btn.onclick = function() {
+        modal.style.display = "block";
+      };
+
+      // Fechar modal
+      span.onclick = function() {
+        modal.style.display = "none";
+      };
+
+      // Fechar modal ao clicar fora
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      // Habilitar/desabilitar gramatura
+      document.getElementById("tipo").addEventListener("change", function() {
+        const gramaturaInput = document.getElementById("gramatura");
+        gramaturaInput.disabled = this.value !== "Vacina";
+      });
+
+      // Adicionar amostra ao mural
+      form.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const id = document.getElementById("id").value;
+        const tipo = document.getElementById("tipo").value;
+        const quantidade = document.getElementById("quantidade").value;
+        const gramatura = document.getElementById("gramatura").value;
+        const dataRecebimento = new Date(document.getElementById("data").value);
+
+        // Calcular dias úteis
+        const diasUteis = tipo === "Vacina" || tipo.includes("SN") ? 15 : 7;
+        const dataVencimento = calcularDiasUteis(dataRecebimento, diasUteis);
+
+        // Criar item do mural
+        const amostraItem = document.createElement("div");
+        amostraItem.className = "amostra-item";
+        amostraItem.innerHTML = `
+          <strong>${tipo}</strong> - ID: ${id}<br>
+          ${quantidade} ${tipo === "Vacina" ? `vacinas (${gramatura}g)` : "amostras"}<br>
+          Data de recebimento: ${formatarData(dataRecebimento)}<br>
+          Data de vencimento: ${formatarData(dataVencimento)} (${diasUteis} dias úteis faltando)
+        `;
+
+        muralList.appendChild(amostraItem);
+        form.reset();
+      });
+
+      // Função para calcular dias úteis
+      function calcularDiasUteis(dataInicial, dias) {
+        const feriados = []; // Adicione os feriados aqui
+        let count = 0;
+        let data = new Date(dataInicial);
+
+        while (count < dias) {
+          data.setDate(data.getDate() + 1);
+          if (data.getDay() !== 0 && data.getDay() !== 6 && !feriados.includes(data.toISOString().split('T')[0])) {
+            count++;
+          }
+        }
+
+        return data;
+      }
+
+      // Função para formatar data
+      function formatarData(data) {
+        return data.toLocaleDateString("pt-BR");
+      }
     });
   </script>
 </body>
