@@ -324,16 +324,20 @@
         link.addEventListener('click', (event) => {
           // Fecha o modal
           modal.style.display = 'none';
-
-          // Verifica se o link é interno (não começa com "http" ou "#")
+      
+          // Se o link for interno, permite o redirecionamento normal
           if (!link.href.startsWith('http') && !link.href.includes('#')) {
-            // Permite o redirecionamento após um pequeno delay
-            setTimeout(() => {
-              window.location.href = link.href;
-            }, 100); // 100ms de delay para garantir que o modal seja fechado
+            return; // Permite o comportamento padrão do navegador
           }
+      
+          // Para links externos, evita comportamento inesperado
+          event.preventDefault();
+          setTimeout(() => {
+            window.location.href = link.href;
+          }, 100);
         });
       });
+
 
       // Controle do Formulário
       const form = document.getElementById("mural-form");
