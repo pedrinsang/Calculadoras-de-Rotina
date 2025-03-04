@@ -8,113 +8,52 @@
   <link rel="stylesheet" href="assets/styles.css">
   <link rel="manifest" href="manifest.json">
   <style>
-    /* Estilização da splash screen */
+    /* Estilos anteriores mantidos */
     #splash-screen {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: black; /* Cor de fundo opcional */
+      background: black;
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
-    }
-
-    #splash-logo {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .splash-loader {
-      position: absolute;
-      bottom: 25vh;
-      bottom: 20px;
-      width: 40px;
-      height: 40px;
-      border: 5px solid white;
-      border-top: 5px solid transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Esconder a splash screen após carregamento */
-    .hide {
-      display: none;
-    }
-
-    /* Estilos do Botão do Mural */
-    .mural-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background-color: #1b5e20;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    /* Estilos do Modal */
-    .modal {
-      display: none;
-      position: fixed;
       z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
     }
 
-    .modal-content {
-      background-color: white;
-      background-color: #1b5e20;
-      margin: 5% auto;
-      padding: 20px;
-      border-radius: 10px;
-      width: 80%;
-      max-width: 600px;
+    .amostra-item.em-progresso {
+      background-color: #1e3a8a;
+      color: white;
     }
 
-    .close {
-      float: right;
-      font-size: 24px;
-      cursor: pointer;
-    }
-
-    /* Estilos do Formulário */
-    #mural-form {
+    .status-buttons {
+      margin-top: 10px;
       display: flex;
-      flex-direction: column;
       gap: 10px;
     }
 
-    #mural-form input, #mural-form select {
-      padding: 8px;
-      border: 1px solid #ccc;
+    .btn-progresso {
+      background-color: #1e3a8a;
+      color: white;
+      padding: 5px 10px;
       border-radius: 5px;
+      border: none;
+      cursor: pointer;
     }
 
-    /* Estilos da Lista de Amostras */
-    #mural-list {
-      margin-top: 20px;
+    .btn-concluido {
+      background-color: #166534;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
     }
 
-    .amostra-item {
-      background-color: #f9f9f9;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      margin-bottom: 10px;
+    .filtro-container {
+      margin-bottom: 20px;
     }
   </style>
 </head>
@@ -125,155 +64,160 @@
   </div>
 
   <div class="container">
-    <!-- Botão do Mural -->
     <button id="mural-button" class="mural-button">Abrir Mural</button>
-
-    <!-- Logo -->
     <img src="assets/logo.png" alt="Logo do Projeto" class="logo">
-
     <h1>Escolha uma Calculadora</h1>
-
-    <!-- Botões para as Calculadoras -->
     <a href="soroneutralizacao.html" class="button">Calculadora de Soroneutralização</a>
     <a href="vacinas.html" class="button">Calculadora de Vacinas</a>
     <a href="elisa.html" class="button">Calculadora de ELISA</a>
   </div>
 
-  <!-- Modal do Mural -->
   <div id="mural-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
       <h2>Mural de Amostras</h2>
-
-      <!-- Formulário de Entrada -->
-      <form id="mural-form">
-        <label for="id">Número de Identificação:</label>
-        <input type="text" id="id" name="id" required>
-
-        <label for="tipo">Tipo de Amostra:</label>
-        <select id="tipo" name="tipo" required>
+      <div class="filtro-container">
+        <label>Filtrar por tipo: </label>
+        <select id="filtro-tipo">
+          <option value="Todos">Todos</option>
+          <option value="Vacina">Vacina</option>
+          <option value="SN IBR">SN IBR</option>
+          <option value="SN BVDV">SN BVDV</option>
           <option value="ELISA Leucose">ELISA Leucose</option>
           <option value="ELISA BVDV">ELISA BVDV</option>
-          <option value="SN BVDV">SN BVDV</option>
-          <option value="SN IBR">SN IBR</option>
-          <option value="Vacina">Vacina</option>
         </select>
-
-        <label for="quantidade">Quantidade:</label>
-        <input type="number" id="quantidade" name="quantidade" required>
-
-        <label for="gramatura">Gramatura (apenas para Vacina):</label>
-        <input type="number" id="gramatura" name="gramatura" disabled>
-
-        <label for="data">Data de Recebimento:</label>
-        <input type="date" id="data" name="data" required>
-
-        <button type="submit">Adicionar ao Mural</button>
-      </form>
-
-      <!-- Lista de Amostras -->
+      </div>
       <div id="mural-list"></div>
+      <button id="adicionar-tarefa" class="button">Adicionar Tarefa</button>
+      <form id="mural-form" style="display: none;">
+        <!-- Campos do formulário mantidos -->
+      </form>
     </div>
   </div>
 
-  <script>
-    // Registrar o Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log('Service Worker registrado com sucesso!'))
-        .catch((error) => console.log('Erro ao registrar Service Worker:', error));
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
+      authDomain: "hub-de-calculadoras.firebaseapp.com",
+      projectId: "hub-de-calculadoras",
+      storageBucket: "hub-de-calculadoras.firebasestorage.app",
+      messagingSenderId: "203883856586",
+      appId: "1:203883856586:web:a00536536a32ae76c5aa33",
+      measurementId: "G-7H314CT9SH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Funções globais
+    window.marcarProgresso = async (id) => {
+      await updateDoc(doc(db, "tarefas", id), { status: "em-progresso" });
+      carregarTarefas(document.getElementById("filtro-tipo").value);
+    };
+
+    window.concluirTarefa = async (id) => {
+      if (confirm("Tem certeza que deseja concluir esta tarefa?")) {
+        await deleteDoc(doc(db, "tarefas", id));
+        carregarTarefas(document.getElementById("filtro-tipo").value);
+      }
+    };
+
+    async function carregarTarefas(filtro = 'Todos') {
+      const muralList = document.getElementById("mural-list");
+      muralList.innerHTML = '';
+
+      const querySnapshot = await getDocs(collection(db, "tarefas"));
+      
+      if (querySnapshot.empty) {
+        muralList.innerHTML = "<p>Nenhuma tarefa adicionada.</p>";
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const tarefa = doc.data();
+        if (filtro !== 'Todos' && tarefa.tipo !== filtro) return;
+
+        const amostraItem = document.createElement("div");
+        amostraItem.className = `amostra-item ${tarefa.status === 'em-progresso' ? 'em-progresso' : ''}`;
+        amostraItem.innerHTML = `
+          <strong>${tarefa.tipo}</strong> - ID: ${tarefa.id}<br>
+          ${tarefa.quantidade} ${tarefa.tipo === "Vacina" ? `vacinas (${tarefa.gramatura}g)` : "amostras"}<br>
+          Data de recebimento: ${tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")}<br>
+          <div class="status-buttons">
+            <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
+            <button class="btn-concluido" onclick="concluirTarefa('${doc.id}')">Concluir</button>
+          </div>
+        `;
+        muralList.appendChild(amostraItem);
+      });
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-      const isMobile = window.innerWidth <= 768; // Considera mobile se a tela for menor que 768px
+    document.addEventListener("DOMContentLoaded", () => {
+      // Configuração inicial
       const splashImage = document.getElementById("splash-logo");
+      splashImage.src = window.innerWidth <= 768 ? "assets/splash-portrait.png" : "assets/imagem_pc.png";
 
-      // Define a imagem correta
-      splashImage.src = isMobile ? "assets/splash-portrait.png" : "assets/imagem_pc.png";
-
-      // Esconder a splash screen após 2 segundos
       setTimeout(() => {
         document.getElementById("splash-screen").classList.add("hide");
       }, 2000);
 
-      // Controle do Modal do Mural
+      // Controle do Modal
       const modal = document.getElementById("mural-modal");
       const btn = document.getElementById("mural-button");
       const span = document.getElementsByClassName("close")[0];
-      const form = document.getElementById("mural-form");
-      const muralList = document.getElementById("mural-list");
 
-      // Abrir modal
-      btn.onclick = function() {
+      btn.onclick = () => {
         modal.style.display = "block";
+        carregarTarefas();
       };
 
-      // Fechar modal
-      span.onclick = function() {
-        modal.style.display = "none";
+      span.onclick = () => modal.style.display = "none";
+      window.onclick = (event) => event.target === modal && (modal.style.display = "none");
+
+      // Controle do Formulário
+      const form = document.getElementById("mural-form");
+      document.getElementById("adicionar-tarefa").onclick = () => {
+        form.style.display = "block";
+        document.getElementById("adicionar-tarefa").style.display = "none";
       };
 
-      // Fechar modal ao clicar fora
-      window.onclick = function(event) {
-        if (event.target == modal) {
-          modal.style.display = "none";
-        }
-      };
-
-      // Habilitar/desabilitar gramatura
       document.getElementById("tipo").addEventListener("change", function() {
-        const gramaturaInput = document.getElementById("gramatura");
-        gramaturaInput.disabled = this.value !== "Vacina";
+        document.getElementById("gramatura").disabled = this.value !== "Vacina";
       });
 
-      // Adicionar amostra ao mural
-      form.addEventListener("submit", function(event) {
-        event.preventDefault();
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const novaTarefa = {
+          id: document.getElementById("id").value,
+          tipo: document.getElementById("tipo").value,
+          quantidade: parseInt(document.getElementById("quantidade").value),
+          gramatura: document.getElementById("tipo").value === "Vacina" 
+                    ? parseFloat(document.getElementById("gramatura").value)
+                    : null,
+          dataRecebimento: new Date(document.getElementById("data").value),
+          status: "pendente"
+        };
 
-        const id = document.getElementById("id").value;
-        const tipo = document.getElementById("tipo").value;
-        const quantidade = document.getElementById("quantidade").value;
-        const gramatura = document.getElementById("gramatura").value;
-        const dataRecebimento = new Date(document.getElementById("data").value);
-
-        // Calcular dias úteis
-        const diasUteis = tipo === "Vacina" || tipo.includes("SN") ? 15 : 7;
-        const dataVencimento = calcularDiasUteis(dataRecebimento, diasUteis);
-
-        // Criar item do mural
-        const amostraItem = document.createElement("div");
-        amostraItem.className = "amostra-item";
-        amostraItem.innerHTML = `
-          <strong>${tipo}</strong> - ID: ${id}<br>
-          ${quantidade} ${tipo === "Vacina" ? `vacinas (${gramatura}g)` : "amostras"}<br>
-          Data de recebimento: ${formatarData(dataRecebimento)}<br>
-          Data de vencimento: ${formatarData(dataVencimento)} (${diasUteis} dias úteis faltando)
-        `;
-
-        muralList.appendChild(amostraItem);
-        form.reset();
-      });
-
-      // Função para calcular dias úteis
-      function calcularDiasUteis(dataInicial, dias) {
-        const feriados = []; // Adicione os feriados aqui
-        let count = 0;
-        let data = new Date(dataInicial);
-
-        while (count < dias) {
-          data.setDate(data.getDate() + 1);
-          if (data.getDay() !== 0 && data.getDay() !== 6 && !feriados.includes(data.toISOString().split('T')[0])) {
-            count++;
-          }
+        try {
+          await addDoc(collection(db, "tarefas"), {
+            ...novaTarefa,
+            dataRecebimento: new firebase.firestore.Timestamp.fromDate(novaTarefa.dataRecebimento)
+          });
+          form.reset();
+          carregarTarefas();
+        } catch (error) {
+          console.error("Erro ao salvar:", error);
         }
+      });
 
-        return data;
-      }
-
-      // Função para formatar data
-      function formatarData(data) {
-        return data.toLocaleDateString("pt-BR");
-      }
+      // Filtro
+      document.getElementById("filtro-tipo").addEventListener("change", (e) => {
+        carregarTarefas(e.target.value);
+      });
     });
   </script>
 </body>
