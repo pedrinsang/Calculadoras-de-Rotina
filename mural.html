@@ -147,9 +147,9 @@
       <select id="tipo" name="tipo" required>
         <option value="SN IBR">SN IBR</option>
         <option value="SN BVDV">SN BVDV</option>
-        <option value="Vacina">Vacina</option>
         <option value="ELISA Leucose">ELISA Leucose</option>
         <option value="ELISA BVDV">ELISA BVDV</option>
+        <option value="Vacina">Vacina</option>
       </select>
 
       <label for="quantidade">Quantidade:</label>
@@ -230,14 +230,19 @@
     document.addEventListener("DOMContentLoaded", () => {
       // Controle do Formulário
       const form = document.getElementById("mural-form");
-      document.getElementById("adicionar-tarefa").onclick = () => {
+      const adicionarTarefaBtn = document.getElementById("adicionar-tarefa");
+      const muralList = document.getElementById("mural-list");
+
+      adicionarTarefaBtn.onclick = () => {
         form.style.display = "block";
-        document.getElementById("adicionar-tarefa").style.display = "none";
+        muralList.style.display = "none"; // Esconde a lista de tarefas
+        adicionarTarefaBtn.style.display = "none";
       };
 
       document.getElementById("cancelar-tarefa").onclick = () => {
         form.style.display = "none";
-        document.getElementById("adicionar-tarefa").style.display = "block";
+        muralList.style.display = "block"; // Mostra a lista de tarefas
+        adicionarTarefaBtn.style.display = "block";
       };
 
       document.getElementById("tipo").addEventListener("change", function() {
@@ -265,7 +270,8 @@
           });
           form.reset();
           form.style.display = "none";
-          document.getElementById("adicionar-tarefa").style.display = "block";
+          muralList.style.display = "block"; // Mostra a lista de tarefas
+          adicionarTarefaBtn.style.display = "block";
           carregarTarefas();
         } catch (error) {
           console.error("Erro ao salvar:", error);
