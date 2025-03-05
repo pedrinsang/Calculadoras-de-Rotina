@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mural de Tarefas</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .button {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #166534;
+    }
+
+    #mural-list {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: #ffffff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .amostra-item {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      color: #333;
+    }
+
+    .amostra-item.em-progresso {
+      background-color: #e3f2fd;
+      border-left: 5px solid #1e3a8a;
+    }
+
+    .status-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-progresso, .btn-concluido {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-progresso {
+      background-color: #1e3a8a;
+      color: white;
+    }
+
+    .btn-concluido {
+      background-color: #166534;
+      color: white;
+    }
+
+    .btn-progresso:hover, .btn-concluido:hover {
+      opacity: 0.9;
+    }
+
+    #mural-form {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #mural-form label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    #mural-form input, #mural-form select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    #mural-form button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #mural-form button[type="submit"] {
+      background-color: #1b5e20;
+      color: white;
+    }
+
+    #mural-form button[type="button"] {
+      background-color: #ccc;
+      color: #333;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mural de Tarefas</h1>
+
+    <!-- Botão Adicionar Tarefa -->
+    <button id="adicionar-tarefa" class="button">Adicionar Tarefa</button>
+
+    <!-- Formulário de Entrada -->
+    <form id="mural-form">
+      <label for="id">Número de Identificação:</label>
+      <input type="text" id="id" name="id" required>
+
+      <label for="tipo">Tipo de Amostra:</label>
+      <select id="tipo" name="tipo" required>
+        <option value="Vacina">Vacina</option>
+        <option value="SN IBR">SN IBR</option>
+        <option value="SN BVDV">SN BVDV</option>
+        <option value="ELISA Leucose">ELISA Leucose</option>
+        <option value="ELISA BVDV">ELISA BVDV</option>
+      </select>
+
+      <label for="quantidade">Quantidade:</label>
+      <input type="number" id="quantidade" name="quantidade" required>
+
+      <label for="gramatura">Gramatura (apenas para Vacina):</label>
+      <input type="number" id="gramatura" name="gramatura" disabled>
+
+      <label for="data">Data de Recebimento:</label>
+      <input type="date" id="data" name="data" required>
+
+      <button type="submit">Adicionar ao Mural</button>
+      <button type="button" id="cancelar-tarefa">Cancelar</button>
+    </form>
+
+    <!-- Lista de Amostras -->
+    <div id="mural-list"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
+      authDomain: "hub-de-calculadoras.firebaseapp.com",
+      projectId: "hub-de-calculadoras",
+      storageBucket: "hub-de-calculadoras.appspot.com",
+      messagingSenderId: "203883856586",
+      appId: "1:203883856586:web:a00536536a32ae76c5aa33",
+      measurementId: "G-7H314CT9SH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Funções globais
+    window.marcarProgresso = async (id) => {
+      await updateDoc(doc(db, "tarefas", id), { status: "em-progresso" });
+      carregarTarefas();
+    };
+
+    window.concluirTarefa = async (id) => {
+      if (confirm("Tem certeza que deseja concluir esta tarefa?")) {
+        await deleteDoc(doc(db, "tarefas", id));
+        carregarTarefas();
+      }
+    };
+
+    async function carregarTarefas() {
+      const muralList = document.getElementById("mural-list");
+      muralList.innerHTML = '';
+
+      const querySnapshot = await getDocs(collection(db, "tarefas"));
+      
+      if (querySnapshot.empty) {
+        muralList.innerHTML = "<p>Nenhuma tarefa adicionada.</p>";
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const tarefa = doc.data();
+        const amostraItem = document.createElement("div");
+        amostraItem.className = `amostra-item ${tarefa.status === 'em-progresso' ? 'em-progresso' : ''}`;
+        amostraItem.innerHTML = `
+          <strong>${tarefa.tipo}</strong> - ID: ${tarefa.id}<br>
+          ${tarefa.quantidade} ${tarefa.tipo === "Vacina" ? `vacinas (${tarefa.gramatura}g)` : "amostras"}<br>
+          Data de recebimento: ${tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")}<br>
+          <div class="status-buttons">
+            <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
+            <button class="btn-concluido" onclick="concluirTarefa('${doc.id}')">Concluir</button>
+          </div>
+        `;
+        muralList.appendChild(amostraItem);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Controle do Formulário
+      const form = document.getElementById("mural-form");
+      document.getElementById("adicionar-tarefa").onclick = () => {
+        form.style.display = "block";
+        document.getElementById("adicionar-tarefa").style.display = "none";
+      };
+
+      document.getElementById("cancelar-tarefa").onclick = () => {
+        form.style.display = "none";
+        document.getElementById("adicionar-tarefa").style.display = "block";
+      };
+
+      document.getElementById("tipo").addEventListener("change", function() {
+        document.getElementById("gramatura").disabled = this.value !== "Vacina";
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const novaTarefa = {
+          id: document.getElementById("id").value,
+          tipo: document.getElementById("tipo").value,
+          quantidade: parseInt(document.getElementById("quantidade").value),
+          gramatura: document.getElementById("tipo").value === "Vacina" 
+                    ? parseFloat(document.getElementById("gramatura").value)
+                    : null,
+          dataRecebimento: new Date(document.getElementById("data").value),
+          status: "pendente"
+        };
+
+        try {
+          await addDoc(collection(db, "tarefas"), {
+            ...novaTarefa,
+            dataRecebimento: Timestamp.fromDate(novaTarefa.dataRecebimento)
+          });
+          form.reset();
+          form.style.display = "none";
+          document.getElementById("adicionar-tarefa").style.display = "block";
+          carregarTarefas();
+        } catch (error) {
+          console.error("Erro ao salvar:", error);
+          alert("Erro ao adicionar tarefa. Verifique o console para mais detalhes.");
+        }
+      });
+
+      // Carregar tarefas ao abrir a página
+      carregarTarefas();
+    });
+  </script>
+</body>
+</html>
