@@ -15,12 +15,12 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: black;
+      background: black; /* Cor de fundo opcional */
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
-      z-index: 1000;
+      z-index: 1000; /* Garante que a splash screen fique acima de tudo */
     }
 
     #splash-logo {
@@ -50,176 +50,12 @@
       display: none;
     }
 
-    /* Estilos do Botão do Mural */
-    .mural-button {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background-color: #1b5e20;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 1000;
+    #mural-button {
+      position: fixed; /* Fixa o botão na tela */
+      bottom: 20px; /* Distância do fundo */
+      right: 20px; /* Distância da direita */
+      z-index: 1000; /* Garante que o botão fique acima de outros elementos */
     }
-
-    /* Estilos do Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-content {
-      background-color: white;
-      margin: 5% auto;
-      padding: 20px;
-      border-radius: 10px;
-      width: 80%;
-      max-width: 600px;
-      position: relative;
-    }
-
-    .close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 24px;
-      cursor: pointer;
-    }
-
-    /* Estilos do Formulário */
-    #mural-form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      padding: 20px;
-      background-color: #f9f9f9;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    #mural-form label {
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    #mural-form input, #mural-form select {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    #mural-form button[type="submit"] {
-      background-color: #1b5e20;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    #mural-form button[type="submit"]:hover {
-      background-color: #166534;
-    }
-
-    /* Estilos da Lista de Amostras */
-    #mural-list {
-      margin-top: 20px;
-      max-height: 400px;
-      overflow-y: auto;
-      padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 5px;
-      margin-bottom: 20px;
-    }
-
-    .amostra-item {
-      background-color: white;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Estilo para tarefas em progresso */
-    .amostra-item.em-progresso {
-      background-color: #e3f2fd;
-      border-left: 5px solid #1e3a8a;
-    }
-
-    /* Estilo dos Botões de Status */
-    .status-buttons {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-progresso, .btn-concluido {
-      padding: 5px 10px;
-      border-radius: 5px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .btn-progresso {
-      background-color: #1e3a8a;
-      color: white;
-    }
-
-    .btn-concluido {
-      background-color: #166534;
-      color: white;
-    }
-
-    .btn-progresso:hover, .btn-concluido:hover {
-      opacity: 0.9;
-    }
-
-    /* Estilos do Botão Adicionar Tarefa */
-    #adicionar-tarefa {
-      background-color: #1b5e20;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-    
-    #adicionar-tarefa:hover {
-      background-color: #166534;
-    }
-
-    /* Estilo do Filtro */
-    .filtro-container {
-      margin-bottom: 20px;
-    }
-
-    .filtro-container label {
-      font-weight: bold;
-    }
-
-    .filtro-container select {
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-
-    
   </style>
 </head>
 <body>
@@ -230,7 +66,7 @@
 
   <div class="container">
     <!-- Botão do Mural -->
-    <button id="mural-button" class="mural-button">Abrir Mural</button>
+    <a href="mural.html" id="mural-button" class="button">Acessar Mural</a>
 
     <!-- Logo -->
     <img src="assets/logo.png" alt="Logo do Projeto" class="logo">
@@ -243,203 +79,33 @@
     <a href="elisa.html" class="button">Calculadora de ELISA</a>
   </div>
 
-  <!-- Modal do Mural -->
-  <div id="mural-modal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>Mural de Amostras</h2>
+  <script>
+    // Verificar se a splash screen já foi exibida
+    const splashAlreadyShown = localStorage.getItem('splashShown');
 
-      <!-- Filtro de Tarefas -->
-      <div class="filtro-container">
-        <label>Filtrar por tipo: </label>
-        <select id="filtro-tipo">
-          <option value="Todos">Todos</option>
-          <option value="Vacina">Vacina</option>
-          <option value="SN IBR">SN IBR</option>
-          <option value="SN BVDV">SN BVDV</option>
-          <option value="ELISA Leucose">ELISA Leucose</option>
-          <option value="ELISA BVDV">ELISA BVDV</option>
-        </select>
-      </div>
+    if (!splashAlreadyShown) {
+      // Se a splash screen ainda não foi exibida, mostrá-la
+      document.addEventListener("DOMContentLoaded", () => {
+        const splashImage = document.getElementById("splash-logo");
+        splashImage.src = window.innerWidth <= 768 ? "assets/splash-portrait.png" : "assets/imagem_pc.png";
 
-      <!-- Lista de Amostras -->
-      <div id="mural-list"></div>
-
-      <!-- Botão Adicionar Tarefa -->
-      <button id="adicionar-tarefa" class="button">Adicionar Tarefa</button>
-
-      <!-- Formulário de Entrada -->
-      <form id="mural-form" style="display: none;">
-        <label for="id">Número de Identificação:</label>
-        <input type="text" id="id" name="id" required>
-
-        <label for="tipo">Tipo de Amostra:</label>
-        <select id="tipo" name="tipo" required>
-          <option value="Vacina">Vacina</option>
-          <option value="SN IBR">SN IBR</option>
-          <option value="SN BVDV">SN BVDV</option>
-          <option value="ELISA Leucose">ELISA Leucose</option>
-          <option value="ELISA BVDV">ELISA BVDV</option>
-        </select>
-
-        <label for="quantidade">Quantidade:</label>
-        <input type="number" id="quantidade" name="quantidade" required>
-
-        <label for="gramatura">Gramatura (apenas para Vacina):</label>
-        <input type="number" id="gramatura" name="gramatura" disabled>
-
-        <label for="data">Data de Recebimento:</label>
-        <input type="date" id="data" name="data" required>
-
-        <button type="submit">Adicionar ao Mural</button>
-      </form>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-      authDomain: "hub-de-calculadoras.firebaseapp.com",
-      projectId: "hub-de-calculadoras",
-      storageBucket: "hub-de-calculadoras.firebasestorage.app",
-      messagingSenderId: "203883856586",
-      appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-      measurementId: "G-7H314CT9SH"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Funções globais
-    window.marcarProgresso = async (id) => {
-      await updateDoc(doc(db, "tarefas", id), { status: "em-progresso" });
-      carregarTarefas(document.getElementById("filtro-tipo").value);
-    };
-
-    window.concluirTarefa = async (id) => {
-      if (confirm("Tem certeza que deseja concluir esta tarefa?")) {
-        await deleteDoc(doc(db, "tarefas", id));
-        carregarTarefas(document.getElementById("filtro-tipo").value);
-      }
-    };
-
-    async function carregarTarefas(filtro = 'Todos') {
-      const muralList = document.getElementById("mural-list");
-      muralList.innerHTML = '';
-
-      const querySnapshot = await getDocs(collection(db, "tarefas"));
-      
-      if (querySnapshot.empty) {
-        muralList.innerHTML = "<p>Nenhuma tarefa adicionada.</p>";
-        return;
-      }
-
-      querySnapshot.forEach((doc) => {
-        const tarefa = doc.data();
-        if (filtro !== 'Todos' && tarefa.tipo !== filtro) return;
-
-        const amostraItem = document.createElement("div");
-        amostraItem.className = `amostra-item ${tarefa.status === 'em-progresso' ? 'em-progresso' : ''}`;
-        amostraItem.innerHTML = `
-          <strong>${tarefa.tipo}</strong> - ID: ${tarefa.id}<br>
-          ${tarefa.quantidade} ${tarefa.tipo === "Vacina" ? `vacinas (${tarefa.gramatura}g)` : "amostras"}<br>
-          Data de recebimento: ${tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")}<br>
-          <div class="status-buttons">
-            <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
-            <button class="btn-concluido" onclick="concluirTarefa('${doc.id}')">Concluir</button>
-          </div>
-        `;
-        muralList.appendChild(amostraItem);
+        setTimeout(() => {
+          document.getElementById("splash-screen").classList.add("hide");
+          // Marcar no localStorage que a splash screen já foi exibida
+          localStorage.setItem('splashShown', 'true');
+        }, 2000); // Tempo de exibição da splash screen (2 segundos)
       });
+    } else {
+      // Se a splash screen já foi exibida, escondê-la imediatamente
+      document.getElementById("splash-screen").classList.add("hide");
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // Configuração inicial
-      const splashImage = document.getElementById("splash-logo");
-      splashImage.src = window.innerWidth <= 768 ? "assets/splash-portrait.png" : "assets/imagem_pc.png";
-
-      setTimeout(() => {
-        document.getElementById("splash-screen").classList.add("hide");
-      }, 2000);
-
-      // Controle do Modal
-      const modal = document.getElementById("mural-modal");
-      const btn = document.getElementById("mural-button");
-      const span = document.getElementsByClassName("close")[0];
-
-      btn.onclick = () => {
-        modal.style.display = "block";
-        carregarTarefas();
-      };
-
-      span.onclick = () => modal.style.display = "none";
-      window.onclick = (event) => event.target === modal && (modal.style.display = "none");
-
-      // Fechar o modal ao clicar em qualquer link e permitir redirecionamento
-      document.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', (event) => {
-          // Fecha o modal
-          modal.style.display = 'none';
-      
-          // Se o link for interno, permite o redirecionamento normal
-          if (!link.href.startsWith('http') && !link.href.includes('#')) {
-            return; // Permite o comportamento padrão do navegador
-          }
-      
-          // Para links externos, evita comportamento inesperado
-          event.preventDefault();
-          setTimeout(() => {
-            window.location.href = link.href;
-          }, 100);
-        });
-      });
-
-
-      // Controle do Formulário
-      const form = document.getElementById("mural-form");
-      document.getElementById("adicionar-tarefa").onclick = () => {
-        form.style.display = "block";
-        document.getElementById("adicionar-tarefa").style.display = "none";
-      };
-
-      document.getElementById("tipo").addEventListener("change", function() {
-        document.getElementById("gramatura").disabled = this.value !== "Vacina";
-      });
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        const novaTarefa = {
-          id: document.getElementById("id").value,
-          tipo: document.getElementById("tipo").value,
-          quantidade: parseInt(document.getElementById("quantidade").value),
-          gramatura: document.getElementById("tipo").value === "Vacina" 
-                    ? parseFloat(document.getElementById("gramatura").value)
-                    : null,
-          dataRecebimento: new Date(document.getElementById("data").value),
-          status: "pendente"
-        };
-
-        try {
-          await addDoc(collection(db, "tarefas"), {
-            ...novaTarefa,
-            dataRecebimento: Timestamp.fromDate(novaTarefa.dataRecebimento)
-          });
-          form.reset();
-          carregarTarefas();
-        } catch (error) {
-          console.error("Erro ao salvar:", error);
-        }
-      });
-
-      // Filtro
-      document.getElementById("filtro-tipo").addEventListener("change", (e) => {
-        carregarTarefas(e.target.value);
-      });
-    });
+    // Registrar o Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker registrado com sucesso!'))
+        .catch((error) => console.log('Erro ao registrar Service Worker:', error));
+    }
   </script>
 </body>
 </html>
