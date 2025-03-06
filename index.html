@@ -188,7 +188,7 @@
 
         // Salvar dados extras no Firestore
         await addDoc(collection(db, "usuarios"), {
-          uid: user.uid,
+          uid: user.uid, // Certifique-se de que o UID está sendo salvo corretamente
           nome,
           sigla,
           email

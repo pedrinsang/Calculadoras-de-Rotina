@@ -83,6 +83,7 @@
       Timestamp,
       deleteDoc
     } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
@@ -96,6 +97,17 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    const auth = getAuth();
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("Usuário autenticado:", user);
+      } else {
+        console.log("Usuário não autenticado.");
+        window.location.href = "index.html"; // Redirecionar para o login
+      }
+    });
 
     // Excluir tarefas com mais de 2 meses a partir da data de recebimento
     async function excluirTarefasAntigas() {
