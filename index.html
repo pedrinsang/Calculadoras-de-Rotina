@@ -3,109 +3,223 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hub de Calculadoras</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <title>Login e Cadastro</title>
   <link rel="stylesheet" href="assets/styles.css">
-  <link rel="manifest" href="manifest.json">
   <style>
-    /* Estilização da splash screen */
-    #splash-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: black; /* Cor de fundo opcional */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
-      z-index: 1000; /* Garante que a splash screen fique acima de tudo */
+      height: 100vh;
     }
 
-    #splash-logo {
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 400px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-group input {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
     }
 
-    .splash-loader {
-      position: absolute;
-      bottom: 20px;
-      width: 40px;
-      height: 40px;
-      border: 5px solid white;
-      border-top: 5px solid transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    .button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #1b5e20;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
     }
 
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    .button:hover {
+      background-color: #166534;
     }
 
-    /* Esconder a splash screen após carregamento */
-    .hide {
-      display: none;
+    .switch-form {
+      margin-top: 15px;
+      font-size: 14px;
     }
 
-    #mural-button {
-      position: fixed; /* Fixa o botão na tela */
-      top: 20px; /* Distância do fundo */
-      right: 20px; /* Distância da direita */
-      z-index: 1000; /* Garante que o botão fique acima de outros elementos */
+    .switch-form a {
+      color: #1b5e20;
+      text-decoration: none;
+    }
+
+    .switch-form a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <div id="splash-screen">
-    <img id="splash-logo" alt="Splash Screen">
-    <div class="splash-loader"></div>
-  </div>
-
   <div class="container">
-    <!-- Botão do Mural -->
-    <a href="mural.html" id="mural-button" class="button">Acessar Mural</a>
+    <div id="login-form">
+      <h2>Login</h2>
+      <div class="form-group">
+        <label for="login-email">Email:</label>
+        <input type="email" id="login-email" required>
+      </div>
+      <div class="form-group">
+        <label for="login-senha">Senha:</label>
+        <input type="password" id="login-senha" required>
+      </div>
+      <button class="button" id="login-button">Entrar</button>
+      <div class="switch-form">
+        <span>Não tem uma conta? </span>
+        <a href="#" id="show-cadastro">Cadastre-se</a>
+      </div>
+    </div>
 
-    <!-- Logo -->
-    <img src="assets/logo.png" alt="Logo do Projeto" class="logo">
-
-    <h1>Escolha uma Calculadora</h1>
-
-    <!-- Botões para as Calculadoras -->
-    <a href="soroneutralizacao.html" class="button">Calculadora de Soroneutralização</a>
-    <a href="vacinas.html" class="button">Calculadora de Vacinas</a>
-    <a href="elisa.html" class="button">Calculadora de ELISA</a>
+    <div id="cadastro-form" style="display: none;">
+      <h2>Cadastro</h2>
+      <div class="form-group">
+        <label for="cadastro-nome">Nome:</label>
+        <input type="text" id="cadastro-nome" required>
+      </div>
+      <div class="form-group">
+        <label for="cadastro-sigla">Sigla:</label>
+        <input type="text" id="cadastro-sigla" required>
+      </div>
+      <div class="form-group">
+        <label for="cadastro-email">Email:</label>
+        <input type="email" id="cadastro-email" required>
+      </div>
+      <div class="form-group">
+        <label for="cadastro-senha">Senha:</label>
+        <input type="password" id="cadastro-senha" required>
+      </div>
+      <div class="form-group">
+        <label for="cadastro-codigo">Código Secreto:</label>
+        <input type="password" id="cadastro-codigo" required>
+      </div>
+      <button class="button" id="cadastro-button">Cadastrar</button>
+      <div class="switch-form">
+        <span>Já tem uma conta? </span>
+        <a href="#" id="show-login">Faça login</a>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // Verificar se a splash screen já foi exibida
-    const splashAlreadyShown = localStorage.getItem('splashShown');
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-    if (!splashAlreadyShown) {
-      // Se a splash screen ainda não foi exibida, mostrá-la
-      document.addEventListener("DOMContentLoaded", () => {
-        const splashImage = document.getElementById("splash-logo");
-        splashImage.src = window.innerWidth <= 768 ? "assets/splash-portrait.png" : "assets/imagem_pc.png";
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
+      authDomain: "hub-de-calculadoras.firebaseapp.com",
+      projectId: "hub-de-calculadoras",
+      storageBucket: "hub-de-calculadoras.appspot.com",
+      messagingSenderId: "203883856586",
+      appId: "1:203883856586:web:a00536536a32ae76c5aa33",
+      measurementId: "G-7H314CT9SH"
+    };
 
-        setTimeout(() => {
-          document.getElementById("splash-screen").classList.add("hide");
-          // Marcar no localStorage que a splash screen já foi exibida
-          localStorage.setItem('splashShown', 'true');
-        }, 2000); // Tempo de exibição da splash screen (2 segundos)
-      });
-    } else {
-      // Se a splash screen já foi exibida, escondê-la imediatamente
-      document.getElementById("splash-screen").classList.add("hide");
-    }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    // Registrar o Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log('Service Worker registrado com sucesso!'))
-        .catch((error) => console.log('Erro ao registrar Service Worker:', error));
-    }
+    const CODIGO_SECRETO = "123456"; // Código secreto para cadastro
+
+    // Alternar entre login e cadastro
+    document.getElementById("show-cadastro").onclick = () => {
+      document.getElementById("login-form").style.display = "none";
+      document.getElementById("cadastro-form").style.display = "block";
+    };
+
+    document.getElementById("show-login").onclick = () => {
+      document.getElementById("cadastro-form").style.display = "none";
+      document.getElementById("login-form").style.display = "block";
+    };
+
+    // Cadastro
+    document.getElementById("cadastro-button").onclick = async () => {
+      const nome = document.getElementById("cadastro-nome").value;
+      const sigla = document.getElementById("cadastro-sigla").value;
+      const email = document.getElementById("cadastro-email").value;
+      const senha = document.getElementById("cadastro-senha").value;
+      const codigo = document.getElementById("cadastro-codigo").value;
+
+      if (codigo !== CODIGO_SECRETO) {
+        alert("Código secreto inválido!");
+        return;
+      }
+
+      try {
+        // Verificar se o email já está cadastrado
+        const q = query(collection(db, "usuarios"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          alert("Email já cadastrado!");
+          return;
+        }
+
+        // Salvar usuário no Firestore
+        await addDoc(collection(db, "usuarios"), {
+          nome,
+          sigla,
+          email,
+          senha
+        });
+
+        alert("Cadastro realizado com sucesso!");
+        document.getElementById("cadastro-form").style.display = "none";
+        document.getElementById("login-form").style.display = "block";
+      } catch (error) {
+        console.error("Erro ao cadastrar:", error);
+        alert("Erro ao cadastrar. Verifique o console para mais detalhes.");
+      }
+    };
+
+    // Login
+    document.getElementById("login-button").onclick = async () => {
+      const email = document.getElementById("login-email").value;
+      const senha = document.getElementById("login-senha").value;
+
+      try {
+        // Verificar credenciais no Firestore
+        const q = query(collection(db, "usuarios"), where("email", "==", email), where("senha", "==", senha));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          alert("Email ou senha incorretos!");
+          return;
+        }
+
+        // Salvar login no localStorage
+        const usuario = querySnapshot.docs[0].data();
+        localStorage.setItem("usuario", JSON.stringify(usuario));
+
+        // Redirecionar para o hub de calculadoras
+        window.location.href = "hub.html";
+      } catch (error) {
+        console.error("Erro ao fazer login:", error);
+        alert("Erro ao fazer login. Verifique o console para mais detalhes.");
+      }
+    };
   </script>
 </body>
 </html>

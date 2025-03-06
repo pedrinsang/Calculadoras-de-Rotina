@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hub de Calculadoras</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .container {
+      position: relative;
+      padding: 20px;
+      max-width: 550px;
+      margin: 0 auto;
+    }
+
+    .button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      width: 80%;
+    }
+
+    .button:hover {
+      background-color: #166534;
+    }
+
+    #mural-button {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .logo {
+      margin-top: 60px;
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Botão do Mural -->
+    <a href="mural.html" id="mural-button" class="button">Acessar Mural</a>
+
+    <!-- Logo -->
+    <img src="assets/logo.png" alt="Logo do Projeto" class="logo">
+
+    <h1>Escolha uma Calculadora</h1>
+
+    <!-- Botões para as Calculadoras -->
+    <a href="soroneutralizacao.html" class="button">Calculadora de Soroneutralização</a>
+    <a href="vacinas.html" class="button">Calculadora de Vacinas</a>
+    <a href="elisa.html" class="button">Calculadora de ELISA</a>
+  </div>
+
+  <script>
+    // Verificar se o usuário está logado
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) {
+      window.location.href = "index.html"; // Redirecionar para o login se não estiver logado
+    }
+  </script>
+</body>
+</html>

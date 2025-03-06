@@ -23,7 +23,7 @@
 
     .container {
       width: 100%;
-      max-width: 550px;
+      max-width: 565px;
       padding: 20px;
       background: white;
       color: #1b5e20;
@@ -212,6 +212,9 @@
 
     <div id="resultado" class="resultado"></div>
 
+    <button id="adicionar-mural" style="display: none;" onclick="adicionarAoMural()">Adicionar ao Mural</button>
+
+
     <!-- Nova seção de ajuda para o passo a passo -->
     <div class="ajuda" onclick="togglePassoAPasso()">
       📝 Passo a Passo do Cálculo
@@ -374,7 +377,27 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+
+    // Importações do Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+     // Inicialização do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
+      authDomain: "hub-de-calculadoras.firebaseapp.com",
+      projectId: "hub-de-calculadoras",
+      storageBucket: "hub-de-calculadoras.appspot.com",
+      messagingSenderId: "203883856586",
+      appId: "1:203883856586:web:a00536536a32ae76c5aa33",
+      measurementId: "G-7H314CT9SH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+
     function togglePassoAPasso() {
         const div = document.getElementById('passoAPasso');
         div.style.display = div.style.display === 'block' ? 'none' : 'block';
@@ -444,6 +467,43 @@
         });
 
         document.getElementById('resultado').innerHTML = resultadoHTML;
+
+        // Mostrar o botão "Adicionar ao Mural"
+        document.getElementById('adicionar-mural').style.display = 'block';
+    }
+
+    // Função para adicionar ao mural
+    async function adicionarAoMural() {
+      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      if (!usuario) {
+        alert("Você precisa estar logado para adicionar tarefas ao mural.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const titulacao = document.getElementById('titulacao').value;
+      const amostras = document.getElementById('amostras').value;
+      const resultado = document.getElementById('resultado').innerText;
+
+      const novaTarefa = {
+        tipo: "Soroneutralização",
+        titulacao,
+        amostras,
+        resultado,
+        sigla: usuario.sigla, // Associar a tarefa ao usuário logado
+        data: new Date().toLocaleDateString("pt-BR"),
+        status: "pendente"
+      };
+
+      try {
+        // Adicionar ao Firestore
+        await addDoc(collection(db, "tarefas"), novaTarefa);
+        alert("Tarefa adicionada ao mural com sucesso!");
+        window.location.href = "mural.html"; // Redirecionar para o mural
+      } catch (error) {
+        console.error("Erro ao adicionar tarefa:", error);
+        alert("Erro ao adicionar tarefa. Verifique o console para mais detalhes.");
+      }
     }
 
     function toggleAjuda() {
@@ -464,6 +524,14 @@
     function abrirImagem() {
       window.open("https://i.pinimg.com/736x/5b/09/2b/5b092b1687e129c5f6714bf69bf1b3f1.jpg", "_blank");
     }
+
+
+    window.calcular = calcular;
+    window.adicionarAoMural = adicionarAoMural;
+    window.togglePassoAPasso = togglePassoAPasso;
+    window.toggleEtapasSoroneutralizacao = toggleEtapasSoroneutralizacao;
+    window.toggleObservacoesTeste = toggleObservacoesTeste;
+
   </script>
 </body>
 </html>
