@@ -126,7 +126,20 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
@@ -139,9 +152,10 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const CODIGO_SECRETO = "123456"; // Código secreto para cadastro
+    const CODIGO_SECRETO = "Virologi@";
 
     // Alternar entre login e cadastro
     document.getElementById("show-cadastro").onclick = () => {
@@ -168,21 +182,16 @@
       }
 
       try {
-        // Verificar se o email já está cadastrado
-        const q = query(collection(db, "usuarios"), where("email", "==", email));
-        const querySnapshot = await getDocs(q);
+        // Criar usuário no Firebase Authentication
+        const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+        const user = userCredential.user;
 
-        if (!querySnapshot.empty) {
-          alert("Email já cadastrado!");
-          return;
-        }
-
-        // Salvar usuário no Firestore
+        // Salvar dados extras no Firestore
         await addDoc(collection(db, "usuarios"), {
+          uid: user.uid,
           nome,
           sigla,
-          email,
-          senha
+          email
         });
 
         alert("Cadastro realizado com sucesso!");
@@ -200,12 +209,16 @@
       const senha = document.getElementById("login-senha").value;
 
       try {
-        // Verificar credenciais no Firestore
-        const q = query(collection(db, "usuarios"), where("email", "==", email), where("senha", "==", senha));
+        // Autenticar no Firebase
+        const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+        const user = userCredential.user;
+
+        // Buscar os dados extras do Firestore
+        const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-          alert("Email ou senha incorretos!");
+          alert("Erro: usuário não encontrado no banco de dados.");
           return;
         }
 
@@ -217,7 +230,7 @@
         window.location.href = "hub.html";
       } catch (error) {
         console.error("Erro ao fazer login:", error);
-        alert("Erro ao fazer login. Verifique o console para mais detalhes.");
+        alert("Email ou senha incorretos!");
       }
     };
   </script>
