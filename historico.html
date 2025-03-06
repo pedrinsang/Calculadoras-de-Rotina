@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de Tarefas Concluídas</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .button {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #166534;
+    }
+
+    #historico-list {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: #ffffff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .historico-item {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      color: #333;
+    }
+
+    .historico-item.concluido {
+      background-color: #e8f5e9;
+      border-left: 5px solid #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Histórico de Tarefas Concluídas</h1>
+
+    <!-- Botão para voltar ao mural de tarefas -->
+    <button id="voltar-button" class="button">Voltar ao Mural</button>
+
+    <!-- Lista de Tarefas Concluídas -->
+    <div id="historico-list"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      query,
+      where,
+      orderBy,
+      Timestamp,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
+      authDomain: "hub-de-calculadoras.firebaseapp.com",
+      projectId: "hub-de-calculadoras",
+      storageBucket: "hub-de-calculadoras.appspot.com",
+      messagingSenderId: "203883856586",
+      appId: "1:203883856586:web:a00536536a32ae76c5aa33",
+      measurementId: "G-7H314CT9SH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Excluir tarefas com mais de 2 meses a partir da data de recebimento
+    async function excluirTarefasAntigas() {
+      console.log("🔎 Buscando tarefas antigas para exclusão...");
+      try {
+        const agora = new Date();
+        agora.setMonth(agora.getMonth() - 6);
+        agora.setHours(0, 0, 0, 0);
+        
+        const doisMesesAtrasTimestamp = Timestamp.fromDate(agora);
+        console.log("📆 Data limite para exclusão:", doisMesesAtrasTimestamp.toDate());
+
+        // Buscar TODAS as tarefas para depuração
+        const todasTarefasSnapshot = await getDocs(collection(db, "historico"));
+        todasTarefasSnapshot.forEach((doc) => {
+          const tarefa = doc.data();
+          console.log(`📌 ID: ${doc.id} | Data Recebimento:`, tarefa.dataRecebimento?.toDate());
+        });
+
+        // Query para buscar apenas as tarefas antigas baseadas em dataRecebimento
+        const q = query(
+          collection(db, "historico"),
+          where("dataRecebimento", "<", doisMesesAtrasTimestamp)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          console.warn("⚠ Nenhuma tarefa antiga encontrada.");
+          return;
+        }
+
+        console.log(`🗑 Encontradas ${querySnapshot.size} tarefas para excluir.`);
+
+        const promises = querySnapshot.docs.map(async (doc) => {
+          console.log(`🚮 Excluindo tarefa ID: ${doc.id}`);
+          await deleteDoc(doc.ref);
+        });
+
+        await Promise.all(promises);
+        console.log("✅ Tarefas antigas excluídas com sucesso!");
+      } catch (error) {
+        console.error("❌ Erro ao excluir tarefas antigas:", error);
+      }
+    }
+
+    // Carregar histórico
+    async function carregarHistorico() {
+      console.log("📂 Carregando histórico...");
+      const historicoList = document.getElementById("historico-list");
+      historicoList.innerHTML = '';
+
+      const q = query(collection(db, "historico"), orderBy("dataRecebimento", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        historicoList.innerHTML = "<p>Nenhuma tarefa concluída encontrada.</p>";
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const tarefa = doc.data();
+        console.log("📌 Tarefa carregada:", tarefa);
+
+        const historicoItem = document.createElement("div");
+        historicoItem.className = "historico-item concluido";
+        historicoItem.innerHTML = `
+          <strong>${tarefa.tipo}</strong> - ID: ${tarefa.id ?? "Sem ID"}<br>
+          ${tarefa.quantidade} ${tarefa.tipo === "VACINA" ? `vacinas (${tarefa.gramatura}g)` : "amostras"}<br>
+          <strong>Data de Recebimento:</strong> ${tarefa.dataRecebimento?.toDate().toLocaleDateString("pt-BR") ?? "Desconhecido"}<br>
+          <strong>Data de Conclusão:</strong> ${tarefa.dataConclusao?.toDate().toLocaleDateString("pt-BR") ?? "Desconhecido"}<br>
+          <strong>Sigla:</strong> ${tarefa.sigla ?? "N/A"}<br>
+        `;
+        historicoList.appendChild(historicoItem);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      document.getElementById("voltar-button").onclick = () => {
+        window.location.href = "mural.html";
+      };
+
+      try {
+        await excluirTarefasAntigas();
+        carregarHistorico();
+      } catch (error) {
+        console.error("❌ Erro ao carregar o histórico:", error);
+      }
+    });
+  </script>
+</body>
+</html>

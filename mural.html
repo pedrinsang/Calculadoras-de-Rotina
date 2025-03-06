@@ -65,7 +65,7 @@
       gap: 10px;
     }
 
-    .btn-progresso, .btn-concluido {
+    .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar {
       padding: 5px 10px;
       border-radius: 5px;
       border: none;
@@ -73,17 +73,28 @@
       font-size: 14px;
     }
 
+    .btn-editar {
+      background-color: #5e1b59;
+      color: white;
+    }
+
+
     .btn-progresso {
-      background-color: #1e3a8a;
+      background-color: #201b5e;
       color: white;
     }
 
     .btn-concluido {
-      background-color: #166534;
+      background-color: #1b5e20;
       color: white;
     }
 
-    .btn-progresso:hover, .btn-concluido:hover {
+    .btn-detalhes {
+      background-color: #b1c910;
+      color: white;
+    }
+
+    .btn-progresso:hover, .btn-concluido:hover, .btn-detalhes:hover {
       opacity: 0.9;
     }
 
@@ -129,14 +140,45 @@
       color: #333;
       margin-left: 10px;
     }
+
+    .filtro-container {
+      margin-bottom: 20px;
+    }
+
+    .filtro-container label {
+      font-weight: bold;
+    }
+
+    .filtro-container select {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Mural de Tarefas</h1>
 
+    <!-- Botão para acessar o histórico -->
+    <button id="historico-button" class="button">Acessar Histórico</button>
+
     <!-- Botão Adicionar Tarefa -->
     <button id="adicionar-tarefa" class="button">Adicionar Tarefa</button>
+
+    <!-- Filtro de Tarefas -->
+    <div class="filtro-container">
+      <label>Filtrar por tipo: </label>
+      <select id="filtro-tipo">
+        <option value="Todos">Todos</option>
+        <option value="SN BVDV">SN BVDV</option>
+        <option value="SN IBR">SN IBR</option>
+        <option value="Vacina">VACINA</option>
+        <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
+        <option value="ELISA BVDV">ELISA BVDV</option>
+      </select>
+    </div>
 
     <!-- Formulário de Entrada -->
     <form id="mural-form">
@@ -145,11 +187,11 @@
 
       <label for="tipo">Tipo de Amostra:</label>
       <select id="tipo" name="tipo" required>
-        <option value="SN IBR">SN IBR</option>
         <option value="SN BVDV">SN BVDV</option>
-        <option value="ELISA Leucose">ELISA Leucose</option>
+        <option value="SN IBR">SN IBR</option>
+        <option value="VACINA">VACINA</option>
+        <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
         <option value="ELISA BVDV">ELISA BVDV</option>
-        <option value="Vacina">Vacina</option>
       </select>
 
       <label for="quantidade">Quantidade:</label>
@@ -171,7 +213,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
@@ -181,30 +224,82 @@
       messagingSenderId: "203883856586",
       appId: "1:203883856586:web:a00536536a32ae76c5aa33",
       measurementId: "G-7H314CT9SH"
-    };
+    };  
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Verificar se o usuário está logado
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) {
+      window.location.href = "index.html"; // Redirecionar para o login se não estiver logado
+    }
+
     // Funções globais
     window.marcarProgresso = async (id) => {
       await updateDoc(doc(db, "tarefas", id), { status: "em-progresso" });
-      carregarTarefas();
+      carregarTarefas(document.getElementById("filtro-tipo").value);
     };
 
     window.concluirTarefa = async (id) => {
       if (confirm("Tem certeza que deseja concluir esta tarefa?")) {
-        await deleteDoc(doc(db, "tarefas", id));
-        carregarTarefas();
+        const tarefaRef = doc(db, "tarefas", id);
+        const tarefaSnap = await getDoc(tarefaRef);
+        if (tarefaSnap.exists()) {
+          const tarefa = tarefaSnap.data();
+          await addDoc(collection(db, "historico"), {
+            ...tarefa,
+            dataConclusao: Timestamp.fromDate(new Date())
+          });
+          await deleteDoc(tarefaRef);
+          carregarTarefas(document.getElementById("filtro-tipo").value);
+        }
       }
     };
 
-    async function carregarTarefas() {
+    window.editarTarefa = async (id) => {
+      const tarefaRef = doc(db, "tarefas", id);
+      const tarefaSnap = await getDoc(tarefaRef);
+      if (tarefaSnap.exists()) {
+        const tarefa = tarefaSnap.data();
+        document.getElementById("id").value = tarefa.id;
+        document.getElementById("tipo").value = tarefa.tipo;
+        document.getElementById("quantidade").value = tarefa.quantidade;
+        document.getElementById("gramatura").value = tarefa.gramatura || "";
+        document.getElementById("data").value = tarefa.dataRecebimento.toDate().toISOString().split("T")[0];
+        document.getElementById("mural-form").style.display = "block";
+        document.getElementById("mural-list").style.display = "none";
+        document.getElementById("adicionar-tarefa").style.display = "none";
+        document.getElementById("mural-form").onsubmit = async (e) => {
+          e.preventDefault();
+          await updateDoc(tarefaRef, {
+            id: document.getElementById("id").value,
+            tipo: document.getElementById("tipo").value,
+            quantidade: parseInt(document.getElementById("quantidade").value),
+            gramatura: document.getElementById("tipo").value === "VACINA" 
+                      ? parseFloat(document.getElementById("gramatura").value)
+                      : null,
+            dataRecebimento: Timestamp.fromDate(new Date(document.getElementById("data").value))
+          });
+          document.getElementById("mural-form").reset();
+          document.getElementById("mural-form").style.display = "none";
+          document.getElementById("mural-list").style.display = "block";
+          document.getElementById("adicionar-tarefa").style.display = "block";
+          carregarTarefas();
+        };
+      }
+    };
+
+    async function carregarTarefas(filtro = 'Todos') {
       const muralList = document.getElementById("mural-list");
       muralList.innerHTML = '';
 
-      const querySnapshot = await getDocs(collection(db, "tarefas"));
-      
+      const q = filtro === "Todos" || filtro === "Sigla"
+        ? collection(db, "tarefas")
+        : query(collection(db, "tarefas"), where("tipo", "==", filtro));
+
+      const querySnapshot = await getDocs(q);
+
       if (querySnapshot.empty) {
         muralList.innerHTML = "<p>Nenhuma tarefa adicionada.</p>";
         return;
@@ -212,19 +307,44 @@
 
       querySnapshot.forEach((doc) => {
         const tarefa = doc.data();
+        if (filtro === "Sigla" && tarefa.sigla !== usuario.sigla) return;
+
         const amostraItem = document.createElement("div");
         amostraItem.className = `amostra-item ${tarefa.status === 'em-progresso' ? 'em-progresso' : ''}`;
         amostraItem.innerHTML = `
           <strong>${tarefa.tipo}</strong> - ID: ${tarefa.id}<br>
-          ${tarefa.quantidade} ${tarefa.tipo === "Vacina" ? `vacinas (${tarefa.gramatura}g)` : "amostras"}<br>
+          ${tarefa.quantidade} ${tarefa.tipo === "VACINA" ? `vacinas (${tarefa.gramatura}g)` : "amostras"}<br>
           Data de recebimento: ${tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")}<br>
+          <strong>Sigla:</strong> ${tarefa.sigla}<br>
           <div class="status-buttons">
-            <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
             <button class="btn-concluido" onclick="concluirTarefa('${doc.id}')">Concluir</button>
+            <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
+            <button class="btn-detalhes" onclick="mostrarDetalhes('${doc.id}')">Ver Detalhes</button>
+            <button class="btn-editar" onclick="editarTarefa('${doc.id}')">Editar</button>
           </div>
         `;
         muralList.appendChild(amostraItem);
       });
+    }
+
+    // Mostrar detalhes da tarefa
+    async function mostrarDetalhes(id) {
+      const docRef = doc(db, "tarefas", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const tarefa = docSnap.data();
+        const detalhesDiv = document.createElement("div");
+        detalhesDiv.className = "detalhes-tarefa";
+        detalhesDiv.innerHTML = `
+          <strong>Data de Recebimento:</strong> ${tarefa.dataRecebimento}<br>
+          <strong>Data Fim de Prazo:</strong> ${tarefa.dataFimPrazo || "Não definida"}<br>
+          <strong>Detalhes dos Cálculos:</strong> ${tarefa.resultado}<br>
+        `;
+        document.getElementById(id).appendChild(detalhesDiv);
+      } else {
+        alert("Tarefa não encontrada.");
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -235,18 +355,18 @@
 
       adicionarTarefaBtn.onclick = () => {
         form.style.display = "block";
-        muralList.style.display = "none"; // Esconde a lista de tarefas
+        muralList.style.display = "none";
         adicionarTarefaBtn.style.display = "none";
       };
 
       document.getElementById("cancelar-tarefa").onclick = () => {
         form.style.display = "none";
-        muralList.style.display = "block"; // Mostra a lista de tarefas
+        muralList.style.display = "block";
         adicionarTarefaBtn.style.display = "block";
       };
 
       document.getElementById("tipo").addEventListener("change", function() {
-        document.getElementById("gramatura").disabled = this.value !== "Vacina";
+        document.getElementById("gramatura").disabled = this.value !== "VACINA";
       });
 
       form.addEventListener("submit", async (e) => {
@@ -256,10 +376,11 @@
           id: document.getElementById("id").value,
           tipo: document.getElementById("tipo").value,
           quantidade: parseInt(document.getElementById("quantidade").value),
-          gramatura: document.getElementById("tipo").value === "Vacina" 
+          gramatura: document.getElementById("tipo").value === "VACINA" 
                     ? parseFloat(document.getElementById("gramatura").value)
                     : null,
           dataRecebimento: new Date(document.getElementById("data").value),
+          sigla: usuario.sigla, // Associar a sigla do usuário logado
           status: "pendente"
         };
 
@@ -270,7 +391,7 @@
           });
           form.reset();
           form.style.display = "none";
-          muralList.style.display = "block"; // Mostra a lista de tarefas
+          muralList.style.display = "block";
           adicionarTarefaBtn.style.display = "block";
           carregarTarefas();
         } catch (error) {
@@ -279,9 +400,22 @@
         }
       });
 
+      // Filtro
+      document.getElementById("filtro-tipo").addEventListener("change", (e) => {
+        carregarTarefas(e.target.value);
+      });
+
+      // Botão de Histórico
+      document.getElementById("historico-button").onclick = () => {
+        window.location.href = "historico.html"; // Redirecionar para a página de histórico
+      };
+
       // Carregar tarefas ao abrir a página
       carregarTarefas();
     });
+
+    window.mostrarDetalhes = mostrarDetalhes;
+
   </script>
 </body>
 </html>
