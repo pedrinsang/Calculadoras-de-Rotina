@@ -71,6 +71,7 @@
       border: none;
       cursor: pointer;
       font-size: 14px;
+      white-space: nowrap;
     }
 
     .btn-editar {
@@ -94,7 +95,7 @@
       color: white;
     }
 
-    .btn-progresso:hover, .btn-concluido:hover, .btn-detalhes:hover {
+    .btn-progresso:hover, .btn-concluido:hover, .btn-detalhes:hover, .btn-editar:hover {
       opacity: 0.9;
     }
 
@@ -155,6 +156,25 @@
       border: 1px solid #ccc;
       font-size: 16px;
     }
+
+    @media (max-width: 600px) {
+      .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar {
+        padding: 3px 6px; /* Reduz o padding */
+        font-size: 12px; /* Reduz o tamanho da fonte */
+      }
+    }
+
+      .botoes-tarefa {
+        gap: 5px; /* Reduz o espaçamento entre os botões */
+      }
+    }
+
+      .btn-progresso, .btn-concluido, .btn-detalhes {
+        width: 100%; /* Faz os botões ocuparem a largura total */
+      }
+    }
+
+    
   </style>
 </head>
 <body>
@@ -229,7 +249,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    
     const auth = getAuth();
 
     onAuthStateChanged(auth, (user) => {
@@ -240,7 +259,7 @@
         window.location.href = "index.html"; // Redirecionar para o login
       }
     });
-
+    
     // Verificar se o usuário está logado
     const usuario = JSON.parse(localStorage.getItem("usuario"));
     if (!usuario) {
