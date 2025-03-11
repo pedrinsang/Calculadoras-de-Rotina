@@ -157,6 +157,24 @@
       font-size: 16px;
     }
 
+    .resultado-container {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .resultado-container strong {
+      color: #1b5e20;
+      display: block;
+      margin: 8px 0;
+    }
+
+    .resultado-container sup {
+      vertical-align: super;
+      font-size: 0.8em;
+    }
+
     @media (max-width: 600px) {
       .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar {
         padding: 3px 6px; /* Reduz o padding */
@@ -165,7 +183,7 @@
     }
 
       .botoes-tarefa {
-        gap: 1px; /* Reduz o espaçamento entre os botões */
+        gap: 5px; /* Reduz o espaçamento entre os botões */
       }
     }
 
@@ -174,18 +192,22 @@
       }
     }
 
-    
+
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Mural de Tarefas</h1>
 
+    <!-- Botão Adicionar Tarefa -->
+    <button id="hub-button" class="button">Voltar ao Hub</button>
+
     <!-- Botão para acessar o histórico -->
     <button id="historico-button" class="button">Acessar Histórico</button>
 
     <!-- Botão Adicionar Tarefa -->
     <button id="adicionar-tarefa" class="button">Adicionar Tarefa</button>
+
 
     <!-- Filtro de Tarefas -->
     <div class="filtro-container">
@@ -250,6 +272,15 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth();
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        console.log("Usuário autenticado:", user.uid);
+      } else {
+        console.error("Usuário não autenticado.");
+      }
+    });
+
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -321,20 +352,32 @@
       }
     };
 
-    async function carregarTarefas(filtro = 'Todos') {
+    async function carregarTarefas() {
       const muralList = document.getElementById("mural-list");
-      muralList.innerHTML = '';
+      muralList.innerHTML = ""; // Limpa a lista antes de recarregar
 
-      const q = filtro === "Todos" || filtro === "Sigla"
-        ? collection(db, "tarefas")
-        : query(collection(db, "tarefas"), where("tipo", "==", filtro));
+      const querySnapshot = await getDocs(collection(db, "tarefas"));
+      querySnapshot.forEach((doc) => {
+        const tarefa = doc.data();
+        const tarefaElement = document.createElement("div");
+        tarefaElement.classList.add("amostra-item");
+        tarefaElement.innerHTML = `
+          <strong>ID:</strong> ${tarefa.id} <br>
+          <strong>Tipo:</strong> ${tarefa.tipo} <br>
+          <strong>Quantidade:</strong> ${tarefa.quantidade} <br>
+          <strong>Data de Recebimento:</strong> ${tarefa.data} <br>
+          <div class="status-buttons">
+            <button class="btn-progresso">Em Progresso</button>
+            <button class="btn-concluido">Concluído</button>
+            <button class="btn-editar">Editar</button>
+          </div>
+        `;
+        muralList.appendChild(tarefaElement);
+      });
+    
 
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        muralList.innerHTML = "<p>Nenhuma tarefa adicionada.</p>";
-        return;
-      }
+    // Chama a função quando a página carregar
+    document.addEventListener("DOMContentLoaded", carregarTarefas);
 
       querySnapshot.forEach((doc) => {
         const tarefa = doc.data();
@@ -342,7 +385,9 @@
 
         const amostraItem = document.createElement("div");
         amostraItem.className = `amostra-item ${tarefa.status === 'em-progresso' ? 'em-progresso' : ''}`;
-        amostraItem.innerHTML = `
+        amostraItem.innerHTML = ` 
+          <strong>Status:</strong> ${tarefa.status}<br>
+          <strong>Resultado:</strong> ${tarefa.resultado ? 'Disponível' : 'Não calculado'}<br>
           <strong>${tarefa.tipo}</strong> - ID: ${tarefa.id}<br>
           ${tarefa.quantidade} ${tarefa.tipo === "VACINA" ? `vacinas (${tarefa.gramatura}g)` : "amostras"}<br>
           Data de recebimento: ${tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")}<br>
@@ -358,21 +403,54 @@
       });
     }
 
-    // Mostrar detalhes da tarefa
     async function mostrarDetalhes(id) {
       const docRef = doc(db, "tarefas", id);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         const tarefa = docSnap.data();
-        const detalhesDiv = document.createElement("div");
-        detalhesDiv.className = "detalhes-tarefa";
-        detalhesDiv.innerHTML = `
-          <strong>Data de Recebimento:</strong> ${tarefa.dataRecebimento}<br>
-          <strong>Data Fim de Prazo:</strong> ${tarefa.dataFimPrazo || "Não definida"}<br>
-          <strong>Detalhes dos Cálculos:</strong> ${tarefa.resultado}<br>
+        
+        // Criar modal de detalhes
+        const modal = document.createElement("div");
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
         `;
-        document.getElementById(id).appendChild(detalhesDiv);
+
+        const modalContent = document.createElement("div");
+        modalContent.style.cssText = `
+          background: white;
+          padding: 20px;
+          border-radius: 10px;
+          max-width: 80%;
+          max-height: 80vh;
+          overflow-y: auto;
+        `;
+
+        modalContent.innerHTML = `
+          <h3>Detalhes da Tarefa</h3>
+          <p><strong>Tipo:</strong> ${tarefa.tipo || 'N/A'}</p>
+          <p><strong>Data:</strong> ${tarefa.data || 'N/A'}</p>
+          <div class="resultado-container">
+            ${tarefa.resultado || 'Nenhum resultado disponível'}
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" 
+                  style="margin-top: 15px; padding: 8px 16px; background: #1b5e20; color: white; border: none; border-radius: 4px;">
+            Fechar
+          </button>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
       } else {
         alert("Tarefa não encontrada.");
       }
@@ -436,10 +514,17 @@
         carregarTarefas(e.target.value);
       });
 
+            // Botão de Hub
+      document.getElementById("hub-button").onclick = () => {
+        window.location.href = "hub.html"; // Redirecionar para a página de histórico
+      };
+
       // Botão de Histórico
       document.getElementById("historico-button").onclick = () => {
         window.location.href = "historico.html"; // Redirecionar para a página de histórico
       };
+
+
 
       // Carregar tarefas ao abrir a página
       carregarTarefas();

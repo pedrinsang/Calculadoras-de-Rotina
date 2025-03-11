@@ -171,6 +171,56 @@
         border-radius: 10px;
     }
 
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 10px;
+      }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+    .close:hover {
+        color: black;
+      }
+
+    #listaTarefas {
+        list-style-type: none;
+        padding: 0;
+      }
+
+    #listaTarefas li {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+      }
+
+    #listaTarefas li:hover {
+        background-color: #f1f1f1;
+      }
+
+
     @media (max-width: 480px) {
       body {
         padding: 10px;
@@ -213,6 +263,14 @@
     <div id="resultado" class="resultado"></div>
 
     <button id="adicionar-mural" style="display: none;" onclick="adicionarAoMural()">Adicionar ao Mural</button>
+
+    <div id="modalTarefas" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="fecharModal()">&times;</span>
+        <h3>Escolha uma Tarefa</h3>
+        <ul id="listaTarefas"></ul>
+      </div>
+    </div>
 
 
     <!-- Nova seção de ajuda para o passo a passo -->
@@ -381,7 +439,8 @@
 
     // Importações do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
      // Inicialização do Firebase
     const firebaseConfig = {
@@ -456,14 +515,18 @@
             <strong>Titulação:</strong> 10<sup>${expoente}</sup> = ${valorDecimal.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
             <strong>Ajuste TCID₅₀:</strong> ${valorDecimal.toLocaleString('pt-BR')} / 2000 = ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
             <strong>Amostras:</strong> ${amostras}<br>
-            <strong>Volume Base:</strong> ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
-            <strong>Volume com Margem:</strong> ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
-            <strong>Volume Viral:</strong> ${volumeComMargem.toLocaleString('pt-BR')} µl / ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})} = ${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br><br>
-            <strong>Diluições Necessárias:</strong> ${diluicoes.length-1}<br>`;
+            <strong>Volume Mínimo:</strong> ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
+            <strong>Volume Viral:</strong> ${volumeComMargem.toLocaleString('pt-BR')} µl / ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})} = <strong>${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl</strong><br><br>
+            <strong>Volume com Margem:</strong>  ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} + 20% = <strong>${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml</strong><br><br>
+
+            <strong><em>Lembre sempre de retirar o volume de MEM equivalente ao volume de vírus do falcon da Solução Mãe</em></strong><br><br>
+            <strong>Diluições Necessárias:</strong> ${diluicoes.length-1}<br><br>`; 
+
+
 
         diluicoes.forEach((dil, index) => {
             let notacao = index === 0 ? '' : `×10${index > 1 ? `<sup>${index}</sup>` : ''}`;
-            resultadoHTML += `10<sup>${expoente}</sup> ${notacao} → ${dil.valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br>`;
+            resultadoHTML += `10<sup>${expoente}</sup> ${notacao} → <strong>${dil.valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl</strong><br>`;
         });
 
         document.getElementById('resultado').innerHTML = resultadoHTML;
@@ -472,7 +535,7 @@
         document.getElementById('adicionar-mural').style.display = 'block';
     }
 
-    // Função para adicionar ao mural
+    // Função para abrir o modal de tarefas
     async function adicionarAoMural() {
       const usuario = JSON.parse(localStorage.getItem("usuario"));
       if (!usuario) {
@@ -481,29 +544,77 @@
         return;
       }
 
+      // Buscar tarefas do usuário
+      const tarefasSnapshot = await getDocs(collection(db, "tarefas"));
+      const tarefas = tarefasSnapshot.docs
+        .filter(doc => doc.data().sigla === usuario.sigla)
+        .map(doc => ({ id: doc.id, ...doc.data() }));
+
+      if (tarefas.length === 0) {
+        alert("Nenhuma tarefa encontrada para adicionar o resultado.");
+        return;
+      }
+
+      // Exibir tarefas no modal
+      const listaTarefas = document.getElementById('listaTarefas');
+      listaTarefas.innerHTML = tarefas.map(tarefa => `
+        <li onclick="escolherTarefa('${tarefa.id}')">
+          ${tarefa.tipo} - ${tarefa.titulacao} (${tarefa.data})
+        </li>
+      `).join('');
+
+      // Abrir modal
+      document.getElementById('modalTarefas').style.display = 'block';
+    }
+
+    // Função para escolher uma tarefa
+    async function escolherTarefa(tarefaId) {
       const titulacao = document.getElementById('titulacao').value;
       const amostras = document.getElementById('amostras').value;
-      const resultado = document.getElementById('resultado').innerText;
+      const resultado = document.getElementById('resultado').innerHTML;
 
-      const novaTarefa = {
-        tipo: "Soroneutralização",
-        titulacao,
-        amostras,
-        resultado,
-        sigla: usuario.sigla, // Associar a tarefa ao usuário logado
-        data: new Date().toLocaleDateString("pt-BR"),
-        status: "pendente"
-      };
+      const usuario = JSON.parse(localStorage.getItem("usuario")); // Recuperando dados do usuário
+      console.log("Usuário:", usuario); // Verifica se o usuário está logado
+      if (!usuario) {
+        alert("Erro: Usuário não encontrado. Faça login novamente.");
+        return; // Interrompe a execução se o usuário não estiver logado
+      }
+
 
       try {
-        // Adicionar ao Firestore
-        await addDoc(collection(db, "tarefas"), novaTarefa);
-        alert("Tarefa adicionada ao mural com sucesso!");
+        console.log("Tarefa ID:", tarefaId);
+        // Verifica se o usuário possui permissão para editar a tarefa antes de atualizar
+        const tarefaRef = doc(db, "tarefas", tarefaId);
+        const tarefaSnap = await getDoc(tarefaRef);
+        onsole.log("Referência da tarefa:", tarefaRef); // Verifica a referência
+
+        if (!tarefaSnap.exists()) {
+          throw new Error("Tarefa não encontrada.");
+        }
+
+        if (tarefaSnap.data().userId !== usuario.uid) {
+            throw new Error("Você não tem permissão para editar esta tarefa.");
+        }
+
+        // Atualizar a tarefa no Firestore
+        await updateDoc(tarefaRef, {
+          resultado,
+          status: "concluído",
+          dataAtualizacao: new Date() // adicionando um timestamp de atualização
+        });
+        alert("Resultado adicionado à tarefa com sucesso!");
         window.location.href = "mural.html"; // Redirecionar para o mural
+
       } catch (error) {
-        console.error("Erro ao adicionar tarefa:", error);
-        alert("Erro ao adicionar tarefa. Verifique o console para mais detalhes.");
+        console.error("Erro:", error); // Imprime o erro completo
+        console.error("Erro ao atualizar tarefa:", error);
+        alert(`Erro ao adicionar resultado: ${error.message}`); // Mensagem de erro mais informativa
       }
+    }
+
+    // Função para fechar o modal
+    function fecharModal() {
+      document.getElementById('modalTarefas').style.display = 'none';
     }
 
     function toggleAjuda() {
