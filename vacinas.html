@@ -22,9 +22,13 @@
       padding: 20px;
     }
 
-    .button-voltar {
-      display: inline-block;
-      margin: 10px;
+    .botao-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .button-voltar, .button-mural {
       padding: 10px 20px;
       background-color: #1b5e20;
       color: white;
@@ -163,7 +167,10 @@
 </head>
 <body>
   <div class="container">
+  <div class="botao-container">
     <a href="hub.html" id="hub-button" class="button-voltar">Voltar ao Hub</a>
+    <a href="mural.html" id="mural-button" class="button-mural">Acessar Mural</a>
+  </div>
     <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
          alt="Logo Setor de Virologia UFSM" 
          class="logo">

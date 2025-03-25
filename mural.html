@@ -7,9 +7,23 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
+      background: linear-gradient(to right, #1b5e20, #66bb6a);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container-fora {
+      width: 100%;
+      max-width: 565px;
+      padding: 20px;
+      background: white;
+      color: #1b5e20;
+      border-radius: 10px;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+      margin: 20px 0;
     }
 
     .container {
@@ -312,6 +326,7 @@
   </style>
 </head>
 <body>
+  <div class="container-fora">
   <div id="loading">
     <div style="background: white; padding: 20px; border-radius: 5px;">
       Carregando...
@@ -367,6 +382,7 @@
     </form>
 
     <div id="mural-list"></div>
+  </div>
   </div>
 
   <script type="module">
