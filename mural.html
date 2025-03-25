@@ -98,7 +98,7 @@
       justify-content: flex-end;
     }
 
-    .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar {
+    .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar, .btn-excluir {
       padding: 5px 10px;
       border-radius: 5px;
       border: none;
@@ -127,7 +127,12 @@
       color: white;
     }
 
-    .btn-progresso:hover, .btn-concluido:hover, .btn-detalhes:hover, .btn-editar:hover {
+    .btn-excluir {
+      background-color: #e8464b;
+      color: white;
+    }
+
+    .btn-progresso:hover, .btn-concluido:hover, .btn-detalhes:hover, .btn-editar:hover, .btn-excluir:hover {
       opacity: 0.9;
     }
 
@@ -255,13 +260,14 @@
       .btn-progresso, 
       .btn-concluido, 
       .btn-detalhes,
-      .btn-editar {
+      .btn-editar,
+      .btn-excluir {
         width: 100%;
         padding: 6px 8px;
         font-size: 12px;
       }
 
-      .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar {
+      .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar, .btn-excluir {
         padding: 3px 6px;
         font-size: 12px;
       }
@@ -270,7 +276,7 @@
         gap: 5px;
       }
 
-      .btn-progresso, .btn-concluido, .btn-detalhes {
+      .btn-progresso, .btn-concluido, .btn-detalhes, .btn-excluir {
         width: 100%;
       }
     }
@@ -523,6 +529,7 @@
                 <div class="status-buttons">
                   <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
                   <button class="btn-concluido" onclick="concluirTarefa('${doc.id}')">Concluir</button>
+                  <button class="btn-excluir" onclick="excluirTarefa('${doc.id}')">Excluir</button>
                   <button class="btn-detalhes" onclick="mostrarDetalhes('${doc.id}')">Detalhes</button>
                   <button class="btn-editar" onclick="editarTarefa('${doc.id}')">Editar</button>
                 </div>
@@ -627,6 +634,27 @@
         mostrarFeedback("Tarefa concluída com sucesso!", "success");
       } catch (error) {
         console.error("Erro ao concluir:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      } finally {
+        esconderLoading();
+      }
+    };
+
+    window.excluirTarefa = async (id) => {
+      try {
+        if (!confirm("Tem certeza que deseja excluir esta tarefa?")) return;
+        mostrarLoading();
+        
+        const tarefaRef = doc(db, "tarefas", id);
+        const tarefaSnap = await getDoc(tarefaRef);
+        
+        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
+                
+        await deleteDoc(tarefaRef);
+        carregarTarefas();
+        mostrarFeedback("Tarefa excluida com sucesso!", "success");
+      } catch (error) {
+        console.error("Erro ao excluir:", error);
         mostrarFeedback(`Erro: ${error.message}`, "error");
       } finally {
         esconderLoading();
