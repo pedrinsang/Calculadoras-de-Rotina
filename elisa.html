@@ -45,7 +45,7 @@
       color: #1b5e20;
       border-radius: 10px;
       box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      margin: 20px 0;
+      margin: 0 auto;
     }
 
     .logo {
@@ -139,20 +139,28 @@
     .etapasELISA input[type="checkbox"] {
       margin-right: 10px;
       cursor: pointer;
-      width: 20px; /* Ajuste este valor conforme necessário */
-      height: 20px; /* Ajuste este valor conforme necessário */
-      flex-shrink: 0; /* Impede que o checkbox diminua de tamanho */
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
     }
 
     .etapasELISA span {
       flex: 1;
-
     }
 
     .etapasELISA input[type="checkbox"]:checked + span {
       text-decoration: line-through;
       color: #888;
+    }
 
+    /* Estilo do botão copiar */
+    #copiar-resultado {
+      display: none;
+      transition: all 0.3s ease;
+    }
+
+    #copiar-resultado.copiado {
+      background-color: #4caf50 !important;
     }
 
     @media (max-width: 480px) {
@@ -196,6 +204,8 @@
 
     <!-- Resultado do Cálculo -->
     <div id="resultado" class="resultado"></div>
+
+    <button id="copiar-resultado" onclick="copiarResultado()">📋 Copiar Resultado</button>
 
     <!-- Instruções -->
     <div class="ajuda" onclick="toggleInstrucoes()">Instruções de Uso</div>
@@ -274,6 +284,42 @@
         <strong>Volume Total de Conjugado Diluído:</strong> ${volumeTotalConjugadoML.toFixed(2)} mL<br>
         <strong>Volume de Concentrado de Conjugado (1:100):</strong> ${volumeConcentradoConjugadoML.toFixed(2)} µL<br>
       `;
+      
+      // Mostrar botão de copiar
+      document.getElementById('copiar-resultado').style.display = 'block';
+    }
+
+    function copiarResultado() {
+      try {
+        const resultadoDiv = document.getElementById('resultado');
+        const textoParaCopiar = resultadoDiv.innerText;
+        
+        // Criar elemento temporário para copiar
+        const textarea = document.createElement('textarea');
+        textarea.value = textoParaCopiar;
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        // Executar cópia
+        const copiado = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        // Feedback visual
+        const btn = document.getElementById('copiar-resultado');
+        if (copiado) {
+          btn.textContent = '✅ Copiado!';
+          btn.classList.add('copiado');
+          setTimeout(() => {
+            btn.textContent = '📋 Copiar Resultado';
+            btn.classList.remove('copiado');
+          }, 2000);
+        } else {
+          throw new Error('Não foi possível copiar');
+        }
+      } catch (error) {
+        console.error("Erro ao copiar:", error);
+        alert("Erro ao copiar. Você pode selecionar e copiar manualmente.");
+      }
     }
 
     function toggleInstrucoes() {
