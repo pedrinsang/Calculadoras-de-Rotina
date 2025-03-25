@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mural de Tarefas</title>
-  <link rel="stylesheet" href="assets/styles.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -36,23 +35,31 @@
 
     #mural-list {
       margin-top: 20px;
-      max-height: 400px;
+      min-height: 60vh; /* Altura mínima de 60% da viewport */
+      max-height: 65vh; /* Altura máxima de 70% da viewport */
       overflow-y: auto;
-      padding: 10px;
+      padding: 15px;
       background-color: #ffffff;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     .amostra-item {
       background-color: #f9f9f9;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      color: #333;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+
+    .amostra-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      background-color: #f0f0f0;
+    }
+
 
     .amostra-item.em-progresso {
       background-color: #e3f2fd;
@@ -63,6 +70,8 @@
       margin-top: 10px;
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar {
@@ -78,7 +87,6 @@
       background-color: #5e1b59;
       color: white;
     }
-
 
     .btn-progresso {
       background-color: #201b5e;
@@ -164,52 +172,159 @@
       margin: 10px 0;
     }
 
-    .resultado-container strong {
-      color: #1b5e20;
-      display: block;
-      margin: 8px 0;
+    #modal-detalhes {
+      transition: opacity 0.3s;
     }
 
-    .resultado-container sup {
-      vertical-align: super;
-      font-size: 0.8em;
+    .modal-content {
+      animation: fadeIn 0.3s;
+    }
+
+    #fechar-modal {
+      transition: background-color 0.2s;
+    }
+
+    #fechar-modal:hover {
+      background-color: #b71c1c !important;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @media (max-width: 600px) {
-      .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar {
-        padding: 3px 6px; /* Reduz o padding */
-        font-size: 12px; /* Reduz o tamanho da fonte */
-      }
-    }
 
-      .botoes-tarefa {
-        gap: 5px; /* Reduz o espaçamento entre os botões */
+      #mural-list {
+        min-height: 55vh; /* Menor altura em mobile */
+        max-height: 60vh;
+        padding: 8px;
+        margin: 10px 0;
       }
-    }
+      
+      .amostra-item {
+        padding: 10px;
+        margin-bottom: 12px;
+      }
+
+      .container {
+        padding: 10px; /* Reduz padding do container principal */
+      }
+          
+      .status-buttons {
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      
+      .btn-progresso, 
+      .btn-concluido, 
+      .btn-detalhes,
+      .btn-editar {
+        width: 100%;
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+
+      .btn-progresso, .btn-concluido, .btn-detalhes, .btn-editar {
+        padding: 3px 6px;
+        font-size: 12px;
+      }
+
+      .status-buttons {
+        gap: 5px;
+      }
 
       .btn-progresso, .btn-concluido, .btn-detalhes {
-        width: 100%; /* Faz os botões ocuparem a largura total */
+        width: 100%;
       }
     }
 
+    /* Novos estilos mínimos para as funcionalidades adicionadas */
+    .feedback {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 5px;
+      color: white;
+      z-index: 1000;
+      animation: slideIn 0.5s, fadeOut 0.5s 2.5s forwards;
+    }
 
+    .feedback.success {
+      background-color: #1b5e20;
+    }
+
+    .feedback.error {
+      background-color: #d32f2f;
+    }
+
+    #loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Melhorias na barra de rolagem */
+#mural-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+#mural-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+#mural-list::-webkit-scrollbar-thumb {
+  background: #1b5e20;
+  border-radius: 4px;
+}
+
+#mural-list::-webkit-scrollbar-thumb:hover {
+  background: #166534;
+}
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    
   </style>
 </head>
 <body>
+  <div id="loading">
+    <div style="background: white; padding: 20px; border-radius: 5px;">
+      Carregando...
+    </div>
+  </div>
+
   <div class="container">
     <h1>Mural de Tarefas</h1>
 
-    <!-- Botão Adicionar Tarefa -->
     <button id="hub-button" class="button">Voltar ao Hub</button>
-
-    <!-- Botão para acessar o histórico -->
     <button id="historico-button" class="button">Acessar Histórico</button>
-
-    <!-- Botão Adicionar Tarefa -->
     <button id="adicionar-tarefa" class="button">Adicionar Tarefa</button>
 
-
-    <!-- Filtro de Tarefas -->
     <div class="filtro-container">
       <label>Filtrar por tipo: </label>
       <select id="filtro-tipo">
@@ -222,7 +337,6 @@
       </select>
     </div>
 
-    <!-- Formulário de Entrada -->
     <form id="mural-form">
       <label for="id">Número de Identificação:</label>
       <input type="text" id="id" name="id" required>
@@ -237,26 +351,39 @@
       </select>
 
       <label for="quantidade">Quantidade:</label>
-      <input type="number" id="quantidade" name="quantidade" required>
+      <input type="number" id="quantidade" name="quantidade" min="1" required>
 
       <label for="gramatura">Gramatura (apenas para Vacina):</label>
-      <input type="number" id="gramatura" name="gramatura" disabled>
+      <input type="number" id="gramatura" name="gramatura" step="0.01" disabled>
 
       <label for="data">Data de Recebimento:</label>
       <input type="date" id="data" name="data" required>
 
-      <button type="submit">Adicionar ao Mural</button>
+      <label for="observacoes">Observações:</label>
+      <textarea id="observacoes" name="observacoes" rows="3" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;"></textarea>
+
+      <button type="submit">Salvar Tarefa</button>
       <button type="button" id="cancelar-tarefa">Cancelar</button>
     </form>
 
-    <!-- Lista de Amostras -->
     <div id="mural-list"></div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp, query, where } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-    import { getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { 
+      getDoc,
+      getFirestore, 
+      collection, 
+      addDoc, 
+      getDocs, 
+      doc, 
+      updateDoc, 
+      deleteDoc, 
+      Timestamp, 
+      query, 
+      where 
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -273,145 +400,275 @@
     const db = getFirestore(app);
     const auth = getAuth();
 
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        console.log("Usuário autenticado:", user.uid);
-      } else {
-        console.error("Usuário não autenticado.");
-      }
-    });
+    // Funções de UI
+    function mostrarLoading() {
+      document.getElementById("loading").style.display = "flex";
+    }
 
+    function esconderLoading() {
+      document.getElementById("loading").style.display = "none";
+    }
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("Usuário autenticado:", user);
-      } else {
-        console.log("Usuário não autenticado.");
-        window.location.href = "index.html"; // Redirecionar para o login
+    function mostrarFeedback(mensagem, tipo = "success") {
+      const feedback = document.createElement("div");
+      feedback.className = `feedback ${tipo}`;
+      feedback.textContent = mensagem;
+      document.body.appendChild(feedback);
+      
+      setTimeout(() => {
+        feedback.remove();
+      }, 3000);
+    }
+
+    function mostrarFormulario(edicao = false) {
+      const form = document.getElementById("mural-form");
+      const muralList = document.getElementById("mural-list");
+      const adicionarTarefaBtn = document.getElementById("adicionar-tarefa");
+      
+      form.style.display = "block";
+      muralList.style.display = "none";
+      adicionarTarefaBtn.style.display = "none";
+      
+      if (!edicao) {
+        form.reset();
+        form.onsubmit = adicionarTarefa;
       }
-    });
-    
-    // Verificar se o usuário está logado
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-    if (!usuario) {
-      window.location.href = "index.html"; // Redirecionar para o login se não estiver logado
+    }
+
+    function esconderFormulario() {
+      document.getElementById("mural-form").style.display = "none";
+      document.getElementById("mural-list").style.display = "block";
+      document.getElementById("adicionar-tarefa").style.display = "block";
+    }
+
+    // Funções de Tarefas
+    async function carregarTarefas(filtro = "Todos") {
+      mostrarLoading();
+      const muralList = document.getElementById("mural-list");
+      muralList.innerHTML = "<p>Carregando tarefas...</p>";
+
+      try {
+        // Verifica se o usuário está autenticado
+        const user = auth.currentUser;
+        if (!user) {
+          throw new Error("Usuário não autenticado");
+        }
+
+        let q;
+        if (filtro === "Todos") {
+          q = query(collection(db, "tarefas"));
+        } else {
+          q = query(
+            collection(db, "tarefas"),
+            where("tipo", "==", filtro)
+          );
+        }
+
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+          muralList.innerHTML = "<p>Nenhuma tarefa encontrada.</p>";
+          return;
+        }
+
+        muralList.innerHTML = "";
+        querySnapshot.forEach((doc) => {
+          const tarefa = doc.data();
+          // Verifica se a dataRecebimento existe e é um Timestamp
+          const dataRecebimento = tarefa.dataRecebimento?.toDate 
+            ? tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")
+            : "Data não disponível";
+          
+          const statusClass = tarefa.status === 'em-progresso' ? 'em-progresso' : '';
+          
+          const amostraItem = document.createElement("div");
+          amostraItem.className = `amostra-item ${statusClass}`;
+          amostraItem.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>ID:</strong> ${tarefa.id}<br>
+                  <strong>Tipo:</strong> ${tarefa.tipo}
+                </div>
+                <div class="status-buttons">
+                  <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
+                  <button class="btn-concluido" onclick="concluirTarefa('${doc.id}')">Concluir</button>
+                  <button class="btn-detalhes" onclick="mostrarDetalhes('${doc.id}')">Detalhes</button>
+                  <button class="btn-editar" onclick="editarTarefa('${doc.id}')">Editar</button>
+                </div>
+              </div>
+            `;
+          muralList.appendChild(amostraItem);
+        });
+      } catch (error) {
+        console.error("Erro ao carregar tarefas:", error);
+        muralList.innerHTML = `
+          <p class="error">Erro ao carregar tarefas: ${error.message}</p>
+          <p>Verifique o console para mais detalhes.</p>
+        `;
+      } finally {
+        esconderLoading();
+      }
+    }
+
+    async function adicionarTarefa(e) {
+      e.preventDefault();
+      mostrarLoading();
+      
+      try {
+        const novaTarefa = {
+          id: document.getElementById("id").value.trim(),
+          tipo: document.getElementById("tipo").value,
+          quantidade: parseInt(document.getElementById("quantidade").value),
+          gramatura: document.getElementById("tipo").value === "VACINA" 
+                    ? parseFloat(document.getElementById("gramatura").value)
+                    : null,
+          dataRecebimento: new Date(document.getElementById("data").value),
+          observacoes: document.getElementById("observacoes").value.trim(), // Novo campo
+          status: "pendente",
+          criadoEm: Timestamp.now(),
+          criadoPor: auth.currentUser.uid
+        };
+
+        // Validações
+        if (!novaTarefa.id) {
+          throw new Error("ID é obrigatório");
+        }
+        if (isNaN(novaTarefa.quantidade)) {
+          throw new Error("Quantidade inválida");
+        }
+        if (novaTarefa.quantidade <= 0) {
+          throw new Error("Quantidade deve ser maior que zero");
+        }
+        if (novaTarefa.tipo === "VACINA" && (isNaN(novaTarefa.gramatura) || novaTarefa.gramatura <= 0)) {
+          throw new Error("Gramatura inválida para vacina");
+        }
+
+        await addDoc(collection(db, "tarefas"), {
+          ...novaTarefa,
+          dataRecebimento: Timestamp.fromDate(novaTarefa.dataRecebimento)
+        });
+
+        esconderFormulario();
+        carregarTarefas();
+        mostrarFeedback("Tarefa adicionada com sucesso!", "success");
+      } catch (error) {
+        console.error("Erro ao adicionar tarefa:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      } finally {
+        esconderLoading();
+      }
     }
 
     // Funções globais
     window.marcarProgresso = async (id) => {
-      await updateDoc(doc(db, "tarefas", id), { status: "em-progresso" });
-      carregarTarefas(document.getElementById("filtro-tipo").value);
+      try {
+        await updateDoc(doc(db, "tarefas", id), { 
+          status: "em-progresso",
+          atualizadoEm: Timestamp.now()
+        });
+        carregarTarefas(document.getElementById("filtro-tipo").value);
+        mostrarFeedback("Tarefa marcada como em progresso", "success");
+      } catch (error) {
+        console.error("Erro ao atualizar status:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      }
     };
 
     window.concluirTarefa = async (id) => {
-      if (confirm("Tem certeza que deseja concluir esta tarefa?")) {
+      try {
+        if (!confirm("Tem certeza que deseja concluir esta tarefa?")) return;
+        mostrarLoading();
+        
         const tarefaRef = doc(db, "tarefas", id);
         const tarefaSnap = await getDoc(tarefaRef);
-        if (tarefaSnap.exists()) {
-          const tarefa = tarefaSnap.data();
-          await addDoc(collection(db, "historico"), {
-            ...tarefa,
-            dataConclusao: Timestamp.fromDate(new Date())
-          });
-          await deleteDoc(tarefaRef);
-          carregarTarefas(document.getElementById("filtro-tipo").value);
-        }
+        
+        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
+        
+        const tarefa = tarefaSnap.data();
+        await addDoc(collection(db, "historico"), {
+          ...tarefa,
+          dataConclusao: Timestamp.now(),
+          concluidoPor: auth.currentUser.uid
+        });
+        
+        await deleteDoc(tarefaRef);
+        carregarTarefas();
+        mostrarFeedback("Tarefa concluída com sucesso!", "success");
+      } catch (error) {
+        console.error("Erro ao concluir:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      } finally {
+        esconderLoading();
       }
     };
 
     window.editarTarefa = async (id) => {
-      const tarefaRef = doc(db, "tarefas", id);
-      const tarefaSnap = await getDoc(tarefaRef);
-      if (tarefaSnap.exists()) {
+      try {
+        mostrarLoading();
+        const tarefaRef = doc(db, "tarefas", id);
+        const tarefaSnap = await getDoc(tarefaRef);
+        
+        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
+        
         const tarefa = tarefaSnap.data();
         document.getElementById("id").value = tarefa.id;
         document.getElementById("tipo").value = tarefa.tipo;
         document.getElementById("quantidade").value = tarefa.quantidade;
         document.getElementById("gramatura").value = tarefa.gramatura || "";
         document.getElementById("data").value = tarefa.dataRecebimento.toDate().toISOString().split("T")[0];
-        document.getElementById("mural-form").style.display = "block";
-        document.getElementById("mural-list").style.display = "none";
-        document.getElementById("adicionar-tarefa").style.display = "none";
+        document.getElementById("observacoes").value = tarefa.observacoes || "";
+        
+        mostrarFormulario(true);
+        
         document.getElementById("mural-form").onsubmit = async (e) => {
           e.preventDefault();
-          await updateDoc(tarefaRef, {
-            id: document.getElementById("id").value,
-            tipo: document.getElementById("tipo").value,
-            quantidade: parseInt(document.getElementById("quantidade").value),
-            gramatura: document.getElementById("tipo").value === "VACINA" 
-                      ? parseFloat(document.getElementById("gramatura").value)
-                      : null,
-            dataRecebimento: Timestamp.fromDate(new Date(document.getElementById("data").value))
-          });
-          document.getElementById("mural-form").reset();
-          document.getElementById("mural-form").style.display = "none";
-          document.getElementById("mural-list").style.display = "block";
-          document.getElementById("adicionar-tarefa").style.display = "block";
-          carregarTarefas();
+          try {
+            mostrarLoading();
+            await updateDoc(tarefaRef, {
+              id: document.getElementById("id").value,
+              tipo: document.getElementById("tipo").value,
+              quantidade: parseInt(document.getElementById("quantidade").value),
+              gramatura: document.getElementById("tipo").value === "VACINA" 
+                        ? parseFloat(document.getElementById("gramatura").value)
+                        : null,
+              dataRecebimento: Timestamp.fromDate(new Date(document.getElementById("data").value)),
+              atualizadoEm: Timestamp.now(),
+              observacoes: document.getElementById("observacoes").value.trim()
+            });
+            esconderFormulario();
+            carregarTarefas();
+            mostrarFeedback("Tarefa atualizada com sucesso!", "success");
+          } catch (error) {
+            console.error("Erro ao atualizar:", error);
+            mostrarFeedback(`Erro: ${error.message}`, "error");
+          } finally {
+            esconderLoading();
+          }
         };
+      } catch (error) {
+        console.error("Erro ao editar:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      } finally {
+        esconderLoading();
       }
     };
 
-    async function carregarTarefas() {
-      const muralList = document.getElementById("mural-list");
-      muralList.innerHTML = ""; // Limpa a lista antes de recarregar
+    window.mostrarDetalhes = async (id) => {
+      try {
+        mostrarLoading();
+        const docRef = doc(db, "tarefas", id);
+        const docSnap = await getDoc(docRef);
 
-      const querySnapshot = await getDocs(collection(db, "tarefas"));
-      querySnapshot.forEach((doc) => {
-        const tarefa = doc.data();
-        const tarefaElement = document.createElement("div");
-        tarefaElement.classList.add("amostra-item");
-        tarefaElement.innerHTML = `
-          <strong>ID:</strong> ${tarefa.id} <br>
-          <strong>Tipo:</strong> ${tarefa.tipo} <br>
-          <strong>Quantidade:</strong> ${tarefa.quantidade} <br>
-          <strong>Data de Recebimento:</strong> ${tarefa.data} <br>
-          <div class="status-buttons">
-            <button class="btn-progresso">Em Progresso</button>
-            <button class="btn-concluido">Concluído</button>
-            <button class="btn-editar">Editar</button>
-          </div>
-        `;
-        muralList.appendChild(tarefaElement);
-      });
-    
-
-    // Chama a função quando a página carregar
-    document.addEventListener("DOMContentLoaded", carregarTarefas);
-
-      querySnapshot.forEach((doc) => {
-        const tarefa = doc.data();
-        if (filtro === "Sigla" && tarefa.sigla !== usuario.sigla) return;
-
-        const amostraItem = document.createElement("div");
-        amostraItem.className = `amostra-item ${tarefa.status === 'em-progresso' ? 'em-progresso' : ''}`;
-        amostraItem.innerHTML = ` 
-          <strong>Status:</strong> ${tarefa.status}<br>
-          <strong>Resultado:</strong> ${tarefa.resultado ? 'Disponível' : 'Não calculado'}<br>
-          <strong>${tarefa.tipo}</strong> - ID: ${tarefa.id}<br>
-          ${tarefa.quantidade} ${tarefa.tipo === "VACINA" ? `vacinas (${tarefa.gramatura}g)` : "amostras"}<br>
-          Data de recebimento: ${tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")}<br>
-          <strong>Sigla:</strong> ${tarefa.sigla}<br>
-          <div class="status-buttons">
-            <button class="btn-concluido" onclick="concluirTarefa('${doc.id}')">Concluir</button>
-            <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
-            <button class="btn-detalhes" onclick="mostrarDetalhes('${doc.id}')">Ver Detalhes</button>
-            <button class="btn-editar" onclick="editarTarefa('${doc.id}')">Editar</button>
-          </div>
-        `;
-        muralList.appendChild(amostraItem);
-      });
-    }
-
-    async function mostrarDetalhes(id) {
-      const docRef = doc(db, "tarefas", id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const tarefa = docSnap.data();
+        if (!docSnap.exists()) throw new Error("Tarefa não encontrada");
         
-        // Criar modal de detalhes
+        const tarefa = docSnap.data();
+        const dataRecebimento = tarefa.dataRecebimento?.toDate 
+          ? tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")
+          : "Data não disponível";
+        
+        // Cria o modal
         const modal = document.createElement("div");
+        modal.id = "modal-detalhes";
         modal.style.cssText = `
           position: fixed;
           top: 0;
@@ -425,113 +682,161 @@
           z-index: 1000;
         `;
 
+        // Cria o conteúdo do modal (mantenha o mesmo conteúdo anterior)
         const modalContent = document.createElement("div");
         modalContent.style.cssText = `
           background: white;
-          padding: 20px;
+          padding: 25px;
           border-radius: 10px;
-          max-width: 80%;
-          max-height: 80vh;
+          max-width: 90%;
+          max-height: 90vh;
           overflow-y: auto;
+          width: 500px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          position: relative;
         `;
 
         modalContent.innerHTML = `
-          <h3>Detalhes da Tarefa</h3>
-          <p><strong>Tipo:</strong> ${tarefa.tipo || 'N/A'}</p>
-          <p><strong>Data:</strong> ${tarefa.data || 'N/A'}</p>
-          <div class="resultado-container">
-            ${tarefa.resultado || 'Nenhum resultado disponível'}
+          <h3 style="margin-top: 0; color: #1b5e20;">Detalhes Completo da Tarefa</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="display: inline-block; width: 120px;">ID:</strong>
+            <span>${tarefa.id || 'N/A'}</span>
           </div>
-          <button onclick="this.parentElement.parentElement.remove()" 
-                  style="margin-top: 15px; padding: 8px 16px; background: #1b5e20; color: white; border: none; border-radius: 4px;">
-            Fechar
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="display: inline-block; width: 120px;">Tipo:</strong>
+            <span>${tarefa.tipo || 'N/A'}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="display: inline-block; width: 120px;">Quantidade:</strong>
+            <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" ? `vacinas (${tarefa.gramatura || '0'}g)` : "amostras"}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="display: inline-block; width: 120px;">Recebimento:</strong>
+            <span>${dataRecebimento}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="display: inline-block; width: 120px;">Status:</strong>
+            <span>${tarefa.status === 'em-progresso' ? 'Em Progresso' : 'Pendente'}</span>
+          </div>
+          
+          ${tarefa.observacoes ? `
+          <div style="margin-bottom: 20px;">
+            <strong style="display: block; margin-bottom: 5px;">Observações:</strong>
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #1b5e20;">
+              ${tarefa.observacoes}
+            </div>
+          </div>` : ''}
+          
+          <button id="fechar-modal" 
+              style="position: absolute; top: 15px; right: 15px; padding: 5px 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            X
           </button>
         `;
 
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
-        
-      } else {
-        alert("Tarefa não encontrada.");
-      }
-    }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // Controle do Formulário
-      const form = document.getElementById("mural-form");
-      const adicionarTarefaBtn = document.getElementById("adicionar-tarefa");
-      const muralList = document.getElementById("mural-list");
-
-      adicionarTarefaBtn.onclick = () => {
-        form.style.display = "block";
-        muralList.style.display = "none";
-        adicionarTarefaBtn.style.display = "none";
-      };
-
-      document.getElementById("cancelar-tarefa").onclick = () => {
-        form.style.display = "none";
-        muralList.style.display = "block";
-        adicionarTarefaBtn.style.display = "block";
-      };
-
-      document.getElementById("tipo").addEventListener("change", function() {
-        document.getElementById("gramatura").disabled = this.value !== "VACINA";
-      });
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        const novaTarefa = {
-          id: document.getElementById("id").value,
-          tipo: document.getElementById("tipo").value,
-          quantidade: parseInt(document.getElementById("quantidade").value),
-          gramatura: document.getElementById("tipo").value === "VACINA" 
-                    ? parseFloat(document.getElementById("gramatura").value)
-                    : null,
-          dataRecebimento: new Date(document.getElementById("data").value),
-          sigla: usuario.sigla, // Associar a sigla do usuário logado
-          status: "pendente"
+        // Função para limpar eventos
+        const limparEventos = () => {
+          document.removeEventListener("keydown", handleKeyDown);
+          observer.disconnect();
         };
 
-        try {
-          await addDoc(collection(db, "tarefas"), {
-            ...novaTarefa,
-            dataRecebimento: Timestamp.fromDate(novaTarefa.dataRecebimento)
+        // Fecha o modal ao clicar no botão X
+        const fecharBtn = document.getElementById("fechar-modal");
+        if (fecharBtn) {
+          fecharBtn.onclick = () => {
+            document.body.removeChild(modal);
+            limparEventos();
+          };
+        }
+
+        // Fecha o modal ao clicar fora do conteúdo
+        modal.onclick = (e) => {
+          if (e.target === modal) {
+            document.body.removeChild(modal);
+            limparEventos();
+          }
+        };
+
+        // Fecha o modal com a tecla ESC
+        const handleKeyDown = (e) => {
+          if (e.key === "Escape") {
+            document.body.removeChild(modal);
+            limparEventos();
+          }
+        };
+        document.addEventListener("keydown", handleKeyDown);
+
+        // Observa quando o modal é removido usando MutationObserver
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.removedNodes) {
+              for (const node of mutation.removedNodes) {
+                if (node === modal) {
+                  limparEventos();
+                }
+              }
+            }
           });
-          form.reset();
-          form.style.display = "none";
-          muralList.style.display = "block";
-          adicionarTarefaBtn.style.display = "block";
-          carregarTarefas();
-        } catch (error) {
-          console.error("Erro ao salvar:", error);
-          alert("Erro ao adicionar tarefa. Verifique o console para mais detalhes.");
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+
+      } catch (error) {
+        console.error("Erro ao mostrar detalhes:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      } finally {
+        esconderLoading();
+      }
+    };
+
+    // Inicialização
+    document.addEventListener("DOMContentLoaded", () => {
+      // Configuração de Eventos
+      document.getElementById("adicionar-tarefa").onclick = () => mostrarFormulario();
+      document.getElementById("cancelar-tarefa").onclick = esconderFormulario;
+      
+      document.getElementById("tipo").addEventListener("change", function() {
+        document.getElementById("gramatura").disabled = this.value !== "VACINA";
+        if (this.value === "VACINA") {
+          document.getElementById("gramatura").required = true;
+        } else {
+          document.getElementById("gramatura").required = false;
         }
       });
 
-      // Filtro
       document.getElementById("filtro-tipo").addEventListener("change", (e) => {
         carregarTarefas(e.target.value);
       });
 
-            // Botão de Hub
       document.getElementById("hub-button").onclick = () => {
-        window.location.href = "hub.html"; // Redirecionar para a página de histórico
+        window.location.href = "hub.html";
       };
 
-      // Botão de Histórico
       document.getElementById("historico-button").onclick = () => {
-        window.location.href = "historico.html"; // Redirecionar para a página de histórico
+        window.location.href = "historico.html";
       };
 
-
-
-      // Carregar tarefas ao abrir a página
-      carregarTarefas();
+      // Autenticação
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          console.log("Usuário autenticado:", user.uid);
+          carregarTarefas();
+        } else {
+          console.log("Usuário não autenticado.");
+          window.location.href = "index.html";
+        }
+      });
     });
-
-    window.mostrarDetalhes = mostrarDetalhes;
-
   </script>
 </body>
 </html>
