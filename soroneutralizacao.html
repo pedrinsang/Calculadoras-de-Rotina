@@ -61,6 +61,17 @@
       font-size: 16px;
     }
 
+    .button-voltar {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
     button {
       width: 100%;
       padding: 10px;
@@ -77,6 +88,12 @@
 
     button:hover {
       background-color: #388e3c;
+    }
+
+    sup {
+      font-size: 0.8em;
+      vertical-align: super;
+      line-height: 0;
     }
 
     .resultado {
@@ -219,6 +236,24 @@
     #listaTarefas li:hover {
         background-color: #f1f1f1;
       }
+    
+    /* Garante que as quebras de linha e espaços são preservados */
+    .pre-formatado {
+        white-space: pre-wrap;  /* Preserva espaços e quebras */
+        word-wrap: break-word;  /* Quebra palavras longas */
+        font-family: monospace; /* Fonte de largura fixa para alinhamento */
+        line-height: 1.5;       /* Espaçamento entre linhas */
+    }
+
+    #copiar-resultado {
+      transition: all 0.3s ease;
+      margin-top: 15px;
+    }
+
+    /* Estilo quando o texto é copiado */
+    #copiar-resultado.copiado {
+      background-color: #4caf50 !important;
+    }
 
 
     @media (max-width: 480px) {
@@ -247,6 +282,7 @@
 </head>
 <body>
   <div class="container">
+    <a href="hub.html" id="hub-button" class="button-voltar">Voltar ao Hub</a>
     <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
          alt="Logo Setor de Virologia UFSM" 
          class="logo">
@@ -262,7 +298,7 @@
 
     <div id="resultado" class="resultado"></div>
 
-    <button id="adicionar-mural" style="display: none;" onclick="adicionarAoMural()">Adicionar ao Mural</button>
+    <button id="copiar-resultado" style="display: none;" onclick="copiarResultado()">📋 Copiar Resultado</button>
 
     <div id="modalTarefas" class="modal">
       <div class="modal-content">
@@ -462,6 +498,16 @@
         div.style.display = div.style.display === 'block' ? 'none' : 'block';
     }
 
+    function toggleEtapasSoroneutralizacao() {
+        const div = document.getElementById('etapasSoroneutralizacao');
+        div.style.display = div.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleObservacoesTeste() {
+        const div = document.getElementById('observacoesTeste');
+        div.style.display = div.style.display === 'block' ? 'none' : 'block';
+    }
+
     function calcular() {
         const titulacaoInput = document.getElementById('titulacao').value.trim();
         const amostras = parseInt(document.getElementById('amostras').value);
@@ -476,6 +522,9 @@
         const valorDecimal = Math.pow(10, expoente);
         const volumeVirus = valorDecimal / 2000;
 
+        // Cálculo de placas necessárias (6 amostras por placa, arredondando para cima)
+        const placasNecessarias = Math.ceil(amostras / 6);
+        
         // Cálculo de volume preciso por amostra
         let volumeTotal = 0;
         if (amostras <= 6) {
@@ -515,130 +564,89 @@
             <strong>Titulação:</strong> 10<sup>${expoente}</sup> = ${valorDecimal.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
             <strong>Ajuste TCID₅₀:</strong> ${valorDecimal.toLocaleString('pt-BR')} / 2000 = ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
             <strong>Amostras:</strong> ${amostras}<br>
+            <strong>Placas Necessárias:</strong> ${placasNecessarias}<br>
             <strong>Volume Mínimo:</strong> ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
-            <strong>Volume Viral:</strong> ${volumeComMargem.toLocaleString('pt-BR')} µl / ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})} = <strong>${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl</strong><br><br>
-            <strong>Volume com Margem:</strong>  ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} + 20% = <strong>${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml</strong><br><br>
-
-            <strong><em>Lembre sempre de retirar o volume de MEM equivalente ao volume de vírus do falcon da Solução Mãe</em></strong><br><br>
-            <strong>Diluições Necessárias:</strong> ${diluicoes.length-1}<br><br>`; 
-
-
+            <strong>Volume com Margem:</strong> ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
+            <strong>Volume Viral:</strong> ${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br><br>
+            <strong>Diluições Necessárias:</strong><br>`;
 
         diluicoes.forEach((dil, index) => {
-            let notacao = index === 0 ? '' : `×10${index > 1 ? `<sup>${index}</sup>` : ''}`;
-            resultadoHTML += `10<sup>${expoente}</sup> ${notacao} → <strong>${dil.valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl</strong><br>`;
+            let notacao = index === 0 ? '' : `×10<sup>${index}</sup>`;
+            resultadoHTML += `10<sup>${expoente}</sup> ${notacao} → ${dil.valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br>`;
         });
 
         document.getElementById('resultado').innerHTML = resultadoHTML;
-
-        // Mostrar o botão "Adicionar ao Mural"
-        document.getElementById('adicionar-mural').style.display = 'block';
+        document.getElementById('copiar-resultado').style.display = 'block';
     }
 
-    // Função para abrir o modal de tarefas
-    async function adicionarAoMural() {
-      const usuario = JSON.parse(localStorage.getItem("usuario"));
-      if (!usuario) {
-        alert("Você precisa estar logado para adicionar tarefas ao mural.");
-        window.location.href = "index.html";
-        return;
-      }
+    function copiarResultado() {
+        try {
+            // Obter os valores diretamente dos campos de entrada
+            const titulacaoInput = document.getElementById('titulacao').value.trim();
+            const amostras = document.getElementById('amostras').value;
+            
+            // Converter titulação para formato legível (substitui ^ por formatação correta)
+            const expoente = titulacaoInput.replace("10^", "").replace(",", ".");
+            const valorDecimal = Math.pow(10, parseFloat(expoente)).toLocaleString('pt-BR', {maximumFractionDigits: 4});
+            const volumeVirus = (Math.pow(10, parseFloat(expoente)) / 2000).toLocaleString('pt-BR', {maximumFractionDigits: 4});
+            
+            // Calcular placas necessárias (arredondando para cima)
+            const placasNecessarias = Math.ceil(amostras / 6);
+            
+            // Calcular volumes (mesma lógica da função calcular)
+            let volumeTotal = amostras <= 6 ? 5000 : 5000 + Math.ceil((amostras - 6) * (5000 / 12));
+            const volumeComMargem = Math.ceil(volumeTotal * 1.2);
+            
+            // Construir texto formatado para cópia
+            const textoParaCopiar = [
+                `Titulação: 10^${expoente} = ${valorDecimal}`,
+                `Ajuste TCID₅₀: ${valorDecimal} / 2000 = ${volumeVirus}`,
+                `Amostras: ${amostras}`,
+                `Placas Necessárias: ${placasNecessarias}`,
+                `Volume Mínimo: ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml`,
+                `Volume com Margem: ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml`,
+                `Volume Viral: ${(volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000)).toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`,
+                '',
+                `Diluições:`,
+                `10^${expoente} → ${(volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000)).toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`,
+                `10^${expoente} ×10 → ${(volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000) * 10).toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`
+            ].join('\n');
 
-      // Buscar tarefas do usuário
-      const tarefasSnapshot = await getDocs(collection(db, "tarefas"));
-      const tarefas = tarefasSnapshot.docs
-        .filter(doc => doc.data().sigla === usuario.sigla)
-        .map(doc => ({ id: doc.id, ...doc.data() }));
-
-      if (tarefas.length === 0) {
-        alert("Nenhuma tarefa encontrada para adicionar o resultado.");
-        return;
-      }
-
-      // Exibir tarefas no modal
-      const listaTarefas = document.getElementById('listaTarefas');
-      listaTarefas.innerHTML = tarefas.map(tarefa => `
-        <li onclick="escolherTarefa('${tarefa.id}')">
-          ${tarefa.tipo} - ${tarefa.titulacao} (${tarefa.data})
-        </li>
-      `).join('');
-
-      // Abrir modal
-      document.getElementById('modalTarefas').style.display = 'block';
-    }
-
-    // Função para escolher uma tarefa
-    async function escolherTarefa(tarefaId) {
-      const titulacao = document.getElementById('titulacao').value;
-      const amostras = document.getElementById('amostras').value;
-      const resultado = document.getElementById('resultado').innerHTML;
-
-      const usuario = JSON.parse(localStorage.getItem("usuario")); // Recuperando dados do usuário
-      console.log("Usuário:", usuario); // Verifica se o usuário está logado
-      if (!usuario) {
-        alert("Erro: Usuário não encontrado. Faça login novamente.");
-        return; // Interrompe a execução se o usuário não estiver logado
-      }
-
-
-      try {
-        console.log("Tarefa ID:", tarefaId);
-        // Verifica se o usuário possui permissão para editar a tarefa antes de atualizar
-        const tarefaRef = doc(db, "tarefas", tarefaId);
-        const tarefaSnap = await getDoc(tarefaRef);
-        onsole.log("Referência da tarefa:", tarefaRef); // Verifica a referência
-
-        if (!tarefaSnap.exists()) {
-          throw new Error("Tarefa não encontrada.");
+            // Criar elemento temporário para copiar
+            const textarea = document.createElement('textarea');
+            textarea.value = textoParaCopiar;
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            // Executar cópia
+            const copiado = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            // Feedback visual
+            const btn = document.getElementById('copiar-resultado');
+            if (copiado) {
+                btn.textContent = '✅ Copiado!';
+                btn.style.backgroundColor = '#4caf50';
+                setTimeout(() => {
+                    btn.textContent = '📋 Copiar Resultado';
+                    btn.style.backgroundColor = '#1b5e20';
+                }, 2000);
+            } else {
+                throw new Error('Não foi possível copiar');
+            }
+        } catch (error) {
+            console.error("Erro ao copiar:", error);
+            alert("Erro ao copiar. Você pode selecionar e copiar manualmente.");
         }
-
-        if (tarefaSnap.data().userId !== usuario.uid) {
-            throw new Error("Você não tem permissão para editar esta tarefa.");
-        }
-
-        // Atualizar a tarefa no Firestore
-        await updateDoc(tarefaRef, {
-          resultado,
-          status: "concluído",
-          dataAtualizacao: new Date() // adicionando um timestamp de atualização
-        });
-        alert("Resultado adicionado à tarefa com sucesso!");
-        window.location.href = "mural.html"; // Redirecionar para o mural
-
-      } catch (error) {
-        console.error("Erro:", error); // Imprime o erro completo
-        console.error("Erro ao atualizar tarefa:", error);
-        alert(`Erro ao adicionar resultado: ${error.message}`); // Mensagem de erro mais informativa
-      }
     }
 
-    // Função para fechar o modal
-    function fecharModal() {
-      document.getElementById('modalTarefas').style.display = 'none';
-    }
-
-    function toggleAjuda() {
-      document.getElementById('explicacao').style.display = 
-        document.getElementById('explicacao').style.display === 'block' ? 'none' : 'block';
-    }
-
-    function toggleEtapasSoroneutralizacao() {
-      document.getElementById('etapasSoroneutralizacao').style.display = 
-        document.getElementById('etapasSoroneutralizacao').style.display === 'block' ? 'none' : 'block';
-    }
-
-    function toggleObservacoesTeste() {
-      document.getElementById('observacoesTeste').style.display = 
-        document.getElementById('observacoesTeste').style.display === 'block' ? 'none' : 'block';
-    }
-
-    function abrirImagem() {
-      window.open("https://i.pinimg.com/736x/5b/09/2b/5b092b1687e129c5f6714bf69bf1b3f1.jpg", "_blank");
-    }
+    document.getElementById("hub-button").onclick = () => {
+        window.location.href = "hub.html";
+      };
 
 
     window.calcular = calcular;
-    window.adicionarAoMural = adicionarAoMural;
+    window.copiarResultado = copiarResultado;
     window.togglePassoAPasso = togglePassoAPasso;
     window.toggleEtapasSoroneutralizacao = toggleEtapasSoroneutralizacao;
     window.toggleObservacoesTeste = toggleObservacoesTeste;
