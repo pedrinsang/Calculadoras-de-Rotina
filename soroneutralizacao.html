@@ -531,7 +531,12 @@
         const volumeVirus = valorDecimal / 2000;
 
         // Cálculo de placas necessárias (6 amostras por placa, arredondando para cima)
-        const placasNecessarias = Math.ceil(amostras / 6);
+        let placasNecessarias;
+        if (amostras <= 6) {
+            placasNecessarias = 1;
+        } else {
+            placasNecessarias = 1 + Math.ceil((amostras - 6) / 12);
+        }
         
         // Cálculo de volume preciso por amostra
         let volumeTotal = 0;
