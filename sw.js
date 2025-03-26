@@ -1,13 +1,14 @@
 const CACHE_NAME = 'virologia-cache-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/assets/styles.css',
-  '/hub.html',
-  '/soroneutralizacao.html',
-  '/vacinas.html',
-  '/elisa.html',
-  '/icons/icon-192x192.png'
+  './',
+  './index.html',
+  './assets/styles.css',
+  './hub.html',
+  './soroneutralizacao.html',
+  './vacinas.html',
+  './elisa.html',
+  './icons/icon-192x192.png',
+  './images/logo-sv-2.jpg'
 ];
 
 self.addEventListener('install', (event) => {
