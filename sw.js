@@ -1,58 +1,85 @@
-const CACHE_NAME = 'virologia-cache-v1';
+const CACHE_NAME = 'virologia-cache-v2';
 const ASSETS = [
-  './',
-  './index.html',
-  './assets/styles.css',
-  './hub.html',
-  './soroneutralizacao.html',
-  './vacinas.html',
-  './elisa.html',
-  './icons/icon-72x72.png',
-  './icons/icon-192x192.png',
-  './icons/icon-512x512.png',
-  './images/logo-sv-2.jpg'
+  '/',
+  '/index.html',
+  '/hub.html',
+  '/soroneutralizacao.html',
+  '/vacinas.html',
+  '/elisa.html',
+  '/icons/icon-72x72.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/images/logo-sv-2.jpg',
+  '/manifest.json',
+  '/favicon.ico'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(ASSETS);
+        console.log('[Service Worker] Installing and caching assets');
+        return Promise.all(
+          ASSETS.map((asset) => {
+            return fetch(asset, { cache: 'no-store', mode: 'no-cors' })
+              .then((response) => {
+                if (!response.ok) {
+                  console.warn(`[Service Worker] Failed to fetch ${asset}: ${response.status}`);
+                  return null;
+                }
+                return cache.put(asset, response);
+              })
+              .catch((err) => {
+                console.error(`[Service Worker] Error caching ${asset}:`, err);
+                return null;
+              });
+          })
+        ).then(() => {
+          console.log('[Service Worker] All assets processed (some may have failed)');
+        });
       })
   );
 });
 
 self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests and chrome-extension requests
+  if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
+      .then((cachedResponse) => {
+        // Return cached response if found
+        if (cachedResponse) {
+          console.log(`[Service Worker] Serving from cache: ${event.request.url}`);
+          return cachedResponse;
         }
-        
-        // Clone the request
-        const fetchRequest = event.request.clone();
-        
-        return fetch(fetchRequest).then(
-          (response) => {
-            // Check if we received a valid response
-            if(!response || response.status !== 200 || response.type !== 'basic') {
+
+        // Otherwise fetch from network
+        return fetch(event.request)
+          .then((response) => {
+            // Check if valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
-            
-            // Clone the response
+
+            // Clone the response for caching
             const responseToCache = response.clone();
             
             caches.open(CACHE_NAME)
               .then((cache) => {
                 cache.put(event.request, responseToCache);
+                console.log(`[Service Worker] Caching new resource: ${event.request.url}`);
               });
-              
+
             return response;
-          }
-        );
+          })
+          .catch((fetchError) => {
+            console.error(`[Service Worker] Fetch failed: ${event.request.url}`, fetchError);
+            // Return offline page or fallback content if needed
+            return caches.match('/offline.html');
+          });
       })
   );
 });
@@ -63,11 +90,15 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
+          if (!cacheWhitelist.includes(cacheName)) {
+            console.log(`[Service Worker] Deleting old cache: ${cacheName}`);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      console.log('[Service Worker] Claiming clients');
+      return self.clients.claim();
     })
   );
 });
