@@ -9,7 +9,7 @@ const ASSETS = [
   './icons/icon-72x72.png',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
-  './images/logo-sv-2.jpg',
+  './images/logo-sv-2.png',
   './manifest.json',
   './favicon.ico'
 ];
