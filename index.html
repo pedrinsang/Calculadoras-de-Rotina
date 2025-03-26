@@ -324,69 +324,6 @@
   </div>
 
   <script type="module">
-    // Registro do Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js')
-          .then(function(registration) {
-            console.log('ServiceWorker registrado com sucesso:', registration.scope);
-            
-            // Mostrar botão de instalação (opcional)
-            registration.update().then(() => {
-              if (registration.active && !window.matchMedia('(display-mode: standalone)').matches) {
-                showInstallButton();
-              }
-            });
-          })
-          .catch(function(error) {
-            console.log('Falha no registro do ServiceWorker:', error);
-          });
-      });
-    }
-
-    // Gerenciamento do prompt de instalação
-    let deferredPrompt;
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      showInstallButton();
-    });
-
-    function showInstallButton() {
-      const installBtn = document.createElement('button');
-      installBtn.id = 'installBtn';
-      installBtn.innerHTML = '📲 Instalar App';
-      installBtn.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 10px 15px;
-        background: #1b5e20;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        cursor: pointer;
-        z-index: 999;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      `;
-      
-      installBtn.onclick = async () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          if (outcome === 'accepted') {
-            console.log('Usuário aceitou a instalação');
-          }
-          deferredPrompt = null;
-          installBtn.remove();
-        }
-      };
-      
-      document.body.appendChild(installBtn);
-    }
-    
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import {
       getAuth,
@@ -715,6 +652,70 @@
         document.getElementById("cadastro-button").click(); // Dispara o clique no botão
       }
     });
+  </script>
+  <script>
+    // Registro do Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('ServiceWorker registrado com sucesso:', registration.scope);
+            
+            // Mostrar botão de instalação (opcional)
+            registration.update().then(() => {
+              if (registration.active && !window.matchMedia('(display-mode: standalone)').matches) {
+                showInstallButton();
+              }
+            });
+          })
+          .catch(function(error) {
+            console.log('Falha no registro do ServiceWorker:', error);
+          });
+      });
+    }
+
+    // Gerenciamento do prompt de instalação
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallButton();
+    });
+
+    function showInstallButton() {
+      const installBtn = document.createElement('button');
+      installBtn.id = 'installBtn';
+      installBtn.innerHTML = '📲 Instalar App';
+      installBtn.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 15px;
+        background: #1b5e20;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        z-index: 999;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      `;
+      
+      installBtn.onclick = async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            console.log('Usuário aceitou a instalação');
+          }
+          deferredPrompt = null;
+          installBtn.remove();
+        }
+      };
+      
+      document.body.appendChild(installBtn);
+    }
   </script>
 </body>
 </html>
