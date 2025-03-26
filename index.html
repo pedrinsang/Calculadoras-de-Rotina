@@ -653,19 +653,15 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('sw.js') 
-          .then(function(registration) {
-            console.log('ServiceWorker registrado com sucesso:', registration.scope);
-            
-            // Verificar se o PWA já está instalado
-            if (!window.matchMedia('(display-mode: standalone)').matches) {
-              // Mostrar botão de instalação após um pequeno delay
-              setTimeout(showInstallButton, 3000);
-            }
-          })
-          .catch(function(error) {
-            console.log('Falha no registro do ServiceWorker:', error);
-          });
+        navigator.serviceWorker.register('/Calculadoras-de-Rotina/sw.js', { 
+          scope: '/Calculadoras-de-Rotina/' 
+        })
+        .then(function(registration) {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        })
+        .catch(function(error) {
+          console.log('ServiceWorker registration failed: ', error);
+        });
       });
     }
 
