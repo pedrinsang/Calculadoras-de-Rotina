@@ -1,6 +1,5 @@
 const CACHE_NAME = 'virologia-cache-v2';
 const ASSETS = [
-  '/',
   './index.html',
   './hub.html',
   './soroneutralizacao.html',
