@@ -3,123 +3,313 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login e Cadastro</title>
-  <link rel="stylesheet" href="assets/styles.css">
+  <title>Login e Cadastro | Setor de Virologia</title>
   <style>
+    :root {
+      --primary-color: #1b5e20;
+      --primary-hover: #166534;
+      --secondary-color: #f0fdf4;
+      --error-color: #ef4444;
+      --success-color: #22c55e;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
       margin: 0;
       padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      color: #1e293b;
     }
 
     .container {
       background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      width: 400px;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 450px;
       text-align: center;
+      transition: all 0.3s ease;
+      margin: 1rem;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
     }
 
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 1.25rem;
+      text-align: left;
     }
 
     .form-group label {
       display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #334155;
     }
 
     .form-group input {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
+      padding: 0.75rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    }
+
+    .form-group .error-message {
+      color: var(--error-color);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+
+    .form-group.error input {
+      border-color: var(--error-color);
+    }
+
+    .form-group.error .error-message {
+      display: block;
     }
 
     .button {
       display: block;
       width: 100%;
-      padding: 10px;
-      background-color: #1b5e20;
+      padding: 0.75rem;
+      background-color: var(--primary-color);
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 1rem;
+      transition: all 0.2s;
     }
 
     .button:hover {
-      background-color: #166534;
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    .button:active {
+      transform: translateY(0);
     }
 
     .switch-form {
-      margin-top: 15px;
-      font-size: 14px;
+      margin-top: 1.5rem;
+      font-size: 0.9375rem;
     }
 
     .switch-form a {
-      color: #1b5e20;
+      color: var(--primary-color);
       text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
     }
 
     .switch-form a:hover {
       text-decoration: underline;
     }
+
+    .password-container {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 65%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #64748b;
+      user-select: none;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+      vertical-align: middle; /* Adicionei esta linha */
+      position: relative;
+      top: -1px; /* Ajuste fino para perfeito alinhamento */
+    }
+
+    .button span {
+      display: inline-flex; /* Mudei para flex para melhor alinhamento */
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .alert.error {
+      background-color: #fee2e2;
+      color: var(--error-color);
+      display: block;
+    }
+
+    .alert.success {
+      background-color: #dcfce7;
+      color: var(--success-color);
+      display: block;
+    }
+
+    .forgot-password {
+      display: block;
+      text-align: right;
+      margin-top: -10px;
+      margin-bottom: 15px;
+      font-size: 0.875rem;
+    }
+
+    .forgot-password a {
+      color: #64748b;
+      text-decoration: none;
+    }
+
+    .forgot-password a:hover {
+      text-decoration: underline;
+      color: var(--primary-color);
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+        margin: 0.5rem;
+      }
+      
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
+         alt="Logo Setor de Virologia UFSM" 
+         class="logo">
+    
+    <div id="alert-message" class="alert"></div>
+    
+    <!-- Formulário de Login -->
     <div id="login-form">
       <h2>Login</h2>
       <div class="form-group">
         <label for="login-email">Email:</label>
-        <input type="email" id="login-email" required>
+        <input type="email" id="login-email" placeholder="seu@email.com" required>
+        <div class="error-message">Por favor, insira um email válido</div>
       </div>
-      <div class="form-group">
+      <div class="form-group password-container">
         <label for="login-senha">Senha:</label>
-        <input type="password" id="login-senha" required>
+        <input type="password" id="login-senha" placeholder="••••••••" required>
+        <span class="toggle-password" data-target="login-senha">👁️</span>
+        <div class="error-message">A senha deve ter pelo menos 6 caracteres</div>
       </div>
-      <button class="button" id="login-button">Entrar</button>
+      <div class="forgot-password">
+        <a href="#" id="show-forgot-password">Esqueceu sua senha?</a>
+      </div>
+      <button class="button" id="login-button">
+        <span id="login-button-text">Entrar</span>
+      </button>
       <div class="switch-form">
         <span>Não tem uma conta? </span>
         <a href="#" id="show-cadastro">Cadastre-se</a>
       </div>
     </div>
 
+    <!-- Formulário de Cadastro -->
     <div id="cadastro-form" style="display: none;">
       <h2>Cadastro</h2>
       <div class="form-group">
-        <label for="cadastro-nome">Nome:</label>
-        <input type="text" id="cadastro-nome" required>
+        <label for="cadastro-nome">Nome Completo:</label>
+        <input type="text" id="cadastro-nome" placeholder="Seu nome completo" required>
+        <div class="error-message">Por favor, insira seu nome completo</div>
       </div>
       <div class="form-group">
-        <label for="cadastro-sigla">Sigla:</label>
-        <input type="text" id="cadastro-sigla" required>
+        <label for="cadastro-sigla">Sigla (3 letras):</label>
+        <input type="text" id="cadastro-sigla" placeholder="ABC" maxlength="3" required>
+        <div class="error-message">Por favor, insira 3 letras</div>
       </div>
       <div class="form-group">
         <label for="cadastro-email">Email:</label>
-        <input type="email" id="cadastro-email" required>
+        <input type="email" id="cadastro-email" placeholder="seu@email.com" required>
+        <div class="error-message">Por favor, insira um email válido</div>
       </div>
-      <div class="form-group">
-        <label for="cadastro-senha">Senha:</label>
-        <input type="password" id="cadastro-senha" required>
+      <div class="form-group password-container">
+        <label for="cadastro-senha">Senha (min. 6 caracteres):</label>
+        <input type="password" id="cadastro-senha" placeholder="••••••••" required>
+        <span class="toggle-password" data-target="cadastro-senha">👁️</span>
+        <div class="error-message">A senha deve ter pelo menos 6 caracteres</div>
       </div>
-      <div class="form-group">
+      <div class="form-group password-container">
         <label for="cadastro-codigo">Código Secreto:</label>
-        <input type="password" id="cadastro-codigo" required>
+        <input type="password" id="cadastro-codigo" placeholder="Digite o código" required>
+        <span class="toggle-password" data-target="cadastro-codigo">👁️</span>
+        <div class="error-message">Código secreto inválido</div>
       </div>
-      <button class="button" id="cadastro-button">Cadastrar</button>
+      <button class="button" id="cadastro-button">
+        <span id="cadastro-button-text">Cadastrar</span>
+      </button>
       <div class="switch-form">
         <span>Já tem uma conta? </span>
         <a href="#" id="show-login">Faça login</a>
+      </div>
+    </div>
+
+    <!-- Formulário de Recuperação de Senha -->
+    <div id="forgot-password-form" style="display: none;">
+      <h2>Recuperar Senha</h2>
+      <div class="form-group">
+        <label for="forgot-email">Email:</label>
+        <input type="email" id="forgot-email" placeholder="seu@email.com" required>
+        <div class="error-message">Por favor, insira um email válido</div>
+      </div>
+      <button class="button" id="send-reset-button">
+        <span id="send-reset-button-text">Enviar Link de Recuperação</span>
+      </button>
+      <div class="switch-form">
+        <a href="#" id="show-login-from-forgot">Voltar para o login</a>
       </div>
     </div>
   </div>
@@ -129,7 +319,8 @@
     import {
       getAuth,
       createUserWithEmailAndPassword,
-      signInWithEmailAndPassword
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail
     } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     import {
@@ -157,58 +348,213 @@
 
     const CODIGO_SECRETO = "Virologi@";
 
-    // Alternar entre login e cadastro
-    document.getElementById("show-cadastro").onclick = () => {
-      document.getElementById("login-form").style.display = "none";
-      document.getElementById("cadastro-form").style.display = "block";
-    };
+    // Elementos da UI
+    const alertMessage = document.getElementById('alert-message');
+    
+    // Função para mostrar mensagem de alerta
+    function showAlert(message, type = 'error') {
+      alertMessage.textContent = message;
+      alertMessage.className = `alert ${type}`;
+      setTimeout(() => {
+        alertMessage.style.display = 'none';
+      }, 5000);
+      alertMessage.style.display = 'block';
+    }
 
-    document.getElementById("show-login").onclick = () => {
+    // Função para alternar visibilidade da senha
+    function setupTogglePassword() {
+      document.querySelectorAll('.toggle-password').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+          const targetId = this.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          if (input.type === 'password') {
+            input.type = 'text';
+            this.textContent = '👁️';
+          } else {
+            input.type = 'password';
+            this.textContent = '👁️';
+          }
+        });
+      });
+    }
+
+    // Função para validar email
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+
+    // Função para mostrar loading no botão
+    function setLoading(button, isLoading) {
+      const buttonText = button.querySelector('span');
+      if (isLoading) {
+        button.disabled = true;
+        buttonText.innerHTML = `
+          <span class="loading"></span>
+          <span>Processando...</span>
+        `;
+      } else {
+        button.disabled = false;
+        buttonText.textContent = button.id === 'login-button' ? 'Entrar' : 
+                              button.id === 'cadastro-button' ? 'Cadastrar' : 
+                              'Enviar Link de Recuperação';
+      }
+    }
+
+    // Alternar entre formulários
+    function showForm(formId) {
+      document.getElementById("login-form").style.display = "none";
       document.getElementById("cadastro-form").style.display = "none";
-      document.getElementById("login-form").style.display = "block";
-    };
+      document.getElementById("forgot-password-form").style.display = "none";
+      document.getElementById(formId).style.display = "block";
+      alertMessage.style.display = 'none';
+    }
+
+    // Configurar eventos de toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      setupTogglePassword();
+      
+      // Event listeners para alternar entre formulários
+      document.getElementById("show-cadastro").addEventListener('click', (e) => {
+        e.preventDefault();
+        showForm("cadastro-form");
+      });
+
+      document.getElementById("show-login").addEventListener('click', (e) => {
+        e.preventDefault();
+        showForm("login-form");
+      });
+
+      document.getElementById("show-forgot-password").addEventListener('click', (e) => {
+        e.preventDefault();
+        showForm("forgot-password-form");
+      });
+
+      document.getElementById("show-login-from-forgot").addEventListener('click', (e) => {
+        e.preventDefault();
+        showForm("login-form");
+      });
+    });
 
     // Cadastro
-    document.getElementById("cadastro-button").onclick = async () => {
-      const nome = document.getElementById("cadastro-nome").value;
-      const sigla = document.getElementById("cadastro-sigla").value;
-      const email = document.getElementById("cadastro-email").value;
+    document.getElementById("cadastro-button").addEventListener('click', async () => {
+      const nome = document.getElementById("cadastro-nome").value.trim();
+      const sigla = document.getElementById("cadastro-sigla").value.trim().toUpperCase();
+      const email = document.getElementById("cadastro-email").value.trim();
       const senha = document.getElementById("cadastro-senha").value;
       const codigo = document.getElementById("cadastro-codigo").value;
 
+      // Validações
+      let isValid = true;
+      
+      // Validar nome
+      if (nome.length < 3) {
+        document.getElementById("cadastro-nome").parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        document.getElementById("cadastro-nome").parentElement.classList.remove('error');
+      }
+      
+      // Validar sigla
+      if (sigla.length !== 3 || !/^[A-Za-z]+$/.test(sigla)) {
+        document.getElementById("cadastro-sigla").parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        document.getElementById("cadastro-sigla").parentElement.classList.remove('error');
+      }
+      
+      // Validar email
+      if (!validateEmail(email)) {
+        document.getElementById("cadastro-email").parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        document.getElementById("cadastro-email").parentElement.classList.remove('error');
+      }
+      
+      // Validar senha
+      if (senha.length < 6) {
+        document.getElementById("cadastro-senha").parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        document.getElementById("cadastro-senha").parentElement.classList.remove('error');
+      }
+      
+      // Validar código secreto
       if (codigo !== CODIGO_SECRETO) {
-        alert("Código secreto inválido!");
+        document.getElementById("cadastro-codigo").parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        document.getElementById("cadastro-codigo").parentElement.classList.remove('error');
+      }
+
+      if (!isValid) {
+        showAlert('Por favor, corrija os erros no formulário.');
         return;
       }
 
       try {
+        setLoading(document.getElementById('cadastro-button'), true);
+        
         // Criar usuário no Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
         const user = userCredential.user;
 
         // Salvar dados extras no Firestore
         await addDoc(collection(db, "usuarios"), {
-          uid: user.uid, // Certifique-se de que o UID está sendo salvo corretamente
+          uid: user.uid,
           nome,
           sigla,
-          email
+          email,
+          dataCadastro: new Date().toISOString()
         });
 
-        alert("Cadastro realizado com sucesso!");
-        document.getElementById("cadastro-form").style.display = "none";
-        document.getElementById("login-form").style.display = "block";
+        showAlert('Cadastro realizado com sucesso!', 'success');
+        showForm("login-form");
+        
+        // Limpar formulário
+        document.getElementById("cadastro-form").reset();
       } catch (error) {
         console.error("Erro ao cadastrar:", error);
-        alert("Erro ao cadastrar. Verifique o console para mais detalhes.");
+        if (error.code === 'auth/email-already-in-use') {
+          showAlert('Este email já está em uso. Por favor, faça login.');
+        } else {
+          showAlert('Erro ao cadastrar: ' + error.message);
+        }
+      } finally {
+        setLoading(document.getElementById('cadastro-button'), false);
       }
-    };
+    });
 
     // Login
-    document.getElementById("login-button").onclick = async () => {
-      const email = document.getElementById("login-email").value;
+    document.getElementById("login-button").addEventListener('click', async () => {
+      const email = document.getElementById("login-email").value.trim();
       const senha = document.getElementById("login-senha").value;
 
+      // Validações
+      let isValid = true;
+      
+      if (!validateEmail(email)) {
+        document.getElementById("login-email").parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        document.getElementById("login-email").parentElement.classList.remove('error');
+      }
+      
+      if (senha.length < 6) {
+        document.getElementById("login-senha").parentElement.classList.add('error');
+        isValid = false;
+      } else {
+        document.getElementById("login-senha").parentElement.classList.remove('error');
+      }
+
+      if (!isValid) {
+        showAlert('Por favor, corrija os erros no formulário.');
+        return;
+      }
+
       try {
+        setLoading(document.getElementById('login-button'), true);
+        
         // Autenticar no Firebase
         const userCredential = await signInWithEmailAndPassword(auth, email, senha);
         const user = userCredential.user;
@@ -218,7 +564,7 @@
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-          alert("Erro: usuário não encontrado no banco de dados.");
+          showAlert('Erro: usuário não encontrado no banco de dados.');
           return;
         }
 
@@ -230,9 +576,55 @@
         window.location.href = "hub.html";
       } catch (error) {
         console.error("Erro ao fazer login:", error);
-        alert("Email ou senha incorretos!");
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          showAlert('Email ou senha incorretos!');
+        } else {
+          showAlert('Erro ao fazer login: ' + error.message);
+        }
+      } finally {
+        setLoading(document.getElementById('login-button'), false);
       }
-    };
+    });
+
+    // Recuperação de senha
+    document.getElementById("send-reset-button").addEventListener('click', async () => {
+      const email = document.getElementById("forgot-email").value.trim();
+
+      if (!validateEmail(email)) {
+        document.getElementById("forgot-email").parentElement.classList.add('error');
+        showAlert('Por favor, insira um email válido.');
+        return;
+      } else {
+        document.getElementById("forgot-email").parentElement.classList.remove('error');
+      }
+
+      try {
+        setLoading(document.getElementById('send-reset-button'), true);
+        
+        // Enviar email de recuperação
+        await sendPasswordResetEmail(auth, email);
+        
+        showAlert('Email de recuperação enviado com sucesso! Verifique sua caixa de entrada.', 'success');
+        showForm("login-form");
+      } catch (error) {
+        console.error("Erro ao enviar email de recuperação:", error);
+        if (error.code === 'auth/user-not-found') {
+          showAlert('Nenhum usuário encontrado com este email.');
+        } else {
+          showAlert('Erro ao enviar email de recuperação: ' + error.message);
+        }
+      } finally {
+        setLoading(document.getElementById('send-reset-button'), false);
+      }
+    });
+
+    // Adicionar validação em tempo real para a sigla (3 letras)
+    document.getElementById("cadastro-sigla").addEventListener('input', function(e) {
+      this.value = this.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+      if (this.value.length > 3) {
+        this.value = this.value.substring(0, 3);
+      }
+    });
   </script>
 </body>
 </html>
