@@ -475,9 +475,11 @@
       • Ressuspender células na calha<br>
 
     </div>
-  </div>
+</div>
 
-  <script type="module">
+
+
+    <script type="module">
 
     // Importações do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -646,14 +648,9 @@
         }
     }
 
-    function abrirImagem() {
-      window.open("https://i.pinimg.com/736x/5b/09/2b/5b092b1687e129c5f6714bf69bf1b3f1.jpg", "_blank");
-    }
-
     document.getElementById("hub-button").onclick = () => {
         window.location.href = "hub.html";
       };
-
 
     window.calcular = calcular;
     window.copiarResultado = copiarResultado;
@@ -661,6 +658,15 @@
     window.toggleEtapasSoroneutralizacao = toggleEtapasSoroneutralizacao;
     window.toggleObservacoesTeste = toggleObservacoesTeste;
 
-  </script>
+    </script>
+
+    <script>
+        
+    // Regular script (not module) - functions will be globally available
+    function abrirImagem() {
+      window.open("https://i.pinimg.com/736x/5b/09/2b/5b092b1687e129c5f6714bf69bf1b3f1.jpg", "_blank");
+    }
+
+    </script>
 </body>
 </html>
