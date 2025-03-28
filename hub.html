@@ -6,6 +6,12 @@
   <title>Hub de Calculadoras</title>
   <link rel="stylesheet" href="assets/styles.css">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #87daa0, #51c778);
@@ -45,16 +51,19 @@
     }
 
     .logo {
-      margin-top: 60px;
       max-width: 100%;
       height: auto;
     }
 
     @media (max-width: 480px) {
       body {
+        padding: 5px;
+      }
+
+      .container {
         padding: 10px;
       }
-      
+
   </style>
 </head>
 <body>
