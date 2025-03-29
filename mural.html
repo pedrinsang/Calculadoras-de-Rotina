@@ -191,10 +191,15 @@
     .filtro-container {
       margin-top: 20px;
       margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
     }
 
     .filtro-container label {
       font-weight: bold;
+      white-space: nowrap;
     }
 
     .filtro-container select {
@@ -202,6 +207,7 @@
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 16px;
+      min-width: 150px;
     }
 
     .resultado-container {
@@ -242,6 +248,15 @@
 
       body {
         padding: 10px;
+      }
+
+      .filtro-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .filtro-container select {
+        width: 100%;
       }
 
       #mural-list {
@@ -397,6 +412,12 @@
         <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
         <option value="ELISA BVDV">ELISA BVDV</option>
       </select>
+
+      <label style="margin-left: 15px;">Ordenar por: </label>
+      <select id="filtro-ordem">
+        <option value="recentes">Mais recentes</option>
+        <option value="antigas">Mais antigas</option>
+      </select>
     </div>
 
     <form id="mural-form">
@@ -445,7 +466,8 @@
       deleteDoc, 
       Timestamp, 
       query, 
-      where 
+      where,
+      orderBy 
     } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
@@ -505,13 +527,12 @@
     }
 
     // Funções de Tarefas
-    async function carregarTarefas(filtro = "Todos") {
+    async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
       mostrarLoading();
       const muralList = document.getElementById("mural-list");
       muralList.innerHTML = "<p>Carregando tarefas...</p>";
 
       try {
-        // Verifica se o usuário está autenticado
         const user = auth.currentUser;
         if (!user) {
           throw new Error("Usuário não autenticado");
@@ -519,16 +540,20 @@
 
         let q;
         if (filtro === "Todos") {
-          q = query(collection(db, "tarefas"));
+          q = query(
+            collection(db, "tarefas"), 
+            orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
+          );
         } else {
           q = query(
             collection(db, "tarefas"),
-            where("tipo", "==", filtro)
+            where("tipo", "==", filtro),
+            orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
           );
         }
 
         const querySnapshot = await getDocs(q);
-        
+    
         if (querySnapshot.empty) {
           muralList.innerHTML = "<p>Nenhuma tarefa encontrada.</p>";
           return;
@@ -899,8 +924,14 @@
         }
       });
 
+      document.getElementById("filtro-ordem").addEventListener("change", (e) => {
+        const filtroTipo = document.getElementById("filtro-tipo").value;
+        carregarTarefas(filtroTipo, e.target.value);
+      });
+
       document.getElementById("filtro-tipo").addEventListener("change", (e) => {
-        carregarTarefas(e.target.value);
+        const ordem = document.getElementById("filtro-ordem").value;
+        carregarTarefas(e.target.value, ordem);
       });
 
       document.getElementById("hub-button").onclick = () => {
