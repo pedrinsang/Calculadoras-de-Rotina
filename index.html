@@ -248,6 +248,16 @@
       100% { transform: scale(1); }
     }
 
+    #iosInstallInstructions {
+      animation: pulse 2s infinite;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      font-size: 14px;
+    }
+
+    #iosInstallInstructions img {
+      margin: 0 5px;
+    }
+
     @media (max-width: 480px) {
       .container {
         padding: 1.5rem;
@@ -350,6 +360,11 @@
   <button id="installBtn">
     📲 Instalar App
   </button>
+
+  <!-- Adicione esta div para iOS -->
+  <div id="iosInstallInstructions" style="display: none; position: fixed; bottom: 20px; right: 20px; background: #1b5e20; color: white; padding: 10px; border-radius: 5px; z-index: 999; max-width: 200px;">
+    Toque no <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/IOS_Share_Icon.svg/1200px-IOS_Share_Icon.svg.png" style="height: 20px; vertical-align: middle;"> e selecione "Adicionar à Tela Inicial"
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -675,6 +690,26 @@
     });
   </script>
   <script>
+    // Detectar iOS
+    function isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+
+    // Mostrar instruções para iOS
+    if (isIOS()) {
+      const iosInstructions = document.getElementById('iosInstallInstructions');
+      const installButton = document.getElementById('installBtn');
+      
+      installButton.style.display = 'none';
+      iosInstructions.style.display = 'block';
+      
+      // Opcional: Esconder após alguns segundos
+      setTimeout(() => {
+        iosInstructions.style.display = 'none';
+      }, 10000);
+    }
+    
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then(reg => {
         reg.addEventListener('updatefound', () => {
