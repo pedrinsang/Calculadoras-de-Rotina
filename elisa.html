@@ -114,15 +114,29 @@
       font-weight: bold;
     }
 
+    .ajuda.aberto::after, .passo-a-passo.aberto::after {
+      content: "▼";
+    }
+
+    .ajuda::after, .passo-a-passo::after {
+      content: "▶";
+      float: right;
+      transition: transform 0.3s;
+    }
+
     .explicacao, .etapasELISA {
-      display: none;
       margin-top: 10px;
       padding: 25px;
       background: #f1f8e9;
       color: #1b5e20;
       border-left: 5px solid #388e3c;
       border-radius: 5px;
+      display: none;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
     }
+    
 
     .etapasELISA ol {
       list-style-type: none;
@@ -152,13 +166,60 @@
       color: #888;
     }
 
-    /* Estilo do botão copiar */
-    #copiar-resultado {
-      display: none;
-      transition: all 0.3s ease;
+    /* ===== Botões ===== */
+    .button-group {
+      display: grid;
+      gap: 15px;
+      margin-bottom: 15px;
     }
 
-    #copiar-resultado.copiado {
+    .calculadora {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
+    }
+
+    .calculadora.aberto {
+      max-height: 1000px; /* Valor maior que o conteúdo máximo */
+      opacity: 1;
+    }
+
+    .calc-button {
+      padding: 15px;
+      background: #e8f5e9;
+      border: 2px solid #1b5e20;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .calc-button:hover {
+      background: #c8e6c9;
+      transform: translateY(-2px);
+    }
+
+    .calc-button.active {
+      background: #1b5e20;
+      color: white;
+      position: relative;
+    }
+
+    .calc-button.active::after {
+      content: "";
+    }
+
+    /* Estilo do botão copiar */
+    .botao-copiar {
+      display: none;
+      transition: all 0.3s ease;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .botao-copiar.copiado {
       background-color: #4caf50 !important;
     }
 
@@ -191,21 +252,40 @@
     <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
     <h2>Calculadora de ELISA</h2>
 
-    <!-- Campos de Entrada -->
-    <label for="amostras">Número de Amostras:</label>
-    <input type="number" id="amostras" placeholder="Digite o número de amostras">
-
-    <label for="controles">Número de Controles (Positivos + Negativos):</label>
-    <input type="number" id="controles" placeholder="Digite o número de controles">
-
-    <!-- Botão de Calcular -->
-    <button onclick="calcularReagentes()">Calcular</button>
-
-    <!-- Resultado do Cálculo -->
-    <div id="resultado" class="resultado"></div>
-
-    <button id="copiar-resultado" onclick="copiarResultado()">📋 Copiar Resultado</button>
-
+    <div class="button-group">
+      <div class="calc-button" onclick="toggleCalculator('leucose')">
+        ELISA Leucose
+      </div>
+      <div class="calc-button" onclick="toggleCalculator('bvdv')">
+        ELISA BVDV
+      </div>
+    </div>
+    
+    <!-- Calculadoras -->
+    <div id="leucose" class="calculadora" >
+      <label for="amostras-leucose">Número de Amostras:</label>
+      <input type="number" id="amostras-leucose" placeholder="Digite o número de amostras">
+      
+      <label for="controles-leucose">Número de Controles (Positivos + Negativos):</label>
+      <input type="number" id="controles-leucose" placeholder="Digite o número de controles">
+      
+      <button type="button" onclick="calcularLeucose()">Calcular</button>
+      <div id="resultado-leucose" class="resultado"></div>
+      <button class="botao-copiar" id="copiar-resultado-leucose" onclick="copiarResultado('leucose')">📋 Copiar Resultado</button>
+    </div>
+    
+    <div id="bvdv" class="calculadora" >
+      <label for="amostras-bvdv">Número de Amostras:</label>
+      <input type="number" id="amostras-bvdv" placeholder="Digite o número de amostras">
+      
+      <label for="controles-bvdv">Número de Controles (Positivos + Negativos):</label>
+      <input type="number" id="controles-bvdv" placeholder="Digite o número de controles">
+      
+      <button type="button" onclick="calcularBvdv()">Calcular</button>
+      <div id="resultado-bvdv" class="resultado"></div>
+      <button class="botao-copiar" id="copiar-resultado-bvdv" onclick="copiarResultado('bvdv')">📋 Copiar Resultado</button>
+    </div>
+    
     <!-- Instruções -->
     <div class="ajuda" onclick="toggleInstrucoes()">Instruções de Uso</div>
     <div id="instrucoes" class="explicacao">
@@ -244,67 +324,103 @@
   </div>
 
   <script>
-    function calcularReagentes() {
-      const amostras = parseFloat(document.getElementById('amostras').value);
-      const controles = parseFloat(document.getElementById('controles').value);
+    let calculadoraAtiva = null;
+
+    function toggleCalculator(tipo) {
+      const calculadoras = document.querySelectorAll('.calculadora');
+      const botoes = document.querySelectorAll('.calc-button');
+      
+      // Fechar calculadora atual
+      if(calculadoraAtiva) {
+        const calcAtual = document.getElementById(calculadoraAtiva);
+        calcAtual.classList.remove('aberto');
+        document.querySelector(`.calc-button[onclick="toggleCalculator('${calculadoraAtiva}')"]`)
+          .classList.remove('active');
+      }
+
+      // Abrir nova calculadora (se não for a mesma)
+      if(calculadoraAtiva !== tipo) {
+        const novaCalculadora = document.getElementById(tipo);
+        const novoBotao = document.querySelector(`.calc-button[onclick="toggleCalculator('${tipo}')"]`);
+        
+        novaCalculadora.classList.add('aberto');
+        novoBotao.classList.add('active');
+        calculadoraAtiva = tipo;
+      } else {
+        calculadoraAtiva = null;
+      }
+    }
+
+    function calcularLeucose() {
+      const amostras = parseFloat(document.querySelector('#leucose #amostras').value);
+      const controles = parseFloat(document.querySelector('#leucose #controles').value);
 
       if (isNaN(amostras) || isNaN(controles)) {
         alert("Por favor, insira valores válidos.");
         return;
       }
 
-      // Cálculos baseados no protocolo
       const totalPocos = amostras + controles;
-
-      // Volume de solução de lavagem por poço
-      const volumeLavagemPorPoco = 50 + 900 + 900; // 50 µL (passo 2) + 900 µL (passo 8) + 900 µL (passo 11)
-      const volumeTotalLavagem = totalPocos * volumeLavagemPorPoco; // em µL
-
-      // Volume de conjugado diluído por poço
-      const volumeConjugadoPorPoco = 100; // 100 µL por poço
-      const volumeTotalConjugado = totalPocos * volumeConjugadoPorPoco; // em µL
-
-      // Volume de concentrado de lavagem necessário (diluição 1:10)
+      const volumeTotalLavagem = totalPocos * (50 + 900 + 900); // em µL
+      const volumeTotalConjugado = totalPocos * 100; // em µL
       const volumeConcentradoLavagem = volumeTotalLavagem / 10; // em µL
-
-      // Volume de concentrado de conjugado necessário (diluição 1:100)
       const volumeConcentradoConjugado = volumeTotalConjugado / 100; // em µL
 
-      // Converter para mL
-      const volumeTotalLavagemML = volumeTotalLavagem / 1000;
-      const volumeConcentradoLavagemML = volumeConcentradoLavagem / 1000;
-      const volumeTotalConjugadoML = volumeTotalConjugado / 1000;
-      const volumeConcentradoConjugadoML = volumeConcentradoConjugado / 1;
-
-      const resultadoDiv = document.getElementById('resultado');
+      const resultadoDiv = document.getElementById('resultado-leucose');
       resultadoDiv.innerHTML = `
-        <strong>Volume Total de Solução de Lavagem:</strong> ${volumeTotalLavagemML.toFixed(2)} mL<br>
-        <strong>Volume de Concentrado de Lavagem (1:10):</strong> ${volumeConcentradoLavagemML.toFixed(2)} mL<br>
-        <strong>Volume Total de Conjugado Diluído:</strong> ${volumeTotalConjugadoML.toFixed(2)} mL<br>
-        <strong>Volume de Concentrado de Conjugado (1:100):</strong> ${volumeConcentradoConjugadoML.toFixed(2)} µL<br>
+        <h3>Resultado ELISA Leucose</h3>
+        <strong>Total de poços:</strong> ${totalPocos}<br>
+        <strong>Volume Total de Solução de Lavagem:</strong> ${(volumeTotalLavagem/1000).toFixed(2)} mL<br>
+        <strong>Volume de Concentrado de Lavagem (1:10):</strong> ${(volumeConcentradoLavagem/1000).toFixed(2)} mL<br>
+        <strong>Volume Total de Conjugado Diluído:</strong> ${(volumeTotalConjugado/1000).toFixed(2)} mL<br>
+        <strong>Volume de Concentrado de Conjugado (1:100):</strong> ${volumeConcentradoConjugado.toFixed(2)} µL<br>
       `;
       
-      // Mostrar botão de copiar
-      document.getElementById('copiar-resultado').style.display = 'block';
+      document.getElementById('copiar-resultado-leucose').style.display = 'block';
     }
 
-    function copiarResultado() {
+    function calcularBvdv() {
+      const amostras = parseFloat(document.querySelector('#bvdv #amostras').value);
+      const controles = parseFloat(document.querySelector('#bvdv #controles').value);
+
+      if (isNaN(amostras) || isNaN(controles)) {
+        alert("Por favor, insira valores válidos.");
+        return;
+      }
+
+      const totalPocos = amostras + controles;
+      const volumeTotalLavagem = totalPocos * (50 + 300*3 + 300*3); // em µL (diferente da Leucose)
+      const volumeTotalConjugado = totalPocos * 100; // em µL
+      const volumeConcentradoLavagem = volumeTotalLavagem / 20; // em µL (diluição diferente)
+      const volumeConcentradoConjugado = volumeTotalConjugado / 50; // em µL (diluição diferente)
+
+      const resultadoDiv = document.getElementById('resultado-bvdv');
+      resultadoDiv.innerHTML = `
+        <h3>Resultado ELISA BVDV</h3>
+        <strong>Total de poços:</strong> ${totalPocos}<br>
+        <strong>Volume Total de Solução de Lavagem:</strong> ${(volumeTotalLavagem/1000).toFixed(2)} mL<br>
+        <strong>Volume de Concentrado de Lavagem (1:20):</strong> ${(volumeConcentradoLavagem/1000).toFixed(2)} mL<br>
+        <strong>Volume Total de Conjugado Diluído:</strong> ${(volumeTotalConjugado/1000).toFixed(2)} mL<br>
+        <strong>Volume de Concentrado de Conjugado (1:50):</strong> ${volumeConcentradoConjugado.toFixed(2)} µL<br>
+      `;
+      
+      document.getElementById('copiar-resultado-bvdv').style.display = 'block';
+    }
+
+    function copiarResultado(tipo) {
       try {
-        const resultadoDiv = document.getElementById('resultado');
+        const resultadoDiv = document.getElementById(`resultado-${tipo}`);
         const textoParaCopiar = resultadoDiv.innerText;
         
-        // Criar elemento temporário para copiar
         const textarea = document.createElement('textarea');
         textarea.value = textoParaCopiar;
         document.body.appendChild(textarea);
         textarea.select();
         
-        // Executar cópia
         const copiado = document.execCommand('copy');
         document.body.removeChild(textarea);
         
-        // Feedback visual
-        const btn = document.getElementById('copiar-resultado');
+        const btn = document.getElementById(`copiar-resultado-${tipo}`);
         if (copiado) {
           btn.textContent = '✅ Copiado!';
           btn.classList.add('copiado');
@@ -323,21 +439,66 @@
 
     function toggleInstrucoes() {
       const instrucoesDiv = document.getElementById('instrucoes');
-      if (instrucoesDiv.style.display === "none" || instrucoesDiv.style.display === "") {
-        instrucoesDiv.style.display = "block";
+      const botao = document.querySelector('.ajuda');
+      const isOpen = instrucoesDiv.style.maxHeight !== '0px' && instrucoesDiv.style.maxHeight !== '';
+
+      if (isOpen) {
+        // Fechar com animação
+        instrucoesDiv.style.maxHeight = instrucoesDiv.scrollHeight + 'px';
+        void instrucoesDiv.offsetHeight; // Força o redesenho
+        instrucoesDiv.style.maxHeight = '0';
+        setTimeout(() => {
+          instrucoesDiv.style.display = 'none';
+          botao.classList.remove('aberto');
+        }, 300);
       } else {
-        instrucoesDiv.style.display = "none";
+        // Abrir com animação
+        instrucoesDiv.style.display = 'block';
+        const height = instrucoesDiv.scrollHeight;
+        instrucoesDiv.style.maxHeight = '0';
+        void instrucoesDiv.offsetHeight; // Força o redesenho
+        instrucoesDiv.style.maxHeight = height + 'px';
+        botao.classList.add('aberto');
+        setTimeout(() => {
+          instrucoesDiv.style.maxHeight = 'none';
+        }, 300);
       }
     }
 
     function togglePassoAPasso() {
       const etapasELISADiv = document.getElementById('etapasELISA');
-      if (etapasELISADiv.style.display === "none" || etapasELISADiv.style.display === "") {
-        etapasELISADiv.style.display = "block";
+      const botao = document.querySelector('.passo-a-passo');
+      const isOpen = etapasELISADiv.style.maxHeight !== '0px' && etapasELISADiv.style.maxHeight !== '';
+
+      if (isOpen) {
+        // Fechar com animação
+        etapasELISADiv.style.maxHeight = etapasELISADiv.scrollHeight + 'px';
+        void etapasELISADiv.offsetHeight;
+        etapasELISADiv.style.maxHeight = '0';
+        setTimeout(() => {
+          etapasELISADiv.style.display = 'none';
+          botao.classList.remove('aberto');
+        }, 300);
       } else {
-        etapasELISADiv.style.display = "none";
+        // Abrir com animação
+        etapasELISADiv.style.display = 'block';
+        const height = etapasELISADiv.scrollHeight;
+        etapasELISADiv.style.maxHeight = '0';
+        void etapasELISADiv.offsetHeight;
+        etapasELISADiv.style.maxHeight = height + 'px';
+        botao.classList.add('aberto');
+        setTimeout(() => {
+          etapasELISADiv.style.maxHeight = 'none';
+        }, 300);
       }
     }
+
+    // Inicializa escondendo todas as calculadoras
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.calculadora').forEach(calc => {
+      });
+    });
+
   </script>
 </body>
 </html>
