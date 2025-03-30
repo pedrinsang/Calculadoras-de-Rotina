@@ -249,13 +249,28 @@
     }
 
     #iosInstallInstructions {
-      animation: pulse 2s infinite;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      font-size: 14px;
+      animation: slideUp 0.5s ease-out;
+      cursor: pointer;
+      transition: opacity 0.3s;
     }
 
     #iosInstallInstructions img {
       margin: 0 5px;
+    }
+
+    #iosInstallInstructions:hover {
+      opacity: 0.9;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     @media (max-width: 480px) {
@@ -362,8 +377,14 @@
   </button>
 
   <!-- Adicione esta div para iOS -->
-  <div id="iosInstallInstructions" style="display: none; position: fixed; bottom: 20px; right: 20px; background: #1b5e20; color: white; padding: 10px; border-radius: 5px; z-index: 999; max-width: 200px;">
-    Toque no <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/IOS_Share_Icon.svg/1200px-IOS_Share_Icon.svg.png" style="height: 20px; vertical-align: middle;"> e selecione "Adicionar à Tela Inicial"
+  <div id="iosInstallInstructions" style="display: none; position: fixed; bottom: 20px; right: 20px; background: #1b5e20; color: white; padding: 12px 15px; border-radius: 8px; z-index: 999; max-width: 220px; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <!-- Ícone SVG idêntico ao do Safari -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0;">
+        <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.35C15.11 18.56 15.08 18.78 15.08 19C15.08 20.61 16.39 21.92 18 21.92C19.61 21.92 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="white"/>
+      </svg>
+      <div>Toque no <strong>menu Compartilhar</strong> e selecione <strong>"Adicionar à Tela Inicial"</strong></div>
+    </div>
   </div>
 
   <script type="module">
@@ -691,24 +712,30 @@
   </script>
   <script>
     // Detectar iOS
-    function isIOS() {
-      return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    function showIOSInstructions() {
+      // Verifica se é iOS/Safari e se não está já instalado
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
+      
+      if ((isIOS || isSafari) && !window.navigator.standalone) {
+        const iosDiv = document.getElementById('iosInstallInstructions');
+        if (iosDiv) {
+          iosDiv.style.display = 'flex';
+          
+          // Esconde após 15 segundos ou quando o usuário clica
+          setTimeout(() => {
+            iosDiv.style.display = 'none';
+          }, 15000);
+          
+          iosDiv.onclick = () => iosDiv.style.display = 'none';
+        }
+      }
     }
 
-    // Mostrar instruções para iOS
-    if (isIOS()) {
-      const iosInstructions = document.getElementById('iosInstallInstructions');
-      const installButton = document.getElementById('installBtn');
-      
-      installButton.style.display = 'none';
-      iosInstructions.style.display = 'block';
-      
-      // Opcional: Esconder após alguns segundos
-      setTimeout(() => {
-        iosInstructions.style.display = 'none';
-      }, 10000);
-    }
+    // Mostra ao carregar e também quando o usuário rola a página
+    window.addEventListener('load', showIOSInstructions);
+    window.addEventListener('scroll', showIOSInstructions);
+
     
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then(reg => {
