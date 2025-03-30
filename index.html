@@ -4,6 +4,7 @@
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="pragma" content="no-cache">
   <meta http-equiv="expires" content="0">
+  
     <!-- PWA Meta Tags -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#1b5e20">
@@ -655,6 +656,31 @@
   </script>
   <script>
     if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'activated') {
+              if(confirm('Atualização disponível! Recarregar agora?')) {
+                window.location.reload();
+              }
+            }
+          });
+        });
+      });
+      
+      // Ouvir mensagens do Service Worker
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data.type === 'APP_UPDATE') {
+          console.log('Nova versão:', event.data.version);
+        }
+      });
+
+      // Forçar atualização manual
+      document.getElementById('refresh-button').addEventListener('click', () => {
+        navigator.serviceWorker.controller.postMessage('FORCE_UPDATE');
+      });
+      
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/Calculadoras-de-Rotina/sw.js', { 
           scope: '/Calculadoras-de-Rotina/' 

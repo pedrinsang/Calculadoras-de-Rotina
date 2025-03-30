@@ -1,4 +1,5 @@
-const CACHE_NAME = 'virologia-cache-v2';
+const CACHE_NAME = 'virologia-cache-v4'; // ⚠️ Altere este número SEMPRE que atualizar os arquivos!
+const OFFLINE_PAGE = './offline.html';
 const ASSETS = [
   './',
   './index.html',
@@ -11,94 +12,120 @@ const ASSETS = [
   './icons/icon-512x512.png',
   './images/logo-sv-2.png',
   './manifest.json',
-  './favicon.ico'
+  './favicon.ico',
+  OFFLINE_PAGE
 ];
 
+// ========== INSTALAÇÃO ==========
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Força ativação imediata
+  console.log(`[SW] Instalando nova versão: ${CACHE_NAME}`);
+
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[Service Worker] Installing and caching assets');
-        return Promise.all(
-          ASSETS.map((asset) => {
-            return fetch(asset, { cache: 'no-store', mode: 'no-cors' })
-              .then((response) => {
-                if (!response.ok) {
-                  console.warn(`[Service Worker] Failed to fetch ${asset}: ${response.status}`);
-                  return null;
-                }
-                return cache.put(asset, response);
-              })
-              .catch((err) => {
-                console.error(`[Service Worker] Error caching ${asset}:`, err);
-                return null;
-              });
-          })
-        ).then(() => {
-          console.log('[Service Worker] All assets processed (some may have failed)');
-        });
+      .then(cache => {
+        // Tenta buscar todos os assets da rede primeiro
+        return cache.addAll(ASSETS.map(url => new Request(url, { cache: 'reload' })));
+      })
+      .catch(error => {
+        console.error('[SW] Falha na instalação:', error);
       })
   );
 });
 
+// ========== INTERCEPTA REQUISIÇÕES ==========
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and chrome-extension requests
-  if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) {
-    return;
+  // Ignora requisições não-GET e extensões do Chrome
+  if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) return;
+
+  const requestUrl = new URL(event.request.url);
+  
+  // Estratégia para páginas HTML
+  if (event.request.destination === 'document') {
+    event.respondWith(
+      networkFirstThenCache(event.request)
+    );
+  } 
+  // Estratégia para outros assets
+  else {
+    event.respondWith(
+      cacheFirstThenNetwork(event.request)
+    );
   }
-
-  event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        // Return cached response if found
-        if (cachedResponse) {
-          console.log(`[Service Worker] Serving from cache: ${event.request.url}`);
-          return cachedResponse;
-        }
-
-        // Otherwise fetch from network
-        return fetch(event.request)
-          .then((response) => {
-            // Check if valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response for caching
-            const responseToCache = response.clone();
-            
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-                console.log(`[Service Worker] Caching new resource: ${event.request.url}`);
-              });
-
-            return response;
-          })
-          .catch((fetchError) => {
-            console.error(`[Service Worker] Fetch failed: ${event.request.url}`, fetchError);
-            // Return offline page or fallback content if needed
-            return caches.match('/offline.html');
-          });
-      })
-  );
 });
 
+// ========== ATIVAÇÃO ==========
 self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
+  console.log(`[SW] Versão ativada: ${CACHE_NAME}`);
+  
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            console.log(`[Service Worker] Deleting old cache: ${cacheName}`);
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log(`[SW] Removendo cache antigo: ${cacheName}`);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-      console.log('[Service Worker] Claiming clients');
+      // Força todos os clients a usar o novo SW
       return self.clients.claim();
     })
   );
+
+  // Notifica todos os clients sobre a atualização
+  notifyClients();
+});
+
+// ========== FUNÇÕES AUXILIARES ==========
+async function networkFirstThenNetwork(request) {
+  try {
+    // Tenta buscar da rede
+    const networkResponse = await fetch(request);
+    
+    // Atualiza o cache em background
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, networkResponse.clone());
+    
+    return networkResponse;
+  } catch (error) {
+    // Retorna do cache ou página offline
+    const cachedResponse = await caches.match(request);
+    return cachedResponse || caches.match(OFFLINE_PAGE);
+  }
+}
+
+async function cacheFirstThenNetwork(request) {
+  const cachedResponse = await caches.match(request);
+  
+  // Atualiza o cache em background
+  if (navigator.onLine) {
+    fetch(request).then(networkResponse => {
+      caches.open(CACHE_NAME).then(cache => cache.put(request, networkResponse));
+    });
+  }
+  
+  return cachedResponse || fetch(request);
+}
+
+function notifyClients() {
+  self.clients.matchAll({ type: 'window' }).then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'APP_UPDATE',
+        version: CACHE_NAME,
+        message: 'Nova versão disponível!',
+        timestamp: Date.now()
+      });
+    });
+  });
+}
+
+// ========== COMUNICAÇÃO COM A APLICAÇÃO ==========
+self.addEventListener('message', (event) => {
+  if (event.data === 'FORCE_UPDATE') {
+    self.skipWaiting();
+    self.clients.claim();
+  }
 });
