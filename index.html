@@ -697,9 +697,12 @@
       });
 
       // Forçar atualização manual
-      document.getElementById('refresh-button').addEventListener('click', () => {
-        navigator.serviceWorker.controller.postMessage('FORCE_UPDATE');
-      });
+      const refreshButton = document.getElementById('refresh-button');
+      if (refreshButton) {
+        refreshButton.addEventListener('click', () => {
+          navigator.serviceWorker.controller.postMessage('FORCE_UPDATE');
+        });
+      }
 
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('./sw.js', { 
@@ -753,25 +756,27 @@
 
     // Registro do Service Worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => {
-            console.log('ServiceWorker registrado com sucesso:', registration.scope);
-            
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'activated') {
-                  if (confirm('Nova versão disponível! Recarregar agora?')) {
-                    window.location.reload();
-                  }
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js', { 
+          scope: './' 
+        })
+        .then(function(registration) {
+          console.log('SW registrado com sucesso:', registration.scope);
+          
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'activated') {
+                if(confirm('Nova versão disponível! Recarregar agora?')) {
+                  window.location.reload();
                 }
-              });
+              }
             });
-          })
-          .catch(error => {
-            console.log('Falha no registro do ServiceWorker:', error);
           });
+        })
+        .catch(function(error) {
+          console.error('Falha no registro do SW:', error);
+        });
       });
     }
   </script>
