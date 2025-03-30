@@ -278,7 +278,7 @@
       </div>
       <div class="form-group">
         <label for="cadastro-sigla">Sigla (3 letras):</label>
-        <input type="text" id="cadastro-sigla" placeholder="ABC" maxlength="2" required>
+        <input type="text" id="cadastro-sigla" placeholder="ABC" maxlength="3" required>
         <div class="error-message">Por favor, insira 3 letras</div>
       </div>
       <div class="form-group">
@@ -465,13 +465,6 @@
         document.getElementById("cadastro-nome").parentElement.classList.remove('error');
       }
       
-      // Validar sigla
-      if (sigla.length < 2 || !/^[A-Za-z]+$/.test(sigla)) {
-        document.getElementById("cadastro-sigla").parentElement.classList.add('error');
-        isValid = false;
-      } else {
-        document.getElementById("cadastro-sigla").parentElement.classList.remove('error');
-      }
       
       // Validar email
       if (!validateEmail(email)) {
@@ -635,8 +628,8 @@
     // Adicionar validação em tempo real para a sigla (3 letras)
     document.getElementById("cadastro-sigla").addEventListener('input', function(e) {
       this.value = this.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
-      if (this.value.length > 3) {
-        this.value = this.value.substring(0, 3);
+      if (this.value.length > 4) {
+        this.value = this.value.substring(0, 4);
       }
     });
 
@@ -680,7 +673,7 @@
       document.getElementById('refresh-button').addEventListener('click', () => {
         navigator.serviceWorker.controller.postMessage('FORCE_UPDATE');
       });
-      
+
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/Calculadoras-de-Rotina/sw.js', { 
           scope: '/Calculadoras-de-Rotina/' 
