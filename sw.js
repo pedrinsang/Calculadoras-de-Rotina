@@ -79,7 +79,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // ========== FUNÇÕES AUXILIARES ==========
-async function networkFirstThenNetwork(request) {
+async function networkFirstThenCache(request) {
   try {
     // Tenta buscar da rede
     const networkResponse = await fetch(request);

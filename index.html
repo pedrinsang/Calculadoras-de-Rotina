@@ -225,6 +225,29 @@
       color: var(--primary-color);
     }
 
+    #installBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      background: #1b5e20;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 999;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      animation: pulse 2s infinite;
+      display: none;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
     @media (max-width: 480px) {
       .container {
         padding: 1.5rem;
@@ -323,6 +346,10 @@
       </div>
     </div>
   </div>
+
+  <button id="installBtn">
+    📲 Instalar App
+  </button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -675,92 +702,78 @@
       });
 
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/Calculadoras-de-Rotina/sw.js', { 
-          scope: '/Calculadoras-de-Rotina/' 
+        navigator.serviceWorker.register('./sw.js', { 
+          scope: './' 
         })
         .then(function(registration) {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          console.log('SW registrado:', registration.scope);
         })
         .catch(function(error) {
-          console.log('ServiceWorker registration failed: ', error);
+          console.error('Falha no registro:', error);
         });
       });
     }
 
     // Variável para armazenar o evento de instalação
     let deferredPrompt;
+    const installButton = document.getElementById('installBtn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
-      // Previne a exibição automática do prompt
       e.preventDefault();
-      // Armazena o evento para que possa ser acionado depois
       deferredPrompt = e;
-      // Mostra o botão de instalação
-      showInstallButton();
+      installButton.style.display = 'block';
     });
 
-    function showInstallButton() {
-      // Remove o botão existente se houver
-      const existingBtn = document.getElementById('installBtn');
-      if (existingBtn) existingBtn.remove();
-      
-      // Se não temos o evento de instalação, não mostramos o botão
+    installButton.addEventListener('click', async () => {
       if (!deferredPrompt) return;
       
-      // Cria o botão de instalação
-      const installBtn = document.createElement('button');
-      installBtn.id = 'installBtn';
-      installBtn.innerHTML = '📲 Instalar App';
-      installBtn.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 10px 15px;
-        background: #1b5e20;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        cursor: pointer;
-        z-index: 999;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        animation: pulse 2s infinite;
-      `;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
       
-      // Adiciona um estilo de animação para o botão
-      const style = document.createElement('style');
-      style.innerHTML = `
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); }
-        }
-      `;
-      document.head.appendChild(style);
+      if (outcome === 'accepted') {
+        console.log('Usuário aceitou a instalação');
+      } else {
+        console.log('Usuário rejeitou a instalação');
+      }
       
-      installBtn.onclick = async () => {
-        if (deferredPrompt) {
-          // Mostra o prompt de instalação
-          deferredPrompt.prompt();
-          // Espera pelo resultado
-          const { outcome } = await deferredPrompt.userChoice;
-          console.log(`User response to the install prompt: ${outcome}`);
-          // Limpa o evento armazenado
-          deferredPrompt = null;
-          // Remove o botão
-          installBtn.remove();
-        }
-      };
-      
-      document.body.appendChild(installBtn);
+      installButton.style.display = 'none';
+      deferredPrompt = null;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA instalado com sucesso!');
+      installButton.style.display = 'none';
+      deferredPrompt = null;
+    });
+
+    // Verifica se já está instalado (para iOS e outros navegadores)
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      installButton.style.display = 'none';
     }
 
-    // Esconde o botão se o app já estiver instalado
-    window.addEventListener('appinstalled', (evt) => {
-      console.log('App instalado com sucesso!');
-      const installBtn = document.getElementById('installBtn');
-      if (installBtn) installBtn.remove();
-    });
+    // Registro do Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registrado com sucesso:', registration.scope);
+            
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'activated') {
+                  if (confirm('Nova versão disponível! Recarregar agora?')) {
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch(error => {
+            console.log('Falha no registro do ServiceWorker:', error);
+          });
+      });
+    }
   </script>
 </body>
 </html>
