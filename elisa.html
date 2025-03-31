@@ -352,8 +352,8 @@
     }
 
     function calcularLeucose() {
-      const amostras = parseFloat(document.querySelector('#leucose #amostras').value);
-      const controles = parseFloat(document.querySelector('#leucose #controles').value);
+      const amostras = parseFloat(document.getElementById('amostras-leucose').value);
+      const controles = parseFloat(document.getElementById('controles-leucose').value);
 
       if (isNaN(amostras) || isNaN(controles)) {
         alert("Por favor, insira valores válidos.");
@@ -380,8 +380,8 @@
     }
 
     function calcularBvdv() {
-      const amostras = parseFloat(document.querySelector('#bvdv #amostras').value);
-      const controles = parseFloat(document.querySelector('#bvdv #controles').value);
+      const amostras = parseFloat(document.getElementById('amostras-bvdv').value);
+      const controles = parseFloat(document.getElementById('controles-bvdv').value);
 
       if (isNaN(amostras) || isNaN(controles)) {
         alert("Por favor, insira valores válidos.");
