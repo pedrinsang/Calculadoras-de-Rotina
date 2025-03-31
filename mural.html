@@ -772,6 +772,19 @@
         if (!docSnap.exists()) throw new Error("Tarefa não encontrada");
         
         const tarefa = docSnap.data();
+        let siglaUsuario = "N/A"; // Valor padrão
+
+        // Busca segura da sigla
+        if (tarefa.criadoPor) {
+          try {
+            const usuarioRef = doc(db, "usuarios", tarefa.criadoPor);
+            const usuarioSnap = await getDoc(usuarioRef);
+            siglaUsuario = usuarioSnap.exists() ? usuarioSnap.data().sigla || "N/A" : "N/A";
+          } catch (error) {
+            console.error("Erro ao buscar sigla:", error);
+          }
+        }
+
         const dataRecebimento = tarefa.dataRecebimento?.toDate 
           ? tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")
           : "Data não disponível";
@@ -817,6 +830,11 @@
           <div style="margin-bottom: 15px;">
             <strong style="display: inline-block; width: 120px;">Tipo:</strong>
             <span>${tarefa.tipo || 'N/A'}</span>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <strong style="display: inline-block; width: 120px;">Responsável:</strong>
+            <span>${siglaUsuario}</span>
           </div>
           
           <div style="margin-bottom: 15px;">
