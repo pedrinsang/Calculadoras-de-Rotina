@@ -43,7 +43,7 @@
     .container-botoes {
       display: flex;
       justify-content: space-between;
-      margin: 0px;
+      margin-top: 10px;
       
     }
 
@@ -456,7 +456,6 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { 
-      getDoc, // Certifique-se que esta importação está presente
       getFirestore, 
       collection, 
       addDoc, 
@@ -467,10 +466,12 @@
       Timestamp, 
       query, 
       where,
-      orderBy 
+      orderBy,
+      setDoc,
+      getDoc
     } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-
+  
     const firebaseConfig = {
       apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
       authDomain: "hub-de-calculadoras.firebaseapp.com",
@@ -480,20 +481,20 @@
       appId: "1:203883856586:web:a00536536a32ae76c5aa33",
       measurementId: "G-7H314CT9SH"
     };  
-
+  
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth();
-
+  
     // Funções de UI
     function mostrarLoading() {
       document.getElementById("loading").style.display = "flex";
     }
-
+  
     function esconderLoading() {
       document.getElementById("loading").style.display = "none";
     }
-
+  
     function mostrarFeedback(mensagem, tipo = "success") {
       const feedback = document.createElement("div");
       feedback.className = `feedback ${tipo}`;
@@ -504,7 +505,7 @@
         feedback.remove();
       }, 3000);
     }
-
+  
     function mostrarFormulario(edicao = false) {
       const form = document.getElementById("mural-form");
       const muralList = document.getElementById("mural-list");
@@ -519,25 +520,42 @@
         form.onsubmit = adicionarTarefa;
       }
     }
-
+  
     function esconderFormulario() {
       document.getElementById("mural-form").style.display = "none";
       document.getElementById("mural-list").style.display = "block";
       document.getElementById("adicionar-tarefa").style.display = "block";
     }
-
+  
+    // Funções auxiliares para datas
+    function normalizarDataParaUTC(dataString) {
+      const dataLocal = new Date(dataString);
+      return new Date(Date.UTC(
+        dataLocal.getFullYear(),
+        dataLocal.getMonth(),
+        dataLocal.getDate()
+      ));
+    }
+  
+    function formatarDataParaExibicao(dataUTC) {
+      return dataUTC.toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+    }
+  
     // Funções de Tarefas
     async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
       mostrarLoading();
       const muralList = document.getElementById("mural-list");
       muralList.innerHTML = "<p>Carregando tarefas...</p>";
-
+  
       try {
         const user = auth.currentUser;
-        if (!user) {
-          throw new Error("Usuário não autenticado");
-        }
-
+        if (!user) throw new Error("Usuário não autenticado");
+  
         let q;
         if (filtro === "Todos") {
           q = query(
@@ -551,20 +569,19 @@
             orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
           );
         }
-
+  
         const querySnapshot = await getDocs(q);
     
         if (querySnapshot.empty) {
           muralList.innerHTML = "<p>Nenhuma tarefa encontrada.</p>";
           return;
         }
-
+  
         muralList.innerHTML = "";
         querySnapshot.forEach((doc) => {
           const tarefa = doc.data();
-          // Verifica se a dataRecebimento existe e é um Timestamp
           const dataRecebimento = tarefa.dataRecebimento?.toDate 
-            ? tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")
+            ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
             : "Data não disponível";
           
           const statusClass = tarefa.status === 'em-progresso' ? 'em-progresso' : '';
@@ -575,7 +592,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <strong>ID:</strong> ${tarefa.id}<br>
-                  <strong>Tipo:</strong> ${tarefa.tipo}
+                  <strong>Tipo:</strong> ${tarefa.tipo}<br>
                 </div>
                 <div class="status-buttons">
                   <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Em Progresso</button>
@@ -598,7 +615,7 @@
         esconderLoading();
       }
     }
-
+  
     async function adicionarTarefa(e) {
       e.preventDefault();
       mostrarLoading();
@@ -606,14 +623,8 @@
       try {
         const user = auth.currentUser;
         if (!user) throw new Error("Usuário não autenticado");
-        
 
-        console.log("UID do usuário atual:", user.uid); // Log para depuração
-
-        // Buscar dados do usuário no Firestore
-        const usuarioRef = doc(db, "usuarios", user.uid);
-        const usuarioSnap = await getDoc(usuarioRef);
-        
+        // Buscar dados do usuário com fallback
         let siglaUsuario = "N/A";
         try {
           const usuarioRef = doc(db, "usuarios", user.uid);
@@ -622,16 +633,20 @@
           if (usuarioSnap.exists()) {
             siglaUsuario = usuarioSnap.data().sigla || "N/A";
           } else {
-            // Fallback 1: Verifica localStorage
+            // Fallback para localStorage
             const usuarioLocal = JSON.parse(localStorage.getItem("usuario"));
             if (usuarioLocal?.sigla) siglaUsuario = usuarioLocal.sigla;
-            
-            // Fallback 2: Log para debug
-            console.warn("Usuário não encontrado no Firestore. UID:", user.uid);
           }
-        } catch (firestoreError) {
-          console.error("Erro ao buscar usuário:", firestoreError);
+        } catch (error) {
+          console.error("Erro ao buscar usuário:", error);
         }
+
+        // Obter a data do input e criar um objeto Date no timezone local
+        const dataInput = document.getElementById("data").value;
+        const dataLocal = new Date(dataInput);
+        
+        // Ajustar para UTC mantendo o mesmo dia (adicionando o offset do timezone)
+        const dataUTC = new Date(dataLocal.getTime() + dataLocal.getTimezoneOffset() * 60000);
 
         const novaTarefa = {
           id: document.getElementById("id").value.trim(),
@@ -640,34 +655,27 @@
           gramatura: document.getElementById("tipo").value === "VACINA" 
                     ? parseFloat(document.getElementById("gramatura").value)
                     : null,
-          dataRecebimento: new Date(document.getElementById("data").value),
+          dataRecebimento: dataUTC, // Usando a data ajustada
           observacoes: document.getElementById("observacoes").value.trim(),
           status: "pendente",
           criadoEm: Timestamp.now(),
           criadoPor: user.uid,
-          siglaResponsavel: siglaUsuario // Usa a sigla encontrada
+          siglaResponsavel: siglaUsuario
         };
-
-
+  
         // Validações
-        if (!novaTarefa.id) {
-          throw new Error("ID é obrigatório");
-        }
-        if (isNaN(novaTarefa.quantidade)) {
-          throw new Error("Quantidade inválida");
-        }
-        if (novaTarefa.quantidade <= 0) {
-          throw new Error("Quantidade deve ser maior que zero");
-        }
+        if (!novaTarefa.id) throw new Error("ID é obrigatório");
+        if (isNaN(novaTarefa.quantidade)) throw new Error("Quantidade inválida");
+        if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
         if (novaTarefa.tipo === "VACINA" && (isNaN(novaTarefa.gramatura) || novaTarefa.gramatura <= 0)) {
           throw new Error("Gramatura inválida para vacina");
         }
-
+  
         await addDoc(collection(db, "tarefas"), {
           ...novaTarefa,
-          dataRecebimento: Timestamp.fromDate(novaTarefa.dataRecebimento)
+          dataRecebimento: Timestamp.fromDate(dataUTC) // Garante o armazenamento correto
         });
-
+      
         esconderFormulario();
         carregarTarefas();
         mostrarFeedback("Tarefa adicionada com sucesso!", "success");
@@ -678,7 +686,7 @@
         esconderLoading();
       }
     }
-
+  
     // Funções globais
     window.marcarProgresso = async (id) => {
       try {
@@ -693,7 +701,7 @@
         mostrarFeedback(`Erro: ${error.message}`, "error");
       }
     };
-
+  
     window.concluirTarefa = async (id) => {
       try {
         if (!confirm("Tem certeza que deseja concluir esta tarefa?")) return;
@@ -721,20 +729,15 @@
         esconderLoading();
       }
     };
-
+  
     window.excluirTarefa = async (id) => {
       try {
         if (!confirm("Tem certeza que deseja excluir esta tarefa?")) return;
         mostrarLoading();
         
-        const tarefaRef = doc(db, "tarefas", id);
-        const tarefaSnap = await getDoc(tarefaRef);
-        
-        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
-                
-        await deleteDoc(tarefaRef);
+        await deleteDoc(doc(db, "tarefas", id));
         carregarTarefas();
-        mostrarFeedback("Tarefa excluida com sucesso!", "success");
+        mostrarFeedback("Tarefa excluída com sucesso!", "success");
       } catch (error) {
         console.error("Erro ao excluir:", error);
         mostrarFeedback(`Erro: ${error.message}`, "error");
@@ -742,7 +745,7 @@
         esconderLoading();
       }
     };
-
+  
     window.editarTarefa = async (id) => {
       try {
         mostrarLoading();
@@ -756,7 +759,15 @@
         document.getElementById("tipo").value = tarefa.tipo;
         document.getElementById("quantidade").value = tarefa.quantidade;
         document.getElementById("gramatura").value = tarefa.gramatura || "";
-        document.getElementById("data").value = tarefa.dataRecebimento.toDate().toISOString().split("T")[0];
+        
+        // Exibir a data corretamente no formulário de edição
+        const dataRecebimento = tarefa.dataRecebimento?.toDate();
+        if (dataRecebimento) {
+          // Ajusta a data para o timezone local antes de exibir
+          const dataLocal = new Date(dataRecebimento.getTime() - dataRecebimento.getTimezoneOffset() * 60000);
+          document.getElementById("data").value = dataLocal.toISOString().split("T")[0];
+        }
+        
         document.getElementById("observacoes").value = tarefa.observacoes || "";
         
         mostrarFormulario(true);
@@ -765,6 +776,12 @@
           e.preventDefault();
           try {
             mostrarLoading();
+            
+            // Obter e ajustar a data (igual à função adicionarTarefa)
+            const dataInput = document.getElementById("data").value;
+            const dataLocal = new Date(dataInput);
+            const dataUTC = new Date(dataLocal.getTime() + dataLocal.getTimezoneOffset() * 60000);
+            
             await updateDoc(tarefaRef, {
               id: document.getElementById("id").value,
               tipo: document.getElementById("tipo").value,
@@ -772,10 +789,11 @@
               gramatura: document.getElementById("tipo").value === "VACINA" 
                         ? parseFloat(document.getElementById("gramatura").value)
                         : null,
-              dataRecebimento: Timestamp.fromDate(new Date(document.getElementById("data").value)),
+              dataRecebimento: Timestamp.fromDate(dataUTC),
               atualizadoEm: Timestamp.now(),
               observacoes: document.getElementById("observacoes").value.trim()
             });
+            
             esconderFormulario();
             carregarTarefas();
             mostrarFeedback("Tarefa atualizada com sucesso!", "success");
@@ -793,7 +811,7 @@
         esconderLoading();
       }
     };
-
+  
     window.mostrarDetalhes = async (id) => {
       try {
         mostrarLoading();
@@ -804,21 +822,19 @@
         
         const tarefa = docSnap.data();
         let siglaUsuario = "N/A";
-
+  
         if (tarefa.siglaResponsavel) {
           siglaUsuario = tarefa.siglaResponsavel;
-        } 
-        // Se não, tenta buscar do usuário
-        else if (tarefa.criadoPor) {
+        } else if (tarefa.criadoPor) {
           const usuarioRef = doc(db, "usuarios", tarefa.criadoPor);
           const usuarioSnap = await getDoc(usuarioRef);
           if (usuarioSnap.exists()) {
             siglaUsuario = usuarioSnap.data().sigla || "N/A";
           }
         }
-
+  
         const dataRecebimento = tarefa.dataRecebimento?.toDate 
-          ? tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")
+          ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
           : "Data não disponível";
         
         // Cria o modal
@@ -836,8 +852,7 @@
           align-items: center;
           z-index: 1000;
         `;
-
-        // Cria o conteúdo do modal (mantenha o mesmo conteúdo anterior)
+  
         const modalContent = document.createElement("div");
         modalContent.style.cssText = `
           background: white;
@@ -850,9 +865,9 @@
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           position: relative;
         `;
-
+  
         modalContent.innerHTML = `
-          <h3 style="margin-top: 0; color: #1b5e20;">Detalhes Completo da Tarefa</h3>
+          <h3 style="margin-bottom: 15px; margin-top: 0px; color: #1b5e20;">Detalhes da Tarefa</h3>
           
           <div style="margin-bottom: 15px;">
             <strong style="display: inline-block; width: 120px;">ID:</strong>
@@ -863,7 +878,7 @@
             <strong style="display: inline-block; width: 120px;">Tipo:</strong>
             <span>${tarefa.tipo || 'N/A'}</span>
           </div>
-
+  
           <div style="margin-bottom: 15px;">
             <strong style="display: inline-block; width: 120px;">Responsável:</strong>
             <span>${siglaUsuario}</span>
@@ -887,8 +902,8 @@
           ${tarefa.observacoes ? `
           <div style="margin-bottom: 20px;">
             <strong style="display: block; margin-bottom: 5px;">Observações:</strong>
-            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #1b5e20; white-space: pre-wrap;">
-              ${tarefa.observacoes}
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #1b5e20; white-space: pre-line; text-align: left;">
+              ${tarefa.observacoes.trim()}
             </div>
           </div>` : ''}
           
@@ -897,60 +912,25 @@
             X
           </button>
         `;
-
+  
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
-
-        // Função para limpar eventos
-        const limparEventos = () => {
-          document.removeEventListener("keydown", handleKeyDown);
-          observer.disconnect();
-        };
-
+  
         // Fecha o modal ao clicar no botão X
-        const fecharBtn = document.getElementById("fechar-modal");
-        if (fecharBtn) {
-          fecharBtn.onclick = () => {
-            document.body.removeChild(modal);
-            limparEventos();
-          };
-        }
-
-        // Fecha o modal ao clicar fora do conteúdo
+        document.getElementById("fechar-modal").onclick = () => {
+          document.body.removeChild(modal);
+        };
+  
+        // Fecha o modal ao clicar fora ou pressionar ESC
         modal.onclick = (e) => {
           if (e.target === modal) {
             document.body.removeChild(modal);
-            limparEventos();
           }
         };
-
-        // Fecha o modal com a tecla ESC
-        const handleKeyDown = (e) => {
-          if (e.key === "Escape") {
-            document.body.removeChild(modal);
-            limparEventos();
-          }
-        };
-        document.addEventListener("keydown", handleKeyDown);
-
-        // Observa quando o modal é removido usando MutationObserver
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.removedNodes) {
-              for (const node of mutation.removedNodes) {
-                if (node === modal) {
-                  limparEventos();
-                }
-              }
-            }
-          });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") document.body.removeChild(modal);
         });
-
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true
-        });
-
+  
       } catch (error) {
         console.error("Erro ao mostrar detalhes:", error);
         mostrarFeedback(`Erro: ${error.message}`, "error");
@@ -958,40 +938,36 @@
         esconderLoading();
       }
     };
-
+  
     // Inicialização
     document.addEventListener("DOMContentLoaded", () => {
-      // Configuração de Eventos
+      // Event Listeners
       document.getElementById("adicionar-tarefa").onclick = () => mostrarFormulario();
       document.getElementById("cancelar-tarefa").onclick = esconderFormulario;
       
       document.getElementById("tipo").addEventListener("change", function() {
         document.getElementById("gramatura").disabled = this.value !== "VACINA";
-        if (this.value === "VACINA") {
-          document.getElementById("gramatura").required = true;
-        } else {
-          document.getElementById("gramatura").required = false;
-        }
+        document.getElementById("gramatura").required = this.value === "VACINA";
       });
-
+  
       document.getElementById("filtro-ordem").addEventListener("change", (e) => {
         const filtroTipo = document.getElementById("filtro-tipo").value;
         carregarTarefas(filtroTipo, e.target.value);
       });
-
+  
       document.getElementById("filtro-tipo").addEventListener("change", (e) => {
         const ordem = document.getElementById("filtro-ordem").value;
         carregarTarefas(e.target.value, ordem);
       });
-
+  
       document.getElementById("hub-button").onclick = () => {
         window.location.href = "hub.html";
       };
-
+  
       document.getElementById("historico-button").onclick = () => {
         window.location.href = "historico.html";
       };
-
+  
       // Autenticação
       onAuthStateChanged(auth, (user) => {
         if (user) {
