@@ -561,15 +561,19 @@
         // Calcular quantidade inicial
         let quantidadeInicial = volumeComMargem / volumeVirus;
         
-        // Calcular diluições
+        // Calcular diluições - agora garantindo que a última diluição seja > 100µl
         let diluicoes = [];
         let fatorDiluicao = 1;
-        diluicoes.push({fator: fatorDiluicao, valor: quantidadeInicial});
-
-        while (quantidadeInicial < 100) {
-            quantidadeInicial *= 10;
+        let quantidadeAtual = quantidadeInicial;
+        
+        // Adiciona a primeira diluição (original)
+        diluicoes.push({fator: fatorDiluicao, valor: quantidadeAtual});
+        
+        // Continua multiplicando por 10 até que a quantidade seja > 100µl
+        while (quantidadeAtual <= 100) {
+            quantidadeAtual *= 10;
             fatorDiluicao *= 10;
-            diluicoes.push({fator: fatorDiluicao, valor: quantidadeInicial});
+            diluicoes.push({fator: fatorDiluicao, valor: quantidadeAtual});
         }
 
         // Construir resultado
@@ -598,17 +602,27 @@
             const titulacaoInput = document.getElementById('titulacao').value.trim();
             const amostras = document.getElementById('amostras').value;
             
-            // Converter titulação para formato legível (substitui ^ por formatação correta)
+            // Converter titulação para formato legível
             const expoente = titulacaoInput.replace("10^", "").replace(",", ".");
             const valorDecimal = Math.pow(10, parseFloat(expoente)).toLocaleString('pt-BR', {maximumFractionDigits: 4});
             const volumeVirus = (Math.pow(10, parseFloat(expoente)) / 2000).toLocaleString('pt-BR', {maximumFractionDigits: 4});
             
-            // Calcular placas necessárias (arredondando para cima)
-            const placasNecessarias = Math.ceil(amostras / 6);
+            // Calcular placas necessárias
+            const placasNecessarias = amostras <= 6 ? 1 : 1 + Math.ceil((amostras - 6) / 12);
             
-            // Calcular volumes (mesma lógica da função calcular)
+            // Calcular volumes
             let volumeTotal = amostras <= 6 ? 5000 : 5000 + Math.ceil((amostras - 6) * (5000 / 12));
             const volumeComMargem = Math.ceil(volumeTotal * 1.2);
+            
+            // Calcular quantidade inicial e diluições
+            let quantidadeInicial = volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000);
+            let diluicoes = [quantidadeInicial];
+            
+            // Adicionar diluições até que a quantidade seja > 100µl
+            while (quantidadeInicial <= 100) {
+                quantidadeInicial *= 10;
+                diluicoes.push(quantidadeInicial);
+            }
             
             // Construir texto formatado para cópia
             const textoParaCopiar = [
@@ -618,16 +632,23 @@
                 `Placas Necessárias: ${placasNecessarias}`,
                 `Volume Mínimo: ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml`,
                 `Volume com Margem: ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml`,
-                `Volume Viral: ${(volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000)).toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`,
+                `Volume Viral: ${diluicoes[0].toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`,
                 '',
-                `Diluições:`,
-                `10^${expoente} → ${(volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000)).toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`,
-                `10^${expoente} ×10 → ${(volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000) * 10).toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`
-            ].join('\n');
+                `Diluições:`
+            ];
+            
+            // Adicionar cada diluição ao texto
+            diluicoes.forEach((dil, index) => {
+                const notacao = index === 0 ? '' : ` ×10^${index}`;
+                textoParaCopiar.push(`10^${expoente}${notacao} → ${dil.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`);
+            });
+
+            // Juntar tudo com quebras de linha
+            const textoFinal = textoParaCopiar.join('\n');
 
             // Criar elemento temporário para copiar
             const textarea = document.createElement('textarea');
-            textarea.value = textoParaCopiar;
+            textarea.value = textoFinal;
             document.body.appendChild(textarea);
             textarea.select();
             
