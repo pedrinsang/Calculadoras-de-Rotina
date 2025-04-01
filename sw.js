@@ -1,4 +1,4 @@
-const CACHE_NAME = 'virologia-cache-v4'; // ⚠️ Altere este número SEMPRE que atualizar os arquivos!
+const CACHE_NAME = 'virologia-cache-v5'; // ⚠️ Altere este número SEMPRE que atualizar os arquivos!
 const OFFLINE_PAGE = './offline.html';
 const ASSETS = [
   './',
