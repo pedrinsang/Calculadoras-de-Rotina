@@ -456,7 +456,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { 
-      getDoc,
+      getDoc, // Certifique-se que esta importação está presente
       getFirestore, 
       collection, 
       addDoc, 
@@ -604,6 +604,35 @@
       mostrarLoading();
       
       try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("Usuário não autenticado");
+        
+
+        console.log("UID do usuário atual:", user.uid); // Log para depuração
+
+        // Buscar dados do usuário no Firestore
+        const usuarioRef = doc(db, "usuarios", user.uid);
+        const usuarioSnap = await getDoc(usuarioRef);
+        
+        let siglaUsuario = "N/A";
+        try {
+          const usuarioRef = doc(db, "usuarios", user.uid);
+          const usuarioSnap = await getDoc(usuarioRef);
+          
+          if (usuarioSnap.exists()) {
+            siglaUsuario = usuarioSnap.data().sigla || "N/A";
+          } else {
+            // Fallback 1: Verifica localStorage
+            const usuarioLocal = JSON.parse(localStorage.getItem("usuario"));
+            if (usuarioLocal?.sigla) siglaUsuario = usuarioLocal.sigla;
+            
+            // Fallback 2: Log para debug
+            console.warn("Usuário não encontrado no Firestore. UID:", user.uid);
+          }
+        } catch (firestoreError) {
+          console.error("Erro ao buscar usuário:", firestoreError);
+        }
+
         const novaTarefa = {
           id: document.getElementById("id").value.trim(),
           tipo: document.getElementById("tipo").value,
@@ -612,11 +641,13 @@
                     ? parseFloat(document.getElementById("gramatura").value)
                     : null,
           dataRecebimento: new Date(document.getElementById("data").value),
-          observacoes: document.getElementById("observacoes").value.trim(), // Novo campo
+          observacoes: document.getElementById("observacoes").value.trim(),
           status: "pendente",
           criadoEm: Timestamp.now(),
-          criadoPor: auth.currentUser.uid
+          criadoPor: user.uid,
+          siglaResponsavel: siglaUsuario // Usa a sigla encontrada
         };
+
 
         // Validações
         if (!novaTarefa.id) {
@@ -772,16 +803,17 @@
         if (!docSnap.exists()) throw new Error("Tarefa não encontrada");
         
         const tarefa = docSnap.data();
-        let siglaUsuario = "N/A"; // Valor padrão
+        let siglaUsuario = "N/A";
 
-        // Busca segura da sigla
-        if (tarefa.criadoPor) {
-          try {
-            const usuarioRef = doc(db, "usuarios", tarefa.criadoPor);
-            const usuarioSnap = await getDoc(usuarioRef);
-            siglaUsuario = usuarioSnap.exists() ? usuarioSnap.data().sigla || "N/A" : "N/A";
-          } catch (error) {
-            console.error("Erro ao buscar sigla:", error);
+        if (tarefa.siglaResponsavel) {
+          siglaUsuario = tarefa.siglaResponsavel;
+        } 
+        // Se não, tenta buscar do usuário
+        else if (tarefa.criadoPor) {
+          const usuarioRef = doc(db, "usuarios", tarefa.criadoPor);
+          const usuarioSnap = await getDoc(usuarioRef);
+          if (usuarioSnap.exists()) {
+            siglaUsuario = usuarioSnap.data().sigla || "N/A";
           }
         }
 

@@ -565,14 +565,16 @@
         const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
         const user = userCredential.user;
 
+
         // Salvar dados extras no Firestore
-        await addDoc(collection(db, "usuarios"), {
-          uid: user.uid,
+        await setDoc(doc(db, "usuarios", user.uid), { // <-- Usando setDoc com ID explícito
           nome,
           sigla,
           email,
           dataCadastro: new Date().toISOString()
         });
+
+        await new Promise(resolve => setTimeout(resolve, 500)); // Pequeno delay opcional
 
         showAlert('Cadastro realizado com sucesso!', 'success');
         showForm("login-form");
