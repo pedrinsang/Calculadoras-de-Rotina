@@ -138,6 +138,35 @@
       cursor: pointer;
     }
 
+    /* Estilos para a barra de busca */
+    .search-container {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+    }
+
+    #search-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    #search-button {
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #search-button:hover {
+      background-color: #166534;
+    }
+
     /* Responsividade */
     @media (max-width: 600px) {
       #historico-list {
@@ -179,6 +208,11 @@
         width: 90%;
         padding: 15px;
       }
+
+      .search-container {
+        flex-direction: column;
+        gap: 8px;
+      }
     }
   </style>
 </head>
@@ -188,6 +222,11 @@
     <h1>Histórico de Tarefas Concluídas</h1>
 
     <button id="voltar-button" class="button">Voltar ao Mural</button>
+
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Buscar por ID, tipo ou observações...">
+      <button id="search-button" class="button">Buscar</button>
+    </div>
 
     <div id="historico-list"></div>
   </div>
@@ -222,6 +261,59 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth();
+
+    // Variável para armazenar todas as tarefas
+    let todasTarefas = [];
+
+    // Função para filtrar tarefas com base no termo de busca
+    function filtrarTarefas(termo) {
+      const historicoList = document.getElementById("historico-list");
+      historicoList.innerHTML = "";
+
+      if (!termo) {
+        // Se não houver termo de busca, mostrar todas as tarefas
+        renderizarTarefas(todasTarefas);
+        return;
+      }
+
+      const termoLower = termo.toLowerCase();
+      const tarefasFiltradas = todasTarefas.filter(tarefa => {
+        return (
+          (tarefa.id && tarefa.id.toLowerCase().includes(termoLower)) ||
+          (tarefa.tipo && tarefa.tipo.toLowerCase().includes(termoLower)) ||
+          (tarefa.observacoes && tarefa.observacoes.toLowerCase().includes(termoLower))
+        );
+      });
+
+      if (tarefasFiltradas.length === 0) {
+        historicoList.innerHTML = "<p>Nenhuma tarefa encontrada com o termo de busca.</p>";
+      } else {
+        renderizarTarefas(tarefasFiltradas);
+      }
+    }
+
+    // Função para renderizar as tarefas na lista
+    function renderizarTarefas(tarefas) {
+      const historicoList = document.getElementById("historico-list");
+      historicoList.innerHTML = "";
+
+      tarefas.forEach((tarefa) => {
+        const historicoItem = document.createElement("div");
+        historicoItem.className = "historico-item";
+        historicoItem.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong>ID:</strong> ${tarefa.id || 'Sem ID'}<br>
+              <strong>Tipo:</strong> ${tarefa.tipo || 'N/A'}
+            </div>
+            <div class="status-buttons">
+              <button class="btn-detalhes" onclick="mostrarDetalhes('${tarefa.docId}')">Detalhes</button>
+            </div>
+          </div>
+        `;
+        historicoList.appendChild(historicoItem);
+      });
+    }
 
     // Função para mostrar detalhes da tarefa
     window.mostrarDetalhes = async (id) => {
@@ -388,25 +480,16 @@
           return;
         }
 
-        historicoList.innerHTML = "";
+        // Armazena todas as tarefas para busca local
+        todasTarefas = [];
         querySnapshot.forEach((doc) => {
           const tarefa = doc.data();
-          
-          const historicoItem = document.createElement("div");
-          historicoItem.className = "historico-item";
-          historicoItem.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <strong>ID:</strong> ${tarefa.id || 'Sem ID'}<br>
-                <strong>Tipo:</strong> ${tarefa.tipo || 'N/A'}
-              </div>
-              <div class="status-buttons">
-                <button class="btn-detalhes" onclick="mostrarDetalhes('${doc.id}')">Detalhes</button>
-              </div>
-            </div>
-          `;
-          historicoList.appendChild(historicoItem);
+          tarefa.docId = doc.id; // Adiciona o ID do documento para referência
+          todasTarefas.push(tarefa);
         });
+
+        // Renderiza todas as tarefas inicialmente
+        renderizarTarefas(todasTarefas);
       } catch (error) {
         console.error("Erro ao carregar histórico:", error);
         historicoList.innerHTML = `<p>Erro ao carregar histórico: ${error.message}</p>`;
@@ -417,6 +500,20 @@
       document.getElementById("voltar-button").onclick = () => {
         window.location.href = "mural.html";
       };
+
+      // Configura o evento de busca
+      document.getElementById("search-button").addEventListener("click", () => {
+        const termo = document.getElementById("search-input").value;
+        filtrarTarefas(termo);
+      });
+
+      // Permite buscar pressionando Enter
+      document.getElementById("search-input").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          const termo = document.getElementById("search-input").value;
+          filtrarTarefas(termo);
+        }
+      });
 
       onAuthStateChanged(auth, (user) => {
         if (user) {
