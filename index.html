@@ -402,6 +402,8 @@
       addDoc,
       getDocs,
       query,
+      setDoc,
+      doc,
       where
     } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
@@ -520,7 +522,6 @@
       // Validações
       let isValid = true;
       
-      // Validar nome
       if (nome.length < 3) {
         document.getElementById("cadastro-nome").parentElement.classList.add('error');
         isValid = false;
@@ -528,8 +529,6 @@
         document.getElementById("cadastro-nome").parentElement.classList.remove('error');
       }
       
-      
-      // Validar email
       if (!validateEmail(email)) {
         document.getElementById("cadastro-email").parentElement.classList.add('error');
         isValid = false;
@@ -537,7 +536,6 @@
         document.getElementById("cadastro-email").parentElement.classList.remove('error');
       }
       
-      // Validar senha
       if (senha.length < 6) {
         document.getElementById("cadastro-senha").parentElement.classList.add('error');
         isValid = false;
@@ -545,7 +543,6 @@
         document.getElementById("cadastro-senha").parentElement.classList.remove('error');
       }
       
-      // Validar código secreto
       if (codigo !== CODIGO_SECRETO) {
         document.getElementById("cadastro-codigo").parentElement.classList.add('error');
         isValid = false;
@@ -561,20 +558,25 @@
       try {
         setLoading(document.getElementById('cadastro-button'), true);
         
+        // Verifica se o email já existe
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods && methods.length > 0) {
+          showAlert('Este email já está em uso. Por favor, faça login.');
+          return;
+        }
+
         // Criar usuário no Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
         const user = userCredential.user;
 
-
         // Salvar dados extras no Firestore
-        await setDoc(doc(db, "usuarios", user.uid), { // <-- Usando setDoc com ID explícito
+        await setDoc(doc(db, "usuarios", user.uid), {
+          uid: user.uid,  // Adicione o UID para referência
           nome,
           sigla,
           email,
           dataCadastro: new Date().toISOString()
         });
-
-        await new Promise(resolve => setTimeout(resolve, 500)); // Pequeno delay opcional
 
         showAlert('Cadastro realizado com sucesso!', 'success');
         showForm("login-form");
@@ -587,11 +589,7 @@
         document.getElementById("cadastro-codigo").value = "";
       } catch (error) {
         console.error("Erro ao cadastrar:", error);
-        if (error.code === 'auth/email-already-in-use') {
-          showAlert('Este email já está em uso. Por favor, faça login.');
-        } else {
-          showAlert('Erro ao cadastrar: ' + error.message);
-        }
+        showAlert('Erro ao cadastrar: ' + error.message);
       } finally {
         setLoading(document.getElementById('cadastro-button'), false);
       }
