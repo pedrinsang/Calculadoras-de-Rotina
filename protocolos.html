@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hub de Protocolos</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #87daa0, #51c778);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container-fora {
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+      background: white;
+      color: #1b5e20;
+      border-radius: 10px;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+      margin: 20px 0;
+    }
+
+    .button {
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: #166534;
+    }
+
+    .container-botoes {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    #protocolos-list {
+      margin-top: 20px;
+      min-height: 60vh;
+      max-height: 65vh;
+      overflow-y: auto;
+      padding: 15px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .protocolo-item {
+      background-color: #f9f9f9;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .protocolo-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      background-color: #f0f0f0;
+    }
+
+    .protocolo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .protocolo-title {
+      font-weight: bold;
+      font-size: 18px;
+      color: #1b5e20;
+    }
+
+    .protocolo-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-visualizar {
+      padding: 5px 10px;
+      background-color: #1b5e20;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-visualizar:hover {
+      opacity: 0.9;
+    }
+
+    .protocolo-desc {
+      margin-top: 8px;
+      color: #555;
+    }
+
+    .protocolo-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .tag {
+      background-color: #e3f2fd;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #1e3a8a;
+    }
+
+    .search-container {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+    }
+
+    #search-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    #filter-category {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      min-width: 150px;
+    }
+
+    #loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .feedback {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 5px;
+      color: white;
+      z-index: 1000;
+      animation: slideIn 0.5s, fadeOut 0.5s 2.5s forwards;
+    }
+
+    .feedback.success {
+      background-color: #1b5e20;
+    }
+
+    .feedback.error {
+      background-color: #d32f2f;
+    }
+
+    /* Barra de rolagem */
+    #protocolos-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #protocolos-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    #protocolos-list::-webkit-scrollbar-thumb {
+      background: #1b5e20;
+      border-radius: 4px;
+    }
+
+    #protocolos-list::-webkit-scrollbar-thumb:hover {
+      background: #166534;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    /* Responsivo */
+    @media (max-width: 768px) {
+      .container-fora {
+        padding: 15px;
+      }
+
+      .search-container {
+        flex-direction: column;
+      }
+
+      #filter-category {
+        width: 100%;
+      }
+
+      .protocolo-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .protocolo-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      #protocolos-list {
+        min-height: 50vh;
+        max-height: 55vh;
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      .button {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .protocolo-item {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fora">
+    <div id="loading">
+      <div style="background: white; padding: 20px; border-radius: 5px;">
+        Carregando...
+      </div>
+    </div>
+
+    <div class="container">
+      <h1>Hub de Protocolos</h1>
+
+      <div class="container-botoes">
+        <button id="hub-button" class="button">Voltar ao Hub</button>
+        <button id="mural-button" class="button">Ir para Mural</button>
+      </div>
+
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="Buscar protocolos...">
+        <select id="filter-category">
+            <option value="todos">Todos os Protocolos</option>
+            <option value="cultivo-celular">Cultivo Celular</option>
+            <option value="virologia">Técnicas Virológicas</option>
+            <option value="imunologia">Técnicas Imunológicas</option>
+            <option value="molecular">Biologia Molecular</option>
+            <option value="microscopia">Microscopia</option>
+            <option value="hemaglutinacao">Hemaglutinação</option>
+            <option value="soroneutralizacao">Soroneutralização</option>
+            <option value="esterilizacao">Esterilização/Limpeza</option>
+            <option value="diagnostico">Diagnóstico Viral</option>
+        </select>
+      </div>
+
+      <div id="protocolos-list">
+        <!-- Protocolos serão carregados aqui -->
+        <p>Carregando protocolos...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dados dos protocolos (substitua pelos seus PDFs)
+    const protocolos = [
+        {
+            id: 'PROT-001',
+            titulo: 'Meios de Cultivo Celular',
+            descricao: 'Preparação de meios de cultura celular para manutenção de culturas.',
+            categoria: 'cultivo-celular',
+            tags: ['meios', 'antibióticos', 'antifúngicos', 'MEM', 'RPMI'],
+            arquivo: 'protocolos/Meios de Cultivo.pdf'
+        },
+        {
+            id: 'PROT-002',
+            titulo: 'Cultivo Celular Primário',
+            descricao: 'Culturas celulares primárias a partir de tecidos animais.',
+            categoria: 'cultivo-celular',
+            tags: ['células', 'primário', 'cultivo'],
+            arquivo: 'protocolos/Cultivo Celular Primário.pdf'
+        },
+        {
+            id: 'PROT-003',
+            titulo: 'Manutenção de Células',
+            descricao: 'Procedimentos para manutenção de células.',
+            categoria: 'cultivo-celular',
+            tags: ['manutenção', 'células', 'cultivo'],
+            arquivo: 'protocolos/Manutencao-Congelamento-Descongelamento.pdf'
+        },
+        {
+            id: 'PROT-004',
+            titulo: 'Congelamento de Células',
+            descricao: 'Criopreservação de culturas celulares.',
+            categoria: 'cultivo-celular',
+            tags: ['criopreservação', 'células', 'nitrogênio'],
+            arquivo: 'protocolos/Manutencao-Congelamento-Descongelamento.pdf'
+        },
+        {
+            id: 'PROT-005',
+            titulo: 'Descongelamento de Células',
+            descricao: 'Recuperação de culturas celulares a partir de estoques congelados.',
+            categoria: 'cultivo-celular',
+            tags: ['reativação', 'células', 'cultivo'],
+            arquivo: 'protocolos/Manutencao-Congelamento-Descongelamento.pdf'
+        },
+        {
+            id: 'PROT-006',
+            titulo: 'Contagem Celular',
+            descricao: 'Método para quantificação de células em suspensão.',
+            categoria: 'cultivo-celular',
+            tags: ['hemocitômetro', 'concentração', 'células'],
+            arquivo: 'protocolos/Contagem Celular.pdf'
+        },
+        {
+            id: 'PROT-007',
+            titulo: 'Determinação da Viabilidade Celular (Azul de Tripan)',
+            descricao: 'Avaliação da viabilidade celular através do método de exclusão por corante Azul de Tripan.',
+            categoria: 'cultivo-celular',
+            tags: ['viabilidade', 'azul de tripan', 'células'],
+            arquivo: 'protocolos/Determinação da viabilidade celular.pdf'
+        },
+        {
+            id: 'PROT-008',
+            titulo: 'MTT',
+            descricao: 'Ensaio colorimétrico para avaliação de viabilidade e proliferação celular baseado na redução do sal de tetrazólio.',
+            categoria: 'cultivo-celular',
+            tags: ['ensaios', 'viabilidade', 'colorimétrico'],
+            arquivo: 'protocolos/MTT.pdf'
+        },
+        {
+            id: 'PROT-009',
+            titulo: 'Inoculação em Ovo Embrionado',
+            descricao: 'Técnicas de inoculação viral em diferentes compartimentos de ovos embrionados (cório-alantóide, alantóide e gema).',
+            categoria: 'virologia',
+            tags: ['ovo', 'embrião', 'inoculação'],
+            arquivo: 'protocolos/Inoculação em ovo embrionado.pdf'
+        },
+        {
+            id: 'PROT-010',
+            titulo: 'Preparação de Crostas para Microscopia Eletrônica',
+            descricao: 'Processamento de amostras de crostas para visualização de partículas virais em microscopia eletrônica.',
+            categoria: 'microscopia',
+            tags: ['ME', 'preparação', 'amostras'],
+            arquivo: 'protocolos/Preparação de crostas para microscopia.pdf'
+        },
+        {
+            id: 'PROT-011',
+            titulo: 'Preparação de Fezes para Microscopia Eletrônica',
+            descricao: 'Processamento de amostras fecais para detecção de partículas virais em microscopia eletrônica.',
+            categoria: 'microscopia',
+            tags: ['fezes', 'ME', 'diagnóstico'],
+            arquivo: 'protocolos/Preparação de fezes para microscopia.pdf'
+        },
+        {
+            id: 'PROT-012',
+            titulo: 'Separação da Capa Flogística',
+            descricao: 'Método para separação da capa flogística (camada leucocitária) de amostras sanguíneas para isolamento viral.',
+            categoria: 'virologia',
+            tags: ['capa flogística', 'separação', 'amostras'],
+            arquivo: 'protocolos/Separação da capa flogística.pdf'
+        },
+        {
+            id: 'PROT-013',
+            titulo: 'Isolamento Viral em Cultivo Celular',
+            descricao: 'Procedimento para isolamento de vírus a partir de amostras clínicas utilizando culturas celulares sensíveis.',
+            categoria: 'virologia',
+            tags: ['isolamento', 'vírus', 'cultivo'],
+            arquivo: 'protocolos/Isolamento viral em cultivo celular.pdf'
+        },
+        {
+            id: 'PROT-014',
+            titulo: 'Amplificação Viral (Estoque)',
+            descricao: 'Protocolo para amplificação de estoques virais em culturas celulares para obtenção de altos títulos virais.',
+            categoria: 'virologia',
+            tags: ['amplificação', 'estoque', 'vírus'],
+            arquivo: 'protocolos/Amplificação viral (estoque).pdf'
+        },
+        {
+            id: 'PROT-015',
+            titulo: 'Inativação Viral com BEI',
+            descricao: 'Método de inativação viral utilizando Etilenamina Binária (BEI) para produção de antígenos inativados.',
+            categoria: 'virologia',
+            tags: ['inativação', 'BEI', 'segurança'],
+            arquivo: 'protocolos/Inativação viral com BEI (Etilenamina Binária).pdf'
+        },
+        {
+            id: 'PROT-016',
+            titulo: 'Ultracentrifugação de Vírus',
+            descricao: 'Purificação de partículas virais através de ultracentrifugação em gradiente de sacarose.',
+            categoria: 'virologia',
+            tags: ['ultracentrifugação', 'purificação', 'vírus'],
+            arquivo: 'protocolos/Ultracentrifugação de vírus.pdf'
+        },
+        {
+            id: 'PROT-017',
+            titulo: 'Clonagem de Vírus por Ensaio de Placa',
+            descricao: 'Método para clonagem viral através de plaqueamento em monocamadas celulares e isolamento de placas individuais.',
+            categoria: 'virologia',
+            tags: ['clonagem', 'placa', 'vírus'],
+            arquivo: 'protocolos/Contagem de vírus por ensaio de placa.pdf'
+        },
+        {
+            id: 'PROT-018',
+            titulo: 'Titulação Viral em Microplacas',
+            descricao: 'Determinação do título viral pelo método TCID50 (Dose Infectante para 50% das Culturas de Tecidos) em microplacas de 96 poços.',
+            categoria: 'virologia',
+            tags: ['titulação', 'TCID50', 'microplacas'],
+            arquivo: 'protocolos/Titulação viral em microplacas de 96 cavidades.pdf'
+        },
+        {
+            id: 'PROT-019',
+            titulo: 'Titulação Viral por PFU',
+            descricao: 'Determinação do título viral em Unidades Formadoras de Placa (PFU) através de ensaios de plaqueamento em monocamadas celulares.',
+            categoria: 'virologia',
+            tags: ['PFU', 'titulação', 'placa'],
+            arquivo: 'protocolos/Titulação viral por PFU.pdf'
+        },
+        {
+            id: 'PROT-020',
+            titulo: 'Liofilização',
+            descricao: 'Processo de desidratação de amostras biológicas para preservação a longo prazo através de congelamento e sublimação.',
+            categoria: 'virologia',
+            tags: ['liofilização', 'preservação', 'amostras'],
+            arquivo: 'protocolos/Liofilização.pdf'
+        },
+        {
+            id: 'PROT-021',
+            titulo: 'Imunoperoxidase em Cultivo Celular',
+            descricao: 'Técnica de detecção de antígenos virais em culturas celulares utilizando o sistema peroxidase-antiperoxidase.',
+            categoria: 'imunologia',
+            tags: ['imunoperoxidase', 'células', 'marcação'],
+            arquivo: 'protocolos/Imunoperoxidase em cultivo celular.pdf'
+        },
+        {
+            id: 'PROT-022',
+            titulo: 'Preparação de Lâminas para Imunofluorescência',
+            descricao: 'Preparação de controles positivos e negativos para ensaios de imunofluorescência em culturas celulares.',
+            categoria: 'imunologia',
+            tags: ['lâminas', 'controle', 'imunofluorescência'],
+            arquivo: 'protocolos/Preparação de lâminas para o controle positivo e negativo de imunofluorescência.pdf'
+        },
+        {
+            id: 'PROT-023',
+            titulo: 'Imunofluorescência (IFA)',
+            descricao: 'Método para detecção de antígenos virais ou anticorpos específicos utilizando anticorpos conjugados com fluoróforos.',
+            categoria: 'imunologia',
+            tags: ['IFA', 'anticorpos', 'fluorescência'],
+            arquivo: 'protocolos/Imunofluorescência (IFA).pdf'
+        },
+        {
+            id: 'PROT-024',
+            titulo: 'Processamento de Tecidos para Imuno-histoquímica',
+            descricao: 'Protocolo para fixação, inclusão em parafina e corte de tecidos para análise por imuno-histoquímica.',
+            categoria: 'imunologia',
+            tags: ['tecido', 'fixação', 'processamento'],
+            arquivo: 'protocolos/Processamento de tecidos para imuno-histoquímica.pdf'
+        },
+        {
+            id: 'PROT-025',
+            titulo: 'Imuno-histoquímica',
+            descricao: 'Técnica para detecção de antígenos em cortes de tecidos utilizando anticorpos específicos e sistemas de detecção enzimáticos.',
+            categoria: 'imunologia',
+            tags: ['IHC', 'tecido', 'marcação'],
+            arquivo: 'protocolos/Imuno-histoquímica.pdf'
+        },
+        {
+            id: 'PROT-026',
+            titulo: 'Separação de Soro e Inativação do Complemento',
+            descricao: 'Obtenção de soro a partir de sangue total e inativação do sistema complementar por tratamento térmico.',
+            categoria: 'imunologia',
+            tags: ['soro', 'complemento', 'inativação'],
+            arquivo: 'protocolos/Separação de soro e inativação do complemento.pdf'
+        },
+        {
+            id: 'PROT-027',
+            titulo: 'Coagulação por Glutaraldeído',
+            descricao: 'Método para coagulação de proteínas séricas utilizando glutaraldeído para ensaios imunológicos.',
+            categoria: 'imunologia',
+            tags: ['glutaraldeído', 'coagulação', 'soro'],
+            arquivo: 'protocolos/Coagulação por glutaraldeído.pdf'
+        },
+        {
+            id: 'PROT-028',
+            titulo: 'Turvação por Sulfato de Zinco',
+            descricao: 'Técnica de precipitação de proteínas séricas utilizando sulfato de zinco para ensaios imunológicos.',
+            categoria: 'imunologia',
+            tags: ['sulfato de zinco', 'turvação', 'soro'],
+            arquivo: 'protocolos/Turvação por sulfato de zinco.pdf'
+        },
+        {
+            id: 'PROT-029',
+            titulo: 'Determinação de Imunoglobulinas no Colostro',
+            descricao: 'Método para quantificação de imunoglobulinas em amostras de colostro animal.',
+            categoria: 'imunologia',
+            tags: ['imunoglobulinas', 'colostro', 'anticorpos'],
+            arquivo: 'protocolos/Determinação de imunoglobulinas no colostro.pdf'
+        },
+        {
+            id: 'PROT-030',
+            titulo: 'Hemaglutinação para Vírus da Influenza Equina',
+            descricao: 'Ensaios de hemaglutinação e inibição da hemaglutinação para detecção e titulação do vírus da influenza equina.',
+            categoria: 'hemaglutinacao',
+            tags: ['influenza', 'equino', 'hemaglutinação'],
+            arquivo: 'protocolos/Hemaglutinação e inibição da hemaglutinação para o vírus da influenza equina.pdf'
+        },
+        {
+            id: 'PROT-031',
+            titulo: 'Hemaglutinação para Parvovírus Suíno',
+            descricao: 'Ensaios de hemaglutinação e inibição da hemaglutinação para detecção de parvovírus suíno.',
+            categoria: 'hemaglutinacao',
+            tags: ['parvovírus', 'suíno', 'hemaglutinação'],
+            arquivo: 'protocolos/Hemaglutinação e inibição da hemaglutinação para o parvovírus suíno.pdf'
+        },
+        {
+            id: 'PROT-032',
+            titulo: 'Hemaglutinação para Parvovírus Bovina',
+            descricao: 'Ensaios de hemaglutinação para detecção de parvovírus bovino em amostras clínicas.',
+            categoria: 'hemaglutinacao',
+            tags: ['parvovírus', 'bovino', 'hemaglutinação'],
+            arquivo: 'protocolos/Hemaglutinação para parvovírus bovino.pdf'
+        },
+        {
+            id: 'PROT-033',
+            titulo: 'Hemaglutinação para Parvovírus Canino',
+            descricao: 'Ensaios de hemaglutinação e inibição da hemaglutinação para detecção de parvovírus canino.',
+            categoria: 'hemaglutinacao',
+            tags: ['parvovírus', 'canino', 'hemaglutinação'],
+            arquivo: 'protocolos/Hemaglutinação e inibição da hemaglutinação para parvovírus canino.pdf'
+        },
+        {
+            id: 'PROT-034',
+            titulo: 'Soroneutralização para BVDV',
+            descricao: 'Ensaios de soroneutralização para detecção de anticorpos contra o Vírus da Diarreia Viral Bovina (BVDV).',
+            categoria: 'soroneutralizacao',
+            tags: ['BVDV', 'soroneutralização', 'vírus'],
+            arquivo: 'protocolos/Soroneutralizacao.pdf'
+        },
+        {
+            id: 'PROT-035',
+            titulo: 'Soroneutralização para Herpesvírus Bovino',
+            descricao: 'Ensaios de soroneutralização para detecção de anticorpos contra herpesvírus bovino tipos 1 e 5.',
+            categoria: 'soroneutralizacao',
+            tags: ['herpesvírus', 'bovino', 'soroneutralização'],
+            arquivo: 'protocolos/Soroneutralizacao.pdf'
+        },
+        {
+            id: 'PROT-036',
+            titulo: 'Soroneutralização para Herpesvírus Equino',
+            descricao: 'Ensaios de soroneutralização para detecção de anticorpos contra herpesvírus equino (EHV).',
+            categoria: 'soroneutralizacao',
+            tags: ['herpesvírus', 'equino', 'soroneutralização'],
+            arquivo: 'protocolos/Soroneutralizacao.pdf'
+        },
+        {
+            id: 'PROT-037',
+            titulo: 'Soroneutralização para Cinomose',
+            descricao: 'Ensaios de soroneutralização para detecção de anticorpos contra o vírus da cinomose canina.',
+            categoria: 'soroneutralizacao',
+            tags: ['cinomose', 'canino', 'soroneutralização'],
+            arquivo: 'protocolos/Soroneutralizacao.pdf'
+        },
+        {
+            id: 'PROT-038',
+            titulo: 'Imunodifusão em Gel de Ágar para Leucose Bovina',
+            descricao: 'Ensaios de imunodifusão em gel de ágar para detecção de antígenos ou anticorpos contra o vírus da leucose bovina.',
+            categoria: 'imunologia',
+            tags: ['leucose', 'imunodifusão', 'bovino'],
+            arquivo: 'protocolos/Imunodifusão.pdf'
+        },
+        {
+            id: 'PROT-039',
+            titulo: 'Imunodifusão em Gel de Ágar para Língua Azul',
+            descricao: 'Ensaios de imunodifusão em gel de ágar para detecção de antígenos ou anticorpos contra o vírus da língua azul.',
+            categoria: 'imunologia',
+            tags: ['língua azul', 'imunodifusão', 'bovino'],
+            arquivo: 'protocolos/Imunodifusão.pdf'
+        },
+        {
+            id: 'PROT-040',
+            titulo: 'Vacina contra Papilomatose',
+            descricao: 'Preparação de vacina autógena contra papilomatose para bovinos, equinos e caninos a partir de tecido tumoral.',
+            categoria: 'diagnostico',
+            tags: ['papilomatose', 'vacina', 'bovino'],
+            arquivo: 'protocolos/Vacinas papilomatose.pdf'
+        },
+        {
+            id: 'PROT-041',
+            titulo: 'Diagnóstico de Raiva',
+            descricao: 'Métodos para diagnóstico de raiva incluindo imunofluorescência direta e prova biológica em camundongos.',
+            categoria: 'diagnostico',
+            tags: ['raiva', 'diagnóstico', 'imunofluorescência'],
+            arquivo: 'protocolos/Diagnóstico de raiva.pdf'
+        },
+        {
+            id: 'PROT-042',
+            titulo: 'Extração de DNA (DNAzol)',
+            descricao: 'Método rápido para extração de DNA genômico utilizando o reagente DNAzol.',
+            categoria: 'molecular',
+            tags: ['DNA', 'extração', 'DNAzol'],
+            arquivo: 'protocolos/Extração de DNA.pdf'
+        },
+        {
+            id: 'PROT-043',
+            titulo: 'Extração de DNA com Fenol/Clorofórmio',
+            descricao: 'Método tradicional para extração de DNA utilizando fenol e clorofórmio para purificação.',
+            categoria: 'molecular',
+            tags: ['DNA', 'fenol', 'clorofórmio'],
+            arquivo: 'protocolos/Extração de DNA com Fenol-Clorofórmio.pdf'
+        },
+        {
+            id: 'PROT-044',
+            titulo: 'Precipitação de DNA por Etanol',
+            descricao: 'Protocolo para precipitação e recuperação de DNA utilizando etanol absoluto e acetato de sódio.',
+            categoria: 'molecular',
+            tags: ['DNA', 'precipitação', 'etanol'],
+            arquivo: 'protocolos/Precipitação de DNA por Etanol.pdf'
+        },
+        {
+            id: 'PROT-045',
+            titulo: 'Extração de DNA de Plasmídeo (Microprep)',
+            descricao: 'Método rápido para extração de DNA plasmidial diretamente de colônias bacterianas.',
+            categoria: 'molecular',
+            tags: ['plasmídeo', 'microprep', 'DNA'],
+            arquivo: 'protocolos/Extração de DNA de plasmídeo.pdf'
+        },
+        {
+            id: 'PROT-046',
+            titulo: 'Extração de Plasmídeo (Microprep de Cultura)',
+            descricao: 'Método rápido para extração de DNA plasmidial a partir de pequenos volumes de cultura bacteriana.',
+            categoria: 'molecular',
+            tags: ['plasmídeo', 'microprep', 'cultura'],
+            arquivo: 'protocolos/Extração de plasmídeo (Microprep. de 50μL de cultura).pdf'
+        },
+        {
+            id: 'PROT-047',
+            titulo: 'Extração de DNA Plasmidial (Miniprep)',
+            descricao: 'Protocolo padrão para extração de DNA plasmidial em pequena escala utilizando colunas de sílica.',
+            categoria: 'molecular',
+            tags: ['plasmídeo', 'miniprep', 'DNA'],
+            arquivo: 'protocolos/Extração de DNA plasmidial (Miniprep).pdf'
+        },
+        {
+            id: 'PROT-048',
+            titulo: 'Extração de DNA Plasmidial (Midiprep)',
+            descricao: 'Protocolo para extração de DNA plasmidial em média escala para obtenção de maiores quantidades de plasmídeo.',
+            categoria: 'molecular',
+            tags: ['plasmídeo', 'midiprep', 'DNA'],
+            arquivo: 'protocolos/Extração de DNA plasmidial (Midiprep).pdf'
+        },
+        {
+            id: 'PROT-049',
+            titulo: 'Extração de DNA Viral',
+            descricao: 'Métodos para extração de DNA viral a partir de amostras clínicas ou culturas virais.',
+            categoria: 'molecular',
+            tags: ['DNA', 'viral', 'extração'],
+            arquivo: 'protocolos/Extração de DNA viral.pdf'
+        },
+        {
+            id: 'PROT-050',
+            titulo: 'Cuidados para Trabalhar com RNA',
+            descricao: 'Boas práticas para manipulação de RNA visando evitar degradação por RNases ambientais.',
+            categoria: 'molecular',
+            tags: ['RNA', 'contaminação', 'RNase'],
+            arquivo: 'protocolos/Cuidados necessários para se trabalhar com RNA.pdf'
+        },
+        {
+            id: 'PROT-051',
+            titulo: 'Extração de RNA (Trizol)',
+            descricao: 'Método para extração de RNA total utilizando o reagente Trizol (fenol-guanidinio).',
+            categoria: 'molecular',
+            tags: ['RNA', 'extração', 'Trizol'],
+            arquivo: 'protocolos/Extração de RNA (Tirzo)pdf'
+        },
+        {
+            id: 'PROT-052',
+            titulo: 'Preparação de Bactérias Competentes',
+            descricao: 'Protocolo para preparação de células bacterianas competentes para transformação por choque térmico.',
+            categoria: 'molecular',
+            tags: ['bactérias', 'competentes', 'transformação'],
+            arquivo: 'protocolos/Preparação de bactérias competentes.pdf'
+        },
+        {
+            id: 'PROT-053',
+            titulo: 'Transformação Rápida de Bactérias',
+            descricao: 'Método rápido para transformação de bactérias competentes com DNA plasmidial.',
+            categoria: 'molecular',
+            tags: ['transformação', 'bactérias', 'plasmídeo'],
+            arquivo: 'protocolos/Transformação rápida de bactérias com plasmídeo.pdf'
+        },
+        {
+            id: 'PROT-054',
+            titulo: 'Transfecção de DNA por Eletroporação',
+            descricao: 'Método para introdução de DNA em células eucarióticas utilizando pulsos elétricos de alta voltagem.',
+            categoria: 'molecular',
+            tags: ['eletroporação', 'transfecção', 'DNA'],
+            arquivo: 'protocolos/Transferção de DNA por eletroporação.pdf'
+        },
+        {
+            id: 'PROT-055',
+            titulo: 'Digestão de DNA com Endonucleases',
+            descricao: 'Protocolo para digestão de DNA com enzimas de restrição para análise ou clonagem molecular.',
+            categoria: 'molecular',
+            tags: ['restrição', 'enzimas', 'digestão'],
+            arquivo: 'protocolos/Digestação de DNA com endonuclease.pdf'
+        },
+        {
+            id: 'PROT-056',
+            titulo: 'Dosagem de Proteína - Coomassie Blue',
+            descricao: 'Método colorimétrico para quantificação de proteínas utilizando o corante Coomassie Brilliant Blue.',
+            categoria: 'molecular',
+            tags: ['proteína', 'dosagem', 'colorimétrico'],
+            arquivo: 'protocolos/Dosagem de proteína – Coomasie blue.pdf'
+        },
+        {
+            id: 'PROT-057',
+            titulo: 'Reação em Cadeia da Polimerase (PCR)',
+            descricao: 'Protocolo padrão para amplificação de sequências de DNA pela técnica de PCR convencional.',
+            categoria: 'molecular',
+            tags: ['PCR', 'amplificação', 'DNA'],
+            arquivo: 'protocolos/Reação em cadeia da polimerase (PCR).pdf'
+        },
+        {
+            id: 'PROT-058',
+            titulo: 'Descarte de Material da Biologia Molecular',
+            descricao: 'Procedimentos para descarte seguro de resíduos gerados em técnicas de biologia molecular.',
+            categoria: 'esterilizacao',
+            tags: ['descarte', 'resíduos', 'biologia molecular'],
+            arquivo: 'protocolos/Descarte de material da biologia molecular.pdf'
+        },
+        {
+            id: 'PROT-059',
+            titulo: 'Protocolos de Limpeza e Esterilização',
+            descricao: 'Procedimentos para limpeza e esterilização de materiais e superfícies em laboratório.',
+            categoria: 'esterilizacao',
+            tags: ['limpeza', 'esterilização', 'laboratório'],
+            arquivo: 'protocolos/Protocolos de limpeza e esterilização.pdf'
+        },
+        {
+            id: 'PROT-060',
+            titulo: 'Protocolo de Utilização das Autoclaves',
+            descricao: 'Instruções para operação segura de autoclaves para esterilização de materiais laboratoriais.',
+            categoria: 'esterilizacao',
+            tags: ['autoclave', 'esterilização', 'equipamento'],
+            arquivo: 'protocolos/Protocolo de utilização das autoclaves.pdf'
+        },
+        {
+            id: 'PROT-061',
+            titulo: 'Protocolo de Utilização do Forno de Esterilização',
+            descricao: 'Instruções para operação segura de fornos de esterilização por calor seco.',
+            categoria: 'esterilizacao',
+            tags: ['forno', 'esterilização', 'equipamento'],
+            arquivo: 'protocolos/Protocolo de utilização do forno de esterilização.pdf'
+        },
+        {
+            id: 'PROT-062',
+            titulo: 'Limpeza e Descarte do Material da Biologia Molecular',
+            descricao: 'Procedimentos específicos para limpeza e descarte de materiais utilizados em biologia molecular.',
+            categoria: 'esterilizacao',
+            tags: ['limpeza', 'descarte', 'biologia molecular'],
+            arquivo: 'protocolos/Limpeza e descarte do material utilizado na biologia molecular.pdf'
+        },
+        {
+            id: 'PROT-063',
+            titulo: 'Limpeza das Estufas de CO2',
+            descricao: 'Protocolo para limpeza e manutenção de estufas de CO2 utilizadas para cultivo celular.',
+            categoria: 'esterilizacao',
+            tags: ['estufa', 'CO2', 'limpeza'],
+            arquivo: 'protocolos/Limpeza das estufas de CO2.pdf'
+        },
+        {
+            id: 'PROT-064',
+            titulo: 'Limpeza dos Banhos-Maria',
+            descricao: 'Procedimentos para limpeza e manutenção de banhos-maria utilizados em laboratório.',
+            categoria: 'esterilizacao',
+            tags: ['banho-maria', 'limpeza', 'manutenção'],
+            arquivo: 'protocolos/Limpeza dos banhos-maria.pdf'
+        },
+        {
+            id: 'PROT-065',
+            titulo: 'Limpeza dos Fluxos Laminares',
+            descricao: 'Protocolo para limpeza e descontaminação de cabines de fluxo laminar.',
+            categoria: 'esterilizacao',
+            tags: ['fluxo laminar', 'limpeza', 'cabine'],
+            arquivo: 'protocolos/Limpeza dos fluxos laminares.pdf'
+        },
+        {
+            id: 'PROT-066',
+            titulo: 'Soluções Extras',
+            descricao: 'Preparação de soluções adicionais utilizadas em cultivo celular e técnicas laboratoriais.',
+            categoria: 'cultivo-celular',
+            tags: ['soluções', 'preparo', 'laboratório'],
+            arquivo: 'protocolos/Soluções extras.pdf'
+        }
+        ];
+
+    // Funções de UI
+    function mostrarLoading() {
+      document.getElementById("loading").style.display = "flex";
+    }
+
+    function esconderLoading() {
+      document.getElementById("loading").style.display = "none";
+    }
+
+    function mostrarFeedback(mensagem, tipo = "success") {
+      const feedback = document.createElement("div");
+      feedback.className = `feedback ${tipo}`;
+      feedback.textContent = mensagem;
+      document.body.appendChild(feedback);
+      
+      setTimeout(() => {
+        feedback.remove();
+      }, 3000);
+    }
+
+    function carregarProtocolos(filtro = '', categoria = 'todos') {
+      mostrarLoading();
+      const protocolosList = document.getElementById("protocolos-list");
+      
+      try {
+        // Filtrar protocolos
+        let protocolosFiltrados = protocolos.filter(protocolo => {
+          const buscaMatch = protocolo.titulo.toLowerCase().includes(filtro.toLowerCase()) || 
+                           protocolo.descricao.toLowerCase().includes(filtro.toLowerCase()) ||
+                           protocolo.tags.some(tag => tag.toLowerCase().includes(filtro.toLowerCase()));
+          
+          const categoriaMatch = categoria === 'todos' || protocolo.categoria === categoria;
+          
+          return buscaMatch && categoriaMatch;
+        });
+
+        if (protocolosFiltrados.length === 0) {
+          protocolosList.innerHTML = "<p>Nenhum protocolo encontrado com os critérios de busca.</p>";
+          return;
+        }
+
+        // Ordenar por título
+        protocolosFiltrados.sort((a, b) => a.titulo.localeCompare(b.titulo));
+
+        // Renderizar protocolos
+        protocolosList.innerHTML = '';
+        protocolosFiltrados.forEach(protocolo => {
+          const protocoloItem = document.createElement("div");
+          protocoloItem.className = "protocolo-item";
+          
+          protocoloItem.innerHTML = `
+            <div class="protocolo-header">
+              <div class="protocolo-title">${protocolo.titulo} <span style="font-size: 14px; color: #666;">(${protocolo.id})</span></div>
+              <div class="protocolo-actions">
+                <button class="btn-visualizar" onclick="abrirProtocolo('${protocolo.arquivo}')">Visualizar</button>
+              </div>
+            </div>
+            <div class="protocolo-desc">${protocolo.descricao}</div>
+            <div class="protocolo-tags">
+              ${protocolo.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            </div>
+          `;
+          
+          protocolosList.appendChild(protocoloItem);
+        });
+      } catch (error) {
+        console.error("Erro ao carregar protocolos:", error);
+        protocolosList.innerHTML = `
+          <p class="error">Erro ao carregar protocolos: ${error.message}</p>
+        `;
+      } finally {
+        esconderLoading();
+      }
+    }
+
+    function abrirProtocolo(arquivo) {
+      // Aqui você pode implementar a abertura do PDF
+      // Por exemplo, abrir em nova aba ou em um visualizador modal
+      window.open(arquivo, '_blank');
+      // mostrarFeedback("Abrindo protocolo...", "success");
+    }
+
+    // Event Listeners
+    document.addEventListener("DOMContentLoaded", () => {
+      // Carregar todos os protocolos inicialmente
+      carregarProtocolos();
+      
+      // Busca ao digitar
+      document.getElementById("search-input").addEventListener("input", (e) => {
+        const categoria = document.getElementById("filter-category").value;
+        carregarProtocolos(e.target.value, categoria);
+      });
+      
+      // Filtro por categoria
+      document.getElementById("filter-category").addEventListener("change", (e) => {
+        const busca = document.getElementById("search-input").value;
+        carregarProtocolos(busca, e.target.value);
+      });
+      
+      // Navegação
+      document.getElementById("hub-button").onclick = () => {
+        window.location.href = "hub.html";
+      };
+      
+      document.getElementById("mural-button").onclick = () => {
+        window.location.href = "mural.html";
+      };
+    });
+  </script>
+</body>
+</html>

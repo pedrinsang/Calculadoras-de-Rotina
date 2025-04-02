@@ -43,16 +43,23 @@
       background-color: #166534;
     }
 
-    #mural-button {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
     .logo {
       max-width: 100%;
       height: auto;
+    }
+
+    .botao-container {
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .button-protocolos, .button-mural {
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
     }
 
     @media (max-width: 480px) {
@@ -63,14 +70,17 @@
       .container {
         padding: 10px;
       }
+    }
 
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Botão do Mural -->
-    <a href="mural.html" class="button">Acessar Mural</a>
-
+    <div class="botao-container">
+      <a href="protocolos.html" id="protocols-button" class="button-protocolos">Protocolos</a>
+      <a href="mural.html" id="mural-button" class="button-mural">Acessar Mural</a>
+    </div>
+    
     <!-- Logo -->
     <img src="assets/logo.png" alt="Logo do Projeto" class="logo">
 
@@ -88,6 +98,15 @@
     if (!usuario) {
       window.location.href = "index.html"; // Redirecionar para o login se não estiver logado
     }
+
+    document.getElementById("protocols-button").onclick = () => {
+        window.location.href = "protocolos.html";
+      };
+      
+    document.getElementById("mural-button").onclick = () => {
+        window.location.href = "mural.html";
+      };  
+
   </script>
 </body>
 </html>
