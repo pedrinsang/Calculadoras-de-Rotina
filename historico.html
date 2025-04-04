@@ -167,6 +167,125 @@
       background-color: #166534;
     }
 
+    .btn-voltar-mural {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      background-color: #1b365e;
+      color: white;
+    }
+
+    .btn-resultados {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      background-color: #e67e22;
+      color: white;
+    }
+
+    .btn-voltar-mural:hover, .btn-resultados:hover {
+      opacity: 0.9;
+    }
+
+    .tabela-resultados td {
+      padding: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .tabela-resultados tr:nth-child(even) td {
+      background-color: #f0f0f0;
+    }
+
+    .modal-resultados {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-resultados-content {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 600px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .tabela-resultados {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+
+    .tabela-resultados th, .tabela-resultados td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .tabela-resultados th {
+      background-color: #1b5e20;
+      color: white;
+    }
+
+    .tabela-resultados tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .tabela-resultados-view td {
+      background-color: #f9f9f9;
+      padding: 8px;
+    }
+
+    .tabela-resultados-view tr:nth-child(even) td {
+      background-color: #f0f0f0;
+    }
+
+    .feedback {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 5px;
+      color: white;
+      z-index: 1000;
+      animation: slideIn 0.5s, fadeOut 0.5s 2.5s forwards;
+    }
+
+    .feedback.success {
+      background-color: #1b5e20;
+    }
+
+    .feedback.error {
+      background-color: #d32f2f;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
     /* Responsividade */
     @media (max-width: 600px) {
       #historico-list {
@@ -244,7 +363,8 @@
       Timestamp,
       deleteDoc,
       doc,
-      getDoc
+      getDoc,
+      addDoc,
     } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
@@ -307,6 +427,9 @@
               <strong>Tipo:</strong> ${tarefa.tipo || 'N/A'}
             </div>
             <div class="status-buttons">
+              ${(tarefa.tipo === "SN IBR" || tarefa.tipo === "SN BVDV") ? 
+                `<button class="btn-resultados" onclick="mostrarResultados('${tarefa.docId}')">Resultados</button>` : ''}
+              <button class="btn-voltar-mural" onclick="voltarParaMural('${tarefa.docId}')">Voltar ao Mural</button>
               <button class="btn-detalhes" onclick="mostrarDetalhes('${tarefa.docId}')">Detalhes</button>
             </div>
           </div>
@@ -314,6 +437,334 @@
         historicoList.appendChild(historicoItem);
       });
     }
+
+    // ADICIONE ESTAS NOVAS FUNÇÕES
+    window.voltarParaMural = async (id) => {
+      try {
+        if (!confirm("Tem certeza que deseja enviar esta tarefa de volta ao mural?")) return;
+        
+        // Obter os dados da tarefa do histórico
+        const historicoRef = doc(db, "historico", id);
+        const historicoSnap = await getDoc(historicoRef);
+        
+        if (!historicoSnap.exists()) {
+          mostrarFeedback("Tarefa não encontrada no histórico", "error");
+          return;
+        }
+        
+        const tarefa = historicoSnap.data();
+        
+        // Adicionar de volta ao mural
+        await addDoc(collection(db, "tarefas"), {
+          id: tarefa.id,
+          tipo: tarefa.tipo,
+          quantidade: tarefa.quantidade,
+          gramatura: tarefa.gramatura || null,
+          dataRecebimento: tarefa.dataRecebimento,
+          observacoes: tarefa.observacoes || "",
+          status: "pendente",
+          criadoEm: Timestamp.now(),
+          criadoPor: auth.currentUser.uid,
+          siglaResponsavel: tarefa.siglaResponsavel || "N/A",
+          resultados: tarefa.resultados || null
+        });
+        
+        // Remover do histórico
+        await deleteDoc(historicoRef);
+        
+        // Recarregar o histórico
+        carregarHistorico();
+        mostrarFeedback("Tarefa enviada de volta ao mural com sucesso!", "success");
+      } catch (error) {
+        console.error("Erro ao enviar tarefa para o mural:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      }
+    };
+
+    window.mostrarResultados = async (id) => {
+      try {
+        // Obter os dados da tarefa
+        const tarefaRef = doc(db, "tarefas", id);
+        const tarefaSnap = await getDoc(tarefaRef);
+        
+        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
+        
+        const tarefa = tarefaSnap.data();
+        
+        // Verificar se tem resultados
+        if (!tarefa.resultados) {
+          mostrarFeedback("Esta tarefa não possui resultados registrados", "error");
+          return;
+        }
+        
+        // Criar o modal de resultados
+        const modal = document.createElement("div");
+        modal.className = "modal-resultados";
+        
+        // Criar a tabela de resultados
+        const resultadosHTML = `
+          <div class="modal-resultados-content">
+            <h3 style="margin-bottom: 15px; color: #1b5e20;">Resultados - ${tarefa.tipo}</h3>
+            <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
+            
+            <table class="tabela-resultados">
+              <thead>
+                <tr>
+                  <th>Resultado</th>
+                  <th>Identificação das amostras</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Negativas (&lt; 1:4)</td>
+                  <td>${tarefa.resultados.negativas || '-'}</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="text-align: center; font-weight: bold;">Positivas</td>
+                </tr>
+                <tr>
+                  <td>Título 2</td>
+                  <td>${tarefa.resultados.titulo2 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 4</td>
+                  <td>${tarefa.resultados.titulo4 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 8</td>
+                  <td>${tarefa.resultados.titulo8 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 16</td>
+                  <td>${tarefa.resultados.titulo16 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 32</td>
+                  <td>${tarefa.resultados.titulo32 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 64</td>
+                  <td>${tarefa.resultados.titulo64 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 128</td>
+                  <td>${tarefa.resultados.titulo128 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título ≥256</td>
+                  <td>${tarefa.resultados.titulo256 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título ≥512</td>
+                  <td>${tarefa.resultados.titulo512 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Impróprias para testar</td>
+                  <td>${tarefa.resultados.improprias || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Tóxicas</td>
+                  <td>${tarefa.resultados.toxicas || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Quantidade insuficiente</td>
+                  <td>${tarefa.resultados.insuficiente || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+              <button id="fechar-modal-resultados" class="button" style="background-color: #1b5e20;">Fechar</button>
+            </div>
+            
+            <button id="fechar-modal-x" 
+                style="position: absolute; top: 15px; right: 15px; padding: 5px 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              X
+            </button>
+          </div>
+        `;
+        
+        modal.innerHTML = resultadosHTML;
+        document.body.appendChild(modal);
+        
+        // Event listeners para o modal
+        document.getElementById("fechar-modal-resultados").onclick = () => {
+          document.body.removeChild(modal);
+        };
+        
+        document.getElementById("fechar-modal-x").onclick = () => {
+          document.body.removeChild(modal);
+        };
+        
+        // Fechar modal ao clicar fora ou pressionar ESC
+        modal.onclick = (e) => {
+          if (e.target === modal) {
+            document.body.removeChild(modal);
+          }
+        };
+        
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            document.body.removeChild(modal);
+          }
+        });
+        
+      } catch (error) {
+        console.error("Erro ao mostrar resultados:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      }
+    };
+
+    function mostrarFeedback(mensagem, tipo = "success") {
+      const feedback = document.createElement("div");
+      feedback.className = `feedback ${tipo}`;
+      feedback.textContent = mensagem;
+      document.body.appendChild(feedback);
+      
+      setTimeout(() => {
+        feedback.remove();
+      }, 3000);
+    }
+
+    window.mostrarResultados = async (id) => {
+      try {
+        // Obter os dados da tarefa do histórico
+        const tarefaRef = doc(db, "historico", id);
+        const tarefaSnap = await getDoc(tarefaRef);
+        
+        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada no histórico");
+        
+        const tarefa = tarefaSnap.data();
+        
+        // Verificar se é um tipo que tem resultados (SN IBR ou SN BVDV)
+        if (tarefa.tipo !== "SN IBR" && tarefa.tipo !== "SN BVDV") {
+          mostrarFeedback("Este tipo de tarefa não possui resultados específicos", "error");
+          return;
+        }
+        
+        // Verificar se existem resultados registrados
+        if (!tarefa.resultados) {
+          mostrarFeedback("Esta tarefa não possui resultados registrados", "error");
+          return;
+        }
+        
+        // Criar o modal de resultados (somente visualização)
+        const modal = document.createElement("div");
+        modal.className = "modal-resultados";
+        
+        // Criar a tabela de resultados (igual ao mural, mas sem campos editáveis)
+        const resultadosHTML = `
+          <div class="modal-resultados-content">
+            <h3 style="margin-bottom: 15px; color: #1b5e20;">Resultados - ${tarefa.tipo}</h3>
+            <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
+            
+            <table class="tabela-resultados tabela-resultados-view">
+              <thead>
+                <tr>
+                  <th>Resultado</th>
+                  <th>Identificação das amostras</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Negativas (&lt; 1:4)</td>
+                  <td>${tarefa.resultados.negativas || '-'}</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="text-align: center; font-weight: bold;">Positivas</td>
+                </tr>
+                <tr>
+                  <td>Título 2</td>
+                  <td>${tarefa.resultados.titulo2 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 4</td>
+                  <td>${tarefa.resultados.titulo4 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 8</td>
+                  <td>${tarefa.resultados.titulo8 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 16</td>
+                  <td>${tarefa.resultados.titulo16 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 32</td>
+                  <td>${tarefa.resultados.titulo32 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 64</td>
+                  <td>${tarefa.resultados.titulo64 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título 128</td>
+                  <td>${tarefa.resultados.titulo128 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título ≥256</td>
+                  <td>${tarefa.resultados.titulo256 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Título ≥512</td>
+                  <td>${tarefa.resultados.titulo512 || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Impróprias para testar</td>
+                  <td>${tarefa.resultados.improprias || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Tóxicas</td>
+                  <td>${tarefa.resultados.toxicas || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Quantidade insuficiente</td>
+                  <td>${tarefa.resultados.insuficiente || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+              <button id="fechar-modal-resultados" class="button" style="background-color: #1b5e20;">Fechar</button>
+            </div>
+            
+            <button id="fechar-modal-x" 
+                style="position: absolute; top: 15px; right: 15px; padding: 5px 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              X
+            </button>
+          </div>
+        `;
+        
+        modal.innerHTML = resultadosHTML;
+        document.body.appendChild(modal);
+        
+        // Event listeners para fechar o modal
+        document.getElementById("fechar-modal-resultados").onclick = () => {
+          document.body.removeChild(modal);
+        };
+        
+        document.getElementById("fechar-modal-x").onclick = () => {
+          document.body.removeChild(modal);
+        };
+        
+        // Fechar modal ao clicar fora ou pressionar ESC
+        modal.onclick = (e) => {
+          if (e.target === modal) {
+            document.body.removeChild(modal);
+          }
+        };
+        
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            document.body.removeChild(modal);
+          }
+        });
+        
+      } catch (error) {
+        console.error("Erro ao mostrar resultados:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+      }
+    };
 
     // Função para mostrar detalhes da tarefa
     window.mostrarDetalhes = async (id) => {
