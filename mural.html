@@ -118,7 +118,7 @@
       border: none;
       cursor: pointer;
       font-size: 14px;
-      white-space: nowrap;
+      white-space: wrap;
     }
 
     .btn-progresso {
@@ -773,7 +773,7 @@
                 <div>
                   <strong>ID:</strong> ${tarefa.id}<br>
                   <strong>Tipo:</strong> ${tarefa.tipo}<br>
-                  <strong>Quantidade:<br></strong> ${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" ? 'vacinas' : 'amostras'}
+                  <strong>Quantidade:</strong> ${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" ? 'vacinas' : 'amostras'}
                 </div>
                 <div class="status-buttons">
                   <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Progresso</button>
