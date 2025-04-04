@@ -773,7 +773,7 @@
                 <div>
                   <strong>ID:</strong> ${tarefa.id}<br>
                   <strong>Tipo:</strong> ${tarefa.tipo}<br>
-                  <strong>Quantidade:</strong> ${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" ? 'vacinas' : 'amostras'}
+                  <strong>Quantidade:<br></strong> ${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" ? 'vacinas' : 'amostras'}
                 </div>
                 <div class="status-buttons">
                   <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Progresso</button>
@@ -916,7 +916,6 @@
                 // Coletar os dados do formulário
                 const resultados = {
                   negativas: document.getElementById("negativas").value,
-                  titulo2: document.getElementById("titulo2").value,
                   titulo4: document.getElementById("titulo4").value,
                   titulo8: document.getElementById("titulo8").value,
                   titulo16: document.getElementById("titulo16").value,
