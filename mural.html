@@ -38,23 +38,22 @@
       color: #1b5e20;
       border-radius: 10px;
       box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      margin: 20px 0;
       display: flex;
       flex-direction: column;
-      max-height: 100vh;
+      max-height: 95vh;
       min-height: 0; /* Importante para o flex funcionar corretamente */
     }
 
     .container-botoes {
       display: flex;
       justify-content: space-between;
-      margin: 10px;
+      margin: 5px;
     }
 
     .container-tarefa {
       display: flex;
       justify-content: center;
-      margin: 10px;
+      margin: 5px;
     }
 
     .button {
@@ -75,7 +74,7 @@
     #mural-list {
       margin-top: 20px;
       min-height: 50vh;
-      max-height: 60vh;
+      max-height: 50vh;
       overflow-y: auto;
       padding: 15px;
       background-color: #ffffff;
@@ -229,12 +228,11 @@
 
     #mural-form {
       display: none;
-      margin-top: 20px;
-      padding: 20px;
+      padding-right: 20px;
       background-color: #ffffff;
       border-radius: 5px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      max-height: 60vh; /* Altura máxima igual ao mural-list */
+      max-height: 75vh; /* Altura máxima igual ao mural-list */
       overflow-y: auto; /* Habilita o scroll vertical */
       padding-bottom: 30px;
     }
@@ -291,9 +289,18 @@
       margin-left: 10px;
     }
 
-    .filtro-container {
+    .filtros-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
       margin-top: 20px;
       margin-bottom: 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+
+    .filtro-container {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -459,7 +466,25 @@
     .modal-resultados-content {
       max-height: 95vh;
     }
-  
+
+    #complemento {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    #gramatura {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+      
 
     /* Estilos para mobile */
     @media (max-width: 480px) {
@@ -473,6 +498,20 @@
         margin: 10px 0;
         padding: 15px;
         max-height: calc(100vh - 20px); /* Ajuste fino para mobile */
+      }
+
+      .filtros-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .filtro-container {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .filtro-container select {
+        flex-grow: 1;
       }
 
       /* Ajuste dos botões em coluna no canto direito */
@@ -603,22 +642,28 @@
         <button id="adicionar-tarefa" class="button">Adicionar Tarefa</button>
       </div>
 
-      <div class="filtro-container">
-        <label>Filtrar por tipo: </label>
-        <select id="filtro-tipo">
-          <option value="Todos">Todos</option>
-          <option value="SN BVDV">SN BVDV</option>
-          <option value="SN IBR">SN IBR</option>
-          <option value="Vacina">VACINA</option>
-          <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
-          <option value="ELISA BVDV">ELISA BVDV</option>
-        </select>
 
-        <label style="margin-left: 15px;">Ordenar por: </label>
-        <select id="filtro-ordem">
-          <option value="recentes">Mais recentes</option>
-          <option value="antigas">Mais antigas</option>
-        </select>
+      <div class="filtros-wrapper">
+        <div class="filtro-container">
+          <label>Filtrar por tipo: </label>
+          <select id="filtro-tipo">
+            <option value="Todos">Todos</option>
+            <option value="SN BVDV">SN BVDV</option>
+            <option value="SN IBR">SN IBR</option>
+            <option value="Vacina">VACINA</option>
+            <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
+            <option value="ELISA BVDV">ELISA BVDV</option>
+            <option value="PCR">PCR</option>
+            <option value="RAIVA">Raiva</option>
+          </select>
+        </div>
+        <div class="filtro-container">
+          <label>Ordenar por: </label>
+          <select id="filtro-ordem">
+            <option value="recentes">Mais recentes</option>
+            <option value="antigas">Mais antigas</option>
+          </select>
+        </div>
       </div>
 
       <form id="mural-form">
@@ -632,13 +677,26 @@
           <option value="VACINA">VACINA</option>
           <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
           <option value="ELISA BVDV">ELISA BVDV</option>
+          <option value="PCR">PCR</option>
+          <option value="RAIVA">RAIVA</option>
         </select>
+
+        <div id="complemento-container" style="display: none;">
+          <label for="complemento">Complemento:</label>
+          <input type="text" id="complemento" name="complemento">
+        </div>
 
         <label for="quantidade">Quantidade:</label>
         <input type="number" id="quantidade" name="quantidade" min="1" required>
 
-        <label for="gramatura">Gramatura (apenas para Vacina):</label>
-        <input type="number" id="gramatura" name="gramatura" step="0.01" disabled>
+        <div id="gramatura-container" style="display: none;">
+          <label for="gramatura">Gramatura (apenas para Vacina):</label>
+          <input type="number" id="gramatura" name="gramatura" step="0.01">
+        </div>
+
+        <label for="proprietario">Proprietário:</label>
+        <input type="text" id="proprietario" name="proprietario" list="proprietarios-list">
+        <datalist id="proprietarios-list"></datalist>
 
         <label for="data">Data de Recebimento:</label>
         <input type="date" id="data" name="data" required>
@@ -711,10 +769,12 @@
       const form = document.getElementById("mural-form");
       const muralList = document.getElementById("mural-list");
       const adicionarTarefaBtn = document.getElementById("adicionar-tarefa");
+      const filtrosWrapper = document.querySelector(".filtros-wrapper"); // Adicionado
       
       form.style.display = "block";
       muralList.style.display = "none";
       adicionarTarefaBtn.style.display = "none";
+      filtrosWrapper.style.display = "none"; // Adicionado
       
       if (!edicao) {
         form.reset();
@@ -726,6 +786,7 @@
       document.getElementById("mural-form").style.display = "none";
       document.getElementById("mural-list").style.display = "block";
       document.getElementById("adicionar-tarefa").style.display = "block";
+      document.querySelector(".filtros-wrapper").style.display = "flex"; // Adicionado
     }
   
     // Funções auxiliares para datas
@@ -1089,10 +1150,17 @@
         const novaTarefa = {
           id: document.getElementById("id").value.trim(),
           tipo: document.getElementById("tipo").value,
+          complemento: (document.getElementById("tipo").value === "PCR" || 
+                       document.getElementById("tipo").value === "RAIVA")
+                    ? document.getElementById("complemento").value.trim()
+                    : null,
           quantidade: parseInt(document.getElementById("quantidade").value),
           gramatura: document.getElementById("tipo").value === "VACINA" 
-                    ? parseFloat(document.getElementById("gramatura").value)
+                    ? (document.getElementById("gramatura").value 
+                       ? parseFloat(document.getElementById("gramatura").value)
+                       : null)
                     : null,
+          proprietario: document.getElementById("proprietario").value.trim(),
           dataRecebimento: dataUTC,
           observacoes: document.getElementById("observacoes").value.trim(),
           status: "pendente",
@@ -1104,9 +1172,7 @@
         if (!novaTarefa.id) throw new Error("ID é obrigatório");
         if (isNaN(novaTarefa.quantidade)) throw new Error("Quantidade inválida");
         if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
-        if (novaTarefa.tipo === "VACINA" && (isNaN(novaTarefa.gramatura) || novaTarefa.gramatura <= 0)) {
-          throw new Error("Gramatura inválida para vacina");
-        }
+        
   
         await addDoc(collection(db, "tarefas"), {
           ...novaTarefa,
@@ -1204,7 +1270,22 @@
         document.getElementById("id").value = tarefa.id;
         document.getElementById("tipo").value = tarefa.tipo;
         document.getElementById("quantidade").value = tarefa.quantidade;
-        document.getElementById("gramatura").value = tarefa.gramatura || "";
+        
+        // Mostrar/ocultar campos condicionais
+        const tipo = tarefa.tipo;
+        if (tipo === "VACINA") {
+          document.getElementById("gramatura-container").style.display = "block";
+          document.getElementById("gramatura").value = tarefa.gramatura || "";
+        } else {
+          document.getElementById("gramatura-container").style.display = "none";
+        }
+        
+        if (tipo === "PCR" || tipo === "RAIVA") {
+          document.getElementById("complemento-container").style.display = "block";
+          document.getElementById("complemento").value = tarefa.complemento || "";
+        } else {
+          document.getElementById("complemento-container").style.display = "none";
+        }
         
         const dataRecebimento = tarefa.dataRecebimento?.toDate();
         if (dataRecebimento) {
@@ -1213,6 +1294,8 @@
         }
         
         document.getElementById("observacoes").value = tarefa.observacoes || "";
+
+        document.getElementById("proprietario").value = tarefa.proprietario || "";
         
         mostrarFormulario(true);
         
@@ -1230,8 +1313,15 @@
               tipo: document.getElementById("tipo").value,
               quantidade: parseInt(document.getElementById("quantidade").value),
               gramatura: document.getElementById("tipo").value === "VACINA" 
-                        ? parseFloat(document.getElementById("gramatura").value)
+                        ? (document.getElementById("gramatura").value 
+                           ? parseFloat(document.getElementById("gramatura").value) 
+                           : null)
                         : null,
+              complemento: (document.getElementById("tipo").value === "PCR" || 
+                           document.getElementById("tipo").value === "RAIVA")
+                        ? document.getElementById("complemento").value.trim()
+                        : null,
+              proprietario: document.getElementById("proprietario").value.trim(),
               dataRecebimento: Timestamp.fromDate(dataUTC),
               atualizadoEm: Timestamp.now(),
               observacoes: document.getElementById("observacoes").value.trim()
@@ -1325,10 +1415,23 @@
             <strong style="display: inline-block; width: 120px;">Responsável:</strong>
             <span>${siglaUsuario}</span>
           </div>
-          
+
           <div style="margin-bottom: 15px;">
             <strong style="display: inline-block; width: 120px;">Quantidade:</strong>
-            <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" ? `vacinas (${tarefa.gramatura || '0'}g)` : "amostras"}</span>
+            <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
+              ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
+              : "amostras"}</span>
+          </div>
+
+          ${tarefa.complemento ? `
+          <div style="margin-bottom: 15px;">
+            <strong style="display: inline-block; width: 120px;">Complemento:</strong>
+            <span>${tarefa.complemento.trim()}</span>
+          </div>` : ''}
+
+          <div style="margin-bottom: 15px;">
+            <strong style="display: inline-block; width: 120px;">Proprietário:</strong>
+            <span>${tarefa.proprietario || 'N/A'}</span>
           </div>
           
           <div style="margin-bottom: 15px;">
@@ -1379,27 +1482,26 @@
       }
     };
 
-    // Nova função para arquivar tarefas
-    window.arquivarTarefa = async (id) => {
+    async function carregarProprietariosSugeridos() {
       try {
-        if (!confirm("Tem certeza que deseja arquivar esta tarefa?")) return;
-        mostrarLoading();
+        const proprietariosRef = collection(db, "proprietarios");
+        const querySnapshot = await getDocs(proprietariosRef);
+        const datalist = document.getElementById("proprietarios-list");
         
-        const tarefaRef = doc(db, "tarefas", id);
-        await updateDoc(tarefaRef, {
-          status: "arquivada",
-          arquivadaEm: Timestamp.now()
+        // Limpa a lista atual
+        datalist.innerHTML = "";
+        
+        // Adiciona cada proprietário como uma opção
+        querySnapshot.forEach((doc) => {
+          const proprietario = doc.data().nome;
+          const option = document.createElement("option");
+          option.value = proprietario;
+          datalist.appendChild(option);
         });
-        
-        carregarTarefas();
-        mostrarFeedback("Tarefa arquivada com sucesso!", "success");
       } catch (error) {
-        console.error("Erro ao arquivar:", error);
-        mostrarFeedback(`Erro: ${error.message}`, "error");
-      } finally {
-        esconderLoading();
+        console.error("Erro ao carregar proprietários:", error);
       }
-    };
+    }
   
     // Inicialização
     document.addEventListener("DOMContentLoaded", () => {
@@ -1408,8 +1510,14 @@
       document.getElementById("cancelar-tarefa").onclick = esconderFormulario;
       
       document.getElementById("tipo").addEventListener("change", function() {
-        document.getElementById("gramatura").disabled = this.value !== "VACINA";
-        document.getElementById("gramatura").required = this.value === "VACINA";
+
+        const showGramatura = this.value === "VACINA";
+        document.getElementById("gramatura-container").style.display = showGramatura ? "block" : "none";
+
+        const showComplemento = this.value === "PCR" || this.value === "RAIVA";
+        const complementoContainer = document.getElementById("complemento-container");
+        complementoContainer.style.display = showComplemento ? "block" : "none";
+        document.getElementById("complemento").required = showComplemento;
       });
   
       document.getElementById("filtro-ordem").addEventListener("change", (e) => {
@@ -1434,6 +1542,7 @@
       onAuthStateChanged(auth, (user) => {
         if (user) {
           console.log("Usuário autenticado:", user.uid);
+          carregarProprietariosSugeridos(); // Adicione esta linha
           carregarTarefas();
         } else {
           console.log("Usuário não autenticado.");
