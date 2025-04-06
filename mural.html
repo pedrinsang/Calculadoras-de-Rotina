@@ -14,46 +14,22 @@
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #87daa0, #51c778);
+      min-height: 100vh;
       display: flex;
-      justify-content: center;  
+      justify-content: center;
       align-items: center;
       padding: 20px;
-      margin-top: 40px;
-      margin-bottom: 40px;
-      overflow: hidden; /* Remove o scroll da página */
-    }
-
-    .button-container {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 5px;
     }
 
     .container-fora {
       width: 100%;
-      max-width: 700px;
+      max-width: 900px;
       padding: 20px;
       background: white;
       color: #1b5e20;
       border-radius: 10px;
       box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      display: flex;
-      flex-direction: column;
-      max-height: 95vh;
-      min-height: 0; /* Importante para o flex funcionar corretamente */
-    }
-
-    .container-botoes {
-      display: flex;
-      justify-content: space-between;
-      margin: 5px;
-    }
-
-    .container-tarefa {
-      display: flex;
-      justify-content: center;
-      margin: 5px;
+      margin: 20px 0;
     }
 
     .button {
@@ -71,10 +47,22 @@
       background-color: #166534;
     }
 
+    .container-botoes {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .container-tarefa {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0;
+    }
+
     #mural-list {
       margin-top: 20px;
-      min-height: 50vh;
-      max-height: 50vh;
+      min-height: 60vh;
+      max-height: 65vh;
       overflow-y: auto;
       padding: 15px;
       background-color: #ffffff;
@@ -89,12 +77,6 @@
       border: 1px solid #e0e0e0;
       border-radius: 6px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .amostra-item:hover {
-      z-index: 11;
-      position: relative;
     }
 
     .amostra-item.em-progresso {
@@ -117,7 +99,6 @@
       border: none;
       cursor: pointer;
       font-size: 14px;
-      white-space: wrap;
     }
 
     .btn-progresso {
@@ -126,7 +107,6 @@
     }
 
     .btn-concluido {
-      order: -1;
       background-color: #1b5e20;
       color: white;
     }
@@ -139,7 +119,6 @@
     .actions-dropdown {
       position: relative;
       display: inline-block;
-      z-index: 10;
     }
 
     .dropdown-toggle {
@@ -150,18 +129,6 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 14px;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-    }
-
-    .dropdown-toggle:hover {
-      background: #4a1546;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
 
     .dropdown-toggle::after {
@@ -174,14 +141,11 @@
       display: none;
       position: absolute;
       right: 0;
-      top: 100%;
-      margin-top: 5px;
       background-color: white;
       box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-      z-index: 1001;
+      z-index: 1;
       border-radius: 5px;
       min-width: 150px;
-      overflow: hidden;
     }
 
     .dropdown-content button {
@@ -194,7 +158,6 @@
       font-size: 14px;
       color: #333;
       border-bottom: 1px solid #eee;
-      transition: background 0.2s;
     }
 
     .dropdown-content button:hover {
@@ -203,56 +166,16 @@
 
     .actions-dropdown.active .dropdown-content {
       display: block;
-      z-index: 1001;
-    }
-
-    .btn-detalhes {
-      background-color: #b1c910;
-      color: white;
-    }
-
-    .btn-editar {
-      background-color: #5e1b59;
-      color: white;
-    }
-
-    .btn-excluir {
-      background-color: #910707;
-      color: white;
-    }
-
-    .btn-novo {
-      background-color: #1b365e;
-      color: white;
     }
 
     #mural-form {
       display: none;
-      padding-right: 20px;
+      padding: 20px;
       background-color: #ffffff;
       border-radius: 5px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      max-height: 75vh; /* Altura máxima igual ao mural-list */
-      overflow-y: auto; /* Habilita o scroll vertical */
-      padding-bottom: 30px;
-    }
-
-    #mural-form::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    #mural-form::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-
-    #mural-form::-webkit-scrollbar-thumb {
-      background: #1b5e20;
-      border-radius: 4px;
-    }
-
-    #mural-form::-webkit-scrollbar-thumb:hover {
-      background: #166534;
+      max-height: 75vh;
+      overflow-y: auto;
     }
 
     #mural-form label {
@@ -293,12 +216,10 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 20px;
-      margin-bottom: 20px;
+      margin: 20px 0;
       align-items: center;
       justify-content: space-between;
     }
-
 
     .filtro-container {
       display: flex;
@@ -320,27 +241,17 @@
       min-width: 150px;
     }
 
-    .resultado-container {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 10px 0;
-    }
-
-    #modal-detalhes {
-      transition: opacity 0.3s;
-    }
-
-    .modal-content {
-      animation: fadeIn 0.3s;
-    }
-
-    #fechar-modal {
-      transition: background-color 0.2s;
-    }
-
-    #fechar-modal:hover {
-      background-color: #b71c1c !important;
+    #loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
     }
 
     .feedback {
@@ -362,35 +273,26 @@
       background-color: #d32f2f;
     }
 
-    #loading {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
     /* Barra de rolagem */
-    #mural-list::-webkit-scrollbar {
+    #mural-list::-webkit-scrollbar,
+    #mural-form::-webkit-scrollbar {
       width: 8px;
     }
 
-    #mural-list::-webkit-scrollbar-track {
+    #mural-list::-webkit-scrollbar-track,
+    #mural-form::-webkit-scrollbar-track {
       background: #f1f1f1;
       border-radius: 4px;
     }
 
-    #mural-list::-webkit-scrollbar-thumb {
+    #mural-list::-webkit-scrollbar-thumb,
+    #mural-form::-webkit-scrollbar-thumb {
       background: #1b5e20;
       border-radius: 4px;
     }
 
-    #mural-list::-webkit-scrollbar-thumb:hover {
+    #mural-list::-webkit-scrollbar-thumb:hover,
+    #mural-form::-webkit-scrollbar-thumb:hover {
       background: #166534;
     }
 
@@ -404,11 +306,7 @@
       to { opacity: 0; }
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
+    /* Modal de resultados */
     .modal-resultados {
       position: fixed;
       top: 0;
@@ -455,47 +353,10 @@
       background-color: #f2f2f2;
     }
 
-    .btn-resultado {
-      background-color: #e67e22 !important;
-    }
-    
-    .modal-resultados {
-      z-index: 2001; /* Garante que fique acima de outros elementos */
-    }
-    
-    .modal-resultados-content {
-      max-height: 95vh;
-    }
-
-    #complemento {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    #gramatura {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-      
-
     /* Estilos para mobile */
-    @media (max-width: 480px) {
-      body {
-        padding: 10px;
-        display: flex;
-      }
-
+    @media (max-width: 768px) {
       .container-fora {
-        min-height: 50vh;
-        padding: 10px;
+        padding: 15px;
       }
 
       .filtros-wrapper {
@@ -512,14 +373,13 @@
         flex-grow: 1;
       }
 
-      /* Ajuste dos botões em coluna no canto direito */
-      .amostra-item {
-        flex-shrink: 0;
+      #mural-list {
+        min-height: 50vh;
+        max-height: 55vh;
+        padding: 10px;
       }
 
       .status-buttons {
-        width: 50%;
-        margin-top: 10px;
         flex-direction: column;
         align-items: flex-end;
         gap: 5px;
@@ -531,17 +391,8 @@
       .dropdown-toggle {
         width: 100%;
         text-align: center;
-        padding: 8px;
-        font-size: 13px;
       }
 
-      /* Ajuste do tamanho do mural-list */
-      #mural-list {
-        max-height: 50vh; /* Valor menor para mobile */
-        padding: 10px;
-      }
-
-      /* Melhoria no menu flutuante de ações */
       .dropdown-content {
         position: fixed;
         bottom: 20px;
@@ -549,75 +400,23 @@
         transform: translateX(-50%);
         width: 90%;
         max-width: 300px;
-        z-index: 2000;
-        animation: slideUp 0.3s ease-out;
-        top: auto !important;
-      }
-
-      .dropdown-content button {
-        padding: 12px;
-        font-size: 14px;
-        text-align: center;
-      }
-
-      .actions-dropdown .dropdown-toggle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-      }
-
-      @keyframes slideUp {
-        from {
-          transform: translate(-50%, 100%);
-          opacity: 0;
-        }
-        to {
-          transform: translate(-50%, 0);
-          opacity: 1;
-        }
-      }
-
-      /* Ajuste simétrico do body */
-      .container-fora {
-        margin: auto 0;
-      }
-
-      /* Garantir que o formulário também se ajuste */
-      #mural-form {
-        padding: 15px;
-      }
-
-      #mural-form input, 
-      #mural-form select, 
-      #mural-form textarea {
-        font-size: 14px;
-        padding: 8px;
-      }
-
-      .modal-resultados-content {
-        width: 95%;
-        padding: 15px;
-      }
-      
-      .tabela-resultados th, 
-      .tabela-resultados td {
-        padding: 6px;
-        font-size: 14px;
       }
     }
 
-      /* Remover efeitos hover em mobile */
-      @media (hover: none) {
-        .button:hover, 
-        .btn-progresso:hover, 
-        .btn-concluido:hover,
-        .btn-resultado:hover,
-        .dropdown-toggle:hover {
-          opacity: 1;
-          transform: none;
-        }
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
       }
+
+      .button {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .amostra-item {
+        padding: 10px;
+      }
+    }
     
   </style>
 </head>
