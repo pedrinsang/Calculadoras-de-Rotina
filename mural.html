@@ -491,15 +491,18 @@
       body {
         padding: 10px;
         display: flex;
-        flex-direction: column;
+        justify-content: center; /* Adicionado */
+        align-items: center; /* Adicionado */
+        min-height: 100vh; /* Garante que o body ocupe toda a altura */
       }
 
       .container-fora {
-        margin: 10px 0;
+        margin: 0; /* Removido margin auto */
         padding: 15px;
-        max-height: calc(100vh - 20px); /* Ajuste fino para mobile */
+        max-height: calc(100vh - 20px);
+        width: 100%; /* Garante que ocupe toda a largura disponível */
       }
-
+      
       .filtros-wrapper {
         flex-direction: column;
         align-items: stretch;
