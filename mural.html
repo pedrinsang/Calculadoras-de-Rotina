@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
   <title>Mural de Tarefas</title>
   <style>
     * {
@@ -494,18 +494,22 @@
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        overflow: hidden; /* Remove scroll do body */
+        overflow: hidden; /* Impede scroll no body */
         width: 100%;
+        position: relative; /* Mantém o background visível */
       }
 
       .container-fora {
-        margin: 0;
-        padding: 15px;
         width: 100%;
-        max-height: 95vh; /* Altura máxima ajustada */
+        max-width: 100%;
+        height: calc(var(--vh, 1vh) * 100 - 20px); /* Usa altura calculada */
+        max-height: -webkit-fill-available;
+        padding: 15px;
         display: flex;
         flex-direction: column;
-      }      
+        box-sizing: border-box;
+      }
+
       .filtros-wrapper {
         flex-direction: column;
         align-items: stretch;
@@ -545,9 +549,11 @@
 
       /* Ajuste do tamanho do mural-list */
       #mural-list {
-        max-height: 50vh; /* Valor menor para mobile */
-        padding: 10px;
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
+
 
       /* Melhoria no menu flutuante de ações */
       .dropdown-content {
@@ -1557,5 +1563,26 @@
       });
     });
   </script>
+
+  <script>
+  // Calcula a altura real da viewport
+  function calculateHeight() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+    
+    const container = document.querySelector('.container-fora');
+    if (container) {
+      container.style.height = `calc(${window.innerHeight}px - 20px)`;
+    }
+  }
+
+  // Executa no carregamento e em eventos de redimensionamento
+  window.addEventListener('load', calculateHeight);
+  window.addEventListener('resize', calculateHeight);
+  window.addEventListener('orientationchange', calculateHeight);
+
+  // Dispara um resize inicial para Android
+  setTimeout(calculateHeight, 100);
+</script>
 </body>
 </html>
