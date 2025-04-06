@@ -1,4 +1,4 @@
-const CACHE_NAME = 'virologia-cache-v18'; // Atualizei a versão
+const CACHE_NAME = 'virologia-cache-v19'; // Atualizei a versão
 const OFFLINE_PAGE = './offline.html';
 const ASSETS = [
   './',
