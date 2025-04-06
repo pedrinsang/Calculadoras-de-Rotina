@@ -298,10 +298,10 @@
       </ol>
     </div>
 
-    <!-- Passo a Passo do Teste ELISA -->
-    <div class="passo-a-passo" onclick="togglePassoAPasso()">Passo a Passo do Teste ELISA</div>
-    <div id="etapasELISA" class="etapasELISA">
-      <h3>Passo a Passo do Teste ELISA:</h3>
+   <!-- Passo a Passo do Teste ELISA Leucose -->
+    <div class="passo-a-passo" onclick="togglePassoAPasso('leucose')">Passo a Passo do Teste ELISA Leucose</div>
+    <div id="etapasELISA-leucose" class="etapasELISA">
+      <h3>Passo a Passo do Teste ELISA Leucose:</h3>
       <ol>
         <li><input type="checkbox"><span>Prepare os reagentes conforme descrito no protocolo.</span></li>
         <li><input type="checkbox"><span>Adicione 50 µL de solução de lavagem em cada poço da placa.</span></li>
@@ -321,7 +321,30 @@
         <li><input type="checkbox"><span>Meça e registre os valores de absorbância a 450 nm.</span></li>
       </ol>
     </div>
-  </div>
+
+    <!-- Passo a Passo do Teste ELISA BVDV -->
+    <div class="passo-a-passo" onclick="togglePassoAPasso('bvdv')">Passo a Passo do Teste ELISA BVDV</div>
+    <div id="etapasELISA-bvdv" class="etapasELISA">
+      <h3>Passo a Passo do Teste ELISA BVDV:</h3>
+      <ol>
+        <li><input type="checkbox"><span>Prepare os reagentes conforme descrito no protocolo (Solução de Lavagem 1:10 e Conjugado diluído).</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL de Anticorpos de Detecção em cada poço da placa.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL do Controle Negativo (CN) em duplicata nos poços designados.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL do Controle Positivo (CP) em duplicata nos poços designados.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL das amostras (soro, plasma ou tampão de fragmento de orelha) nos poços restantes.</span></li>
+        <li><input type="checkbox"><span>Misture o conteúdo dos poços batendo suavemente a placa ou usando um agitador de microplacas.</span></li>
+        <li><input type="checkbox"><span>Cubra a placa e incubue por 2 horas (±5 min) a 37°C ou 12-18 horas a 2-8°C (selada para evitar evaporação).</span></li>
+        <li><input type="checkbox"><span>Remova o líquido e lave cada poço com 300 µL de Solução de Lavagem, repetindo 5 vezes.</span></li>
+        <li><input type="checkbox"><span>Bata a placa em material absorvente após a última lavagem para remover resíduos.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL do Conjugado diluído em cada poço.</span></li>
+        <li><input type="checkbox"><span>Cubra a placa e incubue por 30 minutos (±2 min) a 18-26°C.</span></li>
+        <li><input type="checkbox"><span>Repita o processo de lavagem (5 lavagens com 300 µL cada).</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL do Substrato TMB em cada poço.</span></li>
+        <li><input type="checkbox"><span>Incube por 10 minutos (±1 min) a 18-26°C, protegido da luz.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL da Solução de Interrupção em cada poço.</span></li>
+        <li><input type="checkbox"><span>Meça a absorbância em 450 nm (ou 450/650 nm para duplo comprimento de onda).</span></li>
+      </ol>
+    </div>
 
   <script>
     let calculadoraAtiva = null;
@@ -360,22 +383,41 @@
         return;
       }
 
+      // Total de poços (amostras + controles em duplicata)
       const totalPocos = amostras + controles;
-      const volumeTotalLavagem = totalPocos * (50 + 900 + 900); // em µL
-      const volumeTotalConjugado = totalPocos * 100; // em µL
-      const volumeConcentradoLavagem = volumeTotalLavagem / 10; // em µL
-      const volumeConcentradoConjugado = volumeTotalConjugado / 100; // em µL
 
+      // Volumes por poço (em µL) conforme protocolo:
+      const volumeSolucaoLavagemPasso2 = 50;   // Passo 2: 50 µL da solução 1:10
+      const volumeLavagemPasso8 = 300 * 3;     // Passo 8: 300 µL, 3 lavagens = 900 µL
+      const volumeLavagemPasso11 = 300 * 3;    // Passo 11: igual ao passo 8 = 900 µL
+      const volumeConjugado = 100;             // Passo 9: 100 µL do conjugado 1:100
+
+      // Cálculo da Solução de Lavagem TOTAL por poço:
+      const volumeLavagemPorPoco = volumeSolucaoLavagemPasso2 + volumeLavagemPasso8 + volumeLavagemPasso11; // 50 + 900 + 900 = 1.850 µL/poço
+
+      // Volume total de Solução de Lavagem (1:10) para todos os poços:
+      const volumeTotalLavagem = totalPocos * volumeLavagemPorPoco; // em µL
+      const volumeConcentradoLavagem = volumeTotalLavagem / 10;      // Concentrado (10X) em µL
+      const volumeAguaLavagem = volumeTotalLavagem - volumeConcentradoLavagem; // Água em µL
+
+      // Cálculo do Conjugado (diluição 1:100):
+      const volumeTotalConjugado = totalPocos * volumeConjugado;     // Conjugado diluído em µL
+      const volumeConcentradoConjugado = volumeTotalConjugado / 100; // Concentrado (100X) em µL
+
+      // Exibir resultados:
       const resultadoDiv = document.getElementById('resultado-leucose');
       resultadoDiv.innerHTML = `
         <h3>Resultado ELISA Leucose</h3>
         <strong>Total de poços:</strong> ${totalPocos}<br>
-        <strong>Volume Total de Solução de Lavagem:</strong> ${(volumeTotalLavagem/1000).toFixed(2)} mL<br>
-        <strong>Volume de Concentrado de Lavagem (1:10):</strong> ${(volumeConcentradoLavagem/1000).toFixed(2)} mL<br>
-        <strong>Volume Total de Conjugado Diluído:</strong> ${(volumeTotalConjugado/1000).toFixed(2)} mL<br>
-        <strong>Volume de Concentrado de Conjugado (1:100):</strong> ${volumeConcentradoConjugado.toFixed(2)} µL<br>
+        <strong>Solução de Lavagem (1:10):</strong><br>
+        - Volume Total: ${(volumeTotalLavagem / 1000).toFixed(2)} mL<br>
+        - Concentrado de Lavagem (10X): ${(volumeConcentradoLavagem / 1000).toFixed(2)} mL<br>
+        - Água Destilada: ${(volumeAguaLavagem / 1000).toFixed(2)} mL<br>
+        <strong>Conjugado (1:100):</strong><br>
+        - Volume Total Diluído: ${(volumeTotalConjugado / 1000).toFixed(2)} mL<br>
+        - Concentrado de Conjugado (100X): ${volumeConcentradoConjugado.toFixed(2)} µL<br>
       `;
-      
+
       document.getElementById('copiar-resultado-leucose').style.display = 'block';
     }
 
@@ -388,20 +430,41 @@
         return;
       }
 
+      // Cálculo baseado no protocolo BVDV discutido
       const totalPocos = amostras + controles;
-      const volumeTotalLavagem = totalPocos * (50 + 300*3 + 300*3); // em µL (diferente da Leucose)
-      const volumeTotalConjugado = totalPocos * 100; // em µL
-      const volumeConcentradoLavagem = volumeTotalLavagem / 20; // em µL (diluição diferente)
-      const volumeConcentradoConjugado = volumeTotalConjugado / 50; // em µL (diluição diferente)
+      
+      // Volumes por cavidade (em µL)
+      const volumeAnticorposDetecao = 50;
+      const volumeConjugado = 100;
+      const volumeSubstratoTMB = 100;
+      const volumeSolucaoInterrupcao = 100;
+      
+      // Lavagem: 300 µL por poço, 10 lavagens (5 no passo 8 + 5 no passo 11)
+      const volumeLavagemPorPoco = 300 * 10; // 3.000 µL = 3 mL por poço
+      const volumeTotalLavagem = totalPocos * volumeLavagemPorPoco; // em µL
+      
+      // Preparo da Solução de Lavagem (diluição 1:10)
+      const volumeConcentradoLavagem = volumeTotalLavagem / 10; // em µL
+      const volumeAguaLavagem = volumeTotalLavagem - volumeConcentradoLavagem; // em µL
 
       const resultadoDiv = document.getElementById('resultado-bvdv');
       resultadoDiv.innerHTML = `
         <h3>Resultado ELISA BVDV</h3>
         <strong>Total de poços:</strong> ${totalPocos}<br>
-        <strong>Volume Total de Solução de Lavagem:</strong> ${(volumeTotalLavagem/1000).toFixed(2)} mL<br>
-        <strong>Volume de Concentrado de Lavagem (1:20):</strong> ${(volumeConcentradoLavagem/1000).toFixed(2)} mL<br>
-        <strong>Volume Total de Conjugado Diluído:</strong> ${(volumeTotalConjugado/1000).toFixed(2)} mL<br>
-        <strong>Volume de Concentrado de Conjugado (1:50):</strong> ${volumeConcentradoConjugado.toFixed(2)} µL<br>
+        <strong>Reagentes por poço:</strong><br>
+        - Anticorpos de Detecção: ${volumeAnticorposDetecao} µL<br>
+        - Conjugado: ${volumeConjugado} µL<br>
+        - Substrato TMB: ${volumeSubstratoTMB} µL<br>
+        - Solução de Interrupção: ${volumeSolucaoInterrupcao} µL<br>
+        <strong>Solução de Lavagem (1:10):</strong><br>
+        - Volume Total: ${(volumeTotalLavagem/1000).toFixed(2)} mL<br>
+        - Concentrado de Lavagem: ${(volumeConcentradoLavagem/1000).toFixed(2)} mL<br>
+        - Água Destilada: ${(volumeAguaLavagem/1000).toFixed(2)} mL<br>
+        <strong>Volumes Totais:</strong><br>
+        - Anticorpos de Detecção: ${(totalPocos * volumeAnticorposDetecao / 1000).toFixed(2)} mL<br>
+        - Conjugado: ${(totalPocos * volumeConjugado / 1000).toFixed(2)} mL<br>
+        - Substrato TMB: ${(totalPocos * volumeSubstratoTMB / 1000).toFixed(2)} mL<br>
+        - Solução de Interrupção: ${(totalPocos * volumeSolucaoInterrupcao / 1000).toFixed(2)} mL<br>
       `;
       
       document.getElementById('copiar-resultado-bvdv').style.display = 'block';
@@ -465,28 +528,41 @@
       }
     }
 
-    function togglePassoAPasso() {
-      const etapasELISADiv = document.getElementById('etapasELISA');
-      const botao = document.querySelector('.passo-a-passo');
-      const isOpen = etapasELISADiv.style.maxHeight !== '0px' && etapasELISADiv.style.maxHeight !== '';
-
+    function togglePassoAPasso(tipo) {
+      const etapasELISADiv = document.getElementById(`etapasELISA-${tipo}`);
+      const botaoAtual = document.querySelector(`.passo-a-passo[onclick="togglePassoAPasso('${tipo}')"]`);
+      
+      // Verifica se já está aberto
+      const isOpen = etapasELISADiv.style.maxHeight && etapasELISADiv.style.maxHeight !== '0px';
+      
       if (isOpen) {
-        // Fechar com animação
+        // Fechar
         etapasELISADiv.style.maxHeight = etapasELISADiv.scrollHeight + 'px';
-        void etapasELISADiv.offsetHeight;
+        void etapasELISADiv.offsetHeight; // Força o redesenho
         etapasELISADiv.style.maxHeight = '0';
         setTimeout(() => {
           etapasELISADiv.style.display = 'none';
-          botao.classList.remove('aberto');
+          botaoAtual.classList.remove('aberto');
         }, 300);
       } else {
-        // Abrir com animação
+        // Primeiro fecha todos os outros
+        document.querySelectorAll('.etapasELISA').forEach(div => {
+          if (div.id !== `etapasELISA-${tipo}`) {
+            div.style.maxHeight = '0';
+            setTimeout(() => div.style.display = 'none', 300);
+          }
+        });
+        document.querySelectorAll('.passo-a-passo').forEach(botao => {
+          if (botao !== botaoAtual) botao.classList.remove('aberto');
+        });
+        
+        // Depois abre o selecionado
         etapasELISADiv.style.display = 'block';
         const height = etapasELISADiv.scrollHeight;
         etapasELISADiv.style.maxHeight = '0';
         void etapasELISADiv.offsetHeight;
         etapasELISADiv.style.maxHeight = height + 'px';
-        botao.classList.add('aberto');
+        botaoAtual.classList.add('aberto');
         setTimeout(() => {
           etapasELISADiv.style.maxHeight = 'none';
         }, 300);
