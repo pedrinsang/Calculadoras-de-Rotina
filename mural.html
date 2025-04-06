@@ -491,18 +491,21 @@
       body {
         padding: 10px;
         display: flex;
-        justify-content: center; /* Adicionado */
-        align-items: center; /* Adicionado */
-        min-height: 100vh; /* Garante que o body ocupe toda a altura */
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: hidden; /* Remove scroll do body */
+        width: 100%;
       }
 
       .container-fora {
-        margin: 0; /* Removido margin auto */
+        margin: 0;
         padding: 15px;
-        max-height: calc(100vh - 20px);
-        width: 100%; /* Garante que ocupe toda a largura disponível */
-      }
-      
+        width: 100%;
+        max-height: 95vh; /* Altura máxima ajustada */
+        display: flex;
+        flex-direction: column;
+      }      
       .filtros-wrapper {
         flex-direction: column;
         align-items: stretch;
