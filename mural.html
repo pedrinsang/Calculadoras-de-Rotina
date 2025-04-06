@@ -18,18 +18,27 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 10px;
+      overflow: hidden; /* Remove scroll global */
     }
 
     .container-fora {
       width: 100%;
-      max-width: 900px;
-      padding: 20px;
+      max-width: min(95vw, 900px); /* Limite máximo adaptável */
+      height: min(95vh, 740px); /* Altura máxima = altura da tela */
+      padding: 15px;
       background: white;
       color: #1b5e20;
       border-radius: 10px;
       box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
     .button {
@@ -60,14 +69,13 @@
     }
 
     #mural-list {
-      margin-top: 20px;
-      min-height: 60vh;
-      max-height: 65vh;
+      flex: 1;
       overflow-y: auto;
-      padding: 15px;
+      padding: 10px 5px;
       background-color: #ffffff;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      max-height: calc(100vh - 220px); /* Ajuste preciso para telas pequenas */
     }
 
     .amostra-item {
@@ -356,6 +364,7 @@
     /* Estilos para mobile */
     @media (max-width: 768px) {
       .container-fora {
+        max-height: 85vh;
         padding: 15px;
       }
 
@@ -373,10 +382,8 @@
         flex-grow: 1;
       }
 
-      #mural-list {
-        min-height: 50vh;
-        max-height: 55vh;
-        padding: 10px;
+     #mural-list {
+        max-height: calc(100% - 140px); /* Ajuste fino */
       }
 
       .status-buttons {
@@ -408,16 +415,43 @@
         padding: 10px;
       }
 
+      .container-fora {
+        max-height: 80vh;
+        padding: 12px;
+      }
+
+      #mural-list {
+        max-height: calc(100% - 130px);
+        padding: 10px;
+      }
+
       .button {
         padding: 8px 12px;
         font-size: 14px;
-      }
-
-      .amostra-item {
-        padding: 10px;
+        width: 100%;
       }
     }
     
+
+    @media (max-width: 360px) {
+      .container-fora {
+        padding: 10px;
+        height: min(98vh, 740px);
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      #mural-list {
+        max-height: calc(100vh - 180px); /* Ajuste extra para telas muito pequenas */
+        padding: 5px;
+      }
+
+      .button {
+        padding: 8px 12px;
+      }
+    }
   </style>
 </head>
 <body>
