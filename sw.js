@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Cache-alpha'; // Atualizei a versão
+const CACHE_NAME = 'Cache-alpha1'; // Atualizei a versão
 const OFFLINE_PAGE = './offline.html';
 const ASSETS = [
   './',
