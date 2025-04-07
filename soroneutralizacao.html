@@ -500,6 +500,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
+    });
+
 
     function togglePassoAPasso() {
         const div = document.getElementById('passoAPasso');

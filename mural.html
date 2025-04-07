@@ -585,6 +585,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
+    });
   
     // Funções de UI
     function mostrarLoading() {
