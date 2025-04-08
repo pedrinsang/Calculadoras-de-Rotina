@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Calculadora de ELISA</title>
+  <style>
+    /* ===== Reset de Margens ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #87daa0, #51c778);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .botao-container {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .button-voltar, .button-mural {
+      padding: 10px 20px;
+      background-color: #1b5e20;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 550px;
+      padding: 20px;
+      background: white;
+      color: #1b5e20;
+      border-radius: 10px;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+      margin: 0 auto;
+    }
+
+    .logo {
+      width: 100%;
+      max-width: 200px;
+      margin: 10px auto;
+      display: block;
+    }
+
+    h2 {
+      color: #1b5e20;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border: 2px solid #1b5e20;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1b5e20;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #388e3c;
+    }
+
+    .resultado {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e8f5e9;
+      color: #1b5e20;
+      border-left: 5px solid #388e3c;
+      border-radius: 5px;
+    }
+
+    .ajuda, .passo-a-passo {
+      margin-top: 20px;
+      padding: 10px;
+      background: #e8f5e9;
+      color: #1b5e20;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .ajuda.aberto::after, .passo-a-passo.aberto::after {
+      content: "▼";
+    }
+
+    .ajuda::after, .passo-a-passo::after {
+      content: "▶";
+      float: right;
+      transition: transform 0.3s;
+    }
+
+    .explicacao, .etapasELISA {
+      margin-top: 10px;
+      padding: 25px;
+      background: #f1f8e9;
+      color: #1b5e20;
+      border-left: 5px solid #388e3c;
+      border-radius: 5px;
+      display: none;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
+    }
+    
+
+    .etapasELISA ol {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .etapasELISA li {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .etapasELISA input[type="checkbox"] {
+      margin-right: 10px;
+      cursor: pointer;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .etapasELISA span {
+      flex: 1;
+    }
+
+    .etapasELISA input[type="checkbox"]:checked + span {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    /* ===== Botões ===== */
+    .button-group {
+      display: grid;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .calculadora {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
+    }
+
+    .calculadora.aberto {
+      max-height: 1000px; /* Valor maior que o conteúdo máximo */
+      opacity: 1;
+    }
+
+    .calc-button {
+      padding: 15px;
+      background: #e8f5e9;
+      border: 2px solid #1b5e20;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .calc-button:hover {
+      background: #c8e6c9;
+      transform: translateY(-2px);
+    }
+
+    .calc-button.active {
+      background: #1b5e20;
+      color: white;
+      position: relative;
+    }
+
+    .calc-button.active::after {
+      content: "";
+    }
+
+    /* Estilo do botão copiar */
+    .botao-copiar {
+      display: none;
+      transition: all 0.3s ease;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .botao-copiar.copiado {
+      background-color: #4caf50 !important;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        padding: 10px;
+      }
+
+      input, button {
+        font-size: 14px;
+      }
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="botao-container">
+      <a href="hub.html" id="hub-button" class="button-voltar">Voltar ao Hub</a>
+      <a href="mural.html" id="mural-button" class="button-mural">Acessar Mural</a>
+    </div>
+    
+    <!-- Logo -->
+    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
+    <h2>Calculadora de ELISA</h2>
+
+    <div class="button-group">
+      <div class="calc-button" onclick="toggleCalculator('leucose')">
+        ELISA Leucose
+      </div>
+      <div class="calc-button" onclick="toggleCalculator('bvdv')">
+        ELISA BVDV
+      </div>
+    </div>
+    
+    <!-- Calculadoras -->
+    <div id="leucose" class="calculadora" >
+      <label for="amostras-leucose">Número de Amostras:</label>
+      <input type="number" id="amostras-leucose" placeholder="Digite o número de amostras">
+      
+      <label for="controles-leucose">Número de Controles (Positivos + Negativos):</label>
+      <input type="number" id="controles-leucose" placeholder="Digite o número de controles">
+      
+      <button type="button" onclick="calcularLeucose()">Calcular</button>
+      <div id="resultado-leucose" class="resultado"></div>
+      <button class="botao-copiar" id="copiar-resultado-leucose" onclick="copiarResultado('leucose')">📋 Copiar Resultado</button>
+    </div>
+    
+    <div id="bvdv" class="calculadora" >
+      <label for="amostras-bvdv">Número de Amostras:</label>
+      <input type="number" id="amostras-bvdv" placeholder="Digite o número de amostras">
+      
+      <label for="controles-bvdv">Número de Controles (Positivos + Negativos):</label>
+      <input type="number" id="controles-bvdv" placeholder="Digite o número de controles">
+      
+      <button type="button" onclick="calcularBvdv()">Calcular</button>
+      <div id="resultado-bvdv" class="resultado"></div>
+      <button class="botao-copiar" id="copiar-resultado-bvdv" onclick="copiarResultado('bvdv')">📋 Copiar Resultado</button>
+    </div>
+    
+    <!-- Instruções -->
+    <div class="ajuda" onclick="toggleInstrucoes()">Instruções de Uso</div>
+    <div id="instrucoes" class="explicacao">
+      <h3>Instruções Passo a Passo:</h3>
+      <ol>
+        <li>Insira o número de amostras e controles (positivos + negativos) nos campos acima.</li>
+        <li>Clique em "Calcular" para obter a quantidade de solução de lavagem e conjugado necessários.</li>
+        <li>Prepare os reagentes conforme as quantidades calculadas.</li>
+        <li>Siga o protocolo ELISA para realizar o teste.</li>
+      </ol>
+    </div>
+
+   <!-- Passo a Passo do Teste ELISA Leucose -->
+    <div class="passo-a-passo" onclick="togglePassoAPasso('leucose')">Passo a Passo do Teste ELISA Leucose</div>
+    <div id="etapasELISA-leucose" class="etapasELISA">
+      <h3>Passo a Passo do Teste ELISA Leucose:</h3>
+      <ol>
+        <li><input type="checkbox"><span>Prepare os reagentes conforme descrito no protocolo.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL de solução de lavagem em cada poço da placa.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL do Controle Negativo (NC) em duplicata.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL do Controle Positivo (PC) em duplicata.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL das amostras nos poços restantes.</span></li>
+        <li><input type="checkbox"><span>Misture o conteúdo dos poços batendo suavemente na placa ou usando um agitador de microplacas.</span></li>
+        <li><input type="checkbox"><span>Cubra a placa e incubue por 30 minutos a 18–26°C.</span></li>
+        <li><input type="checkbox"><span>Remova a solução e lave cada poço com aproximadamente 300 µL de solução de lavagem três vezes.</span></li>
+        <li><input type="checkbox"><span>Bata a placa em material absorvente após a lavagem final para remover qualquer resíduo.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL do Conjugado diluído em cada poço.</span></li>
+        <li><input type="checkbox"><span>Cubra a placa e incubue por 1 hora a 18–26°C.</span></li>
+        <li><input type="checkbox"><span>Repita o processo de lavagem.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL do Substrato TMB N.9 em cada poço.</span></li>
+        <li><input type="checkbox"><span>Incube por 20 minutos a 18–26°C, longe da luz direta.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL da Solução de Parada N.3 em cada poço.</span></li>
+        <li><input type="checkbox"><span>Meça e registre os valores de absorbância a 450 nm.</span></li>
+      </ol>
+    </div>
+
+    <!-- Passo a Passo do Teste ELISA BVDV -->
+    <div class="passo-a-passo" onclick="togglePassoAPasso('bvdv')">Passo a Passo do Teste ELISA BVDV</div>
+    <div id="etapasELISA-bvdv" class="etapasELISA">
+      <h3>Passo a Passo do Teste ELISA BVDV:</h3>
+      <ol>
+        <li><input type="checkbox"><span>Prepare os reagentes conforme descrito no protocolo (Solução de Lavagem 1:10 e Conjugado diluído).</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL de Anticorpos de Detecção em cada poço da placa.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL do Controle Negativo (CN) em duplicata nos poços designados.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL do Controle Positivo (CP) em duplicata nos poços designados.</span></li>
+        <li><input type="checkbox"><span>Adicione 50 µL das amostras (soro, plasma ou tampão de fragmento de orelha) nos poços restantes.</span></li>
+        <li><input type="checkbox"><span>Misture o conteúdo dos poços batendo suavemente a placa ou usando um agitador de microplacas.</span></li>
+        <li><input type="checkbox"><span>Cubra a placa e incubue por 2 horas (±5 min) a 37°C ou 12-18 horas a 2-8°C (selada para evitar evaporação).</span></li>
+        <li><input type="checkbox"><span>Remova o líquido e lave cada poço com 300 µL de Solução de Lavagem, repetindo 5 vezes.</span></li>
+        <li><input type="checkbox"><span>Bata a placa em material absorvente após a última lavagem para remover resíduos.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL do Conjugado diluído em cada poço.</span></li>
+        <li><input type="checkbox"><span>Cubra a placa e incubue por 30 minutos (±2 min) a 18-26°C.</span></li>
+        <li><input type="checkbox"><span>Repita o processo de lavagem (5 lavagens com 300 µL cada).</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL do Substrato TMB em cada poço.</span></li>
+        <li><input type="checkbox"><span>Incube por 10 minutos (±1 min) a 18-26°C, protegido da luz.</span></li>
+        <li><input type="checkbox"><span>Adicione 100 µL da Solução de Interrupção em cada poço.</span></li>
+        <li><input type="checkbox"><span>Meça a absorbância em 450 nm (ou 450/650 nm para duplo comprimento de onda).</span></li>
+      </ol>
+    </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
+    });
+    
+    let calculadoraAtiva = null;
+
+    function toggleCalculator(tipo) {
+      const calculadoras = document.querySelectorAll('.calculadora');
+      const botoes = document.querySelectorAll('.calc-button');
+      
+      // Fechar calculadora atual
+      if(calculadoraAtiva) {
+        const calcAtual = document.getElementById(calculadoraAtiva);
+        calcAtual.classList.remove('aberto');
+        document.querySelector(`.calc-button[onclick="toggleCalculator('${calculadoraAtiva}')"]`)
+          .classList.remove('active');
+      }
+
+      // Abrir nova calculadora (se não for a mesma)
+      if(calculadoraAtiva !== tipo) {
+        const novaCalculadora = document.getElementById(tipo);
+        const novoBotao = document.querySelector(`.calc-button[onclick="toggleCalculator('${tipo}')"]`);
+        
+        novaCalculadora.classList.add('aberto');
+        novoBotao.classList.add('active');
+        calculadoraAtiva = tipo;
+      } else {
+        calculadoraAtiva = null;
+      }
+    }
+
+    function calcularLeucose() {
+      const amostras = parseFloat(document.getElementById('amostras-leucose').value);
+      const controles = parseFloat(document.getElementById('controles-leucose').value);
+
+      if (isNaN(amostras) || isNaN(controles)) {
+        alert("Por favor, insira valores válidos.");
+        return;
+      }
+
+      // Total de poços (amostras + controles em duplicata)
+      const totalPocos = amostras + controles;
+
+      // Volumes por poço (em µL) conforme protocolo:
+      const volumeSolucaoLavagemPasso2 = 50;   // Passo 2: 50 µL da solução 1:10
+      const volumeLavagemPasso8 = 300 * 3;     // Passo 8: 300 µL, 3 lavagens = 900 µL
+      const volumeLavagemPasso11 = 300 * 3;    // Passo 11: igual ao passo 8 = 900 µL
+      const volumeConjugado = 100;             // Passo 9: 100 µL do conjugado 1:100
+
+      // Cálculo da Solução de Lavagem TOTAL por poço:
+      const volumeLavagemPorPoco = volumeSolucaoLavagemPasso2 + volumeLavagemPasso8 + volumeLavagemPasso11; // 50 + 900 + 900 = 1.850 µL/poço
+
+      // Volume total de Solução de Lavagem (1:10) para todos os poços:
+      const volumeTotalLavagem = totalPocos * volumeLavagemPorPoco; // em µL
+      const volumeConcentradoLavagem = volumeTotalLavagem / 10;      // Concentrado (10X) em µL
+      const volumeAguaLavagem = volumeTotalLavagem - volumeConcentradoLavagem; // Água em µL
+
+      // Cálculo do Conjugado (diluição 1:100):
+      const volumeTotalConjugado = totalPocos * volumeConjugado;     // Conjugado diluído em µL
+      const volumeConcentradoConjugado = volumeTotalConjugado / 100; // Concentrado (100X) em µL
+
+      // Exibir resultados:
+      const resultadoDiv = document.getElementById('resultado-leucose');
+      resultadoDiv.innerHTML = `
+        <h3>Resultado ELISA Leucose</h3>
+        <strong>Total de poços:</strong> ${totalPocos}<br>
+        <strong>Solução de Lavagem (1:10):</strong><br>
+        - Volume Total: ${(volumeTotalLavagem / 1000).toFixed(2)} mL<br>
+        - Concentrado de Lavagem (10X): ${(volumeConcentradoLavagem / 1000).toFixed(2)} mL<br>
+        - Água Destilada: ${(volumeAguaLavagem / 1000).toFixed(2)} mL<br>
+        <strong>Conjugado (1:100):</strong><br>
+        - Volume Total Diluído: ${(volumeTotalConjugado / 1000).toFixed(2)} mL<br>
+        - Concentrado de Conjugado (100X): ${volumeConcentradoConjugado.toFixed(2)} µL<br>
+      `;
+
+      document.getElementById('copiar-resultado-leucose').style.display = 'block';
+    }
+
+    function calcularBvdv() {
+      const amostras = parseFloat(document.getElementById('amostras-bvdv').value);
+      const controles = parseFloat(document.getElementById('controles-bvdv').value);
+
+      if (isNaN(amostras) || isNaN(controles)) {
+        alert("Por favor, insira valores válidos.");
+        return;
+      }
+
+      // Cálculo baseado no protocolo BVDV discutido
+      const totalPocos = amostras + controles;
+      
+      // Volumes por cavidade (em µL)
+      const volumeAnticorposDetecao = 50;
+      const volumeConjugado = 100;
+      const volumeSubstratoTMB = 100;
+      const volumeSolucaoInterrupcao = 100;
+      
+      // Lavagem: 300 µL por poço, 10 lavagens (5 no passo 8 + 5 no passo 11)
+      const volumeLavagemPorPoco = 300 * 10; // 3.000 µL = 3 mL por poço
+      const volumeTotalLavagem = totalPocos * volumeLavagemPorPoco; // em µL
+      
+      // Preparo da Solução de Lavagem (diluição 1:10)
+      const volumeConcentradoLavagem = volumeTotalLavagem / 10; // em µL
+      const volumeAguaLavagem = volumeTotalLavagem - volumeConcentradoLavagem; // em µL
+
+      const resultadoDiv = document.getElementById('resultado-bvdv');
+      resultadoDiv.innerHTML = `
+        <h3>Resultado ELISA BVDV</h3>
+        <strong>Total de poços:</strong> ${totalPocos}<br>
+        <strong>Reagentes por poço:</strong><br>
+        - Anticorpos de Detecção: ${volumeAnticorposDetecao} µL<br>
+        - Conjugado: ${volumeConjugado} µL<br>
+        - Substrato TMB: ${volumeSubstratoTMB} µL<br>
+        - Solução de Interrupção: ${volumeSolucaoInterrupcao} µL<br>
+        <strong>Solução de Lavagem (1:10):</strong><br>
+        - Volume Total: ${(volumeTotalLavagem/1000).toFixed(2)} mL<br>
+        - Concentrado de Lavagem: ${(volumeConcentradoLavagem/1000).toFixed(2)} mL<br>
+        - Água Destilada: ${(volumeAguaLavagem/1000).toFixed(2)} mL<br>
+        <strong>Volumes Totais:</strong><br>
+        - Anticorpos de Detecção: ${(totalPocos * volumeAnticorposDetecao / 1000).toFixed(2)} mL<br>
+        - Conjugado: ${(totalPocos * volumeConjugado / 1000).toFixed(2)} mL<br>
+        - Substrato TMB: ${(totalPocos * volumeSubstratoTMB / 1000).toFixed(2)} mL<br>
+        - Solução de Interrupção: ${(totalPocos * volumeSolucaoInterrupcao / 1000).toFixed(2)} mL<br>
+      `;
+      
+      document.getElementById('copiar-resultado-bvdv').style.display = 'block';
+    }
+
+    function copiarResultado(tipo) {
+      try {
+        const resultadoDiv = document.getElementById(`resultado-${tipo}`);
+        const textoParaCopiar = resultadoDiv.innerText;
+        
+        const textarea = document.createElement('textarea');
+        textarea.value = textoParaCopiar;
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        const copiado = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        const btn = document.getElementById(`copiar-resultado-${tipo}`);
+        if (copiado) {
+          btn.textContent = '✅ Copiado!';
+          btn.classList.add('copiado');
+          setTimeout(() => {
+            btn.textContent = '📋 Copiar Resultado';
+            btn.classList.remove('copiado');
+          }, 2000);
+        } else {
+          throw new Error('Não foi possível copiar');
+        }
+      } catch (error) {
+        console.error("Erro ao copiar:", error);
+        alert("Erro ao copiar. Você pode selecionar e copiar manualmente.");
+      }
+    }
+
+    function toggleInstrucoes() {
+      const instrucoesDiv = document.getElementById('instrucoes');
+      const botao = document.querySelector('.ajuda');
+      const isOpen = instrucoesDiv.style.maxHeight !== '0px' && instrucoesDiv.style.maxHeight !== '';
+
+      if (isOpen) {
+        // Fechar com animação
+        instrucoesDiv.style.maxHeight = instrucoesDiv.scrollHeight + 'px';
+        void instrucoesDiv.offsetHeight; // Força o redesenho
+        instrucoesDiv.style.maxHeight = '0';
+        setTimeout(() => {
+          instrucoesDiv.style.display = 'none';
+          botao.classList.remove('aberto');
+        }, 300);
+      } else {
+        // Abrir com animação
+        instrucoesDiv.style.display = 'block';
+        const height = instrucoesDiv.scrollHeight;
+        instrucoesDiv.style.maxHeight = '0';
+        void instrucoesDiv.offsetHeight; // Força o redesenho
+        instrucoesDiv.style.maxHeight = height + 'px';
+        botao.classList.add('aberto');
+        setTimeout(() => {
+          instrucoesDiv.style.maxHeight = 'none';
+        }, 300);
+      }
+    }
+
+    function togglePassoAPasso(tipo) {
+      const etapasELISADiv = document.getElementById(`etapasELISA-${tipo}`);
+      const botaoAtual = document.querySelector(`.passo-a-passo[onclick="togglePassoAPasso('${tipo}')"]`);
+      
+      // Verifica se já está aberto
+      const isOpen = etapasELISADiv.style.maxHeight && etapasELISADiv.style.maxHeight !== '0px';
+      
+      if (isOpen) {
+        // Fechar
+        etapasELISADiv.style.maxHeight = etapasELISADiv.scrollHeight + 'px';
+        void etapasELISADiv.offsetHeight; // Força o redesenho
+        etapasELISADiv.style.maxHeight = '0';
+        setTimeout(() => {
+          etapasELISADiv.style.display = 'none';
+          botaoAtual.classList.remove('aberto');
+        }, 300);
+      } else {
+        // Primeiro fecha todos os outros
+        document.querySelectorAll('.etapasELISA').forEach(div => {
+          if (div.id !== `etapasELISA-${tipo}`) {
+            div.style.maxHeight = '0';
+            setTimeout(() => div.style.display = 'none', 300);
+          }
+        });
+        document.querySelectorAll('.passo-a-passo').forEach(botao => {
+          if (botao !== botaoAtual) botao.classList.remove('aberto');
+        });
+        
+        // Depois abre o selecionado
+        etapasELISADiv.style.display = 'block';
+        const height = etapasELISADiv.scrollHeight;
+        etapasELISADiv.style.maxHeight = '0';
+        void etapasELISADiv.offsetHeight;
+        etapasELISADiv.style.maxHeight = height + 'px';
+        botaoAtual.classList.add('aberto');
+        setTimeout(() => {
+          etapasELISADiv.style.maxHeight = 'none';
+        }, 300);
+      }
+    }
+
+    // Inicializa escondendo todas as calculadoras
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.calculadora').forEach(calc => {
+      });
+    });
+
+  </script>
+</body>
+</html>

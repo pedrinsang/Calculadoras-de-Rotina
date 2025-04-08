@@ -661,7 +661,7 @@
         localStorage.setItem("usuario", JSON.stringify(usuario));
 
         // Redirecionar para o hub de calculadoras
-        window.location.href = "hub.html";
+        window.location.href = "pages/hub.html"; 
       } catch (error) {
         console.error("Erro ao fazer login:", error);
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
