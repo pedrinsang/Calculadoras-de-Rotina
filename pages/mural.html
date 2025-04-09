@@ -493,7 +493,7 @@
             <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
             <option value="ELISA BVDV">ELISA BVDV</option>
             <option value="PCR">PCR</option>
-            <option value="RAIVA">Raiva</option>
+            <option value="RAIVA">RAIVA</option>
           </select>
         </div>
         <div class="filtro-container">
@@ -697,8 +697,9 @@
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <strong>ID:</strong> ${tarefa.id}<br>
-                  <strong>Tipo:</strong> ${tarefa.tipo}<br>
-                  <strong>Quantidade:</strong> ${tarefa.quantidade || '0'}
+                  <strong>Tipo:</strong> ${tarefa.tipo}${(tarefa.tipo === "PCR" || tarefa.tipo === "RAIVA") && tarefa.complemento ? ` ${tarefa.complemento}` : ''}<br>
+                  <strong>Quantidade:</strong> ${tarefa.quantidade || '0'}<br>
+                  <strong>Recebimento:</strong> ${dataRecebimento}
                 </div>
                 <div class="status-buttons">
                   <button class="btn-progresso" onclick="marcarProgresso('${doc.id}')">Progresso</button>
