@@ -7,27 +7,83 @@
   <title>Hub de Calculadoras</title>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <style>
+    /* Reset de margens e preenchimentos */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
+    html,
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #87daa0, #51c778);
       margin: 0;
       padding: 0;
       text-align: center;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
+    /* Splash screen (mantido do global) */
+    #splash-screen {
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #4a9146;
+      z-index: 9999;
+    }
+
+    .splash-logo {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+    }
+
+    .splash-loader {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      bottom: 25vh;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #splash-screen.hide {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease-out;
+    }
+
+    /* Container - local.css tem prioridade */
     .container {
-      position: relative;
       padding: 20px;
       max-width: 550px;
       margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      color: #1b5e20;
+      width: 95%;
     }
 
+    /* Botões - local.css tem prioridade */
     .button {
       display: block;
       margin: 10px auto;
@@ -44,6 +100,7 @@
       background-color: #166534;
     }
 
+    /* Novos estilos específicos do local.css */
     .logo {
       max-width: 50%;
       height: 50%;
@@ -64,6 +121,7 @@
       transition: background-color 0.3s;
     }
 
+    /* Media queries do local.css */
     @media (max-width: 480px) {
       body {
         padding: 5px;

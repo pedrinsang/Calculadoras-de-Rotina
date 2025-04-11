@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="pragma" content="no-cache">
   <meta http-equiv="expires" content="0">
-  
-    <!-- PWA Meta Tags -->
+
+  <!-- PWA Meta Tags -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#1b5e20">
 
@@ -16,38 +17,13 @@
   <link rel="icon" href="favicon.ico" type="image/png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="assets\css\styles.css">
   <title>Login e Cadastro | Setor de Virologia</title>
   <style>
-    :root {
-      --primary-color: #1b5e20;
-      --primary-hover: #166534;
-      --secondary-color: #f0fdf4;
-      --error-color: #ef4444;
-      --success-color: #22c55e;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #87daa0, #51c778);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      color: #1e293b;
-    }
-
     .creditos {
       color: #a1a1a1;
       opacity: 100%;
-      font-size: 0.7rem ;
+      font-size: 0.7rem;
       margin-top: 15px;
     }
 
@@ -174,24 +150,29 @@
       display: inline-block;
       width: 20px;
       height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
+      border: 3px solid rgba(255, 255, 255, .3);
       border-radius: 50%;
       border-top-color: white;
       animation: spin 1s ease-in-out infinite;
       margin-right: 8px;
-      vertical-align: middle; /* Adicionei esta linha */
+      vertical-align: middle;
+      /* Adicionei esta linha */
       position: relative;
-      top: -1px; /* Ajuste fino para perfeito alinhamento */
+      top: -1px;
+      /* Ajuste fino para perfeito alinhamento */
     }
 
     .button span {
-      display: inline-flex; /* Mudei para flex para melhor alinhamento */
+      display: inline-flex;
+      /* Mudei para flex para melhor alinhamento */
       align-items: center;
       justify-content: center;
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .alert {
@@ -244,15 +225,23 @@
       font-size: 16px;
       cursor: pointer;
       z-index: 999;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       animation: pulse 2s infinite;
       display: none;
     }
 
     @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
     }
 
     #iosInstallInstructions {
@@ -274,6 +263,7 @@
         transform: translateY(30px);
         opacity: 0;
       }
+
       to {
         transform: translateY(0);
         opacity: 1;
@@ -285,20 +275,22 @@
         padding: 1.5rem;
         margin: 0.5rem;
       }
-      
+
       h2 {
         font-size: 1.5rem;
       }
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    
 
-    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" alt="Logo Setor de Virologia UFSM" class="logo">
+<body style="color: #1e293b;">
+  <div class="container">
+
+
+    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg"
+      alt="Logo Setor de Virologia UFSM" class="logo">
     <div id="alert-message" class="alert"></div>
-    
+
     <!-- Formulário de Login -->
     <div id="login-form">
       <h2>Login</h2>
@@ -390,11 +382,14 @@
   </button>
 
   <!-- Adicione esta div para iOS -->
-  <div id="iosInstallInstructions" style="display: none; position: fixed; bottom: 20px; right: 20px; background: #1b5e20; color: white; padding: 12px 15px; border-radius: 8px; z-index: 999; max-width: 220px; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+  <div id="iosInstallInstructions"
+    style="display: none; position: fixed; bottom: 20px; right: 20px; background: #1b5e20; color: white; padding: 12px 15px; border-radius: 8px; z-index: 999; max-width: 220px; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
     <div style="display: flex; align-items: center; gap: 8px;">
       <!-- Ícone SVG idêntico ao do Safari -->
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0;">
-        <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.35C15.11 18.56 15.08 18.78 15.08 19C15.08 20.61 16.39 21.92 18 21.92C19.61 21.92 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="white"/>
+        <path
+          d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.35C15.11 18.56 15.08 18.78 15.08 19C15.08 20.61 16.39 21.92 18 21.92C19.61 21.92 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z"
+          fill="white" />
       </svg>
       <div>Toque no <strong>menu Compartilhar</strong> e selecione <strong>"Adicionar à Tela de Início"</strong></div>
     </div>
@@ -435,15 +430,15 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
     });
 
     const CODIGO_SECRETO = "Virologi@";
 
     // Elementos da UI
     const alertMessage = document.getElementById('alert-message');
-    
+
     // Função para mostrar mensagem de alerta
     function showAlert(message, type = 'error') {
       alertMessage.textContent = message;
@@ -457,7 +452,7 @@
     // Função para alternar visibilidade da senha
     function setupTogglePassword() {
       document.querySelectorAll('.toggle-password').forEach(toggle => {
-        toggle.addEventListener('click', function() {
+        toggle.addEventListener('click', function () {
           const targetId = this.getAttribute('data-target');
           const input = document.getElementById(targetId);
           if (input.type === 'password') {
@@ -488,9 +483,9 @@
         `;
       } else {
         button.disabled = false;
-        buttonText.textContent = button.id === 'login-button' ? 'Entrar' : 
-                              button.id === 'cadastro-button' ? 'Cadastrar' : 
-                              'Enviar Link de Recuperação';
+        buttonText.textContent = button.id === 'login-button' ? 'Entrar' :
+          button.id === 'cadastro-button' ? 'Cadastrar' :
+            'Enviar Link de Recuperação';
       }
     }
 
@@ -506,7 +501,7 @@
     // Configurar eventos de toggle
     document.addEventListener('DOMContentLoaded', () => {
       setupTogglePassword();
-      
+
       // Event listeners para alternar entre formulários
       document.getElementById("show-cadastro").addEventListener('click', (e) => {
         e.preventDefault();
@@ -539,28 +534,28 @@
 
       // Validações
       let isValid = true;
-      
+
       if (nome.length < 3) {
         document.getElementById("cadastro-nome").parentElement.classList.add('error');
         isValid = false;
       } else {
         document.getElementById("cadastro-nome").parentElement.classList.remove('error');
       }
-      
+
       if (!validateEmail(email)) {
         document.getElementById("cadastro-email").parentElement.classList.add('error');
         isValid = false;
       } else {
         document.getElementById("cadastro-email").parentElement.classList.remove('error');
       }
-      
+
       if (senha.length < 6) {
         document.getElementById("cadastro-senha").parentElement.classList.add('error');
         isValid = false;
       } else {
         document.getElementById("cadastro-senha").parentElement.classList.remove('error');
       }
-      
+
       if (codigo !== CODIGO_SECRETO) {
         document.getElementById("cadastro-codigo").parentElement.classList.add('error');
         isValid = false;
@@ -575,7 +570,7 @@
 
       try {
         setLoading(document.getElementById('cadastro-button'), true);
-        
+
         // Verifica se o email já existe
         const methods = await fetchSignInMethodsForEmail(auth, email);
         if (methods && methods.length > 0) {
@@ -598,7 +593,7 @@
 
         showAlert('Cadastro realizado com sucesso!', 'success');
         showForm("login-form");
-        
+
         // Limpar formulário
         document.getElementById("cadastro-nome").value = "";
         document.getElementById("cadastro-sigla").value = "";
@@ -620,14 +615,14 @@
 
       // Validações
       let isValid = true;
-      
+
       if (!validateEmail(email)) {
         document.getElementById("login-email").parentElement.classList.add('error');
         isValid = false;
       } else {
         document.getElementById("login-email").parentElement.classList.remove('error');
       }
-      
+
       if (senha.length < 6) {
         document.getElementById("login-senha").parentElement.classList.add('error');
         isValid = false;
@@ -642,7 +637,7 @@
 
       try {
         setLoading(document.getElementById('login-button'), true);
-        
+
         // Autenticar no Firebase
         const userCredential = await signInWithEmailAndPassword(auth, email, senha);
         const user = userCredential.user;
@@ -661,7 +656,7 @@
         localStorage.setItem("usuario", JSON.stringify(usuario));
 
         // Redirecionar para o hub de calculadoras
-        window.location.href = "pages/hub.html"; 
+        window.location.href = "pages/hub.html";
       } catch (error) {
         console.error("Erro ao fazer login:", error);
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -688,10 +683,10 @@
 
       try {
         setLoading(document.getElementById('send-reset-button'), true);
-        
+
         // Enviar email de recuperação
         await sendPasswordResetEmail(auth, email);
-        
+
         showAlert('Email de recuperação enviado com sucesso! Verifique sua caixa de entrada.', 'success');
         showForm("login-form");
       } catch (error) {
@@ -707,21 +702,21 @@
     });
 
     // Adicionar validação em tempo real para a sigla (3 letras)
-    document.getElementById("cadastro-sigla").addEventListener('input', function(e) {
+    document.getElementById("cadastro-sigla").addEventListener('input', function (e) {
       this.value = this.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
       if (this.value.length > 4) {
         this.value = this.value.substring(0, 4);
       }
     });
 
-    document.getElementById("login-form").addEventListener("keypress", function(event) {
+    document.getElementById("login-form").addEventListener("keypress", function (event) {
       if (event.key === "Enter") {
         event.preventDefault(); // Evita recarregar a página
         document.getElementById("login-button").click(); // Dispara o clique no botão
       }
     });
 
-    document.getElementById("cadastro-form").addEventListener("keypress", function(event) {
+    document.getElementById("cadastro-form").addEventListener("keypress", function (event) {
       if (event.key === "Enter") {
         event.preventDefault(); // Evita recarregar a página
         document.getElementById("cadastro-button").click(); // Dispara o clique no botão
@@ -734,17 +729,17 @@
       // Verifica se é iOS/Safari e se não está já instalado
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
-      
+
       if ((isIOS || isSafari) && !window.navigator.standalone) {
         const iosDiv = document.getElementById('iosInstallInstructions');
         if (iosDiv) {
           iosDiv.style.display = 'flex';
-          
+
           // Esconde após 15 segundos ou quando o usuário clica
           setTimeout(() => {
             iosDiv.style.display = 'none';
           }, 15000);
-          
+
           iosDiv.onclick = () => iosDiv.style.display = 'none';
         }
       }
@@ -754,21 +749,21 @@
     window.addEventListener('load', showIOSInstructions);
     window.addEventListener('scroll', showIOSInstructions);
 
-    
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').then(reg => {
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'activated') {
-              if(confirm('Atualização disponível! Recarregar agora?')) {
+              if (confirm('Atualização disponível! Recarregar agora?')) {
                 window.location.reload();
               }
             }
           });
         });
       });
-      
+
       // Ouvir mensagens do Service Worker
       navigator.serviceWorker.addEventListener('message', event => {
         if (event.data.type === 'APP_UPDATE') {
@@ -784,16 +779,16 @@
         });
       }
 
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js', { 
-          scope: './' 
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js', {
+          scope: './'
         })
-        .then(function(registration) {
-          console.log('SW registrado:', registration.scope);
-        })
-        .catch(function(error) {
-          console.error('Falha no registro:', error);
-        });
+          .then(function (registration) {
+            console.log('SW registrado:', registration.scope);
+          })
+          .catch(function (error) {
+            console.error('Falha no registro:', error);
+          });
       });
     }
 
@@ -809,16 +804,16 @@
 
     installButton.addEventListener('click', async () => {
       if (!deferredPrompt) return;
-      
+
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      
+
       if (outcome === 'accepted') {
         console.log('Usuário aceitou a instalação');
       } else {
         console.log('Usuário rejeitou a instalação');
       }
-      
+
       installButton.style.display = 'none';
       deferredPrompt = null;
     });
@@ -836,29 +831,30 @@
 
     // Registro do Service Worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js', { 
-          scope: './' 
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js', {
+          scope: './'
         })
-        .then(function(registration) {
-          console.log('SW registrado com sucesso:', registration.scope);
-          
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'activated') {
-                if(confirm('Nova versão disponível! Recarregar agora?')) {
-                  window.location.reload();
+          .then(function (registration) {
+            console.log('SW registrado com sucesso:', registration.scope);
+
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'activated') {
+                  if (confirm('Nova versão disponível! Recarregar agora?')) {
+                    window.location.reload();
+                  }
                 }
-              }
+              });
             });
+          })
+          .catch(function (error) {
+            console.error('Falha no registro do SW:', error);
           });
-        })
-        .catch(function(error) {
-          console.error('Falha no registro do SW:', error);
-        });
       });
     }
   </script>
 </body>
+
 </html>
