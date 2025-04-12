@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/styles.css">
   <title>Histórico de Tarefas Concluídas</title>
   <style>
     * {
@@ -22,31 +23,14 @@
       overflow: hidden; /* Remove scroll global */
     }
 
-    h1 {
-      font-size: 40px;
-      display: flex;
-      justify-content: center;
-      margin-bottom: 10px;
-    
-    }
-
-    .container-fora {
-      width: 100%;
-      max-width: min(95vw, 900px); /* Limite máximo adaptável */
-      height: min(95vh, 740px); /* Altura máxima = altura da tela */
-      padding: 15px;
-      background: white;
-      color: #1b5e20;
-      border-radius: 10px;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      display: flex;
-      flex-direction: column;
-    }
-
     .container {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: min(95vh, 740px);
+      width: 100%;
+      height: 95vh;
+      padding: 10px;
+      max-width: min(95vw, 900px);
     }
 
    #historico-list {
@@ -56,7 +40,7 @@
       background-color: #ffffff;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      max-height: calc(100vh - 220px); /* Cálculo preciso baseado na viewport */
+      max-height: 90%; 
     }
 
     .historico-item {
@@ -73,7 +57,7 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
-
+   
     .button {
       padding: 10px 15px;
       background-color: #1b5e20;
@@ -83,6 +67,8 @@
       cursor: pointer;
       font-size: clamp(0.9rem, 3vw, 1rem); /* Botão responsivo */
       white-space: nowrap;
+      gap: 10px;
+      width: 20%;
     }
 
     .button:hover {
@@ -286,15 +272,20 @@
         padding: 15px;
       }
 
-    .search-container {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      margin: 10px 0;
-    }
+
+      .search-container {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        margin: 10px 0;
+      }
+
+      .container {
+        max-height: 95vh;
+      }
 
       #historico-list {
-        max-height: calc(100% - 140px); /* Ajuste fino */
+        max-height: calc(90vh - 120px); /* Ajuste fino */
       }
 
       .status-buttons {
@@ -309,15 +300,14 @@
         padding: 10px;
       }
 
-      .container-fora {
-        max-height: 80vh; /* Mais compacto em mobile */
-        padding: 12px;
+      .container {
+        max-height: 95vh;
       }
 
       #historico-list {
-        max-height: calc(100% - 130px);
-        padding: 10px;
+        max-height: 80%;
       }
+
       
       .search-container {
         flex-direction: column;
@@ -341,11 +331,9 @@
     }
 
     @media (max-width: 360px) {
-      .container-fora {
-        padding: 10px;
-        height: min(98vh, 740px);
+      .container {
+        max-height: 95vh;
       }
-
 
       .search-container {
         grid-template-columns: 1fr;
@@ -353,7 +341,7 @@
       }
 
       #historico-list {
-        max-height: calc(100vh - 180px); /* Ajuste fino para telas pequenas */
+        max-height: 90%;
         padding: 5px;
       }
 
@@ -369,19 +357,20 @@
   </style>
 </head>
 <body>
-  <div class="container-fora">
   <div class="container">
     <h1>Histórico de Tarefas Concluídas</h1>
 
-    <button id="voltar-button" class="button">Voltar ao Mural</button>
+    <div style="justify-content: space-between; display: flex; gap: 5px; margin-top: 10px;">
+      <button id="mural-button" class="button" style="margin-bottom: 5px;">Voltar ao Mural</button>
+      <button id="voltar-button" class="button" style="margin-bottom: 5px;">Voltar ao Hub</button>
+    </div>
 
     <div class="search-container">
       <input type="text" id="search-input" placeholder="Buscar por ID, tipo ou observações...">
-      <button id="search-button" class="button">Buscar</button>
+      <button id="search-button" class="button" style="width: 100%;">Buscar</button>
     </div>
 
     <div id="historico-list"></div>
-  </div>
   </div>
 
   <script type="module">
@@ -1014,11 +1003,17 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("voltar-button").onclick = () => {
+      document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("mural-button").onclick = () => {
         window.location.href = "mural.html";
-      };
+      }
+    });
 
+      document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("voltar-button").onclick = () => {
+        window.location.href = "hub.html";
+      }
+    
       // Configura o evento de busca
       document.getElementById("search-button").addEventListener("click", () => {
         const termo = document.getElementById("search-input").value;

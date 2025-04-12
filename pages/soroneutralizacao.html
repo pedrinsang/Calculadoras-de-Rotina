@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="../assets/css/styles.css">
   <title>Calculadora de Soroneutralização</title>
   <style>
     * {
@@ -22,14 +23,11 @@
     }
 
     .container {
+      display: flex;
+      flex-direction: column;
       width: 100%;
-      max-width: 565px;
-      padding: 20px;
-      background: white;
-      color: #1b5e20;
-      border-radius: 10px;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      margin: 0 auto;
+      max-width: min(95vw, 900px);
+      padding: 10px;
     }
 
     .logo {

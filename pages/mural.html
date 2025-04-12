@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/styles.css">
   <title>Mural de Tarefas</title>
   <style>
     * {
@@ -22,42 +23,27 @@
       overflow: hidden; /* Remove scroll global */
     }
 
-    h1 {
-      font-size: 40px;
-      display: flex;
-      justify-content: center;
-      margin-bottom: 10px;
-      
-    }
-
-    .container-fora {
-      width: 100%;
-      max-width: min(95vw, 900px); /* Limite máximo adaptável */
-      height: min(95vh, 740px); /* Altura máxima = altura da tela */
-      padding: 15px;
-      background: white;
-      color: #1b5e20;
-      border-radius: 10px;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      display: flex;
-      flex-direction: column;
-    }
-
     .container {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: min(95vh, 740px);
+      width: 100%;
+      min-width: min(95vw, 900px);
+      height: 95vh;
+      padding: 10px;
     }
 
     .button {
-      padding: 10px 20px;
+      padding: 10px 15px;
       background-color: #1b5e20;
       color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
       border: none;
+      border-radius: 5px;
       cursor: pointer;
+      font-size: clamp(0.9rem, 3vw, 1rem); /* Botão responsivo */
+      white-space: nowrap;
+      gap: 10px;
+      width: 20%;
     }
 
     .button:hover {
@@ -190,7 +176,7 @@
       background-color: #ffffff;
       border-radius: 5px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      max-height: 75vh;
+      max-height: 90%;
       overflow-y: auto;
     }
 
@@ -423,13 +409,13 @@
         padding: 10px;
       }
 
-      .container-fora {
-        max-height: 80vh;
+      .container {
+        max-height: 95vh;
         padding: 12px;
       }
 
       #mural-list {
-        max-height: calc(100% - 130px);
+        max-height: 90%;
         padding: 10px;
       }
 
@@ -442,9 +428,8 @@
     
 
     @media (max-width: 360px) {
-      .container-fora {
-        padding: 10px;
-        height: min(98vh, 740px);
+      .container {
+        max-height: 95vh;
       }
 
       h1 {
@@ -452,7 +437,7 @@
       }
 
       #mural-list {
-        max-height: calc(100vh - 180px); /* Ajuste extra para telas muito pequenas */
+        max-height: 90%; /* Ajuste extra para telas muito pequenas */
         padding: 5px;
       }
 
@@ -463,7 +448,7 @@
   </style>
 </head>
 <body>
-  <div class="container-fora">
+  <div>
     <div id="loading">
       <div style="background: white; padding: 20px; border-radius: 5px;">
         Carregando...
@@ -472,15 +457,13 @@
 
     <div class="container">
       <h1>Mural de Tarefas</h1>
-
       <div class="container-botoes">
         <button id="hub-button" class="button">Voltar ao Hub</button>
         <button id="historico-button" class="button">Acessar Histórico</button>
       </div>
       <div class="container-tarefa">
-        <button id="adicionar-tarefa" class="button">Adicionar Tarefa</button>
+        <button id="adicionar-tarefa" class="button" style="width: 100%;">Adicionar Tarefa</button>
       </div>
-
 
       <div class="filtros-wrapper">
         <div class="filtro-container">
@@ -546,8 +529,8 @@
         <button type="submit">Salvar Tarefa</button>
         <button type="button" id="cancelar-tarefa">Cancelar</button>
       </form>
-
       <div id="mural-list"></div>
+      
     </div>
   </div>
 
@@ -569,6 +552,8 @@
       getDoc
     } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-messaging.js";
+
   
     const firebaseConfig = {
       apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
@@ -694,7 +679,7 @@
           const amostraItem = document.createElement("div");
           amostraItem.className = `amostra-item ${statusClass}`;
           amostraItem.innerHTML = `
-              <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; justify-content: space-between; align-items: center; text-align: left">
                 <div>
                   <strong>ID:</strong> ${tarefa.id}<br>
                   <strong>Tipo:</strong> ${tarefa.tipo}${(tarefa.tipo === "PCR" || tarefa.tipo === "RAIVA") && tarefa.complemento ? ` ${tarefa.complemento}` : ''}<br>
@@ -1018,10 +1003,6 @@
         if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
         
   
-        await addDoc(collection(db, "tarefas"), {
-          ...novaTarefa,
-          dataRecebimento: Timestamp.fromDate(dataUTC)
-        });
       
         esconderFormulario();
         carregarTarefas();
@@ -1033,6 +1014,7 @@
         esconderLoading();
       }
     }
+
   
     // Funções globais
     window.marcarProgresso = async (id) => {
@@ -1387,7 +1369,7 @@
         if (user) {
           console.log("Usuário autenticado:", user.uid);
           carregarProprietariosSugeridos(); // Adicione esta linha
-          carregarTarefas();
+          carregarTarefas(); 
         } else {
           console.log("Usuário não autenticado.");
           window.location.href = "index.html";
