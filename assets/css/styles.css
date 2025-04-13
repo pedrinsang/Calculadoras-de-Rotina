@@ -13,12 +13,13 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #87daa0, #51c778);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: linear-gradient(135deg, #87daa0, #51c778); 
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;    
+    min-height: 100vh;
+    padding: 20px;    
 }
 
 .container { 
@@ -34,4 +35,24 @@ body {
 h1 {
     text-align: center;
     font-size: 30px;
+}
+
+.button { /*global*/
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    border: none;
+    border-radius: 5px;
+    background-color: #1b5e20;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    padding: 10px;
+    text-decoration: none;
+}
+
+.button:hover {
+    background-color: #166534;
 }

@@ -78,20 +78,12 @@
     }
 
     /* Botões - local.css tem prioridade */
-    .button {
-      display: block;
+    .button { 
+      margin-bottom: 7px;
+      flex-direction: column;
       margin: 10px auto;
-      padding: 10px 20px;
-      background-color: #1b5e20;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
       width: 80%;
-    }
-
-    .button:hover {
-      background-color: #166534;
+      padding: 10px 5px;
     }
 
     /* Novos estilos específicos do local.css */
@@ -103,16 +95,6 @@
     .botao-container {
       display: flex;
       justify-content: space-between;
-    }
-
-    .button-protocolos,
-    .button-mural {
-      padding: 10px 20px;
-      background-color: #1b5e20;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
     }
 
     /* Media queries do local.css */
@@ -130,9 +112,9 @@
 
 <body>
   <div class="container">
-    <div class="botao-container">
-      <a href="protocolos.html" id="protocols-button" class="button-protocolos">Protocolos</a>
-      <a href="mural.html" id="mural-button" class="button-mural">Acessar Mural</a>
+    <div class="botao-container" style="gap: 130px;">
+      <a href="protocolos.html" id="protocols-button" class="button">Protocolos</a>
+      <a href="mural.html" id="mural-button" class="button">Acessar Mural</a>
     </div>
 
     <!-- Logo -->
