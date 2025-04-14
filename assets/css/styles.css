@@ -37,7 +37,13 @@ h1 {
     font-size: 30px;
 }
 
-.button { /*global*/
+h2 {
+    color: #1b5e20;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.button { 
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -55,4 +61,16 @@ h1 {
 
 .button:hover {
     background-color: #166534;
+}
+
+.botao-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.creditos {
+    color: #a1a1a1;
+    opacity: 100%;
+    font-size: 0.7rem;
+    margin-top: 15px;
 }

@@ -30,54 +30,11 @@
       justify-content: center;
     }
 
-    /* Splash screen (mantido do global) */
-    #splash-screen {
-      position: fixed;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background-color: #4a9146;
-      z-index: 9999;
-    }
-
-    .splash-logo {
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-    }
-
-    .splash-loader {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      border: 5px solid rgba(255, 255, 255, 0.3);
-      border-top: 5px solid #ffffff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      bottom: 25vh;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    #splash-screen.hide {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s ease-out;
-    }
-
     .container {
       max-width: 550px;
       width: 95%;
     }
 
-    /* Botões - local.css tem prioridade */
     .button { 
       margin-bottom: 7px;
       flex-direction: column;
@@ -85,16 +42,10 @@
       width: 80%;
       padding: 10px 5px;
     }
-
-    /* Novos estilos específicos do local.css */
+ 
     .logo {
       max-width: 50%;
       height: 50%;
-    }
-
-    .botao-container {
-      display: flex;
-      justify-content: space-between;
     }
 
     /* Media queries do local.css */
