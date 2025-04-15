@@ -1,0 +1,188 @@
+
+.container {
+    max-width: 450px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.logo {
+    width: 40%;
+    margin-bottom: 0rem;
+}
+
+.button {
+    width: 100%;
+    margin-top: 1rem;
+    transition: all 0.2s;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+}
+
+.button:active {
+    transform: translateY(0);
+}
+
+.switch-form {
+    margin-top: 1.5rem;
+    font-size: 0.9375rem;
+}
+
+.switch-form a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.switch-form a:hover {
+    text-decoration: underline;
+}
+
+.password-container {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 65%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #64748b;
+    user-select: none;
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, .3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+.button span {
+    display: inline-flex;
+    /* Mudei para flex para melhor alinhamento */
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+}
+
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    display: none;
+}
+
+.alert.error {
+    background-color: #fee2e2;
+    color: var(--error-color);
+    display: block;
+}
+
+.alert.success {
+    background-color: #dcfce7;
+    color: var(--success-color);
+    display: block;
+}
+
+.forgot-password {
+    display: block;
+    text-align: right;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    font-size: 0.875rem;
+}
+
+.forgot-password a {
+    color: #64748b;
+    text-decoration: none;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+    color: var(--primary-color);
+}
+
+#installBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background: #1b5e20;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+    display: none;
+}
+
+@keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.05);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+}
+
+#iosInstallInstructions {
+    animation: slideUp 0.5s ease-out;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+#iosInstallInstructions img {
+    margin: 0 5px;
+}
+
+#iosInstallInstructions:hover {
+    opacity: 0.9;
+}
+
+@keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+      padding: 1.5rem;
+      margin: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+    }
+}

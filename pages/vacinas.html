@@ -4,172 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/pages/vacinas.css">
   <title>Calculadora de Vacinas</title>
-  <style>
-    /* ===== Reset e Estilos Gerais ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #87daa0, #51c778);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    
-
-    .button-voltar, .button-mural {
-      padding: 10px 20px;
-      background-color: #1b5e20;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: min(95vw, 900px);
-      padding: 10px;
-    }
-
-    .logo {
-      width: 100%;
-      max-width: 200px;
-      margin: 0 auto 20px;
-      display: block;
-    }
-
-    /* ===== Instruções ===== */
-    .instrucoes {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border: 1px solid #e0e0e0;
-    }
-
-    /* ===== Botões ===== */
-    .button-group {
-      display: grid;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    .calc-button {
-      padding: 15px;
-      background: #e8f5e9;
-      border: 2px solid #1b5e20;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      text-align: center;
-      transition: all 0.3s;
-    }
-
-    .calc-button:hover {
-      background: #c8e6c9;
-      transform: translateY(-2px);
-    }
-
-    .calc-button.active {
-      background: #1b5e20;
-      color: white;
-    }
-
-    /* ===== Calculadoras ===== */
-    .calculadora {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.5s ease-out;
-    }
-
-    .calculadora.active {
-      max-height: 1000px;
-      transition: max-height 0.5s ease-in;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin: 15px 0 5px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #1b5e20;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button { /*vacinas*/
-      width: 100%;
-      margin: 20px 0;
-    }
-
-
-    .resultado {
-      padding: 15px;
-      background: #e8f5e9;
-      border-left: 4px solid #388e3c;
-      border-radius: 6px;
-      margin: 15px 0;
-    }
-
-    /* Botão copiar - ESTILO ATUALIZADO */
-    .botao-copiar {
-      width: 100%;
-      padding: 12px;
-      background: #1b5e20;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-top: 10px;
-      display: none;
-    }
-
-    .botao-copiar:hover {
-      background: #388e3c;
-    }
-
-    .botao-copiar.copiado {
-      background-color: #4caf50;
-    }
-
-    /* ===== Mobile ===== */
-    @media (max-width: 480px) {
-      body {
-        padding: 10px;
-      }
-
-      .container {
-        padding: 10px;
-      }
-
-      .calc-button {
-        padding: 12px;
-        font-size: 14px;
-      }
-
-      button[type="button"], .botao-copiar {
-        padding: 10px;
-        font-size: 14px;
-      }
-    }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -190,7 +26,7 @@
       4. Os resultados aparecerão abaixo
     </div>
 
-    <div class="button-group">
+    <div class="button-group" >
       <div class="calc-button" onclick="toggleCalculator('bovina')">
         Vacina Bovina
       </div>
@@ -210,7 +46,7 @@
       <label for="vacinas-bovina">Quantidade de Vacinas:</label>
       <input type="number" id="vacinas-bovina" placeholder="Ex: 20">
       
-      <button type="button" onclick="calcularBovina()">Calcular</button>
+      <button type="button" class="button" onclick="calcularBovina()">Calcular</button>
       <div id="resultado-bovina" class="resultado"></div>
       <button class="botao-copiar" id="copiar-resultado-bovina" onclick="copiarResultado('bovina')">📋 Copiar Resultado</button>
     </div>
@@ -222,7 +58,7 @@
       <label for="vacinas-canina">Quantidade de Vacinas:</label>
       <input type="number" id="vacinas-canina" placeholder="Ex: 10">
       
-      <button type="button" onclick="calcularCanina()">Calcular</button>
+      <button type="button" class="button" onclick="calcularCanina()">Calcular</button>
       <div id="resultado-canina" class="resultado"></div>
       <button class="botao-copiar" id="copiar-resultado-canina" onclick="copiarResultado('canina')">📋 Copiar Resultado</button>
     </div>
@@ -231,7 +67,7 @@
       <label for="volume-recuperado">Volume Recuperado (ml):</label>
       <input type="number" id="volume-recuperado" placeholder="Ex: 500">
       
-      <button type="button" onclick="calcularFormol()">Calcular Formol</button>
+      <button type="button" class="button" onclick="calcularFormol()">Calcular Formol</button>
       <div id="resultado-formol" class="resultado"></div>
       <button class="botao-copiar" id="copiar-resultado-formol" onclick="copiarResultado('formol')">📋 Copiar Resultado</button>
     </div>

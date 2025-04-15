@@ -4,220 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/pages/elisa.css">
   <title>Calculadora de ELISA</title>
-  <style>
-    /* ===== Reset de Margens ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #87daa0, #51c778);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .button-voltar, .button-mural {
-      padding: 10px 20px;
-      background-color: #1b5e20;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: min(95vw, 900px);
-      padding: 10px;
-    }
-
-    .logo {
-      width: 100%;
-      max-width: 200px;
-      margin: 10px auto;
-      display: block;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-top: 10px;
-      text-align: left;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      border: 2px solid #1b5e20;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    button { /*elisa*/
-      width: 100%;
-      margin-top: 15px;
-    }
-
-    button:hover {
-      background-color: #388e3c;
-    }
-
-    .resultado {
-      margin-top: 20px;
-      padding: 15px;
-      background: #e8f5e9;
-      color: #1b5e20;
-      border-left: 5px solid #388e3c;
-      border-radius: 5px;
-    }
-
-    .ajuda, .passo-a-passo {
-      margin-top: 20px;
-      padding: 10px;
-      background: #e8f5e9;
-      color: #1b5e20;
-      border-radius: 5px;
-      cursor: pointer;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .ajuda.aberto::after, .passo-a-passo.aberto::after {
-      content: "▼";
-    }
-
-    .ajuda::after, .passo-a-passo::after {
-      content: "▶";
-      float: right;
-      transition: transform 0.3s;
-    }
-
-    .explicacao, .etapasELISA {
-      margin-top: 10px;
-      padding: 25px;
-      background: #f1f8e9;
-      color: #1b5e20;
-      border-left: 5px solid #388e3c;
-      border-radius: 5px;
-      display: none;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease-in-out;
-    }
-    
-
-    .etapasELISA ol {
-      list-style-type: none;
-      padding-left: 0;
-    }
-
-    .etapasELISA li {
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-    }
-
-    .etapasELISA input[type="checkbox"] {
-      margin-right: 10px;
-      cursor: pointer;
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-    }
-
-    .etapasELISA span {
-      flex: 1;
-    }
-
-    .etapasELISA input[type="checkbox"]:checked + span {
-      text-decoration: line-through;
-      color: #888;
-    }
-
-    /* ===== Botões ===== */
-    .button-group {
-      display: grid;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    .calculadora {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease-in-out;
-    }
-
-    .calculadora.aberto {
-      max-height: 1000px; /* Valor maior que o conteúdo máximo */
-      opacity: 1;
-    }
-
-    .calc-button {
-      padding: 15px;
-      background: #e8f5e9;
-      border: 2px solid #1b5e20;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      text-align: center;
-      transition: all 0.3s;
-    }
-
-    .calc-button:hover {
-      background: #c8e6c9;
-      transform: translateY(-2px);
-    }
-
-    .calc-button.active {
-      background: #1b5e20;
-      color: white;
-      position: relative;
-    }
-
-    .calc-button.active::after {
-      content: "";
-    }
-
-    /* Estilo do botão copiar */
-    .botao-copiar {
-      display: none;
-      transition: all 0.3s ease;
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-    }
-
-    .botao-copiar.copiado {
-      background-color: #4caf50 !important;
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 10px;
-      }
-
-      .container {
-        padding: 10px;
-      }
-
-      input, button {
-        font-size: 14px;
-      }
-      h2 {
-        font-size: 1.5rem;
-      }
-    }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -247,7 +35,7 @@
       <label for="controles-leucose">Número de Controles (Positivos + Negativos):</label>
       <input type="number" id="controles-leucose" placeholder="Digite o número de controles">
       
-      <button type="button" onclick="calcularLeucose()">Calcular</button>
+      <button type="button" class="button" onclick="calcularLeucose()">Calcular</button>
       <div id="resultado-leucose" class="resultado"></div>
       <button class="botao-copiar" id="copiar-resultado-leucose" onclick="copiarResultado('leucose')">📋 Copiar Resultado</button>
     </div>
@@ -259,7 +47,7 @@
       <label for="controles-bvdv">Número de Controles (Positivos + Negativos):</label>
       <input type="number" id="controles-bvdv" placeholder="Digite o número de controles">
       
-      <button type="button" onclick="calcularBvdv()">Calcular</button>
+      <button type="button" class="button" onclick="calcularBvdv()">Calcular</button>
       <div id="resultado-bvdv" class="resultado"></div>
       <button class="botao-copiar" id="copiar-resultado-bvdv" onclick="copiarResultado('bvdv')">📋 Copiar Resultado</button>
     </div>
