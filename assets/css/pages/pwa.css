@@ -1,0 +1,56 @@
+#installBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background: #1b5e20;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+    display: none;
+}
+
+@keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.05);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+}
+
+#iosInstallInstructions {
+    animation: slideUp 0.5s ease-out;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+#iosInstallInstructions img {
+    margin: 0 5px;
+}
+
+#iosInstallInstructions:hover {
+    opacity: 0.9;
+}
+
+@keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+}
