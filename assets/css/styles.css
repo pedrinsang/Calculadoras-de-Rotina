@@ -46,7 +46,7 @@ h2 {
 .button {
     display: flex;
     justify-content: center;
-    flex-direction: column;
+    text-align: center;
     border: none;
     border-radius: 5px;
     background-color: #1b5e20;
