@@ -4,7 +4,7 @@ body {
 
 .button-voltar, .button-mural {
   padding: 10px 20px;
-  background-color: #1b5e20;
+  background-color: var(--primary-color);
   color: white;
   text-decoration: none;
   border-radius: 5px;
@@ -37,7 +37,7 @@ input {
   width: 100%;
   padding: 10px;
   margin: 5px 0;
-  border: 2px solid --primary-color;
+  border: 2px solid var(--primary-color);
   border-radius: 5px;
   font-size: 16px;
 }
