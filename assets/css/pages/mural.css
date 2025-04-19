@@ -37,7 +37,6 @@ button {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   max-height: calc(100vh - 220px);
-  /* Ajuste preciso para telas pequenas */
 }
 
 .amostra-item {
@@ -79,7 +78,7 @@ button {
 }
 
 .btn-concluido {
-  background-color: #1b5e20;
+  background-color: var(--primary-color);
   color: white;
 }
 
@@ -176,7 +175,7 @@ button {
 }
 
 #mural-form button[type="submit"] {
-  background-color: #1b5e20;
+  background-color: var(--primary-color);
   color: white;
 }
 
@@ -241,11 +240,11 @@ button {
 }
 
 .feedback.success {
-  background-color: #1b5e20;
+  background-color: var(--success-color);
 }
 
 .feedback.error {
-  background-color: #d32f2f;
+  background-color: var(--error-color);
 }
 
 /* Barra de rolagem */
@@ -262,13 +261,13 @@ button {
 
 #mural-list::-webkit-scrollbar-thumb,
 #mural-form::-webkit-scrollbar-thumb {
-  background: #1b5e20;
+  background: var(--primary-color);
   border-radius: 4px;
 }
 
 #mural-list::-webkit-scrollbar-thumb:hover,
 #mural-form::-webkit-scrollbar-thumb:hover {
-  background: #166534;
+  background: var(--primary-hover);
 }
 
 @keyframes slideIn {
@@ -331,7 +330,7 @@ button {
 }
 
 .tabela-resultados th {
-  background-color: #1b5e20;
+  background-color: var(--primary-color);
   color: white;
 }
 

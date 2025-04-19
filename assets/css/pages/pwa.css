@@ -3,7 +3,7 @@
     bottom: 20px;
     right: 20px;
     padding: 10px 15px;
-    background: #1b5e20;
+    background: var(--primary-color);
     color: white;
     border: none;
     border-radius: 5px;

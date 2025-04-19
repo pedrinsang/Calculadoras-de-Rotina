@@ -1,7 +1,7 @@
 .button-voltar,
 .button-mural {
   padding: 10px 20px;
-  background-color: #1b5e20;
+  background-color: var(--primary-color);
   color: white;
   text-decoration: none;
   border-radius: 5px;
@@ -42,7 +42,7 @@
 .calc-button {
   padding: 15px;
   background: #e8f5e9;
-  border: 2px solid #1b5e20;
+  border: 2px solid var(--primary-color);
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
@@ -56,7 +56,7 @@
 }
 
 .calc-button.active {
-  background: #1b5e20;
+  background: var(--primary-color);
   color: white;
 }
 
@@ -81,7 +81,7 @@ label {
 input {
   width: 100%;
   padding: 12px;
-  border: 2px solid #1b5e20;
+  border: 2px solid var(--primary-color);
   border-radius: 8px;
   font-size: 16px;
 }
@@ -117,7 +117,7 @@ button {
 }
 
 .botao-copiar:hover {
-  background: #388e3c;
+  background: var(--primary-hover);
 }
 
 .botao-copiar.copiado {

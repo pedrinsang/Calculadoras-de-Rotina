@@ -1,3 +1,7 @@
+body {
+  overflow: auto;
+}
+
 .button-voltar, .button-mural {
   padding: 10px 20px;
   background-color: #1b5e20;
@@ -33,26 +37,26 @@ input {
   width: 100%;
   padding: 10px;
   margin: 5px 0;
-  border: 2px solid #1b5e20;
+  border: 2px solid --primary-color;
   border-radius: 5px;
   font-size: 16px;
 }
   
-button { /*elisa*/
+button { 
   width: 100%;
   margin-top: 15px;
 }
   
 button:hover {
-  background-color: #388e3c;
+  background-color: var(--primary-hover);
 }
   
 .resultado {
   margin-top: 20px;
   padding: 15px;
   background: #e8f5e9;
-  color: #1b5e20;
-  border-left: 5px solid #388e3c;
+  color: var(--primary-color);
+  border-left: 5px solid var(--primary-hover);
   border-radius: 5px;
 }
   
@@ -60,7 +64,7 @@ button:hover {
   margin-top: 20px;
   padding: 10px;
   background: #e8f5e9;
-  color: #1b5e20;
+  color: var(--primary-color);
   border-radius: 5px;
   cursor: pointer;
   text-align: center;
@@ -81,8 +85,8 @@ button:hover {
   margin-top: 10px;
   padding: 25px;
   background: #f1f8e9;
-  color: #1b5e20;
-  border-left: 5px solid #388e3c;
+  color: var(--primary-color);
+  border-left: 5px solid var(--primary-hover);
   border-radius: 5px;
   display: none;
   max-height: 0;
@@ -139,7 +143,7 @@ button:hover {
 .calc-button {
   padding: 15px;
   background: #e8f5e9;
-  border: 2px solid #1b5e20;
+  border: 2px solid var(--primary-color);
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
@@ -153,7 +157,7 @@ button:hover {
 }
   
 .calc-button.active {
-  background: #1b5e20;
+  background: var(--primary-color);
   color: white;
   position: relative;
 }
