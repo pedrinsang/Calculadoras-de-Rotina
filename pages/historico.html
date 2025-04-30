@@ -531,6 +531,96 @@
       }, 3000);
     }
 
+    window.copiarResultados = function(tarefa) {
+        try {
+            // Create temporary element and add it to document
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            document.body.appendChild(tempDiv); // Add to document
+
+            tempDiv.innerHTML = `
+                <table style="border-collapse: collapse; width: 100%; margin: 15px 0;">
+                    <thead>
+                        <tr>
+                            <th style="background-color: #1b5e20; color: white; padding: 8px; text-align: left; border: 1px solid #ddd;">Resultado</th>
+                            <th style="background-color: #1b5e20; color: white; padding: 8px; text-align: left; border: 1px solid #ddd;">Identificação das amostras</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">Negativas (< 1:4)</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.negativas || '-'}</td>
+                        </tr>
+                        <tr style="background-color: #f8f9fa;">
+                            <td colspan="2" style="text-align: center; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Positivas</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">Título 4</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.titulo4 || '-'}</td>
+                        </tr>
+                        <tr style="background-color: #f2f2f2;">
+                            <td style="border: 1px solid #ddd; padding: 8px;">Título 8</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.titulo8 || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">Título 16</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.titulo16 || '-'}</td>
+                        </tr>
+                        <tr style="background-color: #f2f2f2;">
+                            <td style="border: 1px solid #ddd; padding: 8px;">Título 32</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.titulo32 || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">Título 64</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.titulo64 || '-'}</td>
+                        </tr>
+                        <tr style="background-color: #f2f2f2;">
+                            <td style="border: 1px solid #ddd; padding: 8px;">Título 128</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.titulo128 || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">Título 256</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.titulo256 || '-'}</td>
+                        </tr>
+                        <tr style="background-color: #f2f2f2;">
+                            <td style="border: 1px solid #ddd; padding: 8px;">Título ≥512</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.titulo512 || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">Impróprias para testar</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.improprias || '-'}</td>
+                        </tr>
+                        <tr style="background-color: #f2f2f2;">
+                            <td style="border: 1px solid #ddd; padding: 8px;">Tóxicas</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.toxicas || '-'}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;">Quantidade insuficiente</td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${tarefa.resultados.insuficiente || '-'}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            // Select and copy
+            const range = document.createRange();
+            range.selectNode(tempDiv);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+
+            // Remove the temporary element
+            document.body.removeChild(tempDiv);
+
+            mostrarFeedback('Tabela copiada com sucesso!', 'success');
+        } catch (error) {
+            console.error('Error copying table:', error);
+            mostrarFeedback('Erro ao copiar tabela', 'error');
+        }
+    };
+
     window.mostrarResultados = async (id) => {
         try {
             // Se já existe um modal aberto, fecha ele primeiro
@@ -565,7 +655,13 @@
             
             // Criar a tabela de resultados (igual ao mural, mas sem campos editáveis)
             modal.innerHTML = `
-              <div class="modal-resultados-content">
+                <div class="modal-resultados-content">
+                    ${tarefa.tipo === "SN IBR" || tarefa.tipo === "SN BVDV" ? `
+                        <button id="copiar-resultados" 
+                            style="margin-top: 15px; padding: 8px 15px; background: #1b5e20; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Copiar Resultados
+                        </button>
+                ` : ''}
                 <h3 style="margin-bottom: 15px; color: #1b5e20;">Resultados - ${tarefa.tipo}</h3>
                 <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
                 
@@ -641,6 +737,16 @@
             document.body.appendChild(modal);
                 modalAtual = modal;
 
+                // Update the button click handler
+                if (tarefa.tipo === "SN IBR" || tarefa.tipo === "SN BVDV") {
+                    const btnCopiar = modal.querySelector("#copiar-resultados");
+                    if (btnCopiar) {
+                        btnCopiar.onclick = () => {
+                            copiarResultados(tarefa);
+                        };
+                    }
+                }
+                
                 // Função para fechar o modal
                 const fecharModal = (e) => {
                     if (modalAtual) {

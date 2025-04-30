@@ -722,16 +722,8 @@
 
       // Adicione esta nova função
       window.registrarResultado = async (id) => {
-        try {
+          try {
             mostrarLoading();
-
-            // Se já existe um modal aberto, fecha ele primeiro
-            const modalExistente = document.querySelector('.modal-resultados');
-            if (modalExistente) {
-                document.body.removeChild(modalExistente);
-                // Remove event listeners anteriores
-                document.removeEventListener("keydown", handleKeyDown);
-            }
             
             // Obter os dados da tarefa
             const tarefaRef = doc(db, "tarefas", id);
@@ -741,10 +733,10 @@
             
             const tarefa = tarefaSnap.data();
             
-            // Verificar se é um tipo que tem resultados
+            // Verificar se é um tipo que tem resultados (SN IBR ou SN BVDV)
             if (tarefa.tipo !== "SN IBR" && tarefa.tipo !== "SN BVDV") {
-                mostrarFeedback("Este tipo de tarefa não possui resultados específicos", "error");
-                return;
+              mostrarFeedback("Este tipo de tarefa não possui resultados específicos", "error");
+              return;
             }
             
             // Criar o modal de resultados
@@ -834,84 +826,74 @@
             modal.innerHTML = resultadosHTML;
             document.body.appendChild(modal);
             
-            // Função para fechar o modal
-            const fecharModal = () => {
-                if (modal && modal.parentNode) {
-                    document.body.removeChild(modal);
-                    // Remove o event listener ao fechar
-                    document.removeEventListener("keydown", handleKeyDown);
-                }
-            };
-
-            // Função para lidar com o ESC
-            const handleKeyDown = (e) => {
-                if (e.key === "Escape") {
-                    fecharModal();
-                    e.preventDefault();
-                }
-            };
-
             // Event listeners para o modal
-            document.getElementById("fechar-modal-resultados").onclick = fecharModal;
-            document.getElementById("cancelar-resultados").onclick = fecharModal;
+            document.getElementById("fechar-modal-resultados").onclick = () => {
+              document.body.removeChild(modal);
+            };
             
-            // Adiciona o listener do ESC
-            document.addEventListener("keydown", handleKeyDown);
-
-            // Fecha ao clicar fora do conteúdo
-            modal.onclick = (e) => {
-                if (e.target === modal) {
-                    fecharModal();
-                }
-                e.stopPropagation();
+            document.getElementById("cancelar-resultados").onclick = () => {
+              document.body.removeChild(modal);
             };
             
             document.getElementById("salvar-resultados").onclick = async () => {
-                try {
-                    mostrarLoading();
-                    
-                    // Coletar os dados do formulário
-                    const resultados = {
-                        negativas: document.getElementById("negativas").value,
-                        titulo4: document.getElementById("titulo4").value,
-                        titulo8: document.getElementById("titulo8").value,
-                        titulo16: document.getElementById("titulo16").value,
-                        titulo32: document.getElementById("titulo32").value,
-                        titulo64: document.getElementById("titulo64").value,
-                        titulo128: document.getElementById("titulo128").value,
-                        titulo256: document.getElementById("titulo256").value,
-                        titulo512: document.getElementById("titulo512").value,
-                        improprias: document.getElementById("improprias").value,
-                        toxicas: document.getElementById("toxicas").value,
-                        insuficiente: document.getElementById("insuficiente").value,
-                        dataRegistro: Timestamp.now()
-                    };
-                    
-                    // Atualizar no Firestore
-                    await updateDoc(tarefaRef, {
-                        resultados: resultados,
-                        status: "resultados-registrados",
-                        atualizadoEm: Timestamp.now()
-                    });
-                    
-                    fecharModal();
-                    carregarTarefas();
-                    mostrarFeedback("Resultados salvos com sucesso!", "success");
-                } catch (error) {
-                    console.error("Erro ao salvar resultados:", error);
-                    mostrarFeedback(`Erro: ${error.message}`, "error");
-                } finally {
-                    esconderLoading();
-                }
-            };
+              try {
+                mostrarLoading();
                 
-        } catch (error) {
+                // Coletar os dados do formulário
+                const resultados = {
+                  negativas: document.getElementById("negativas").value,
+                  titulo4: document.getElementById("titulo4").value,
+                  titulo8: document.getElementById("titulo8").value,
+                  titulo16: document.getElementById("titulo16").value,
+                  titulo32: document.getElementById("titulo32").value,
+                  titulo64: document.getElementById("titulo64").value,
+                  titulo128: document.getElementById("titulo128").value,
+                  titulo256: document.getElementById("titulo256").value,
+                  titulo512: document.getElementById("titulo512").value,
+                  improprias: document.getElementById("improprias").value,
+                  toxicas: document.getElementById("toxicas").value,
+                  insuficiente: document.getElementById("insuficiente").value,
+                  dataRegistro: Timestamp.now()
+                };
+                
+                // Atualizar no Firestore
+                await updateDoc(tarefaRef, {
+                  resultados: resultados,
+                  status: "resultados-registrados",
+                  atualizadoEm: Timestamp.now()
+                });
+                
+                document.body.removeChild(modal);
+                carregarTarefas();
+                mostrarFeedback("Resultados salvos com sucesso!", "success");
+              } catch (error) {
+                console.error("Erro ao salvar resultados:", error);
+                mostrarFeedback(`Erro: ${error.message}`, "error");
+              } finally {
+                esconderLoading();
+              }
+            };
+            
+            // Fechar modal ao clicar fora ou pressionar ESC
+            modal.onclick = (e) => {
+              if (e.target === modal) {
+                document.body.removeChild(modal);
+              }
+            };
+            
+            document.addEventListener("keydown", (e) => {
+              if (e.key === "Escape") {
+                document.body.removeChild(modal);
+              }
+            });
+            
+          } catch (error) {
             console.error("Erro ao registrar resultado:", error);
             mostrarFeedback(`Erro: ${error.message}`, "error");
-        } finally {
+          } finally {
             esconderLoading();
-        }
-      };
+          }
+        };
 
         // Adiciona eventos para o dropdown em mobile
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
