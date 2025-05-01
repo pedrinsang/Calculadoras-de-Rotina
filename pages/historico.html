@@ -540,7 +540,7 @@
             document.body.appendChild(tempDiv); // Add to document
 
             tempDiv.innerHTML = `
-                <table style="border-collapse: collapse; width: 100%; margin: 15px 0;">
+                <table style="border-collapse: collapse; width: 500px; margin: 15px 0;">
                     <thead>
                         <tr>
                             <th style="background-color: #1b5e20; color: white; padding: 8px; text-align: left; border: 1px solid #ddd;">Resultado</th>
@@ -656,14 +656,15 @@
             // Criar a tabela de resultados (igual ao mural, mas sem campos editáveis)
             modal.innerHTML = `
                 <div class="modal-resultados-content">
-                    ${tarefa.tipo === "SN IBR" || tarefa.tipo === "SN BVDV" ? `
+                <h3 style="margin-bottom: 15px; color: #1b5e20;">Resultados - ${tarefa.tipo}</h3>
+                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras
+                  ${tarefa.tipo === "SN IBR" || tarefa.tipo === "SN BVDV" ? `
                         <button id="copiar-resultados" 
                             style="margin-top: 15px; padding: 8px 15px; background: #1b5e20; color: white; border: none; border-radius: 4px; cursor: pointer;">
                             Copiar Resultados
                         </button>
                 ` : ''}
-                <h3 style="margin-bottom: 15px; color: #1b5e20;">Resultados - ${tarefa.tipo}</h3>
-                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
+                  </p>
                 
                 <table class="tabela-resultados tabela-resultados-view">
                   <thead>
