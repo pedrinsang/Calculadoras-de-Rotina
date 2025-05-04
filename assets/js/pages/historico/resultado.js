@@ -1,6 +1,6 @@
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { db } from "../../main.js";
-import { mostrarFeedback } from "/assets/js/pages/historico/historico.js";
+import { mostrarFeedback } from "historico.js";
 import { gerarDocx } from "./baixarDoc.js";
 
 let modalAtual = null;
