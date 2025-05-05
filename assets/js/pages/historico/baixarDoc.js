@@ -36,19 +36,27 @@ async function carregarDocx() {
 // Primeiro, adicione a função para converter imagens em base64
 async function getImageAsBase64(path) {
     try {
-        // Fix the path to be absolute from the root of the project
-        const absolutePath = window.location.origin + '/' + path.replace(/^\//, '');
-        const response = await fetch(absolutePath);
+        // Remove leading "../" and construct correct path
+        const cleanPath = path.replace(/^\.\.\/\.\.\/\.\.\//, '');
+        
+        // Check if running on GitHub Pages
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        
+        // Construct the correct path
+        const imagePath = isGitHubPages
+            ? `/Calculadoras-de-Rotina/${cleanPath}` // Add your repository name
+            : `/${cleanPath}`; // Local development
+            
+        const response = await fetch(imagePath);
         
         if (!response.ok) {
-            throw new Error(`Failed to load image: ${absolutePath}`);
+            throw new Error(`Failed to load image: ${imagePath}`);
         }
         
         const blob = await response.blob();
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => {
-                // Remove the data URL prefix to get just the base64 string
                 const base64String = reader.result.split(',')[1];
                 resolve(base64String);
             };
@@ -69,8 +77,8 @@ export async function gerarDocx(tarefa) {
         const { BorderStyle } = window.docx;
 
         // Carregue as imagens
-        const logoLabBase64 = await getImageAsBase64('../../../assets/images/logo-sv.png');
-        const logoUFSMBase64 = await getImageAsBase64('../../../assets/images/logo-ufsm.png');
+        const logoLabBase64 = await getImageAsBase64('assets/images/logo-sv.png');
+        const logoUFSMBase64 = await getImageAsBase64('assets/images/logo-ufsm.png');
 
         // Adicione o cabeçalho com os logos no início do array sections
         const sections = [
