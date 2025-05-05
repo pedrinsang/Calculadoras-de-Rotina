@@ -58,8 +58,8 @@ export async function gerarDocx(tarefa) {
         const { BorderStyle } = window.docx;
 
         // Carregue as imagens
-        const logoLabBase64 = await getImageAsBase64('../../images/logo-sv.png');
-        const logoUFSMBase64 = await getImageAsBase64('../../images/logo-ufsm.png');
+        const logoLabBase64 = await getImageAsBase64('../../../images/logo-sv.png');
+        const logoUFSMBase64 = await getImageAsBase64('../../../images/logo-ufsm.png');
 
         // Adicione o cabeçalho com os logos no início do array sections
         const sections = [
