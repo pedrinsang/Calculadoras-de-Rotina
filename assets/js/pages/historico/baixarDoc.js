@@ -36,16 +36,14 @@ async function carregarDocx() {
 // Primeiro, adicione a função para converter imagens em base64
 async function getImageAsBase64(path) {
     try {
-        // Remove leading "../" and construct correct path
-        const cleanPath = path.replace(/^\.\.\/\.\.\/\.\.\//, '');
-        
-        // Check if running on GitHub Pages
+        // Fix path construction
         const isGitHubPages = window.location.hostname.includes('github.io');
+        const repoName = 'Calculadoras-de-Rotina';
         
-        // Construct the correct path
+        // Build correct path
         const imagePath = isGitHubPages
-            ? `/Calculadoras-de-Rotina/${cleanPath}` // Add your repository name
-            : `/${cleanPath}`; // Local development
+            ? `/${repoName}/${path}` // GitHub Pages path
+            : `/${path}`; // Local development path
             
         const response = await fetch(imagePath);
         
