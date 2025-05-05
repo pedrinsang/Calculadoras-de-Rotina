@@ -36,16 +36,27 @@ async function carregarDocx() {
 // Primeiro, adicione a função para converter imagens em base64
 async function getImageAsBase64(path) {
     try {
-        const response = await fetch(path);
+        // Fix the path to be absolute from the root of the project
+        const absolutePath = window.location.origin + '/' + path.replace(/^\//, '');
+        const response = await fetch(absolutePath);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to load image: ${absolutePath}`);
+        }
+        
         const blob = await response.blob();
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.onloadend = () => {
+                // Remove the data URL prefix to get just the base64 string
+                const base64String = reader.result.split(',')[1];
+                resolve(base64String);
+            };
             reader.onerror = reject;
             reader.readAsDataURL(blob);
         });
     } catch (error) {
-        console.error('Erro ao carregar imagem:', error);
+        console.error('Error loading image:', error);
         throw error;
     }
 }
@@ -58,8 +69,8 @@ export async function gerarDocx(tarefa) {
         const { BorderStyle } = window.docx;
 
         // Carregue as imagens
-        const logoLabBase64 = await getImageAsBase64('assets/images/logo-sv.png');
-        const logoUFSMBase64 = await getImageAsBase64('assets/images/logo-ufsm.png');
+        const logoLabBase64 = await getImageAsBase64('../../../assets/images/logo-sv.png');
+        const logoUFSMBase64 = await getImageAsBase64('../../../assets/images/logo-ufsm.png');
 
         // Adicione o cabeçalho com os logos no início do array sections
         const sections = [
