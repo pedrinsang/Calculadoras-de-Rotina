@@ -1242,7 +1242,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "Endereço:",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial",
                                                 bold: true
                                             })
@@ -1254,7 +1254,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "Av. Roraima, 1000 - Prédio 63 A",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1264,7 +1264,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "Rua Sul 60, Centro de Eventos",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1274,7 +1274,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "CEP 97105-900",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1284,7 +1284,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "Camobi, Santa Maria - RS",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1294,7 +1294,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "www.ufsm.br/sv",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1316,7 +1316,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "Contato:",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial",
                                                 bold: true
                                             })
@@ -1327,7 +1327,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "(55) 3220 8034",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1337,7 +1337,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "(55) 3220 8851",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1347,7 +1347,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1357,7 +1357,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "E-mail:",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial",
                                                 bold: true
                                             })
@@ -1368,7 +1368,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "setordevirologia@gmail.com",
-                                                size: 20,
+                                                size: 16,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1393,16 +1393,16 @@ export async function gerarDocx(tarefa) {
             new Paragraph({
                 children: [new TextRun({
                     text: "Rudi Weiblen",
-                    size: 20,
+                    size: 16,
                     font: "Arial"
                 })],
                 alignment: AlignmentType.RIGHT,
-                spacing: { before: 800 }
+                spacing: { before: 400 }
             }),
             new Paragraph({
                 children: [new TextRun({
                     text: "CRMV/RS 1574",
-                    size: 20,
+                    size: 16,
                     font: "Arial"
                 })],
                 alignment: AlignmentType.RIGHT
@@ -1410,7 +1410,7 @@ export async function gerarDocx(tarefa) {
             new Paragraph({
                 children: [new TextRun({
                     text: "Responsável técnico",
-                    size: 20,
+                    size: 16,
                     font: "Arial"
                 })],
                 alignment: AlignmentType.RIGHT
