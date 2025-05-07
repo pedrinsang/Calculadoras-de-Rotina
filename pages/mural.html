@@ -184,6 +184,23 @@
       display: block;
     }
 
+    .input-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .form-group h4 {
+        color: #1b5e20;
+        margin-bottom: 10px;
+    }
+
     #mural-form {
       display: none;
       padding: 20px;
@@ -543,9 +560,43 @@
           <input type="number" id="gramatura" name="gramatura" step="0.01">
         </div>
 
-        <label for="proprietario">Proprietário:</label>
-        <input type="text" id="proprietario" name="proprietario" list="proprietarios-list">
-        <datalist id="proprietarios-list"></datalist>
+        <div class="form-group">
+          <h4>Proprietário:</h4>
+          <div class="input-row">
+              <div class="input-group">
+                  <label for="proprietario-nome">Nome:</label>
+                  <input type="text" id="proprietario-nome" list="proprietarios-list" class="form-input" style="width: 200px;">
+                  <datalist id="proprietarios-list"></datalist>
+
+              </div>
+              <div class="input-group">
+                  <label for="proprietario-municipio">Município:</label>
+                  <input type="text" id="proprietario-municipio" class="form-input" style="width: 300px;">
+              </div>
+              <div class="input-group">
+                  <label for="proprietario-contato">Contato:</label>
+                  <input type="text" id="proprietario-contato" class="form-input" style="width: 200px;">
+              </div>
+          </div>
+      </div>
+      
+      <div class="form-group">
+          <h4>Médico Veterinário:</h4>
+          <div class="input-row">
+              <div class="input-group">
+                  <label for="veterinario-nome">Nome:</label>
+                  <input type="text" id="veterinario-nome" class="form-input" style="width: 200px;">
+              </div>
+              <div class="input-group">
+                  <label for="veterinario-municipio">Município:</label>
+                  <input type="text" id="veterinario-municipio" class="form-input" style="width: 300px;">
+              </div>
+              <div class="input-group">
+                  <label for="veterinario-contato">Contato:</label>
+                  <input type="text" id="veterinario-contato" class="form-input" style="width: 200px;">
+              </div>
+          </div>
+      </div>
 
         <label for="data">Data de Recebimento:</label>
         <input type="date" id="data" name="data" required>
