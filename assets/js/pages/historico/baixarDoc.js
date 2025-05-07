@@ -78,6 +78,40 @@ export async function gerarDocx(tarefa) {
         const logoLabBase64 = await getImageAsBase64('assets/images/logo-sv.png');
         const logoUFSMBase64 = await getImageAsBase64('assets/images/logo-ufsm.png');
 
+        // Lide com diferentes formatos de dados do proprietário e veterinário
+        const proprietario = {
+            nome: '',
+            municipio: '',
+            contato: ''
+        };
+        
+        const veterinario = {
+            nome: '',
+            municipio: '',
+            contato: ''
+        };
+
+        // Compatibilidade com formato antigo e novo
+        if (tarefa.proprietario) {
+            if (typeof tarefa.proprietario === 'object') {
+                proprietario.nome = tarefa.proprietario.nome || '';
+                proprietario.municipio = tarefa.proprietario.municipio || '';
+                proprietario.contato = tarefa.proprietario.contato || '';
+            } else if (typeof tarefa.proprietario === 'string') {
+                proprietario.nome = tarefa.proprietario;
+            }
+        }
+
+        if (tarefa.veterinario) {
+            if (typeof tarefa.veterinario === 'object') {
+                veterinario.nome = tarefa.veterinario.nome || '';
+                veterinario.municipio = tarefa.veterinario.municipio || '';
+                veterinario.contato = tarefa.veterinario.contato || '';
+            } else if (typeof tarefa.veterinario === 'string') {
+                veterinario.nome = tarefa.veterinario;
+            }
+        }
+
         // Adicione o cabeçalho com os logos no início do array sections
         const sections = [
             new Table({
@@ -1104,21 +1138,21 @@ export async function gerarDocx(tarefa) {
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "Nome: " + (tarefa.proprietario || ''),
+                                            text: "Nome: " + (proprietario.nome || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "Município: " + (tarefa.municipio || ''),
+                                            text: "Município: " + (proprietario.municipio || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "Contato (celular/e-mail): " + (tarefa.contato || ''),
+                                            text: "Contato: " + (proprietario.contato || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
@@ -1144,21 +1178,21 @@ export async function gerarDocx(tarefa) {
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "Nome: " + (tarefa.veterinario || ''),
+                                            text: "Nome: " + (veterinario.nome || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "Município: " + (tarefa.municipioVet || ''),
+                                            text: "Município: " + (veterinario.municipio || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "Contato (celular/e-mail): " + (tarefa.contatoVet || ''),
+                                            text: "Contato: " + (veterinario.contato || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
@@ -1316,7 +1350,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "Contato:",
-                                                size: 16,
+                                                size: 17,
                                                 font: "Arial",
                                                 bold: true
                                             })
@@ -1327,7 +1361,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "(55) 3220 8034",
-                                                size: 16,
+                                                size: 17,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1337,7 +1371,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "(55) 3220 8851",
-                                                size: 16,
+                                                size: 17,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1347,7 +1381,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "",
-                                                size: 16,
+                                                size: 17,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1357,7 +1391,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "E-mail:",
-                                                size: 16,
+                                                size: 17,
                                                 font: "Arial",
                                                 bold: true
                                             })
@@ -1368,7 +1402,7 @@ export async function gerarDocx(tarefa) {
                                         children: [
                                             new TextRun({
                                                 text: "setordevirologia@gmail.com",
-                                                size: 16,
+                                                size: 17,
                                                 font: "Arial"
                                             })
                                         ],
@@ -1392,8 +1426,8 @@ export async function gerarDocx(tarefa) {
             // Assinatura
             new Paragraph({
                 children: [new TextRun({
-                    text: "Rudi Weiblen",
-                    size: 16,
+                    text: "Eduardo Furtado Flores",
+                    size: 17,
                     font: "Arial"
                 })],
                 alignment: AlignmentType.RIGHT,
@@ -1402,7 +1436,7 @@ export async function gerarDocx(tarefa) {
             new Paragraph({
                 children: [new TextRun({
                     text: "CRMV/RS 1574",
-                    size: 16,
+                    size: 17,
                     font: "Arial"
                 })],
                 alignment: AlignmentType.RIGHT
@@ -1410,7 +1444,7 @@ export async function gerarDocx(tarefa) {
             new Paragraph({
                 children: [new TextRun({
                     text: "Responsável técnico",
-                    size: 16,
+                    size: 17,
                     font: "Arial"
                 })],
                 alignment: AlignmentType.RIGHT

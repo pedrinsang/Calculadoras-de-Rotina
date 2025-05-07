@@ -84,76 +84,104 @@ export function formatarDataParaExibicao(dataUTC) {
   });
 }
 
+// Add this function before adicionarTarefa
+async function getSiglaUsuario(user) {
+    try {
+        if (!user) return "N/A";
+        
+        const userRef = doc(db, "usuarios", user.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+            return userSnap.data().sigla || "N/A";
+        }
+        
+        return "N/A";
+    } catch (error) {
+        console.error("Erro ao obter sigla do usuário:", error);
+        return "N/A";
+    }
+}
+
 // Funções de Tarefas
 
 async function adicionarTarefa(e) {
-  e.preventDefault();
-  mostrarLoading();
+    e.preventDefault();
+    mostrarLoading();
   
-  try {
-    const user = auth.currentUser;
-    if (!user) throw new Error("Usuário não autenticado");
-
-    let siglaUsuario = "N/A";
     try {
-      const usuarioRef = doc(db, "usuarios", user.uid);
-      const usuarioSnap = await getDoc(usuarioRef);
-      
-      if (usuarioSnap.exists()) {
-        siglaUsuario = usuarioSnap.data().sigla || "N/A";
-      } else {
-        const usuarioLocal = JSON.parse(localStorage.getItem("usuario"));
-        if (usuarioLocal?.sigla) siglaUsuario = usuarioLocal.sigla;
-      }
+        const user = auth.currentUser;
+        if (!user) throw new Error("Usuário não autenticado");
+
+        // Get form elements and validate they exist
+        const idInput = document.getElementById("id");
+        const tipoInput = document.getElementById("tipo");
+        const quantidadeInput = document.getElementById("quantidade");
+        const gramaturaInput = document.getElementById("gramatura");
+        const complementoInput = document.getElementById("complemento");
+        const dataInput = document.getElementById("data");
+        const proprietarioNomeInput = document.getElementById("proprietario-nome");
+        const proprietarioMunicipioInput = document.getElementById("proprietario-municipio");
+        const proprietarioContatoInput = document.getElementById("proprietario-contato");
+        const veterinarioNomeInput = document.getElementById("veterinario-nome");
+        const veterinarioMunicipioInput = document.getElementById("veterinario-municipio");
+        const veterinarioContatoInput = document.getElementById("veterinario-contato");
+        const observacoesInput = document.getElementById("observacoes");
+
+        // Validate required fields exist
+        if (!idInput || !tipoInput || !quantidadeInput || !dataInput) {
+            throw new Error("Campos obrigatórios não encontrados no formulário");
+        }
+
+        // Get values with null checks
+        const novaTarefa = {
+            id: idInput.value.trim(),
+            tipo: tipoInput.value,
+            quantidade: parseInt(quantidadeInput.value),
+            gramatura: tipoInput.value === "VACINA" && gramaturaInput 
+                ? parseFloat(gramaturaInput.value) || null
+                : null,
+            complemento: (tipoInput.value === "PCR" || tipoInput.value === "RAIVA") && complementoInput
+                ? complementoInput.value.trim()
+                : null,
+            proprietario: {
+                nome: proprietarioNomeInput ? proprietarioNomeInput.value.trim() : "",
+                municipio: proprietarioMunicipioInput ? proprietarioMunicipioInput.value.trim() : "",
+                contato: proprietarioContatoInput ? proprietarioContatoInput.value.trim() : ""
+            },
+            veterinario: {
+                nome: veterinarioNomeInput ? veterinarioNomeInput.value.trim() : "",
+                municipio: veterinarioMunicipioInput ? veterinarioMunicipioInput.value.trim() : "",
+                contato: veterinarioContatoInput ? veterinarioContatoInput.value.trim() : ""
+            },
+            dataRecebimento: new Date(dataInput.value),
+            observacoes: observacoesInput ? observacoesInput.value.trim() : "",
+            status: "pendente",
+            criadoEm: Timestamp.now(),
+            criadoPor: user.uid,
+            siglaResponsavel: await getSiglaUsuario(user)
+        };
+
+        // Validate required data
+        if (!novaTarefa.id) throw new Error("ID é obrigatório");
+        if (isNaN(novaTarefa.quantidade)) throw new Error("Quantidade inválida");
+        if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
+
+        // Add to Firestore
+        await addDoc(collection(db, "tarefas"), {
+            ...novaTarefa,
+            dataRecebimento: Timestamp.fromDate(novaTarefa.dataRecebimento)
+        });
+
+        esconderFormulario();
+        carregarTarefas();
+        mostrarFeedback("Tarefa adicionada com sucesso!", "success");
     } catch (error) {
-      console.error("Erro ao buscar usuário:", error);
+        console.error("Erro ao adicionar tarefa:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+    } finally {
+        esconderLoading();
     }
-
-    const dataInput = document.getElementById("data").value;
-    const dataLocal = new Date(dataInput);
-    const dataUTC = new Date(dataLocal.getTime() + dataLocal.getTimezoneOffset() * 60000);
-
-    const novaTarefa = {
-      id: document.getElementById("id").value.trim(),
-      tipo: document.getElementById("tipo").value,
-      complemento: (document.getElementById("tipo").value === "PCR" || 
-                   document.getElementById("tipo").value === "RAIVA")
-                ? document.getElementById("complemento").value.trim()
-                : null,
-      quantidade: parseInt(document.getElementById("quantidade").value),
-      gramatura: document.getElementById("tipo").value === "VACINA" 
-                ? (document.getElementById("gramatura").value 
-                   ? parseFloat(document.getElementById("gramatura").value)
-                   : null)
-                : null,
-      proprietario: document.getElementById("proprietario").value.trim(),
-      dataRecebimento: dataUTC,
-      observacoes: document.getElementById("observacoes").value.trim(),
-      status: "pendente",
-      criadoEm: Timestamp.now(),
-      criadoPor: user.uid,
-      siglaResponsavel: siglaUsuario
-    };
-
-    if (!novaTarefa.id) throw new Error("ID é obrigatório");
-    if (isNaN(novaTarefa.quantidade)) throw new Error("Quantidade inválida");
-    if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
-    
-
-    await addDoc(collection(db, "tarefas"), {
-      ...novaTarefa,
-      dataRecebimento: Timestamp.fromDate(dataUTC)
-    });
-  
-    esconderFormulario();
-    carregarTarefas();
-    mostrarFeedback("Tarefa adicionada com sucesso!", "success");
-  } catch (error) {
-    console.error("Erro ao adicionar tarefa:", error);
-    mostrarFeedback(`Erro: ${error.message}`, "error");
-  } finally {
-    esconderLoading();
-  }
 }
 
 // Função para carregar tarefas
@@ -406,8 +434,18 @@ window.editarTarefa = async (id) => {
     
     document.getElementById("observacoes").value = tarefa.observacoes || "";
 
-    document.getElementById("proprietario").value = tarefa.proprietario || "";
+    if (tarefa.proprietario) {
+        document.getElementById("proprietario-nome").value = tarefa.proprietario.nome || "";
+        document.getElementById("proprietario-municipio").value = tarefa.proprietario.municipio || "";
+        document.getElementById("proprietario-contato").value = tarefa.proprietario.contato || "";
+    }
     
+    if (tarefa.veterinario) {
+        document.getElementById("veterinario-nome").value = tarefa.veterinario.nome || "";
+        document.getElementById("veterinario-municipio").value = tarefa.veterinario.municipio || "";
+        document.getElementById("veterinario-contato").value = tarefa.veterinario.contato || "";
+    }
+
     mostrarFormulario(true);
     
     document.getElementById("mural-form").onsubmit = async (e) => {
@@ -432,7 +470,16 @@ window.editarTarefa = async (id) => {
                        document.getElementById("tipo").value === "RAIVA")
                     ? document.getElementById("complemento").value.trim()
                     : null,
-          proprietario: document.getElementById("proprietario").value.trim(),
+          proprietario: {
+            nome: document.getElementById("proprietario-nome").value.trim(),
+            municipio: document.getElementById("proprietario-municipio").value.trim(),
+            contato: document.getElementById("proprietario-contato").value.trim()
+          },
+          veterinario: {
+            nome: document.getElementById("veterinario-nome").value.trim(),
+            municipio: document.getElementById("veterinario-municipio").value.trim(),
+            contato: document.getElementById("veterinario-contato").value.trim()
+          },
           dataRecebimento: Timestamp.fromDate(dataUTC),
           atualizadoEm: Timestamp.now(),
           observacoes: document.getElementById("observacoes").value.trim()
@@ -458,138 +505,173 @@ window.editarTarefa = async (id) => {
 
 window.mostrarDetalhes = async (id) => {
   try {
-    mostrarLoading();
-    const docRef = doc(db, "tarefas", id);
-    const docSnap = await getDoc(docRef);
+      mostrarLoading();
+      const docRef = doc(db, "tarefas", id);
+      const docSnap = await getDoc(docRef);
 
-    if (!docSnap.exists()) throw new Error("Tarefa não encontrada");
+      if (!docSnap.exists()) throw new Error("Tarefa não encontrada");
+      
+      const tarefa = docSnap.data();
+      let siglaUsuario = "N/A";
     
-    const tarefa = docSnap.data();
-    let siglaUsuario = "N/A";
-
-    if (tarefa.siglaResponsavel) {
-      siglaUsuario = tarefa.siglaResponsavel;
-    } else if (tarefa.criadoPor) {
-      const usuarioRef = doc(db, "usuarios", tarefa.criadoPor);
-      const usuarioSnap = await getDoc(usuarioRef);
-      if (usuarioSnap.exists()) {
-        siglaUsuario = usuarioSnap.data().sigla || "N/A";
+      if (tarefa.siglaResponsavel && tarefa.siglaResponsavel !== "N/A") {
+          siglaUsuario = tarefa.siglaResponsavel;
+          console.log("Usando sigla existente:", siglaUsuario);
+      } else if (tarefa.criadoPor) {
+          try {
+              console.log("Buscando usuário:", tarefa.criadoPor);
+              const userRef = doc(db, "usuarios", tarefa.criadoPor);
+              const userSnap = await getDoc(userRef);
+              console.log("Usuário existe:", userSnap.exists());
+              
+              if (userSnap.exists()) {
+                  const userData = userSnap.data();
+                  console.log("Dados do usuário:", userData);
+                  siglaUsuario = userData.sigla || "N/A";
+                  console.log("Sigla encontrada:", siglaUsuario);
+                  
+                  // Apenas atualize se encontrar uma sigla válida
+                  if (siglaUsuario !== "N/A") {
+                      await updateDoc(docRef, {
+                          siglaResponsavel: siglaUsuario
+                      });
+                  }
+              }
+          } catch (userError) {
+              console.error("Error fetching user:", userError);
+          }
       }
-    }
 
-    const dataRecebimento = tarefa.dataRecebimento?.toDate 
-      ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
-      : "Data não disponível";
-    
-    const modal = document.createElement("div");
-    modal.id = "modal-detalhes";
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    `;
+      const dataRecebimento = tarefa.dataRecebimento?.toDate 
+          ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
+          : "Data não disponível";
 
-    const modalContent = document.createElement("div");
-    modalContent.style.cssText = `
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      max-width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      width: 500px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      position: relative;
-    `;
+      // Create modal structure
+      const modal = document.createElement("div");
+      modal.id = "modal-detalhes";
+      modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+      `;
 
-    modalContent.innerHTML = `
-      <h3 style="margin-bottom: 15px; margin-top: 0px; color: #1b5e20;">Detalhes da Tarefa</h3>
-      
-      <div style="margin-bottom: 15px;">
-        <strong style="display: inline-block; width: 120px;">ID:</strong>
-        <span>${tarefa.id || 'N/A'}</span>
-      </div>
-      
-      <div style="margin-bottom: 15px;">
-        <strong style="display: inline-block; width: 120px;">Tipo:</strong>
-        <span>${tarefa.tipo || 'N/A'}</span>
-      </div>
+      // Handle both old and new task formats
+      const proprietarioNome = typeof tarefa.proprietario === 'object' 
+          ? tarefa.proprietario?.nome || 'N/A'
+          : tarefa.proprietario || 'N/A';
 
-      <div style="margin-bottom: 15px;">
-        <strong style="display: inline-block; width: 120px;">Responsável:</strong>
-        <span>${siglaUsuario}</span>
-      </div>
+      const veterinarioNome = typeof tarefa.veterinario === 'object'
+          ? tarefa.veterinario?.nome || 'N/A'
+          : tarefa.veterinario || 'N/A';
 
-      <div style="margin-bottom: 15px;">
-        <strong style="display: inline-block; width: 120px;">Quantidade:</strong>
-        <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
-          ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
-          : "amostras"}</span>
-      </div>
+      const modalContent = document.createElement("div");
+      modalContent.style.cssText = `
+          background: white;
+          padding: 25px;
+          border-radius: 10px;
+          max-width: 90%;
+          max-height: 90vh;
+          overflow-y: auto;
+          width: 500px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          position: relative;
+      `;
 
-      ${tarefa.complemento ? `
-      <div style="margin-bottom: 15px;">
-        <strong style="display: inline-block; width: 120px;">Complemento:</strong>
-        <span>${tarefa.complemento.trim()}</span>
-      </div>` : ''}
+      modalContent.innerHTML = `
+          <h3 style="margin-bottom: 15px; margin-top: 0px; color: #1b5e20;">Detalhes da Tarefa</h3>
+          
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">ID:</strong>
+              <span>${tarefa.id || 'N/A'}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">Tipo:</strong>
+              <span>${tarefa.tipo || 'N/A'}</span>
+          </div>
 
-      <div style="margin-bottom: 15px;">
-        <strong style="display: inline-block; width: 120px;">Proprietário:</strong>
-        <span>${tarefa.proprietario || 'N/A'}</span>
-      </div>
-      
-      <div style="margin-bottom: 15px;">
-        <strong style="display: inline-block; width: 120px;">Recebimento:</strong>
-        <span>${dataRecebimento}</span>
-      </div>
-      
-      <div style="margin-bottom: 15px;">
-        <strong style="display: inline-block; width: 120px;">Status:</strong>
-        <span>${tarefa.status === 'em-progresso' ? 'Em Progresso' : 'Pendente'}</span>
-      </div>
-      
-      ${tarefa.observacoes ? `
-      <div style="margin-bottom: 20px;">
-        <strong style="display: block; margin-bottom: 5px;">Observações:</strong>
-        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #1b5e20; white-space: pre-line; text-align: left;">
-          ${tarefa.observacoes.trim()}
-        </div>
-      </div>` : ''}
-      
-      <button id="fechar-modal" 
-          style="position: absolute; top: 15px; right: 15px; padding: 5px 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;">
-        X
-      </button>
-    `;
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">Responsável:</strong>
+              <span>${siglaUsuario}</span>
+          </div>
 
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">Quantidade:</strong>
+              <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
+                  ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
+                  : "amostras"}</span>
+          </div>
 
-    document.getElementById("fechar-modal").onclick = () => {
-      document.body.removeChild(modal);
-    };
+          ${tarefa.complemento ? `
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">Complemento:</strong>
+              <span>${tarefa.complemento.trim()}</span>
+          </div>` : ''}
 
-    modal.onclick = (e) => {
-      if (e.target === modal) {
-        document.body.removeChild(modal);
-      }
-    };
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") document.body.removeChild(modal);
-    });
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">Proprietário:</strong>
+              <span>${proprietarioNome}</span>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">Veterinário:</strong>
+              <span>${veterinarioNome}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">Recebimento:</strong>
+              <span>${dataRecebimento}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+              <strong style="display: inline-block; width: 120px;">Status:</strong>
+              <span>${tarefa.status === 'em-progresso' ? 'Em Progresso' : 'Pendente'}</span>
+          </div>
+          
+          ${tarefa.observacoes ? `
+          <div style="margin-bottom: 20px;">
+              <strong style="display: block; margin-bottom: 5px;">Observações:</strong>
+              <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #1b5e20; white-space: pre-line; text-align: left;">
+                  ${tarefa.observacoes.trim()}
+              </div>
+          </div>` : ''}
+          
+          <button id="fechar-modal" 
+              style="position: absolute; top: 15px; right: 15px; padding: 5px 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              X
+          </button>
+      `;
+
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+
+      // Add event listeners
+      document.getElementById("fechar-modal").onclick = () => {
+          document.body.removeChild(modal);
+      };
+
+      modal.onclick = (e) => {
+          if (e.target === modal) {
+              document.body.removeChild(modal);
+          }
+      };
+
+      document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") document.body.removeChild(modal);
+      });
 
   } catch (error) {
-    console.error("Erro ao mostrar detalhes:", error);
-    mostrarFeedback(`Erro: ${error.message}`, "error");
+      console.error("Erro ao mostrar detalhes:", error);
+      mostrarFeedback(`Erro: ${error.message}`, "error");
   } finally {
-    esconderLoading();
+      esconderLoading();
   }
 };
 
@@ -663,44 +745,44 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 window.registrarResultado = async (id) => {
-    try {
-        mostrarLoading();
-        
-        const tarefaRef = doc(db, "tarefas", id);
-        const tarefaSnap = await getDoc(tarefaRef);
-        
-        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
-        
-        const tarefa = tarefaSnap.data();
-        const tipo = (tarefa.tipo || "").trim().toUpperCase();
+  try {
+      mostrarLoading();
+      
+      const tarefaRef = doc(db, "tarefas", id);
+      const tarefaSnap = await getDoc(tarefaRef);
+      
+      if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
+      
+      const tarefa = tarefaSnap.data();
+      const tipo = (tarefa.tipo || "").trim().toUpperCase();
 
-        if (tipo.includes("ELISA")) { // Updated this line
-            await registrarResultadoELISA(id);
-            return;
-        }
-        if (tipo.includes("SN")) {
-            await registrarResultadoSN(id);
-            return;
-        }
-        if (tipo.includes("PCR")) {
-            await registrarResultadoPCR(id);
-            return;
-        }
-        if (tipo === "RAIVA") {
-            await registrarResultadoRAIVA(id);
-            return;
-        }
-        if (tipo === "ICC") {
-            await registrarResultadoICC(id);
-            return;
-        }
-        // Se não for nenhum dos tipos acima, exibe mensagem de erro
+      if (tipo.includes("ELISA")) { // Updated this line
+          await registrarResultadoELISA(id);
+          return;
+      }
+      if (tipo.includes("SN")) {
+          await registrarResultadoSN(id);
+          return;
+      }
+      if (tipo.includes("PCR")) {
+          await registrarResultadoPCR(id);
+          return;
+      }
+      if (tipo === "RAIVA") {
+          await registrarResultadoRAIVA(id);
+          return;
+      }
+      if (tipo === "ICC") {
+          await registrarResultadoICC(id);
+          return;
+      }
+      // Se não for nenhum dos tipos acima, exibe mensagem de erro
 
-        mostrarFeedback("Este tipo de tarefa não possui resultados específicos", "error");
-    } catch (error) {
-        console.error("Erro ao registrar resultado:", error);
-        mostrarFeedback(`Erro: ${error.message}`, "error");
-    } finally {
-        esconderLoading();
-    }
+      mostrarFeedback("Este tipo de tarefa não possui resultados específicos", "error");
+  } catch (error) {
+      console.error("Erro ao registrar resultado:", error);
+      mostrarFeedback(`Erro: ${error.message}`, "error");
+  } finally {
+      esconderLoading();
+  }
 };
