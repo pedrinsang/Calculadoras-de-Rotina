@@ -27,7 +27,7 @@ async function registrarResultadoSN(id) {
         modal.innerHTML = `
             <div class="modal-resultados-content">
                 <h3 style="margin-bottom: 15px; color: #1b5e20;">Registrar Resultados - ${tarefa.tipo}</h3>
-                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
+                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade}</p>
                 
                 <table class="tabela-resultados">
                     <thead>
@@ -197,7 +197,7 @@ async function registrarResultadoELISA(id) {
         modal.innerHTML = `
             <div class="modal-resultados-content">
                 <h3 style="margin-bottom: 15px; color: #1b5e20;">Registrar Resultados - ${tarefa.tipo}</h3>
-                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
+                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade}</p>
                 
                 <table class="tabela-resultados">
                     <thead>
@@ -332,7 +332,20 @@ async function registrarResultadoPCR(id) {
         modal.innerHTML = `
             <div class="modal-resultados-content">
                 <h3 style="margin-bottom: 15px; color: #1b5e20;">Registrar Resultados - ${tarefa.tipo} ${tarefa.complemento || ''}</h3>
-                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade}</span>
+                    <div style="display: flex; align-items: center;">
+                        <span><strong>Tipo:</strong></span>
+                        <label style="margin-left: 10px; cursor: pointer;">
+                            <input type="radio" name="acidoNucleico" value="DNA" ${!tarefa.resultados?.acidoNucleico || tarefa.resultados?.acidoNucleico === 'DNA' ? 'checked' : ''}>
+                            DNA
+                        </label>
+                        <label style="margin-left: 10px; cursor: pointer;">
+                            <input type="radio" name="acidoNucleico" value="RNA" ${tarefa.resultados?.acidoNucleico === 'RNA' ? 'checked' : ''}>
+                            RNA
+                        </label>
+                    </div>
+                </div>
                 
                 <table class="tabela-resultados">
                     <thead>
@@ -392,6 +405,7 @@ async function registrarResultadoPCR(id) {
                 const amostrasAtualizadas = [];
                 const identificacoes = modal.querySelectorAll(".input-identificacao");
                 const resultados = modal.querySelectorAll(".select-resultado");
+                const acidoNucleico = modal.querySelector('input[name="acidoNucleico"]:checked').value;
 
                 for (let i = 0; i < tarefa.quantidade; i++) {
                     amostrasAtualizadas.push({
@@ -404,6 +418,7 @@ async function registrarResultadoPCR(id) {
                 await updateDoc(tarefaRef, {
                     resultados: {
                         amostras: amostrasAtualizadas,
+                        acidoNucleico: acidoNucleico,  // Save DNA/RNA selection
                         dataRegistro: Timestamp.now()
                     },
                     status: "resultados-registrados",
@@ -466,7 +481,7 @@ async function registrarResultadoRAIVA(id) {
         modal.innerHTML = `
             <div class="modal-resultados-content">
                 <h3 style="margin-bottom: 15px; color: #1b5e20;">Registrar Resultados - ${tarefa.tipo} ${tarefa.complemento || ''}</h3>
-                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
+                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade}</p>
                 
                 <table class="tabela-resultados">
                     <thead>
@@ -600,7 +615,7 @@ async function registrarResultadoICC(id) {
         modal.innerHTML = `
             <div class="modal-resultados-content">
                 <h3 style="margin-bottom: 15px; color: #1b5e20;">Registrar Resultados - ${tarefa.tipo} ${tarefa.complemento || ''}</h3>
-                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade} amostras</p>
+                <p><strong>ID:</strong> ${tarefa.id} | <strong>Quantidade:</strong> ${tarefa.quantidade}</p>
                 
                 <table class="tabela-resultados">
                     <thead>

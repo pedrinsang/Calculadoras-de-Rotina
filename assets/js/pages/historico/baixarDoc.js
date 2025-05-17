@@ -244,8 +244,14 @@ export async function gerarDocx(tarefa) {
                 nomeArquivo = "ELISA_BVDV";
                 break;
             case "PCR":
-                tituloLaudo = "Diagnóstico Molecular (PCR)";
-                testeRealizado = "PCR: pesquisa de ácido nucléico viral (DNA) na amostras";
+                // Check if DNA or RNA was selected
+                if (tarefa.resultados?.acidoNucleico === 'RNA') {
+                    tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
+                    testeRealizado = "PCR: pesquisa de ácido nucléico viral (RNA) nas amostras";
+                } else {
+                    tituloLaudo = "Diagnóstico Molecular (PCR)";
+                    testeRealizado = "PCR: pesquisa de ácido nucléico viral (DNA) nas amostras";
+                }
                 nomeArquivo = "PCR";
                 break;
             case "RAIVA":
