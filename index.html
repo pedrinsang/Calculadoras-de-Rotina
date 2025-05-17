@@ -269,6 +269,14 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    (async () => {
+      const manterConectado = localStorage.getItem("manterConectado") === "true";
+      if (manterConectado) {
+        await setPersistence(auth, browserLocalPersistence);
+      } else {
+        await setPersistence(auth, browserSessionPersistence);
+      }
+    })();
 
     document.addEventListener('DOMContentLoaded', function() {
         console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
@@ -460,8 +468,10 @@
         // Defina a persistência ANTES do login:
         if (manterConectado) {
           await setPersistence(auth, browserLocalPersistence);
+          localStorage.setItem("manterConectado", "true");
         } else {
           await setPersistence(auth, browserSessionPersistence);
+          localStorage.removeItem("manterConectado");
         }
 
         // Agora faça o login
