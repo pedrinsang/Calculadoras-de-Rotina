@@ -29,10 +29,22 @@
     }
     body {
       min-height: 100vh;
+      height: 100vh;
+      width: 100vw;
       background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden; /* Impede qualquer scroll */
+      margin: 0;
+      padding: 0;
+    }
+    .container.py-4 {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 !important;
     }
     .card {
       border-radius: 2rem;
@@ -40,6 +52,7 @@
       max-width: 430px;
       width: 100%;
       padding: 0;
+      margin: 0 auto;
     }
     .logo {
       max-width: 200px; /* aumente o tamanho do logo */
