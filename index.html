@@ -242,7 +242,8 @@
       setPersistence,
       browserLocalPersistence,
       browserSessionPersistence,
-      signOut
+      signOut,
+      onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     import {
@@ -566,6 +567,14 @@
       if (event.key === "Enter") {
         event.preventDefault(); // Evita recarregar a página
         document.getElementById("cadastro-button").click(); // Dispara o clique no botão
+      }
+    });
+
+    // Detectar estado de autenticação
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Usuário já está logado, redireciona para o hub
+        window.location.href = "pages/hub.html";
       }
     });
   </script>
