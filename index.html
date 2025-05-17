@@ -454,21 +454,19 @@
       const senha = document.getElementById("login-senha").value;
       const manterConectado = document.getElementById("manter-conectado").checked;
 
-      // Validações existentes...
-
       try {
         setLoading(document.getElementById('login-button'), true);
-        
-        // Autenticar no Firebase
-        const userCredential = await signInWithEmailAndPassword(auth, email, senha);
-        const user = userCredential.user;
 
-        // Configura a persistência baseada na escolha do usuário
+        // Defina a persistência ANTES do login:
         if (manterConectado) {
           await setPersistence(auth, browserLocalPersistence);
         } else {
           await setPersistence(auth, browserSessionPersistence);
         }
+
+        // Agora faça o login
+        const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+        const user = userCredential.user;
 
         // Buscar os dados extras do Firestore
         const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
@@ -494,7 +492,14 @@
         // Redirecionar para o hub de calculadoras
         window.location.href = "pages/hub.html"; 
       } catch (error) {
-        // código de tratamento de erro existente...
+        console.error("Erro ao fazer login:", error);
+        if (error.code === 'auth/user-not-found') {
+          showAlert('Usuário não encontrado. Verifique seu email ou cadastre-se.');
+        } else if (error.code === 'auth/wrong-password') {
+          showAlert('Senha incorreta. Tente novamente.');
+        } else {
+          showAlert('Erro ao fazer login: ' + error.message);
+        }
       } finally {
         setLoading(document.getElementById('login-button'), false);
       }
@@ -712,6 +717,17 @@
       document.getElementById("cadastro-form").style.display = "none";
       document.getElementById("forgot-password-form").style.display = "none";
     };
+  </script>
+  <script>
+  // Força o recálculo do layout para garantir centralização no PWA/mobile
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      document.body.style.display = 'none';
+      // Força reflow
+      void document.body.offsetHeight;
+      document.body.style.display = 'flex';
+    }, 50);
+  });
   </script>
 </body>
 </html>
