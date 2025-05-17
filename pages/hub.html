@@ -20,13 +20,16 @@
     html, body {
       height: 100%;
       min-height: 100%;
-      background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 100%);
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Impede qualquer scroll */
     }
     body {
       min-height: 100vh;
       height: 100vh;
-      margin: 0;
-      padding: 0;
+      width: 100vw;
+      background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -43,6 +46,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
+      margin: 0 auto;
     }
     .hub-logo {
       max-width: 140px;
