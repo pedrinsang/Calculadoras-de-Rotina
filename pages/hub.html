@@ -245,11 +245,16 @@
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('logout-button').addEventListener('click', async () => {
         try {
-          await signOut(auth);
+          // Limpar dados primeiro
           localStorage.removeItem('usuario');
           localStorage.removeItem('manterConectado');
           sessionStorage.removeItem('usuario');
-          window.location.href = "../index.html";
+          
+          // Em seguida fazer logout do Firebase
+          await signOut(auth);
+          
+          // Redirecionar com flag para evitar o loop
+          window.location.href = "../index.html?logout=true";
         } catch (error) {
           alert("Erro ao desconectar: " + error.message);
         }

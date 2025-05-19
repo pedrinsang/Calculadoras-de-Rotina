@@ -572,9 +572,17 @@
 
     // Detectar estado de autenticação
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Usuário já está logado, redireciona para o hub
-        window.location.href = "pages/hub.html";
+      // Verificamos se estamos vindo de um logout recente
+      const forceLogin = new URLSearchParams(window.location.search).get('logout') === 'true';
+      
+      if (user && !forceLogin) {
+        // Verificar se também temos os dados do usuário armazenados
+        const storedUser = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
+        
+        if (storedUser.nome) {
+          // Só redirecionamos se ambas as condições forem atendidas
+          window.location.href = "pages/hub.html";
+        }
       }
     });
   </script>
