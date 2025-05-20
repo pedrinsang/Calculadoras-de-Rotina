@@ -34,42 +34,178 @@ export function mostrarFeedback(mensagem, tipo = "success") {
   }, 3000);
 }
 
-// Função para filtrar tarefas com base no termo de busca
+// Atualize a função filtrarTarefas
 function filtrarTarefas(termo) {
   const historicoList = document.getElementById("historico-list");
-  historicoList.innerHTML = "";
-
+  const searchInput = document.getElementById("search-input");
+  const searchButton = document.getElementById("search-button");
+  
+  // Adicionar indicador visual de busca ativa
+  if (termo) {
+    searchInput.classList.add("border-primary");
+    // Remova todas as classes relacionadas a cores e adicione a classe de aviso
+    searchButton.classList.remove("btn-success");
+    searchButton.classList.add("btn-warning", "text-white");
+    searchButton.innerHTML = `<i class="bi bi-x-circle"></i> Limpar`;
+  } else {
+    searchInput.classList.remove("border-primary");
+    // Remova classes de aviso e adicione a classe de sucesso
+    searchButton.classList.remove("btn-warning");
+    searchButton.classList.add("btn-success", "text-white");
+    searchButton.innerHTML = `<i class="bi bi-search"></i> Buscar`;
+  }
+  
+  // Se não houver termo de busca, mostrar todas as tarefas
   if (!termo) {
-    // Se não houver termo de busca, mostrar todas as tarefas
     renderizarTarefas(todasTarefas);
     return;
   }
 
-  const termoLower = termo.toLowerCase();
+  historicoList.innerHTML = `<div class="text-center my-3"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Procurando...</p></div>`;
+
+  // Dividir a busca em termos para busca mais precisa
+  const termos = termo.toLowerCase().split(" ").filter(t => t.length > 0);
+  
   const tarefasFiltradas = todasTarefas.filter(tarefa => {
-    return (
-      (tarefa.id && tarefa.id.toLowerCase().includes(termoLower)) ||
-      (tarefa.tipo && tarefa.tipo.toLowerCase().includes(termoLower)) ||
-      (tarefa.observacoes && tarefa.observacoes.toLowerCase().includes(termoLower))
-    );
+    // Se não houver termos, retorna true
+    if (termos.length === 0) return true;
+    
+    // Campos de texto para busca
+    const camposDeBusca = [
+      tarefa.id || '',
+      tarefa.tipo || '',
+      tarefa.observacoes || '',
+      tarefa.complemento || '',
+      typeof tarefa.proprietario === 'object' 
+          ? tarefa.proprietario?.nome || ''
+          : tarefa.proprietario || '',
+      tarefa.siglaResponsavel || ''
+    ];
+    
+    // Converte todos para lowercase
+    const textoCompleto = camposDeBusca.join(' ').toLowerCase();
+    
+    // Verifica se TODOS os termos existem em pelo menos um dos campos
+    return termos.every(termo => textoCompleto.includes(termo));
   });
 
   if (tarefasFiltradas.length === 0) {
-    historicoList.innerHTML = "<p>Nenhuma tarefa encontrada com o termo de busca.</p>";
+    historicoList.innerHTML = `
+      <div class="alert alert-info text-center" role="alert">
+        <i class="bi bi-search me-2"></i>
+        Nenhuma tarefa encontrada com o termo "<strong>${termo}</strong>".
+        <button class="btn btn-sm btn-outline-primary ms-3" onclick="document.getElementById('search-input').value=''; filtrarTarefas('')">
+          Limpar busca
+        </button>
+      </div>`;
   } else {
     renderizarTarefas(tarefasFiltradas);
+    
+    // Adicionar contador de resultados
+    const resultCounter = document.createElement("div");
+    resultCounter.className = "alert alert-success mb-3";
+    resultCounter.innerHTML = `<i class="bi bi-check-circle me-2"></i> <strong>${tarefasFiltradas.length}</strong> ${tarefasFiltradas.length === 1 ? 'resultado encontrado' : 'resultados encontrados'} para "<strong>${termo}</strong>"`;
+    historicoList.insertBefore(resultCounter, historicoList.firstChild);
   }
 }
+
+// Função para destacar termos de busca no texto
+function destacarTermos(texto, termo) {
+  if (!termo || !texto) return texto;
+  
+  const termos = termo.toLowerCase().split(" ").filter(t => t.length > 0);
+  let resultado = texto;
+  
+  termos.forEach(t => {
+    const regex = new RegExp(t, 'gi');
+    resultado = resultado.replace(regex, match => `<mark>${match}</mark>`);
+  });
+  
+  return resultado;
+}
+
+// Adicione esta função para implementar debounce
+function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
+// Substitua ambos os blocos DOMContentLoaded por um único bloco organizado
+document.addEventListener("DOMContentLoaded", () => {
+  // Botão voltar
+  document.getElementById("voltar-button").onclick = () => {
+    window.location.href = "mural.html";
+  };
+
+  const searchInput = document.getElementById("search-input");
+  const searchButton = document.getElementById("search-button");
+
+  // Certifique-se de que o botão sempre tenha estas classes independente do estado
+  searchButton.classList.add("btn-sm", "rounded-pill", "fixed-width-button");
+
+  // Busca com debounce ao digitar
+  const debouncedSearch = debounce(() => {
+    filtrarTarefas(searchInput.value);
+  }, 400);
+
+  searchInput.addEventListener("input", debouncedSearch);
+
+  // Configurar botão de busca para alternar entre buscar e limpar
+  searchButton.addEventListener("click", () => {
+    if (searchInput.value) {
+      if (searchButton.classList.contains("btn-warning")) {
+        // Está no modo limpar
+        searchInput.value = "";
+        filtrarTarefas("");
+      } else {
+        filtrarTarefas(searchInput.value);
+      }
+    } else {
+      filtrarTarefas("");
+    }
+  });
+
+  // Permite buscar pressionando Enter
+  searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      filtrarTarefas(searchInput.value);
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      excluirTarefasAntigas().then(() => {
+        carregarHistorico();
+      });
+    } else {
+      window.location.href = "index.html";
+    }
+  });
+});
 
 // Função para renderizar as tarefas na lista
 function renderizarTarefas(tarefas) {
   const historicoList = document.getElementById("historico-list");
+  const searchTermo = document.getElementById("search-input").value;
+  
+  if (!tarefas.length) {
+    historicoList.innerHTML = "<p class='text-center mt-4'>Não há tarefas disponíveis.</p>";
+    return;
+  }
+  
+  // Limpa apenas o conteúdo principal, mantém o contador se existir
+  const counterAlert = historicoList.querySelector('.alert-success');
   historicoList.innerHTML = "";
+  if (counterAlert) {
+    historicoList.appendChild(counterAlert);
+  }
 
   tarefas.forEach((tarefa) => {
     const historicoItem = document.createElement("div");
     historicoItem.className = "historico-item";
-    
     
     const showResultsButton = tarefa.tipo.includes("SN") || 
                             tarefa.tipo.includes("ELISA") ||
@@ -77,17 +213,32 @@ function renderizarTarefas(tarefas) {
                             tarefa.tipo.includes("RAIVA") ||
                             tarefa.tipo.includes("ICC");
 
+    // Destacar texto nos principais campos se houver busca ativa
+    const id = searchTermo ? destacarTermos(tarefa.id || 'Sem ID', searchTermo) : (tarefa.id || 'Sem ID');
+    const tipo = searchTermo ? destacarTermos(tarefa.tipo || 'N/A', searchTermo) : (tarefa.tipo || 'N/A');
+    const complemento = tarefa.complemento ? (searchTermo ? destacarTermos(tarefa.complemento, searchTermo) : tarefa.complemento) : '';
+
     historicoItem.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div class="d-flex justify-content-between align-items-start flex-wrap">
         <div>
-          <strong>ID:</strong> ${tarefa.id || 'Sem ID'}<br>
-          <strong>Tipo:</strong> ${tarefa.tipo || 'N/A'}${tarefa.complemento ? ` ${tarefa.complemento}` : ''}
+          <h5 class="mb-1 text-success fw-bold">${id}</h5>
+          <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipo}${complemento ? ` ${complemento}` : ''}</div>
+          <div><span class="fw-medium">Concluído em:</span> ${tarefa.dataConclusao?.toDate().toLocaleDateString("pt-BR") || 'N/A'}</div>
+          ${typeof tarefa.proprietario === 'object' && tarefa.proprietario?.nome ? 
+            `<div><span class="fw-medium">Proprietário:</span> ${searchTermo ? destacarTermos(tarefa.proprietario.nome, searchTermo) : tarefa.proprietario.nome}</div>` : 
+            (tarefa.proprietario ? `<div><span class="fw-medium">Proprietário:</span> ${searchTermo ? destacarTermos(tarefa.proprietario, searchTermo) : tarefa.proprietario}</div>` : '')}
         </div>
-        <div class="status-buttons">
-          ${showResultsButton ? 
-            `<button class="btn-resultados" onclick="mostrarResultados('${tarefa.docId}')">Resultados</button>` : ''}
-          <button class="btn-voltar-mural" onclick="voltarParaMural('${tarefa.docId}')">Voltar ao Mural</button>
-          <button class="btn-detalhes" onclick="mostrarDetalhes('${tarefa.docId}')">Detalhes</button>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+          <button class="btn btn-info text-white btn-sm" onclick="mostrarDetalhes('${tarefa.docId}')">
+            <i class="bi bi-info-circle me-1"></i>Detalhes
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="voltarParaMural('${tarefa.docId}')">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar
+          </button>
+          ${showResultsButton ? `
+          <button class="btn btn-warning text-white btn-sm" onclick="mostrarResultados('${tarefa.docId}')">
+            <i class="bi bi-clipboard-data me-1"></i>Resultados
+          </button>` : ''}
         </div>
       </div>
     `;
@@ -140,17 +291,9 @@ window.voltarParaMural = async (id) => {
 
 
 
-// Função para mostrar detalhes da tarefa
+// Function to show task details in the Bootstrap modal
 window.mostrarDetalhes = async (id) => {
   try {
-    // Se já existe um modal aberto, fecha ele primeiro
-    if (modalAtual) {
-        document.body.removeChild(modalAtual);
-        modalAtual = null;
-        // Remove qualquer event listener existente do ESC
-        document.removeEventListener("keydown", handleKeyDown);
-    }
-
     const docRef = doc(db, "historico", id);
     const docSnap = await getDoc(docRef);
 
@@ -177,113 +320,71 @@ window.mostrarDetalhes = async (id) => {
         ? tarefa.dataConclusao.toDate().toLocaleDateString("pt-BR")
         : "Data não disponível";
 
-    // Cria o modal apenas se não houver nenhum aberto
-    if (!modalAtual) {
-        const modal = document.createElement("div");
-        modal.id = "modal-detalhes";
-        modal.className = "modal-detalhes";
+    // Populate the Bootstrap modal with task details
+    const modalContent = document.getElementById("modal-detalhes-content");
+    modalContent.innerHTML = `
+      <div class="mb-3">
+          <strong class="d-inline-block w-25">ID:</strong>
+          <span>${tarefa.id || 'N/A'}</span>
+      </div>
+      
+      <div class="mb-3">
+          <strong class="d-inline-block w-25">Tipo:</strong>
+          <span>${tarefa.tipo || 'N/A'}</span>
+      </div>
 
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3 style="margin-bottom: 15px; margin-top: 0px; color: #1b5e20;">Detalhes da Tarefa Concluída</h3>
-                
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: inline-block; width: 120px;">ID:</strong>
-                    <span>${tarefa.id || 'N/A'}</span>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: inline-block; width: 120px;">Tipo:</strong>
-                    <span>${tarefa.tipo || 'N/A'}</span>
-                </div>
+      <div class="mb-3">
+          <strong class="d-inline-block w-25">Responsável:</strong>
+          <span>${siglaUsuario}</span>
+      </div>
 
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: inline-block; width: 120px;">Responsável:</strong>
-                    <span>${siglaUsuario}</span>
-                </div>
+      <div class="mb-3">
+          <strong class="d-inline-block w-25">Quantidade:</strong>
+          <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
+              ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
+              : "amostras"}</span>
+      </div>
 
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: inline-block; width: 120px;">Quantidade:</strong>
-                    <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
-                        ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
-                        : "amostras"}</span>
-                </div>
+      ${tarefa.complemento ? `
+      <div class="mb-3">
+          <strong class="d-inline-block w-25">Complemento:</strong>
+          <span>${tarefa.complemento.trim()}</span>
+      </div>` : ''}
 
-                ${tarefa.complemento ? `
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: inline-block; width: 120px;">Complemento:</strong>
-                    <span>${tarefa.complemento.trim()}</span>
-                </div>` : ''}
+      <div class="mb-3">
+          <strong class="d-inline-block w-25">Proprietário:</strong>
+          <span>${typeof tarefa.proprietario === 'object' 
+              ? tarefa.proprietario?.nome || 'N/A'
+              : tarefa.proprietario || 'N/A'}</span>
+      </div>
+      
+      <div class="mb-3">
+          <strong class="d-inline-block w-25">Recebimento:</strong>
+          <span>${dataRecebimento}</span>
+      </div>
+      
+      <div class="mb-3">
+          <strong class="d-inline-block w-25">Conclusão:</strong>
+          <span>${dataConclusao}</span>
+      </div>
+      
+      ${tarefa.observacoes ? `
+      <div class="mb-4">
+          <strong class="d-block mb-2">Observações:</strong>
+          <div class="bg-light p-3 rounded border-start border-success border-3" style="white-space: pre-line;">
+              ${tarefa.observacoes.trim()}
+          </div>
+      </div>` : ''}
+    `;
 
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: inline-block; width: 120px;">Proprietário:</strong>
-                    <span>${tarefa.proprietario || 'N/A'}</span>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: inline-block; width: 120px;">Recebimento:</strong>
-                    <span>${dataRecebimento}</span>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <strong style="display: inline-block; width: 120px;">Conclusão:</strong>
-                    <span>${dataConclusao}</span>
-                </div>
-                
-                ${tarefa.observacoes ? `
-                <div style="margin-bottom: 20px;">
-                    <strong style="display: block; margin-bottom: 5px;">Observações:</strong>
-                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #1b5e20; white-space: pre-line; text-align: left;">
-                        ${tarefa.observacoes.trim()}
-                    </div>
-                </div>` : ''}
-                
-                <button id="fechar-modal" 
-                    style="position: absolute; top: 15px; right: 15px; padding: 5px 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    X
-                </button>
-            </div>
-        `;
+    // Show the Bootstrap modal
+    const detailsModal = new bootstrap.Modal(document.getElementById('modal-detalhes'));
+    detailsModal.show();
 
-        document.body.appendChild(modal);
-        modalAtual = modal;
-
-        // Função para fechar o modal
-        const fecharModal = () => {
-            if (modalAtual) {
-                document.body.removeChild(modalAtual);
-                modalAtual = null;
-                // Remove o event listener ao fechar
-                document.removeEventListener("keydown", handleKeyDown);
-            }
-        };
-
-        // Função para lidar com o ESC
-        const handleKeyDown = (e) => {
-            if (e.key === "Escape") {
-                fecharModal();
-            }
-            e.preventDefault();
-        };
-
-        // Adiciona o listener do ESC
-        document.addEventListener("keydown", handleKeyDown);
-
-        // Configura o botão de fechar
-        modal.querySelector("#fechar-modal").onclick = fecharModal;
-
-        // Fecha ao clicar fora do conteúdo
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                fecharModal();
-            }
-            e.stopPropagation();
-        };
-    }
-} catch (error) {
+  } catch (error) {
     console.error("Erro ao mostrar detalhes:", error);
     mostrarFeedback(`Erro: ${error.message}`, "error");
-}
+  }
 };
 
 // Função para excluir tarefas concluídas há mais de 1 ano
@@ -357,35 +458,5 @@ async function carregarHistorico() {
     historicoList.innerHTML = `<p>Erro ao carregar histórico: ${error.message}</p>`;
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("voltar-button").onclick = () => {
-    window.location.href = "mural.html";
-  };
-
-  // Configura o evento de busca
-  document.getElementById("search-button").addEventListener("click", () => {
-    const termo = document.getElementById("search-input").value;
-    filtrarTarefas(termo);
-  });
-
-  // Permite buscar pressionando Enter
-  document.getElementById("search-input").addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      const termo = document.getElementById("search-input").value;
-      filtrarTarefas(termo);
-    }
-  });
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      excluirTarefasAntigas().then(() => {
-        carregarHistorico();
-      });
-    } else {
-      window.location.href = "index.html";
-    }
-  });
-});
 
 
