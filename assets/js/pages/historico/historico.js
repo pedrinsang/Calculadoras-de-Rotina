@@ -289,8 +289,6 @@ window.voltarParaMural = async (id) => {
   }
 };
 
-
-
 // Function to show task details in the Bootstrap modal
 window.mostrarDetalhes = async (id) => {
   try {
@@ -320,58 +318,58 @@ window.mostrarDetalhes = async (id) => {
         ? tarefa.dataConclusao.toDate().toLocaleDateString("pt-BR")
         : "Data não disponível";
 
-    // Populate the Bootstrap modal with task details
+    // Populate the Bootstrap modal with task details using vertical layout
     const modalContent = document.getElementById("modal-detalhes-content");
     modalContent.innerHTML = `
-      <div class="mb-3">
-          <strong class="d-inline-block w-25">ID:</strong>
-          <span>${tarefa.id || 'N/A'}</span>
+      <div class="detalhe-item">
+          <div class="detalhe-label">ID:</div>
+          <div class="detalhe-valor">${tarefa.id || 'N/A'}</div>
       </div>
       
-      <div class="mb-3">
-          <strong class="d-inline-block w-25">Tipo:</strong>
-          <span>${tarefa.tipo || 'N/A'}</span>
+      <div class="detalhe-item">
+          <div class="detalhe-label">Tipo:</div>
+          <div class="detalhe-valor">${tarefa.tipo || 'N/A'}</div>
       </div>
 
-      <div class="mb-3">
-          <strong class="d-inline-block w-25">Responsável:</strong>
-          <span>${siglaUsuario}</span>
+      <div class="detalhe-item">
+          <div class="detalhe-label">Responsável:</div>
+          <div class="detalhe-valor">${siglaUsuario}</div>
       </div>
 
-      <div class="mb-3">
-          <strong class="d-inline-block w-25">Quantidade:</strong>
-          <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
+      <div class="detalhe-item">
+          <div class="detalhe-label">Quantidade:</div>
+          <div class="detalhe-valor">${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
               ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
-              : "amostras"}</span>
+              : "amostras"}</div>
       </div>
 
       ${tarefa.complemento ? `
-      <div class="mb-3">
-          <strong class="d-inline-block w-25">Complemento:</strong>
-          <span>${tarefa.complemento.trim()}</span>
+      <div class="detalhe-item">
+          <div class="detalhe-label">Complemento:</div>
+          <div class="detalhe-valor">${tarefa.complemento.trim()}</div>
       </div>` : ''}
 
-      <div class="mb-3">
-          <strong class="d-inline-block w-25">Proprietário:</strong>
-          <span>${typeof tarefa.proprietario === 'object' 
+      <div class="detalhe-item">
+          <div class="detalhe-label">Proprietário:</div>
+          <div class="detalhe-valor">${typeof tarefa.proprietario === 'object' 
               ? tarefa.proprietario?.nome || 'N/A'
-              : tarefa.proprietario || 'N/A'}</span>
+              : tarefa.proprietario || 'N/A'}</div>
       </div>
       
-      <div class="mb-3">
-          <strong class="d-inline-block w-25">Recebimento:</strong>
-          <span>${dataRecebimento}</span>
+      <div class="detalhe-item">
+          <div class="detalhe-label">Recebimento:</div>
+          <div class="detalhe-valor">${dataRecebimento}</div>
       </div>
       
-      <div class="mb-3">
-          <strong class="d-inline-block w-25">Conclusão:</strong>
-          <span>${dataConclusao}</span>
+      <div class="detalhe-item">
+          <div class="detalhe-label">Conclusão:</div>
+          <div class="detalhe-valor">${dataConclusao}</div>
       </div>
       
       ${tarefa.observacoes ? `
-      <div class="mb-4">
-          <strong class="d-block mb-2">Observações:</strong>
-          <div class="bg-light p-3 rounded border-start border-success border-3" style="white-space: pre-line;">
+      <div class="detalhe-item" style="border-bottom: none;">
+          <div class="detalhe-label">Observações:</div>
+          <div class="detalhe-valor white-space-pre-line bg-light p-2 rounded">
               ${tarefa.observacoes.trim()}
           </div>
       </div>` : ''}

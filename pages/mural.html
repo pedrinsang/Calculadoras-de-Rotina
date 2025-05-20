@@ -453,6 +453,77 @@
     @media (prefers-color-scheme: dark) {
       /* Opcional: implemente caso use dark mode */
     }
+
+    /* Substitua os estilos responsivos existentes por estes universais */
+    
+    /* Estilos para o modal de detalhes em todas as resoluções */
+    .detalhe-item {
+      display: block;
+      margin-bottom: 0.8rem;
+      border-bottom: 1px solid #e9ecef;
+      padding-bottom: 0.8rem;
+    }
+    
+    .detalhe-label {
+      display: block;
+      width: 100%;
+      font-weight: 600;
+      color: #1b5e20;
+      margin-bottom: 0.3rem;
+    }
+    
+    .detalhe-valor {
+      display: block;
+      width: 100%;
+    }
+    
+    .white-space-pre-line {
+      white-space: pre-line;
+    }
+    
+    /* Ajustes responsivos apenas para espaçamento */
+    @media (min-width: 768px) {
+      #modal-detalhes .modal-body {
+        padding: 1.5rem;
+      }
+      
+      .detalhe-item {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+      }
+      
+      .detalhe-label {
+        margin-bottom: 0.5rem;
+        font-size: 1.05rem;
+      }
+      
+      .detalhe-valor {
+        font-size: 1rem;
+      }
+    }
+    
+    @media (max-width: 575.98px) {
+      #modal-detalhes .modal-body {
+        font-size: 0.95rem;
+        padding: 1rem 0.75rem;
+      }
+    }
+    
+    @media (max-width: 350px) {
+      #modal-detalhes .modal-body {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+      }
+      
+      .detalhe-item {
+        margin-bottom: 0.6rem;
+        padding-bottom: 0.6rem;
+      }
+      
+      #modal-detalhes .modal-header h5 {
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>

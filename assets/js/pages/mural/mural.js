@@ -622,13 +622,74 @@ window.mostrarDetalhes = async (id) => {
             ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
             : "Data não disponível";
 
-        // Create modal structure using Bootstrap modal
-        let modalElement = document.getElementById("modal-detalhes");
-        
         // Remove existing modal if present
+        let modalElement = document.getElementById("modal-detalhes");
         if (modalElement) {
             modalElement.remove();
         }
+        
+        // Sempre usar o layout vertical para todas as resoluções
+        const modalBody = `
+            <div class="detalhe-item">
+                <div class="detalhe-label">ID:</div>
+                <div class="detalhe-valor">${tarefa.id || 'N/A'}</div>
+            </div>
+            
+            <div class="detalhe-item">
+                <div class="detalhe-label">Tipo:</div>
+                <div class="detalhe-valor">${tarefa.tipo || 'N/A'}</div>
+            </div>
+
+            <div class="detalhe-item">
+                <div class="detalhe-label">Responsável:</div>
+                <div class="detalhe-valor">${siglaUsuario}</div>
+            </div>
+
+            <div class="detalhe-item">
+                <div class="detalhe-label">Quantidade:</div>
+                <div class="detalhe-valor">${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
+                    ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
+                    : "amostras"}</div>
+            </div>
+
+            ${tarefa.complemento ? `
+            <div class="detalhe-item">
+                <div class="detalhe-label">Complemento:</div>
+                <div class="detalhe-valor">${tarefa.complemento.trim()}</div>
+            </div>` : ''}
+
+            <div class="detalhe-item">
+                <div class="detalhe-label">Proprietário:</div>
+                <div class="detalhe-valor">${typeof tarefa.proprietario === 'object' 
+                    ? tarefa.proprietario?.nome || 'N/A'
+                    : tarefa.proprietario || 'N/A'}</div>
+            </div>
+            
+            <div class="detalhe-item">
+                <div class="detalhe-label">Veterinário:</div>
+                <div class="detalhe-valor">${typeof tarefa.veterinario === 'object'
+                    ? tarefa.veterinario?.nome || 'N/A'
+                    : tarefa.veterinario || 'N/A'}</div>
+            </div>
+            
+            <div class="detalhe-item">
+                <div class="detalhe-label">Recebimento:</div>
+                <div class="detalhe-valor">${dataRecebimento}</div>
+            </div>
+            
+            <div class="detalhe-item">
+                <div class="detalhe-label">Status:</div>
+                <div class="detalhe-valor">${tarefa.status === 'em-progresso' ? 'Em Progresso' : 'Pendente'}</div>
+            </div>
+            
+            ${tarefa.observacoes ? `
+            <div class="detalhe-item" style="border-bottom: none;">
+                <div class="detalhe-label">Observações:</div>
+                <div class="detalhe-valor white-space-pre-line bg-light p-2 rounded">
+                    ${tarefa.observacoes.trim()}
+                </div>
+            </div>` : ''}
+        `;
         
         // Create new modal
         const modalHTML = `
@@ -640,65 +701,7 @@ window.mostrarDetalhes = async (id) => {
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">ID:</strong>
-                                <span>${tarefa.id || 'N/A'}</span>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">Tipo:</strong>
-                                <span>${tarefa.tipo || 'N/A'}</span>
-                            </div>
-
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">Responsável:</strong>
-                                <span>${siglaUsuario}</span>
-                            </div>
-
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">Quantidade:</strong>
-                                <span>${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
-                                    ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
-                                    : "amostras"}</span>
-                            </div>
-
-                            ${tarefa.complemento ? `
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">Complemento:</strong>
-                                <span>${tarefa.complemento.trim()}</span>
-                            </div>` : ''}
-
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">Proprietário:</strong>
-                                <span>${typeof tarefa.proprietario === 'object' 
-                                    ? tarefa.proprietario?.nome || 'N/A'
-                                    : tarefa.proprietario || 'N/A'}</span>
-                            </div>
-
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">Veterinário:</strong>
-                                <span>${typeof tarefa.veterinario === 'object'
-                                    ? tarefa.veterinario?.nome || 'N/A'
-                                    : tarefa.veterinario || 'N/A'}</span>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">Recebimento:</strong>
-                                <span>${dataRecebimento}</span>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong class="d-inline-block w-25">Status:</strong>
-                                <span>${tarefa.status === 'em-progresso' ? 'Em Progresso' : 'Pendente'}</span>
-                            </div>
-                            
-                            ${tarefa.observacoes ? `
-                            <div class="mb-4">
-                                <strong class="d-block mb-2">Observações:</strong>
-                                <div class="bg-light p-3 rounded border-start border-success border-3 white-space-pre-line">
-                                    ${tarefa.observacoes.trim()}
-                                </div>
-                            </div>` : ''}
+                            ${modalBody}
                         </div>
                     </div>
                 </div>

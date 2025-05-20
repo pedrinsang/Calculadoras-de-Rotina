@@ -332,6 +332,38 @@
         padding: 0.5rem;
         font-size: 0.9rem;
       }
+      .detalhe-item {
+        display: block !important;
+        margin-bottom: 0.8rem;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 0.8rem;
+      }
+      
+      .detalhe-label {
+        display: block !important;
+        width: 100% !important;
+        font-weight: 600;
+        color: #1b5e20;
+        margin-bottom: 0.3rem;
+      }
+      
+      .detalhe-valor {
+        display: block !important;
+        width: 100% !important;
+      }
+      
+      .modal-dialog {
+        margin: 0.5rem;
+      }
+      
+      .modal-body {
+        padding: 1rem 0.75rem;
+      }
+      
+      /* Ajustar tamanho da fonte para ser mais legível em telas pequenas */
+      #modal-detalhes-content {
+        font-size: 0.95rem;
+      }
     }
 
     /* Smartphones pequenos */
@@ -423,6 +455,106 @@
     @media (prefers-reduced-motion: reduce) {
       * {
         transition: none !important;
+      }
+    }
+    /* Adicione estes estilos ao final da sua seção de estilos */
+    
+    /* Estilos para o modal de detalhes em telas pequenas */
+    @media (max-width: 575.98px) {
+      .detalhe-item {
+        display: block !important;
+        margin-bottom: 0.8rem;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 0.8rem;
+      }
+      
+      .detalhe-label {
+        display: block !important;
+        width: 100% !important;
+        font-weight: 600;
+        color: #1b5e20;
+        margin-bottom: 0.3rem;
+      }
+      
+      .detalhe-valor {
+        display: block !important;
+        width: 100% !important;
+      }
+      
+      .modal-dialog {
+        margin: 0.5rem;
+      }
+      
+      .modal-body {
+        padding: 1rem 0.75rem;
+      }
+      
+      /* Ajustar tamanho da fonte para ser mais legível em telas pequenas */
+      #modal-detalhes-content {
+        font-size: 0.95rem;
+      }
+    }
+    
+    /* Ajustes específicos para telas muito pequenas */
+    @media (max-width: 350px) {
+      .modal-body {
+        padding: 0.75rem 0.5rem;
+      }
+      
+      .detalhe-item {
+        margin-bottom: 0.6rem;
+        padding-bottom: 0.6rem;
+      }
+      
+      #modal-detalhes-content {
+        font-size: 0.85rem;
+      }
+      
+      .modal-header h5 {
+        font-size: 1rem;
+      }
+    }
+    /* Adicionar esses estilos nas suas regras CSS */
+  
+    /* Estilos para o modal de detalhes em todas as resoluções */
+    .detalhe-item {
+      display: block;
+      margin-bottom: 0.8rem;
+      border-bottom: 1px solid #e9ecef;
+      padding-bottom: 0.8rem;
+    }
+    
+    .detalhe-label {
+      display: block;
+      width: 100%;
+      font-weight: 600;
+      color: #1b5e20;
+      margin-bottom: 0.3rem;
+    }
+    
+    .detalhe-valor {
+      display: block;
+      width: 100%;
+    }
+    
+    /* Ajustes responsivos apenas para espaçamento */
+    @media (min-width: 768px) {
+      #modal-detalhes .modal-body {
+        padding: 1.5rem;
+      }
+      
+      .detalhe-item {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+      }
+      
+      .detalhe-label {
+        margin-bottom: 0.5rem;
+        font-size: 1.05rem;
+      }
+      
+      .detalhe-valor {
+        font-size: 1rem;
       }
     }
   </style>
