@@ -80,7 +80,7 @@ async function registrarResultadoSN(id) {
                             <td><input type="text" id="titulo256" class="form-control form-control-sm" value="${tarefa.resultados?.titulo256 || ''}"></td>
                         </tr>
                         <tr>
-                            <td><strong>1:512</strong></td>
+                            <td><strong>1:≥512</strong></td>
                             <td><input type="text" id="titulo512" class="form-control form-control-sm" value="${tarefa.resultados?.titulo512 || ''}"></td>
                         </tr>
                         
