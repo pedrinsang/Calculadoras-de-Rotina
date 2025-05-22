@@ -24,15 +24,95 @@ let todasTarefas = [];
 let modalAtual = null;
 
 export function mostrarFeedback(mensagem, tipo = "success") {
-  const feedback = document.createElement("div");
-  feedback.className = `feedback ${tipo}`;
-  feedback.textContent = mensagem;
-  document.body.appendChild(feedback);
-  
-  setTimeout(() => {
-      feedback.remove();
-  }, 3000);
+    // Verificar se container de notificações existe, senão criar
+    let container = document.querySelector('.toastify-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toastify-container';
+        document.body.appendChild(container);
+    }
+    
+    // Gerar ID único para a notificação
+    const notificationId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // Configurar título e ícone com base no tipo
+    let titulo, icone;
+    switch(tipo) {
+        case "success":
+            titulo = "Sucesso";
+            icone = '<i class="bi bi-check-circle-fill"></i>';
+            break;
+        case "error":
+            titulo = "Erro";
+            icone = '<i class="bi bi-x-circle-fill"></i>';
+            tipo = "error"; // Normalizando o nome da classe
+            break;
+        case "warning":
+            titulo = "Atenção";
+            icone = '<i class="bi bi-exclamation-triangle-fill"></i>';
+            break;
+        case "info":
+            titulo = "Informação";
+            icone = '<i class="bi bi-info-circle-fill"></i>';
+            break;
+        default:
+            titulo = "Notificação";
+            icone = '<i class="bi bi-bell-fill"></i>';
+    }
+    
+    // Criar elemento de notificação
+    const notification = document.createElement('div');
+    notification.id = notificationId;
+    notification.className = `notification notification-${tipo}`;
+    notification.innerHTML = `
+        <div class="notification-icon">
+            ${icone}
+        </div>
+        <div class="notification-content">
+            <div class="notification-title">${titulo}</div>
+            <div class="notification-message">${mensagem}</div>
+        </div>
+        <button class="notification-close" aria-label="Fechar">&times;</button>
+        <div class="notification-progress"></div>
+    `;
+    
+    // Adicionar ao container
+    container.appendChild(notification);
+    
+    // Mostrar com animação
+    setTimeout(() => {
+        notification.classList.add('show');
+        
+        // Animar a barra de progresso
+        const progressBar = notification.querySelector('.notification-progress');
+        progressBar.style.animation = 'progress 5s linear forwards';
+        
+        // Configurar evento de fechar no botão
+        const closeButton = notification.querySelector('.notification-close');
+        closeButton.addEventListener('click', () => {
+            fecharNotificacao(notification);
+        });
+        
+        // Auto-fechar após 5 segundos
+        setTimeout(() => {
+            fecharNotificacao(notification);
+        }, 5000);
+        
+    }, 10);
+    
+    // Função para fechar notificação com animação
+    function fecharNotificacao(element) {
+        element.classList.add('hide');
+        setTimeout(() => {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }, 300);
+    }
 }
+
+// Assegurar que as funções do módulo são acessíveis globalmente
+window.mostrarFeedback = mostrarFeedback;
 
 // Atualize a função filtrarTarefas
 function filtrarTarefas(termo) {
@@ -94,9 +174,6 @@ function filtrarTarefas(termo) {
       <div class="alert alert-info text-center" role="alert">
         <i class="bi bi-search me-2"></i>
         Nenhuma tarefa encontrada com o termo "<strong>${termo}</strong>".
-        <button class="btn btn-sm btn-outline-primary ms-3" onclick="document.getElementById('search-input').value=''; filtrarTarefas('')">
-          Limpar busca
-        </button>
       </div>`;
   } else {
     renderizarTarefas(tarefasFiltradas);
