@@ -381,7 +381,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             const botoesHtml = `
               <div class="btn-group">
                 <button class="btn btn-sm btn-primary btn-progresso" data-id="${doc.id}">
-                  <i class="bi bi-arrow-clockwise me-1"></i><span class="btn-text-original">${tarefa.status === 'em-progresso' ? 'Progresso' : ''}</span>
+                  <i class="bi bi-arrow-clockwise me-1"></i><span class="btn-text-original">Progresso</span>
                 </button>
                 
                 <button class="btn btn-sm btn-success btn-concluir" data-id="${doc.id}">
