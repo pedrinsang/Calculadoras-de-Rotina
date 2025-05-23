@@ -380,24 +380,24 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             // Mantenha a estrutura original de botões
             const botoesHtml = `
               <div class="btn-group">
-                <button class="btn btn-sm btn-primary btn-progresso" data-id="${doc.id}">
-                  <i class="bi bi-arrow-clockwise me-1"></i><span class="btn-text-original">Progresso</span>
+                <button class="btn btn-sm btn-primary btn-progresso" data-id="${doc.id}" style="padding-left:0.4rem;padding-right:0.4rem;">
+                    <i class="bi bi-arrow-clockwise me-1"></i><span class="btn-text-original">Progresso</span>
                 </button>
                 
-                <button class="btn btn-sm btn-success btn-concluir" data-id="${doc.id}">
+                <button class="btn btn-sm btn-success btn-concluir" data-id="${doc.id}" style="padding-left:0.4rem;padding-right:0.4rem;">
                   <i class="bi bi-check2-all me-1"></i>Concluir
                 </button>
                 
-                ${showResultsButton ? `<button class="btn btn-sm btn-warning text-white btn-resultados" data-id="${doc.id}">
-                  <i class="bi bi-clipboard-data me-1"></i>Resultado
+                ${showResultsButton ? `<button class="btn btn-sm btn-warning text-white btn-resultados" data-id="${doc.id}" style="padding-left:0.4rem;padding-right:0.4rem;">
+                  <i class="bi bi-clipboard-data me-1"></i>Resultados
                 </button>` : ''}
                 
                 <!-- Dropdown "Mais" substitui os botões Editar e Excluir -->
                 <div class="btn-group">
                     <button type="button" class="btn btn-purple btn-sm dropdown-toggle" 
-                            style="background-color: #6f42c1; color: white;" 
+                            style="background-color: #6f42c1; color: white; padding-left:0.4rem;padding-right:0.4rem;" 
                             data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots-vertical"></i> Mais
+                    <i class="bi bi-three-dots-vertical"></i>Mais
                     </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item btn-detalhes" href="#" data-id="${doc.id}">
