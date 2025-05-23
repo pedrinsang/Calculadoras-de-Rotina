@@ -2,20 +2,56 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hub de Protocolos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">  <title>Hub de Protocolos</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+  <!-- Colocar este script no início da tag head, antes de qualquer outro script ou CSS -->
+  <script>
+    // Correção de altura de viewport para mobile - executado imediatamente
+    (function() {
+      // Define altura inicial correta (antes do carregamento completo)
+      function setViewportHeight() {
+        // Usar a altura visual real (innerHeight é mais precisa em mobile que 100vh)
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+        
+        // Prevenir scroll inicial forçando overflow hidden temporariamente
+        document.body.style.overflow = 'hidden';
+        
+        // Permitir scroll novamente após o carregamento
+        window.addEventListener('load', function() {
+          // Re-verificar altura após carregamento completo
+          vh = window.innerHeight * 0.01;
+          document.documentElement.style.setProperty('--vh', `${vh}px`);
+          
+          // Restaurar comportamento normal de overflow
+          setTimeout(function() {
+            document.body.style.overflow = '';
+          }, 50);
+        });
+      }
+      
+      // Executar imediatamente
+      setViewportHeight();
+      
+      // Atualizar ao redimensionar
+      window.addEventListener('resize', setViewportHeight);
+    })();
+  </script>
+
   <style>
     /* Estilos Base */
     body {
-      min-height: 100vh;
+      min-height: 100vh; /* Fallback */
+      min-height: calc(var(--vh, 1vh) * 100);
+      max-height: calc(var(--vh, 1vh) * 100);
+      overflow-x: hidden;
       background: linear-gradient(135deg, #e8f5e9, #a5d6a7 80%);
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow-x: hidden;
       padding: 1rem;
     }
     
@@ -28,7 +64,7 @@
       max-width: 1200px;
       width: 100%;
       margin: 0;
-      height: calc(100vh - 2rem);
+      height: calc((var(--vh, 1vh) * 100) - 2rem);
       display: flex;
       flex-direction: column;
     }
@@ -247,6 +283,15 @@
       
       .protocolo-item {
         padding: 0.8rem;
+      }
+    }
+
+    @supports (padding: env(safe-area-inset-top)) {
+      .mural-card, .historico-card, .protocolo-card {
+        padding-top: max(1.5rem, env(safe-area-inset-top));
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+        padding-left: max(1.25rem, env(safe-area-inset-left));
+        padding-right: max(1.25rem, env(safe-area-inset-right));
       }
     }
   </style>
