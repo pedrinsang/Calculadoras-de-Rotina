@@ -895,6 +895,15 @@
         window.location.href = "mural.html";
       };
     });
+    // Força o recálculo do layout para garantir centralização no PWA/mobile
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.body.style.display = 'none';
+        // Força reflow
+        void document.body.offsetHeight;
+        document.body.style.display = 'flex';
+      }, 50);
+    });
   </script>
 </body>
 </html>
