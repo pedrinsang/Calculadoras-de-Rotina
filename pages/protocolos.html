@@ -895,14 +895,16 @@
         window.location.href = "mural.html";
       };
     });
-    // Força o recálculo do layout para garantir centralização no PWA/mobile
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        document.body.style.display = 'none';
-        // Força reflow
-        void document.body.offsetHeight;
-        document.body.style.display = 'flex';
-      }, 50);
+  </script>
+  <script>
+    // Força o recálculo do layout e corrige altura do body na entrada
+    window.addEventListener('DOMContentLoaded', function() {
+      document.body.style.height = window.innerHeight + 'px';
+      window.scrollTo(0, 0); // Garante que a página comece no topo
+    });
+    // Também corrige ao redimensionar (ex: rotação)
+    window.addEventListener('resize', function() {
+      document.body.style.height = window.innerHeight + 'px';
     });
   </script>
 </body>
