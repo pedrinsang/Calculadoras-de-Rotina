@@ -6,215 +6,26 @@
   <title>Calculadora de Soroneutralização</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <style>
-    :root {
-      --verde-escuro: #1b5e20;
-      --verde-medio: #388e3c;
-      --verde-claro: #a5d6a7;
-      --verde-bg: #e8f5e9;
-      --verde-hover: #43a047;
-      --verde-btn: #2e7d32;
-      --verde-btn-hover: #388e3c;
-    }
-    
-    body {
-      min-height: 100vh;
-      background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 80%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 1.5rem;
-    }
-    
-    .calculadora-card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(27,94,32,0.10);
-      padding: 2rem;
-      max-width: 700px;
-      width: 100%;
-      margin: 0;
-    }
-    
-    .calculadora-title {
-      color: var(--verde-escuro);
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      letter-spacing: 0.5px;
-    }
-    
-    .logo {
-      max-width: 150px;
-      margin: 1rem auto;
-      display: block;
-    }
-    
-    .form-label {
-      color: var(--verde-escuro);
-      font-weight: 600;
-    }
-    
-    .form-control:focus {
-      border-color: var(--verde-medio);
-      box-shadow: 0 0 0 0.2rem rgba(56, 142, 60, 0.25);
-    }
-    
-    .btn-success {
-      background-color: var(--verde-btn);
-      border-color: var(--verde-btn);
-      border-radius: 8px;
-      font-weight: 500;
-      padding: 0.6rem 1.5rem;
-      transition: all 0.2s;
-    }
-    
-    .btn-success:hover, .btn-success:focus {
-      background-color: var(--verde-btn-hover);
-      border-color: var(--verde-btn-hover);
-    }
-    
-    .btn-outline-success {
-      color: var(--verde-btn);
-      border-color: var(--verde-btn);
-      border-radius: 8px;
-      font-weight: 500;
-      padding: 0.6rem 1.5rem;
-      transition: all 0.2s;
-    }
-    
-    .btn-outline-success:hover, .btn-outline-success:focus {
-      background-color: var(--verde-btn);
-      border-color: var(--verde-btn);
-    }
-    
-    .resultado-card {
-      background: var(--verde-bg);
-      border-left: 5px solid var(--verde-medio);
-      border-radius: 8px;
-      margin-top: 1.5rem;
-      padding: 1.5rem;
-    }
-    
-    .accordion-button:not(.collapsed) {
-      background-color: var(--verde-bg);
-      color: var(--verde-escuro);
-      font-weight: 600;
-    }
-    
-    .accordion-button:focus {
-      box-shadow: 0 0 0 0.2rem rgba(56, 142, 60, 0.25);
-      border-color: var(--verde-medio);
-    }
-    
-    .etapa {
-      color: var(--verde-medio);
-      font-weight: bold;
-      display: inline-block;
-      width: 120px;
-    }
-    
-    .diluicoes {
-      background: #dcedc8;
-      padding: 1rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-    }
-    
-    /* Lista numerada personalizada para os passos */
-    .passos-lista {
-      counter-reset: step;
-      list-style-type: none;
-      padding-left: 3rem;
-    }
-    
-    .passos-lista li {
-      margin: 1.5rem 0;
-      padding: 1.2rem;
-      background: var(--verde-bg);
-      border-radius: 8px;
-      position: relative;
-    }
-    
-    .passos-lista li:before {
-      content: counter(step);
-      counter-increment: step;
-      background: var(--verde-btn);
-      color: white;
-      font-weight: bold;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: absolute;
-      left: -40px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    
-    .pre-formatado {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      font-family: var(--bs-font-monospace);
-      line-height: 1.5;
-    }
-    
-    /* Responsividade */
-    @media (max-width: 768px) {
-      body {
-        padding: 1rem 0.5rem;
-      }
-      
-      .calculadora-card {
-        padding: 1.25rem;
-      }
-      
-      .passos-lista {
-        padding-left: 2.5rem;
-      }
-      
-      .passos-lista li:before {
-        width: 25px;
-        height: 25px;
-        left: -35px;
-        font-size: 0.9rem;
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .calculadora-title {
-        font-size: 1.5rem;
-      }
-      
-      .btn {
-        padding: 0.5rem 1rem;
-      }
-      
-      .passos-lista {
-        padding-left: 2rem;
-      }
-    }
-  </style>
-</head>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css//pages/soroneutralizacao.css">
 
 <body>
   <div class="calculadora-card container">
-    <div class="d-flex justify-content-between mb-3">
-      <a href="hub.html" class="btn btn-outline-success">
-        <i class="bi bi-house me-1"></i> Voltar ao Hub
-      </a>
-      <a href="mural.html" class="btn btn-outline-success">
-        <i class="bi bi-clipboard2-check me-1"></i> Acessar Mural
-      </a>
+    <!-- Adicione a classe "top-buttons-container" ao div que contém os botões -->
+    <div class="top-buttons-container">
+      <button id="voltar-hub" class="btn btn-outline-success btn-top-nav">
+        <i class="bi bi-house-door"></i> Voltar ao Hub
+      </button>
+      <button id="acessar-mural" class="btn btn-outline-success btn-top-nav">
+        <i class="bi bi-clipboard"></i> Acessar Mural
+      </button>
     </div>
     
     <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
          alt="Logo Setor de Virologia UFSM" 
          class="logo img-fluid">
          
+    
     <h2 class="calculadora-title mb-4"><i class="bi bi-calculator me-2"></i>Calculadora de Soroneutralização</h2>
 
     <form id="calculadora-form">
@@ -518,6 +329,15 @@
     // Funções globais
     document.addEventListener('DOMContentLoaded', function() {
       console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares, com auxílio do DeepSeek Chat.");
+      
+      // Event listeners para os botões de navegação
+      document.getElementById('voltar-hub').addEventListener('click', function() {
+        window.location.href = "hub.html";
+      });
+      
+      document.getElementById('acessar-mural').addEventListener('click', function() {
+        window.location.href = "mural.html";
+      });
     });
 
     function abrirImagem() {

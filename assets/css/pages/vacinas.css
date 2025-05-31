@@ -1,0 +1,52 @@
+/* Estilos específicos da calculadora de vacinas */
+
+/* Círculo de resultado do formol */
+.resultado-formol-circulo {
+  width: 100px;
+  height: 100px;
+  border: 2px solid var(--verde-medio);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--verde-bg);
+  margin: 0 auto 1rem auto;
+}
+
+.resultado-formol-circulo strong {
+  font-size: 1.25rem;
+}
+
+/* Cards de informação */
+.info-card {
+  margin-bottom: 1rem;
+}
+
+.info-card .card-header {
+  background-color: var(--verde-bg);
+  border-bottom: 1px solid var(--verde-claro);
+}
+
+.info-card ul {
+  padding-left: 1.25rem;
+}
+
+.info-card ul li {
+  margin-bottom: 0.5rem;
+}
+
+/* Alerta de formol */
+.alerta-formol {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 576px) {
+  .resultado-formol-circulo {
+    width: 80px;
+    height: 80px;
+  }
+}

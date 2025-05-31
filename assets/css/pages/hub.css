@@ -1,0 +1,197 @@
+/* Estilos específicos para a página hub */
+
+/* Modifique o estilo do body */
+body {
+  background-color: #c9e6c9; /* Fundo verde claro */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0.75rem;
+}
+
+/* Container principal do hub com fundo branco */
+.hub-container {
+  background-color: white;
+  max-width: 450px;
+  padding: 1.5rem;
+  text-align: center;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Título principal */
+.hub-title {
+  color: var(--verde-escuro);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+}
+
+/* Subtítulo */
+.hub-subtitle {
+  color: var(--verde-medio);
+  margin-bottom: 1.5rem;
+}
+
+/* Grid de cards */
+.hub-grid {
+  display: block;
+  margin-top: 1rem;
+}
+
+/* Botões principais (Protocolos e Mural) */
+.main-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem; /* Reduzido de 1rem */
+  margin: 1.25rem 0; /* Reduzido de 1.5rem */
+}
+
+.main-button {
+  background-color: var(--verde-btn);
+  color: white;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  flex: 1;
+  justify-content: center;
+  max-width: none; /* Remove a limitação de largura */
+}
+
+.main-button:hover {
+  background-color: var(--verde-btn-hover);
+  color: white;
+}
+
+.main-button i {
+  font-size: 1.25rem;
+}
+
+/* Links das calculadoras em linha */
+.calculadoras-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem; /* Reduzido de 0.75rem */
+  margin: 1rem 0; /* Reduzido de 1.5rem */
+}
+
+.calculadora-link {
+  background-color: #a5d6a7; /* Verde claro como na imagem */
+  border-radius: 12px;
+  padding: 0.75rem;
+  color: var(--verde-escuro);
+  text-decoration: none;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  transition: background-color 0.2s;
+  margin-bottom: 0; /* Removido o espaço de 0.5rem */
+}
+
+.calculadora-link:hover {
+  background-color: var(--verde-bg);
+}
+
+/* Nome do usuário e informações */
+.user-info {
+  display: block;
+  margin-top: 1.2rem; /* Reduzido de 2rem */
+}
+
+.user-name {
+  margin-bottom: 0.5rem; /* Reduzido de 0.75rem */
+  display: block;
+  font-weight: 600;
+  color: var(--verde-medio);
+}
+
+/* Ícone de usuário antes do nome */
+.user-name:before {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* Botão de logout */
+.logout-button {
+  background-color: transparent;
+  border: 1px solid red;
+  border-radius: 50px; /* Botão mais arredondado */
+  padding: 0.5rem 1.5rem;
+  color: red;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logout-button:hover {
+  background-color: red;
+  border-color: red;
+  color: white;
+}
+
+/* Rodapé */
+.hub-footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 2rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .hub-container {
+    padding: 1.5rem;
+  }
+  
+  .hub-grid {
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+  
+  .hub-card {
+    padding: 1.25rem;
+  }
+  
+  .hub-card i {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .hub-card h3 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .hub-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .hub-card i {
+    font-size: 1.75rem;
+  }
+  
+  .logout-button {
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 0.8rem;
+  }
+}

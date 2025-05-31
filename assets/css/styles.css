@@ -1,94 +1,225 @@
-/* Reset de margens e preenchimentos */
+/* Variáveis globais */
+:root {
+  --verde-escuro: #1b5e20;
+  --verde-medio: #388e3c;
+  --verde-claro: #a5d6a7;
+  --verde-bg: #e8f5e9;
+  --verde-hover: #43a047;
+  --verde-btn: #2e7d32;
+  --verde-btn-hover: #388e3c;
+}
+
+/* Reset básico */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Define o fundo da splash screen */
-html, body {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to right, #1b5e20, #66bb6a);
-    color: white;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Estilos de body comuns a todas as páginas */
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 80%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 1.5rem;
+  overflow-x: hidden;
 }
 
-/* Ajusta a splash screen para cobrir toda a tela */
-#splash-screen {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: #4a9146;
-    z-index: 9999;
-}
-
-/* Imagem da splash screen */
-.splash-logo {
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-}
-
-/* Ajuste do loader */
-.splash-loader {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    border: 5px solid rgba(255, 255, 255, 0.3);
-    border-top: 5px solid #ffffff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    bottom: 25vh;
-}
-
-/* Animação de rotação do loader */
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Esconder splash screen após carregamento */
-#splash-screen.hide {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s ease-out;
-}
-
-/* CONTEÚDO PRINCIPAL */
+/* Container padrão */
 .container {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    color: #1b5e20;
-    max-width: 500px;
-    width: 95%;
-    margin: 20px auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(27,94,32,0.10);
+  padding: 1.5rem;
+  width: 100%;
+  margin: 0 auto;
 }
 
-/* Ajuste de botões */
-.button {
-    display: block;
-    padding: 12px 25px;
-    margin: 15px auto;
-    background: #1b5e20;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: 0.3s;
+/* Logo padrão */
+.logo {
+  max-width: 150px;
+  margin: 1rem auto;
+  display: block;
 }
 
-.button:hover {
-    background: #388e3c;
+/* Títulos comuns */
+.title {
+  color: var(--verde-escuro);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+/* Botões padrão */
+.btn-success {
+  background-color: var(--verde-btn);
+  border-color: var(--verde-btn);
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-success:hover, .btn-success:focus {
+  background-color: var(--verde-btn-hover);
+  border-color: var(--verde-btn-hover);
+}
+
+.btn-outline-success {
+  color: var(--verde-btn);
+  border-color: var(--verde-btn);
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-outline-success:hover, .btn-outline-success:focus {
+  background-color: var(--verde-btn);
+  border-color: var(--verde-btn);
+  color: #fff;
+}
+
+/* Estilos de form comuns */
+.form-label {
+  color: var(--verde-escuro);
+  font-weight: 600;
+}
+
+.form-control:focus {
+  border-color: var(--verde-medio);
+  box-shadow: 0 0 0 0.2rem rgba(56, 142, 60, 0.25);
+}
+
+/* Acordeão comum */
+.accordion-button:not(.collapsed) {
+  background-color: var(--verde-bg);
+  color: var(--verde-escuro);
+  font-weight: 600;
+}
+
+.accordion-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(56, 142, 60, 0.25);
+  border-color: var(--verde-medio);
+}
+
+/* Card de resultado padrão */
+.resultado-card {
+  background: var(--verde-bg);
+  border-left: 5px solid var(--verde-medio);
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+}
+
+/* Sistema de notificações */
+.toastify-container {
+  position: fixed;
+  z-index: 9999;
+  top: 16px;
+  right: 16px;
+  max-width: 90%;
+  width: 360px;
+  pointer-events: none;
+}
+
+.notification {
+  position: relative;
+  pointer-events: auto;
+  overflow: hidden;
+  margin: 0 0 10px;
+  padding: 16px;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: flex-start;
+  animation: slidein 0.3s ease-in-out;
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.notification.hide {
+  animation: slideout 0.3s ease-in-out forwards;
+}
+
+/* Cores das notificações */
+.notification-success {
+  background-color: #eefbf3;
+  border-left: 4px solid #28a745;
+}
+
+.notification-error {
+  background-color: #feecee;
+  border-left: 4px solid #dc3545;
+}
+
+.notification-info {
+  background-color: #ebf5ff;
+  border-left: 4px solid #0d6efd;
+}
+
+.notification-warning {
+  background-color: #fff8ea;
+  border-left: 4px solid #ffc107;
+}
+
+/* Animações */
+@keyframes slidein {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideout {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(30px); }
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+}
+
+/* Media queries compartilhadas */
+@media (max-width: 768px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+  
+  .container {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .title {
+    font-size: 1.5rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+  }
 }

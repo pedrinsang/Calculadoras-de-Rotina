@@ -392,24 +392,21 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                   <i class="bi bi-clipboard-data me-1"></i>Resultado
                 </button>` : ''}
                 
-                <!-- Dropdown "Mais" substitui os botões Editar e Excluir -->
-                <div class="btn-group">
-                    <button type="button" class="btn btn-purple btn-sm dropdown-toggle" 
-                            style="background-color: #6f42c1; color: white;" 
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots-vertical"></i> Mais
-                    </button>
+                <!-- Dropdown "Mais" sem estilos inline -->
+                <button type="button" class="btn btn-sm btn-purple dropdown-toggle" 
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-three-dots-vertical"></i> <span class="d-none d-sm-inline">Mais</span>
+                </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item btn-detalhes" href="#" data-id="${doc.id}">
-                        <i class="bi bi-info-circle me-2"></i>Detalhes</a></li>
-                    <li><a class="dropdown-item btn-editar" href="#" data-id="${doc.id}">
-                        <i class="bi bi-pencil-square me-2"></i>Editar</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger btn-excluir" href="#" data-id="${doc.id}">
-                        <i class="bi bi-trash3 me-2"></i>Excluir</a></li>
-                    </ul>
-                </div>
-            </div>
+                  <li><a class="dropdown-item btn-detalhes" href="#" data-id="${doc.id}">
+                      <i class="bi bi-info-circle me-2"></i>Detalhes</a></li>
+                  <li><a class="dropdown-item btn-editar" href="#" data-id="${doc.id}">
+                      <i class="bi bi-pencil-square me-2"></i>Editar</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger btn-excluir" href="#" data-id="${doc.id}">
+                      <i class="bi bi-trash3 me-2"></i>Excluir</a></li>
+                </ul>
+              </div>
             `;
 
             // Normalize o tipo para display
@@ -525,20 +522,13 @@ window.carregarTarefas = carregarTarefas;
 window.marcarProgresso = async (id) => {
     mostrarLoading();
     try {
-        // Encontra o botão, seu elemento pai e o card
+        // Encontra o botão e o card
         const botao = document.querySelector(`button.btn-progresso[data-id="${id}"]`);
-        const btnGroup = botao ? botao.closest('.btn-group') : null;
         
-        // Impedir layout shifts - fixa toda a largura do grupo de botões
-        if (btnGroup) {
-            btnGroup.style.width = btnGroup.offsetWidth + 'px';
-        }
-        
-        // Fixa a largura específica do botão
-        const larguraOriginal = botao ? botao.offsetWidth : null;
+        // Adiciona classes temporárias em vez de manipular estilos inline
         if (botao) {
-            botao.style.width = `${larguraOriginal}px`;
-            botao.style.minWidth = `${larguraOriginal}px`;
+            botao.disabled = true;
+            botao.classList.add('processing');
         }
         
         // O resto da função permanece o mesmo...
@@ -566,7 +556,6 @@ window.marcarProgresso = async (id) => {
             atualizadoEm: Timestamp.now()
         });
         
-        
         mostrarFeedback(`Tarefa atualizada com sucesso!`, "success");
     } catch (error) {
         console.error("Erro ao atualizar status:", error);
@@ -574,15 +563,12 @@ window.marcarProgresso = async (id) => {
     } finally {
         esconderLoading();
         
-        // Restaura layout após um delay
+        // Remove classes temporárias após um delay
         setTimeout(() => {
             const botao = document.querySelector(`button.btn-progresso[data-id="${id}"]`);
-            const btnGroup = botao ? botao.closest('.btn-group') : null;
-            
-            if (btnGroup) btnGroup.style.width = '';
             if (botao) {
-                botao.style.width = '';
-                botao.style.minWidth = '';
+                botao.disabled = false;
+                botao.classList.remove('processing');
             }
         }, 500);
     }
@@ -881,7 +867,7 @@ window.mostrarDetalhes = async (id) => {
                                         <i class="bi bi-card-text me-2"></i>Observações
                                     </h6>
                                     <div class="bg-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem;">
-${tarefa.observacoes.trim()}
+${tarefa.observacoes}
                                     </div>
                                 </div>
                             </div>` : ''}
@@ -1053,6 +1039,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (historicoBtn) {
             historicoBtn.addEventListener('click', () => {
                 window.location.href = "historico.html";
+            });
+        }
+
+        // Correção para o botão "Voltar ao Hub"
+        const voltarHubBtn = document.getElementById("voltar-hub");
+        if (voltarHubBtn) {
+            voltarHubBtn.addEventListener('click', () => {
+                window.location.href = "hub.html";
             });
         }
     } catch (error) {
