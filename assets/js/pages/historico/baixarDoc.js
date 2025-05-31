@@ -1,13 +1,25 @@
+// Troque a função mostrarFeedback por:
 function mostrarFeedback(mensagem, tipo = "success") {
+    // Remove feedback anterior, se existir
+    document.querySelectorAll('.feedback').forEach(fb => fb.remove());
+
+    // Cria o elemento de feedback com classes Bootstrap
     const feedback = document.createElement("div");
-    feedback.className = `feedback ${tipo}`;
-    feedback.textContent = mensagem;
+    feedback.className = `feedback alert alert-${tipo === "success" ? "success" : "danger"} position-fixed top-0 end-0 m-3 shadow`;
+    feedback.style.zIndex = 9999;
+    feedback.style.minWidth = "260px";
+    feedback.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi ${tipo === "success" ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill"} me-2"></i>
+            <span>${mensagem}</span>
+        </div>
+    `;
     document.body.appendChild(feedback);
-    
+
     setTimeout(() => {
       feedback.remove();
     }, 3000);
-  }
+}
 
 // Remove the duplicate function and keep only one loading function
 async function carregarDocx() {

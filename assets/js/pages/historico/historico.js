@@ -366,6 +366,20 @@ window.voltarParaMural = async (id) => {
   }
 };
 
+// Função para formatar data para exibição
+function formatarDataParaExibicao(data) {
+  if (!data) return "Data não disponível";
+  
+  const dia = String(data.getDate()).padStart(2, '0');
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const ano = data.getFullYear();
+  const hora = String(data.getHours()).padStart(2, '0');
+  const minutos = String(data.getMinutes()).padStart(2, '0');
+  
+  return `${dia}/${mes}/${ano} - ${hora}:${minutos}`;
+}
+
+
 // Function to show task details in the Bootstrap modal
 window.mostrarDetalhes = async (id) => {
   try {
@@ -376,86 +390,142 @@ window.mostrarDetalhes = async (id) => {
     
     const tarefa = docSnap.data();
     let siglaUsuario = "N/A";
-
-    if (tarefa.siglaResponsavel) {
-        siglaUsuario = tarefa.siglaResponsavel;
+    
+    if (tarefa.siglaResponsavel && tarefa.siglaResponsavel !== "N/A") {
+      siglaUsuario = tarefa.siglaResponsavel;
     } else if (tarefa.criadoPor) {
-        const usuarioRef = doc(db, "usuarios", tarefa.criadoPor);
-        const usuarioSnap = await getDoc(usuarioRef);
-        if (usuarioSnap.exists()) {
-            siglaUsuario = usuarioSnap.data().sigla || "N/A";
-        }
+      // Lógica existente para buscar sigla
+      const usuarioRef = doc(db, "usuarios", tarefa.criadoPor);
+      const usuarioSnap = await getDoc(usuarioRef);
+      if (usuarioSnap.exists()) {
+        siglaUsuario = usuarioSnap.data().sigla || "N/A";
+      }
     }
 
     const dataRecebimento = tarefa.dataRecebimento?.toDate 
-        ? tarefa.dataRecebimento.toDate().toLocaleDateString("pt-BR")
-        : "Data não disponível";
+      ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
+      : "Data não disponível";
     
     const dataConclusao = tarefa.dataConclusao?.toDate 
-        ? tarefa.dataConclusao.toDate().toLocaleDateString("pt-BR")
-        : "Data não disponível";
+      ? formatarDataParaExibicao(tarefa.dataConclusao.toDate())
+      : "Data não disponível";
 
-    // Populate the Bootstrap modal with task details using vertical layout
-    const modalContent = document.getElementById("modal-detalhes-content");
-    modalContent.innerHTML = `
-      <div class="detalhe-item">
-          <div class="detalhe-label">ID:</div>
-          <div class="detalhe-valor">${tarefa.id || 'N/A'}</div>
-      </div>
-      
-      <div class="detalhe-item">
-          <div class="detalhe-label">Tipo:</div>
-          <div class="detalhe-valor">${tarefa.tipo || 'N/A'}</div>
-      </div>
+    // Remove existing modal if present
+    let modalElement = document.getElementById("modal-detalhes");
+    if (modalElement) {
+      modalElement.remove();
+    }
+    
+    // Status badge with appropriate color
+    let statusBadge = '<span class="badge bg-success">Concluído</span>';
 
-      <div class="detalhe-item">
-          <div class="detalhe-label">Responsável:</div>
-          <div class="detalhe-valor">${siglaUsuario}</div>
-      </div>
-
-      <div class="detalhe-item">
-          <div class="detalhe-label">Quantidade:</div>
-          <div class="detalhe-valor">${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
-              ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
-              : "amostras"}</div>
-      </div>
-
-      ${tarefa.complemento ? `
-      <div class="detalhe-item">
-          <div class="detalhe-label">Complemento:</div>
-          <div class="detalhe-valor">${tarefa.complemento.trim()}</div>
-      </div>` : ''}
-
-      <div class="detalhe-item">
-          <div class="detalhe-label">Proprietário:</div>
-          <div class="detalhe-valor">${typeof tarefa.proprietario === 'object' 
-              ? tarefa.proprietario?.nome || 'N/A'
-              : tarefa.proprietario || 'N/A'}</div>
-      </div>
-      
-      <div class="detalhe-item">
-          <div class="detalhe-label">Recebimento:</div>
-          <div class="detalhe-valor">${dataRecebimento}</div>
-      </div>
-      
-      <div class="detalhe-item">
-          <div class="detalhe-label">Conclusão:</div>
-          <div class="detalhe-valor">${dataConclusao}</div>
-      </div>
-      
-      ${tarefa.observacoes ? `
-      <div class="detalhe-item" style="border-bottom: none;">
-          <div class="detalhe-label">Observações:</div>
-          <div class="detalhe-valor white-space-pre-line bg-light p-2 rounded">
-              ${tarefa.observacoes.trim()}
+    // Criar modal com layout aprimorado
+    const modalHTML = `
+      <div class="modal fade" id="modal-detalhes" tabindex="-1" aria-labelledby="detalhesTarefaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+              <h5 class="modal-title" id="detalhesTarefaLabel">
+                <i class="bi bi-info-circle-fill text-success me-2"></i>
+                <span class="fw-bold text-success">Detalhes da Tarefa</span>
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-4">
+              <div class="card border-0 mb-3 shadow-sm">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-3 text-success fw-bold">
+                    <i class="bi bi-card-heading me-2"></i>Informações Básicas
+                  </h6>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">ID:</div>
+                    <div class="col-7 fw-medium">${tarefa.id || 'N/A'}</div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Tipo:</div>
+                    <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}</div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Quantidade:</div>
+                    <div class="col-7 fw-medium">${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
+                      ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
+                      : "amostras"}</div>
+                  </div>
+                  ${tarefa.complemento ? `
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Complemento:</div>
+                    <div class="col-7 fw-medium">${tarefa.complemento.trim()}</div>
+                  </div>` : ''}
+                </div>
+              </div>
+              
+              <div class="card border-0 mb-3 shadow-sm">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-3 text-success fw-bold">
+                    <i class="bi bi-people-fill me-2"></i>Contatos
+                  </h6>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Proprietário:</div>
+                    <div class="col-7 fw-medium">${typeof tarefa.proprietario === 'object' 
+                      ? tarefa.proprietario?.nome || 'N/A'
+                      : tarefa.proprietario || 'N/A'}</div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Veterinário:</div>
+                    <div class="col-7 fw-medium">${typeof tarefa.veterinario === 'object'
+                      ? tarefa.veterinario?.nome || 'N/A'
+                      : tarefa.veterinario || 'N/A'}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card border-0 mb-3 shadow-sm">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-3 text-success fw-bold">
+                    <i class="bi bi-calendar3 me-2"></i>Status e Datas
+                  </h6>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Status:</div>
+                    <div class="col-7">${statusBadge}</div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Recebimento:</div>
+                    <div class="col-7 fw-medium">${dataRecebimento}</div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Conclusão:</div>
+                    <div class="col-7 fw-medium">${dataConclusao}</div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-5 text-muted">Responsável:</div>
+                    <div class="col-7 fw-medium">${siglaUsuario}</div>
+                  </div>
+                </div>
+              </div>
+              
+              ${tarefa.observacoes ? `
+              <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-3 text-success fw-bold">
+                    <i class="bi bi-card-text me-2"></i>Observações
+                  </h6>
+                  <div class="bg-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem;">
+${tarefa.observacoes.trim()}
+                  </div>
+                </div>
+              </div>` : ''}
+            </div>
           </div>
-      </div>` : ''}
+        </div>
+      </div>
     `;
-
-    // Show the Bootstrap modal
-    const detailsModal = new bootstrap.Modal(document.getElementById('modal-detalhes'));
-    detailsModal.show();
-
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Show modal using Bootstrap
+    const modal = new bootstrap.Modal(document.getElementById('modal-detalhes'));
+    modal.show();
   } catch (error) {
     console.error("Erro ao mostrar detalhes:", error);
     mostrarFeedback(`Erro: ${error.message}`, "error");
@@ -533,5 +603,4 @@ async function carregarHistorico() {
     historicoList.innerHTML = `<p>Erro ao carregar histórico: ${error.message}</p>`;
   }
 }
-
 

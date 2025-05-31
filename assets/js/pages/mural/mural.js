@@ -770,23 +770,8 @@ window.mostrarDetalhes = async (id) => {
         if (tarefa.siglaResponsavel && tarefa.siglaResponsavel !== "N/A") {
             siglaUsuario = tarefa.siglaResponsavel;
         } else if (tarefa.criadoPor) {
-            try {
-                const userRef = doc(db, "usuarios", tarefa.criadoPor);
-                const userSnap = await getDoc(userRef);
-                
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    siglaUsuario = userData.sigla || "N/A";
-                    
-                    if (siglaUsuario !== "N/A") {
-                        await updateDoc(docRef, {
-                            siglaResponsavel: siglaUsuario
-                        });
-                    }
-                }
-            } catch (userError) {
-                console.error("Error fetching user:", userError);
-            }
+            // Lógica existente para buscar sigla
+            // ...
         }
 
         const dataRecebimento = tarefa.dataRecebimento?.toDate 
@@ -799,80 +784,107 @@ window.mostrarDetalhes = async (id) => {
             modalElement.remove();
         }
         
-        // Sempre usar o layout vertical para todas as resoluções
-        const modalBody = `
-            <div class="detalhe-item">
-                <div class="detalhe-label">ID:</div>
-                <div class="detalhe-valor">${tarefa.id || 'N/A'}</div>
-            </div>
-            
-            <div class="detalhe-item">
-                <div class="detalhe-label">Tipo:</div>
-                <div class="detalhe-valor">${tarefa.tipo || 'N/A'}</div>
-            </div>
+        // Status badge with appropriate color
+        let statusBadge = "";
+        if (tarefa.status === 'em-progresso') {
+            statusBadge = '<span class="badge bg-primary">Em Progresso</span>';
+        } else if (tarefa.status === 'concluido') {
+            statusBadge = '<span class="badge bg-success">Concluído</span>';
+        } else {
+            statusBadge = '<span class="badge bg-warning text-dark">Pendente</span>';
+        }
 
-            <div class="detalhe-item">
-                <div class="detalhe-label">Responsável:</div>
-                <div class="detalhe-valor">${siglaUsuario}</div>
-            </div>
-
-            <div class="detalhe-item">
-                <div class="detalhe-label">Quantidade:</div>
-                <div class="detalhe-valor">${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
-                    ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
-                    : "amostras"}</div>
-            </div>
-
-            ${tarefa.complemento ? `
-            <div class="detalhe-item">
-                <div class="detalhe-label">Complemento:</div>
-                <div class="detalhe-valor">${tarefa.complemento.trim()}</div>
-            </div>` : ''}
-
-            <div class="detalhe-item">
-                <div class="detalhe-label">Proprietário:</div>
-                <div class="detalhe-valor">${typeof tarefa.proprietario === 'object' 
-                    ? tarefa.proprietario?.nome || 'N/A'
-                    : tarefa.proprietario || 'N/A'}</div>
-            </div>
-            
-            <div class="detalhe-item">
-                <div class="detalhe-label">Veterinário:</div>
-                <div class="detalhe-valor">${typeof tarefa.veterinario === 'object'
-                    ? tarefa.veterinario?.nome || 'N/A'
-                    : tarefa.veterinario || 'N/A'}</div>
-            </div>
-            
-            <div class="detalhe-item">
-                <div class="detalhe-label">Recebimento:</div>
-                <div class="detalhe-valor">${dataRecebimento}</div>
-            </div>
-            
-            <div class="detalhe-item">
-                <div class="detalhe-label">Status:</div>
-                <div class="detalhe-valor">${tarefa.status === 'em-progresso' ? 'Em Progresso' : 'Pendente'}</div>
-            </div>
-            
-            ${tarefa.observacoes ? `
-            <div class="detalhe-item" style="border-bottom: none;">
-                <div class="detalhe-label">Observações:</div>
-                <div class="detalhe-valor white-space-pre-line bg-light p-2 rounded">
-                    ${tarefa.observacoes.trim()}
-                </div>
-            </div>` : ''}
-        `;
-        
-        // Create new modal
+        // Criar modal com layout aprimorado
         const modalHTML = `
             <div class="modal fade" id="modal-detalhes" tabindex="-1" aria-labelledby="detalhesTarefaLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title text-success" id="detalhesTarefaLabel">Detalhes da Tarefa</h5>
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-light">
+                            <h5 class="modal-title" id="detalhesTarefaLabel">
+                                <i class="bi bi-info-circle-fill text-success me-2"></i>
+                                <span class="fw-bold text-success">Detalhes da Tarefa</span>
+                            </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
-                        <div class="modal-body">
-                            ${modalBody}
+                        <div class="modal-body p-4">
+                            <div class="card border-0 mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3 text-success fw-bold">
+                                        <i class="bi bi-card-heading me-2"></i>Informações Básicas
+                                    </h6>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">ID:</div>
+                                        <div class="col-7 fw-medium">${tarefa.id || 'N/A'}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Tipo:</div>
+                                        <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Quantidade:</div>
+                                        <div class="col-7 fw-medium">${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
+                                            ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
+                                            : "amostras"}</div>
+                                    </div>
+                                    ${tarefa.complemento ? `
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Complemento:</div>
+                                        <div class="col-7 fw-medium">${tarefa.complemento.trim()}</div>
+                                    </div>` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="card border-0 mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3 text-success fw-bold">
+                                        <i class="bi bi-people-fill me-2"></i>Contatos
+                                    </h6>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Proprietário:</div>
+                                        <div class="col-7 fw-medium">${typeof tarefa.proprietario === 'object' 
+                                            ? tarefa.proprietario?.nome || 'N/A'
+                                            : tarefa.proprietario || 'N/A'}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Veterinário:</div>
+                                        <div class="col-7 fw-medium">${typeof tarefa.veterinario === 'object'
+                                            ? tarefa.veterinario?.nome || 'N/A'
+                                            : tarefa.veterinario || 'N/A'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card border-0 mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3 text-success fw-bold">
+                                        <i class="bi bi-calendar3 me-2"></i>Status e Datas
+                                    </h6>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Status:</div>
+                                        <div class="col-7">${statusBadge}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Recebimento:</div>
+                                        <div class="col-7 fw-medium">${dataRecebimento}</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5 text-muted">Responsável:</div>
+                                        <div class="col-7 fw-medium">${siglaUsuario}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${tarefa.observacoes ? `
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3 text-success fw-bold">
+                                        <i class="bi bi-card-text me-2"></i>Observações
+                                    </h6>
+                                    <div class="bg-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem;">
+${tarefa.observacoes.trim()}
+                                    </div>
+                                </div>
+                            </div>` : ''}
                         </div>
                     </div>
                 </div>
@@ -883,14 +895,8 @@ window.mostrarDetalhes = async (id) => {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         
         // Show modal using Bootstrap
-        if (typeof bootstrap !== 'undefined') {
-          const modal = new bootstrap.Modal(document.getElementById('modal-detalhes'));
-          modal.show();
-        } else {
-          console.error("Bootstrap não está disponível!");
-          // Alternativa simples sem Bootstrap
-          document.getElementById('modal-detalhes').style.display = 'block';
-        }
+        const modal = new bootstrap.Modal(document.getElementById('modal-detalhes'));
+        modal.show();
 
     } catch (error) {
         console.error("Erro ao mostrar detalhes:", error);

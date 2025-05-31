@@ -124,7 +124,10 @@ async function registrarResultadoSN(id) {
 
         // Event listeners para o modal
         const fecharModal = () => {
-            document.body.removeChild(modal);
+            if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
+            document.removeEventListener("keydown", handleKeyDown);
         };
 
         modal.querySelector("#fechar-modal-resultados").onclick = fecharModal;
@@ -273,7 +276,9 @@ async function registrarResultadoELISA(id) {
 
         // Fechar modal
         const fecharModal = () => {
-            if (document.body.contains(modal)) document.body.removeChild(modal);
+            if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
             document.removeEventListener("keydown", handleKeyDown);
         };
 
@@ -435,7 +440,9 @@ async function registrarResultadoPCR(id) {
 
         // Fechar modal
         const fecharModal = () => {
-            if (document.body.contains(modal)) document.body.removeChild(modal);
+            if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
             document.removeEventListener("keydown", handleKeyDown);
         };
 
@@ -583,7 +590,9 @@ async function registrarResultadoRAIVA(id) {
 
         // Fechar modal
         const fecharModal = () => {
-            if (document.body.contains(modal)) document.body.removeChild(modal);
+            if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
             document.removeEventListener("keydown", handleKeyDown);
         };
 
@@ -729,11 +738,13 @@ async function registrarResultadoICC(id) {
 
         // Fechar modal
         const fecharModal = () => {
-            if (document.body.contains(modal)) document.body.removeChild(modal);
+            if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
             document.removeEventListener("keydown", handleKeyDown);
         };
 
-        modal.querySelector("#fechar-modal-resultados").onclick = fecharModal;
+        modal.querySelector("#fechar-modal_resultados").onclick = fecharModal;
         modal.querySelector("#cancelar-resultados").onclick = fecharModal;
 
         modal.querySelector("#salvar-resultados").onclick = async () => {
