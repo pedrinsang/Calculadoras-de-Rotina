@@ -25,7 +25,7 @@
          alt="Logo Setor de Virologia UFSM" 
          class="logo img-fluid">
          
-    <!-- Adicione a classe "title-calculadora" ao título, se ele não tiver uma tag h1 ou h2 -->
+    
     <h2 class="calculadora-title mb-4"><i class="bi bi-calculator me-2"></i>Calculadora de Soroneutralização</h2>
 
     <form id="calculadora-form">
@@ -329,6 +329,15 @@
     // Funções globais
     document.addEventListener('DOMContentLoaded', function() {
       console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares, com auxílio do DeepSeek Chat.");
+      
+      // Event listeners para os botões de navegação
+      document.getElementById('voltar-hub').addEventListener('click', function() {
+        window.location.href = "hub.html";
+      });
+      
+      document.getElementById('acessar-mural').addEventListener('click', function() {
+        window.location.href = "mural.html";
+      });
     });
 
     function abrirImagem() {

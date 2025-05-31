@@ -1,6 +1,6 @@
 /* Estilos específicos para a página ELISA */
 
-/* Estilo para checkboxes do protocolo */
+/* Checkboxes do protocolo */
 .form-check-input:checked {
   background-color: var(--verde-btn);
   border-color: var(--verde-btn);
@@ -11,13 +11,13 @@
   color: #6c757d;
 }
 
-/* Espaçamento específico para os protocolos */
+/* Espaçamento para os protocolos */
 .card .form-check {
   margin-bottom: 0.75rem;
   padding-left: 0.5rem;
 }
 
-/* Estilos para os alertas de dicas e precauções */
+/* Alertas de dicas e precauções */
 .alert-heading {
   font-size: 1.1rem;
   font-weight: 600;
@@ -36,7 +36,7 @@
   margin-bottom: 0;
 }
 
-/* Melhorias visuais para o card do checklist */
+/* Card do checklist */
 .card-body .d-grid {
   margin-top: 1rem;
 }
@@ -44,4 +44,21 @@
 #protocoloLeucose .card,
 #protocoloBvdv .card {
   border-left: 4px solid var(--verde-medio);
+}
+
+.btn-top-nav {
+  width: auto !important;
+  min-width: 120px !important;
+  max-width: 150px !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.9rem !important;
+}
+
+/* Container de botões superiores - centralizado */
+.top-buttons-container {
+  display: flex !important;
+  justify-content: space-between !important; /* Coloca botões nas extremidades */
+  width: 100% !important;
+  margin-bottom: 20px !important;
+  padding: 0 !important;
 }

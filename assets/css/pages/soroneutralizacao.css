@@ -87,6 +87,9 @@ h2,
   }
 }
 
+/* Estilos específicos para Soroneutralização */
+
+/* Responsividade específica */
 @media (max-width: 768px) {
   .passos-lista {
     padding-left: 2.5rem;

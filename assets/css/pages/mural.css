@@ -9,7 +9,7 @@
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  height: calc(100vh - 2rem);
+  height: calc(100vh - 3rem);
   display: flex;
   flex-direction: column;
 }
