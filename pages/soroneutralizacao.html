@@ -4,489 +4,502 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Calculadora de Soroneutralização</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --verde-escuro: #1b5e20;
+      --verde-medio: #388e3c;
+      --verde-claro: #a5d6a7;
+      --verde-bg: #e8f5e9;
+      --verde-hover: #43a047;
+      --verde-btn: #2e7d32;
+      --verde-btn-hover: #388e3c;
     }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #87daa0, #51c778);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 565px;
-      padding: 20px;
-      background: white;
-      color: #1b5e20;
-      border-radius: 10px;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      margin: 0 auto;
-    }
-
-    .logo {
-      width: 100%;
-      max-width: 200px;
-      margin: 10px auto;
-      display: block;
-    }
-
-    h2 {
-      color: #1b5e20;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-top: 10px;
-      text-align: left;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      border: 2px solid #1b5e20;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    .botao-container {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .button-voltar, .button-mural {
-      padding: 10px 20px;
-      background-color: #1b5e20;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 15px;
-      border: none;
-      border-radius: 5px;
-      background-color: #1b5e20;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background-color: #388e3c;
-    }
-
-    sup {
-      font-size: 0.8em;
-      vertical-align: super;
-      line-height: 0;
-    }
-
-    .resultado {
-      margin-top: 20px;
-      padding: 15px;
-      background: #e8f5e9;
-      color: #1b5e20;
-      border-left: 5px solid #388e3c;
-      border-radius: 5px;
-    }
-
-    .ajuda {
-      margin-top: 20px;
-      padding: 10px;
-      background: #e8f5e9;
-      color: #1b5e20;
-      border-radius: 5px;
-      cursor: pointer;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .explicacao, .etapasSoroneutralizacao, .observacoesTeste, .passoAPasso {
-      display: none;
-      margin-top: 10px;
-      padding: 25px;
-      background: #f1f8e9;
-      color: #1b5e20;
-      border-left: 5px solid #388e3c;
-      border-radius: 5px;
-    }
-
-    .imagemLink {
-      color: #1b5e20;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    .diluicoes {
-        background: #dcedc8;
-        padding: 10px;
-        border-radius: 5px;
-        margin: 10px 0;
-    }
-
-    .etapa {
-        color: #2e7d32;
-        font-weight: bold;
-        display: inline-block;
-        width: 120px;
-    }
-
-    #passoAPasso ol {
-        counter-reset: step;
-        padding-left: 50px;
-    }
-
-    #passoAPasso li {
-        margin: 15px 0;
-        padding: 15px;
-        background: #f1f8e9;
-        border-radius: 5px;
-        list-style-type: none;
-        position: relative;
-    }
-
-    #passoAPasso li:before {
-        content: counter(step);
-        counter-increment: step;
-        background: #2e7d32;
-        color: white;
-        font-weight: bold;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        text-align: center;
-        display: inline-block;
-        position: absolute;
-        left: -45px;
-        top: 50%;
-        transform: translateY(-50%);
-        line-height: 30px; /* Igual à altura */
-        padding: 0; /* Remove qualquer padding */
-        margin: 0;
-        box-sizing: border-box;
-    }
-
-    .etapasSoroneutralizacao li {
-        margin-bottom: 20px;
-        padding: 10px;
-        background: #f8fdf9;
-        border-radius: 10px;
-    }
-
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-
-    .modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 500px;
-        border-radius: 10px;
-      }
-
-    .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-
-    .close:hover {
-        color: black;
-      }
-
-    #listaTarefas {
-        list-style-type: none;
-        padding: 0;
-      }
-
-    #listaTarefas li {
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-        cursor: pointer;
-      }
-
-    #listaTarefas li:hover {
-        background-color: #f1f1f1;
-      }
     
-    /* Garante que as quebras de linha e espaços são preservados */
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 80%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 1.5rem;
+    }
+    
+    .calculadora-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(27,94,32,0.10);
+      padding: 2rem;
+      max-width: 700px;
+      width: 100%;
+      margin: 0;
+    }
+    
+    .calculadora-title {
+      color: var(--verde-escuro);
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .logo {
+      max-width: 150px;
+      margin: 1rem auto;
+      display: block;
+    }
+    
+    .form-label {
+      color: var(--verde-escuro);
+      font-weight: 600;
+    }
+    
+    .form-control:focus {
+      border-color: var(--verde-medio);
+      box-shadow: 0 0 0 0.2rem rgba(56, 142, 60, 0.25);
+    }
+    
+    .btn-success {
+      background-color: var(--verde-btn);
+      border-color: var(--verde-btn);
+      border-radius: 8px;
+      font-weight: 500;
+      padding: 0.6rem 1.5rem;
+      transition: all 0.2s;
+    }
+    
+    .btn-success:hover, .btn-success:focus {
+      background-color: var(--verde-btn-hover);
+      border-color: var(--verde-btn-hover);
+    }
+    
+    .btn-outline-success {
+      color: var(--verde-btn);
+      border-color: var(--verde-btn);
+      border-radius: 8px;
+      font-weight: 500;
+      padding: 0.6rem 1.5rem;
+      transition: all 0.2s;
+    }
+    
+    .btn-outline-success:hover, .btn-outline-success:focus {
+      background-color: var(--verde-btn);
+      border-color: var(--verde-btn);
+    }
+    
+    .resultado-card {
+      background: var(--verde-bg);
+      border-left: 5px solid var(--verde-medio);
+      border-radius: 8px;
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+    }
+    
+    .accordion-button:not(.collapsed) {
+      background-color: var(--verde-bg);
+      color: var(--verde-escuro);
+      font-weight: 600;
+    }
+    
+    .accordion-button:focus {
+      box-shadow: 0 0 0 0.2rem rgba(56, 142, 60, 0.25);
+      border-color: var(--verde-medio);
+    }
+    
+    .etapa {
+      color: var(--verde-medio);
+      font-weight: bold;
+      display: inline-block;
+      width: 120px;
+    }
+    
+    .diluicoes {
+      background: #dcedc8;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+    
+    /* Lista numerada personalizada para os passos */
+    .passos-lista {
+      counter-reset: step;
+      list-style-type: none;
+      padding-left: 3rem;
+    }
+    
+    .passos-lista li {
+      margin: 1.5rem 0;
+      padding: 1.2rem;
+      background: var(--verde-bg);
+      border-radius: 8px;
+      position: relative;
+    }
+    
+    .passos-lista li:before {
+      content: counter(step);
+      counter-increment: step;
+      background: var(--verde-btn);
+      color: white;
+      font-weight: bold;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      left: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
     .pre-formatado {
-        white-space: pre-wrap;  /* Preserva espaços e quebras */
-        word-wrap: break-word;  /* Quebra palavras longas */
-        font-family: monospace; /* Fonte de largura fixa para alinhamento */
-        line-height: 1.5;       /* Espaçamento entre linhas */
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: var(--bs-font-monospace);
+      line-height: 1.5;
     }
-
-    #copiar-resultado {
-      transition: all 0.3s ease;
-      margin-top: 15px;
-    }
-
-    /* Estilo quando o texto é copiado */
-    #copiar-resultado.copiado {
-      background-color: #4caf50 !important;
-    }
-
-
-    @media (max-width: 480px) {
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
       body {
-        padding: 10px;
+        padding: 1rem 0.5rem;
       }
-
-      .container {
-        padding: 10px;
+      
+      .calculadora-card {
+        padding: 1.25rem;
       }
-
-      input, button {
-        font-size: 14px;
+      
+      .passos-lista {
+        padding-left: 2.5rem;
       }
-      h2 {
-        font-size: 1.5rem;
-      }
-       #passoAPasso li:before {
-        left: -40px; /* Ajuste para mobile */
+      
+      .passos-lista li:before {
         width: 25px;
         height: 25px;
-        line-height: 25px;
+        left: -35px;
+        font-size: 0.9rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .calculadora-title {
+        font-size: 1.5rem;
+      }
+      
+      .btn {
+        padding: 0.5rem 1rem;
+      }
+      
+      .passos-lista {
+        padding-left: 2rem;
       }
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="botao-container">
-      <a href="hub.html" id="hub-button" class="button-voltar">Voltar ao Hub</a>
-      <a href="mural.html" id="mural-button" class="button-mural">Acessar Mural</a>
-    </div>    
+  <div class="calculadora-card container">
+    <div class="d-flex justify-content-between mb-3">
+      <a href="hub.html" class="btn btn-outline-success">
+        <i class="bi bi-house me-1"></i> Voltar ao Hub
+      </a>
+      <a href="mural.html" class="btn btn-outline-success">
+        <i class="bi bi-clipboard2-check me-1"></i> Acessar Mural
+      </a>
+    </div>
+    
     <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
          alt="Logo Setor de Virologia UFSM" 
-         class="logo">
-    <h2>Calculadora de Soroneutralização</h2>
+         class="logo img-fluid">
+         
+    <h2 class="calculadora-title mb-4"><i class="bi bi-calculator me-2"></i>Calculadora de Soroneutralização</h2>
 
-    <label for="titulacao">Titulação Viral (Ex: 10^2 ou 10^6,1):</label>
-    <input type="text" id="titulacao" placeholder="Digite a titulação viral">
+    <form id="calculadora-form">
+      <div class="mb-3">
+        <label for="titulacao" class="form-label">Titulação Viral:</label>
+        <input type="text" id="titulacao" class="form-control" placeholder="Ex: 10^2 ou 10^6,1" required>
+      </div>
 
-    <label for="amostras">Número de Amostras:</label>
-    <input type="number" id="amostras" placeholder="Digite o número de amostras">
+      <div class="mb-3">
+        <label for="amostras" class="form-label">Número de Amostras:</label>
+        <input type="number" id="amostras" class="form-control" placeholder="Digite o número de amostras" min="1" required>
+      </div>
 
-    <button onclick="calcular()">Calcular</button>
+      <div class="d-grid">
+        <button type="button" class="btn btn-success" onclick="calcular()">
+          <i class="bi bi-calculator me-2"></i>Calcular
+        </button>
+      </div>
+    </form>
 
-    <div id="resultado" class="resultado"></div>
+    <div id="resultado" class="resultado-card d-none">
+      <!-- O resultado será inserido aqui -->
+    </div>
 
-    <button id="copiar-resultado" style="display: none;" onclick="copiarResultado()">📋 Copiar Resultado</button>
+    <div class="d-grid mt-3">
+      <button id="copiar-resultado" class="btn btn-outline-success d-none" onclick="copiarResultado()">
+        <i class="bi bi-clipboard me-1"></i> Copiar Resultado
+      </button>
+    </div>
 
-    <div id="modalTarefas" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="fecharModal()">&times;</span>
-        <h3>Escolha uma Tarefa</h3>
-        <ul id="listaTarefas"></ul>
+    <!-- Modal para selecionar tarefas -->
+    <div class="modal fade" id="modalTarefas" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Escolha uma Tarefa</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <ul id="listaTarefas" class="list-group">
+              <!-- As tarefas serão inseridas aqui -->
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
-
-    <!-- Nova seção de ajuda para o passo a passo -->
-    <div class="ajuda" onclick="togglePassoAPasso()">
-      📝 Passo a Passo do Cálculo
-    </div>
-    <div id="passoAPasso" class="passoAPasso">
-        <h3>Etapas do Cálculo:</h3>
-        <ol>
-            <li>
+    <!-- Acordeão para informações adicionais -->
+    <div class="accordion mt-4" id="infoAcordeao">
+      <!-- Passo a Passo do Cálculo -->
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#passosCalculo">
+            <i class="bi bi-journal-text me-2"></i> Passo a Passo do Cálculo
+          </button>
+        </h2>
+        <div id="passosCalculo" class="accordion-collapse collapse" data-bs-parent="#infoAcordeao">
+          <div class="accordion-body">
+            <h5>Etapas do Cálculo:</h5>
+            <ol class="passos-lista">
+              <li>
                 <strong>Conversão da Titulação</strong><br>
                 <em>Exemplo: 10<sup>6.3</sup></em><br>
                 • Valor decimal = 10<sup>expoente</sup><br>
                 • Resultado: 1.995.262,3149
-            </li>
-            
-            <li>
+              </li>
+              
+              <li>
                 <strong>Ajuste TCID₅₀</strong><br>
                 <em>Fórmula:</em> Valor Decimal ÷ 2000<br>
                 • 1.995.262,3149 ÷ 2000 = 997,6311 µl/ml
-            </li>
+              </li>
 
-            <li>
+              <li>
                 <strong>Cálculo de Placas</strong><br>
                 • 1ª placa: 6 amostras (5.000 µl)<br>
                 • Amostras extras: 0,4167 ml por amostra<br>
                 <em>Exemplo para 8 amostras:</em><br>
                 • 5.000 µl + (2 × 416,67 µl) = 5.833,34 µl
-            </li>
+              </li>
 
-            <li>
+              <li>
                 <strong>Margem de Segurança</strong><br>
                 • Volume total × 1,2<br>
                 • 5.833,34 × 1,2 ≅ 7.000 µl 
-            </li>
+              </li>
 
-            <li>
+              <li>
                 <strong>Volume do Vírus</strong><br>
                 <em>Fórmula:</em> Volume com margem ÷ Volume Viral<br>
                 • 7.000 ÷ 997,6311 = 7,0165 µl
-            </li>
+              </li>
 
-            <li>
+              <li>
                 <strong>Diluições para melhor pipetagem:</strong><br>
                 <div class="diluicoes">
-                    <span class="etapa">1ª Diluição (×10):</span> 7,0165 µl → 70,165 µl<br>
-                    <span class="etapa">2ª Diluição (×100):</span> 70,165 µl → 701,65 µl<br>
-                    <br>
-                    <em>Lembre sempre de retirar a quantidade relativa de MEM para colocar o vírus.</em>
+                  <span class="etapa">1ª Diluição (×10):</span> 7,0165 µl → 70,165 µl<br>
+                  <span class="etapa">2ª Diluição (×100):</span> 70,165 µl → 701,65 µl<br>
+                  <br>
+                  <em>Lembre sempre de retirar a quantidade relativa de MEM para colocar o vírus.</em>
                 </div>
-            </li>
-        </ol>
+              </li>
+            </ol>
 
-        <h3>Legenda:</h3>
-        <ol>
-            <li>µl = microlitros</li>
-            <li>ml = mililitros (1 ml = 1.000 µl)</li>
-            <li>MEM = Meio Essencial Mínimo</li>
-        </ol>
-    </div>
-
-    <div class="ajuda" onclick="toggleEtapasSoroneutralizacao()">
-        🧪 Protocolo Completo de Soroneutralização
-    </div>
-    <div id="etapasSoroneutralizacao" class="etapasSoroneutralizacao">
-        <strong>Pré-requisitos:</strong><br>
-        1. Inativar amostras a 56°C em banho-maria por 30 minutos<br>
-        2. Preparar materiais:<br>
-        <div class="diluicoes">
-        • Calha • Pipetadores (1000µl, 200µl, multicanal e elétrico)<br>
-        • Ponteiras (1 caixa/placa + reserva) • Eppendorfs • Falcon<br>
-        • Agitador • Canhão • MEM • Placas de 96 poços<br>
-        • Ligar UV por 15 minutos antes do início
+            <div class="alert alert-info mt-3">
+              <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Legenda:</h6>
+              <ul class="mb-0">
+                <li>µl = microlitros</li>
+                <li>ml = mililitros (1 ml = 1.000 µl)</li>
+                <li>MEM = Meio Essencial Mínimo</li>
+              </ul>
+            </div>
+          </div>
         </div>
+      </div>
+      
+      <!-- Protocolo Completo -->
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#protocoloCompleto">
+            <i class="bi bi-clipboard-data me-2"></i> Protocolo Completo de Soroneutralização
+          </button>
+        </h2>
+        <div id="protocoloCompleto" class="accordion-collapse collapse" data-bs-parent="#infoAcordeao">
+          <div class="accordion-body">
+            <div class="alert alert-warning mb-3">
+              <strong>Pré-requisitos:</strong><br>
+              1. Inativar amostras a 56°C em banho-maria por 30 minutos<br>
+              2. Preparar materiais:<br>
+              <div class="diluicoes mt-2">
+                • Calha • Pipetadores (1000µl, 200µl, multicanal e elétrico)<br>
+                • Ponteiras (1 caixa/placa + reserva) • Eppendorfs • Falcon<br>
+                • Agitador • Canhão • MEM • Placas de 96 poços<br>
+                • Ligar UV por 15 minutos antes do início
+              </div>
+            </div>
 
-        <ol>
-            <li>
-                <strong>Preparação da Placa</strong><br>
-                1. Identifique a placa com:<br>
-                - Nome - Data - Tipo de teste<br>
-                - Controles - Amostras - Retitulações<br>
-                <span class="imagemLink" onclick="abrirImagem()">Abrir diagrama da placa</span><br>
-                2. Adicione 50µl de MEM em todos os poços<br>
-                3. Adicione +50µl extra no controle celular (A4)
-            </li>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title text-success"><i class="bi bi-1-circle me-2"></i>Preparação da Placa</h5>
+                <p>1. Identifique a placa com:</p>
+                <ul>
+                  <li>Nome</li>
+                  <li>Data</li>
+                  <li>Tipo de teste</li>
+                  <li>Controles, Amostras e Retitulações</li>
+                </ul>
+                <button class="btn btn-sm btn-outline-success mt-2" onclick="abrirImagem()">
+                  <i class="bi bi-diagram-3 me-1"></i> Ver diagrama da placa
+                </button>
+                <p class="mt-2">2. Adicione 50µl de MEM em todos os poços</p>
+                <p>3. Adicione +50µl extra no controle celular (A4)</p>
+              </div>
+            </div>
 
-            <li>
-                <strong>Aplicação das Amostras</strong><br>
-                1. Primeira placa:<br>
-                - Amostras de A5 a A10<br>
-                - Controle positivo (A11)<br>
-                - Controle negativo/MEM (A12)<br>
-                2. Demais placas:<br>
-                - Amostras na linha A completa
-            </li>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title text-success"><i class="bi bi-2-circle me-2"></i>Aplicação das Amostras</h5>
+                <p>1. Primeira placa:</p>
+                <ul>
+                  <li>Amostras de A5 a A10</li>
+                  <li>Controle positivo (A11)</li>
+                  <li>Controle negativo/MEM (A12)</li>
+                </ul>
+                <p>2. Demais placas:</p>
+                <ul>
+                  <li>Amostras na linha A completa</li>
+                </ul>
+              </div>
+            </div>
 
-            <li>
-                <strong>Diluição em Série</strong><br>
-                1. Diluir amostras e controles:<br>
-                - Transferir 50µl entre poços consecutivos<br>
-                - Homogeneizar 3x a cada transferência<br>
-                2. Descartar 50µl do último poço
-            </li>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title text-success"><i class="bi bi-3-circle me-2"></i>Diluição em Série</h5>
+                <p>1. Diluir amostras e controles:</p>
+                <ul>
+                  <li>Transferir 50µl entre poços consecutivos</li>
+                  <li>Homogeneizar 3x a cada transferência</li>
+                </ul>
+                <p>2. Descartar 50µl do último poço</p>
+              </div>
+            </div>
 
-            <li>
-                <strong>Preparo Viral</strong><br>
-                1. Preparar Solução Mãe Viral (SMV):<br>
-                - Volume conforme cálculo da calculadora<br>
-                2. Preparar retitulações (-1, -2, -3):<br>
-                • -1: 900µl MEM + 100µl da SMV<br>
-                • -2: 900µl MEM + 100µl da -1<br>
-                • -3: 900µl MEM + 100µl da -2              
-            </li>
-
-            <li>
-                <strong>Aplicação do Vírus</strong><br>
-                1. Pipetar 50µl das retitulações:<br>
-                • -1 na coluna 1<br>
-                • -2 na coluna 2<br>
-                • -3 na coluna 3<br>
-                2. Pipetar 50µl da SMV:<br>
-                - Todos poços EXCETO controle celular
-            </li>
-
-            <li>
-                <strong>Incubação e Células</strong><br>
-                1. Incubar 2h em estufa CO₂ (37°C)<br>
-                2. Preparar Solução Celular(SC):<br>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title text-success"><i class="bi bi-4-circle me-2"></i>Preparo Viral</h5>
+                <p>1. Preparar Solução Mãe Viral (SMV):</p>
+                <ul>
+                  <li>Volume conforme cálculo da calculadora</li>
+                </ul>
+                <p>2. Preparar retitulações (-1, -2, -3):</p>
                 <div class="diluicoes">
-                • <em>Volume SC = Volume Total SMV</em><br>
-                • 10% de soro fetal bovino<br>
-                • Completar com MEM<br>
-                • Cada placa precisa de no mínimo 300µl de célula
+                  • -1: 900µl MEM + 100µl da SMV<br>
+                  • -2: 900µl MEM + 100µl da -1<br>
+                  • -3: 900µl MEM + 100µl da -2
                 </div>
-                3. Após as 2 horas, adicionar 50µl de células em todos os poços
-            </li>
+              </div>
+            </div>
 
-            <li>
-                <strong>Leitura Final</strong><br>
-                1. Incubar por 96h em estufa CO₂<br>
-                2. Analisar efeito citopático (ECP)<br>
-                3. Calcular título neutralizante
-            </li>
-        </ol>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title text-success"><i class="bi bi-5-circle me-2"></i>Aplicação do Vírus</h5>
+                <p>1. Pipetar 50µl das retitulações:</p>
+                <ul>
+                  <li>-1 na coluna 1</li>
+                  <li>-2 na coluna 2</li>
+                  <li>-3 na coluna 3</li>
+                </ul>
+                <p>2. Pipetar 50µl da SMV:</p>
+                <ul>
+                  <li>Todos poços EXCETO controle celular</li>
+                </ul>
+              </div>
+            </div>
 
-        <strong>⚠️ ATENÇÃO:</strong><br>
-        • Mantenha vírus no -80 até sua manipulação<br>
-        • Troque ponteiras entre amostras<br>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title text-success"><i class="bi bi-6-circle me-2"></i>Incubação e Células</h5>
+                <p>1. Incubar 2h em estufa CO₂ (37°C)</p>
+                <p>2. Preparar Solução Celular (SC):</p>
+                <div class="diluicoes">
+                  • <em>Volume SC = Volume Total SMV</em><br>
+                  • 10% de soro fetal bovino<br>
+                  • Completar com MEM<br>
+                  • Cada placa precisa de no mínimo 300µl de célula
+                </div>
+                <p>3. Após as 2 horas, adicionar 50µl de células em todos os poços</p>
+              </div>
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title text-success"><i class="bi bi-7-circle me-2"></i>Leitura Final</h5>
+                <p>1. Incubar por 96h em estufa CO₂</p>
+                <p>2. Analisar efeito citopático (ECP)</p>
+                <p>3. Calcular título neutralizante</p>
+              </div>
+            </div>
+
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>ATENÇÃO:</strong><br>
+              • Mantenha vírus no -80 até sua manipulação<br>
+              • Troque ponteiras entre amostras<br>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Observações do Teste -->
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#observacoesTeste">
+            <i class="bi bi-exclamation-circle me-2"></i> Observações do Teste
+          </button>
+        </h2>
+        <div id="observacoesTeste" class="accordion-collapse collapse" data-bs-parent="#infoAcordeao">
+          <div class="accordion-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>SEMPRE manter um bom estoque de vírus</li>
+              <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Antes de qualquer SN confira o estado e quantidade de suas células</li>
+              <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Ressuspender antes de pipetar</li>
+              <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Sempre proteger o Controle Celular na pipetagem</li>
+              <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Pipete as celulas da linha mais diluida (H) para a menos diluida (A)</li>
+              <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Ressuspender células na calha</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div class="ajuda" onclick="toggleObservacoesTeste()">
-      ⚠️ Observações do Teste
+    
+    <!-- Créditos -->
+    <div class="text-center mt-4">
+      <small class="text-muted">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</small>
     </div>
-    <div id="observacoesTeste" class="observacoesTeste">
-      • SEMPRE manter um bom estoque de vírus<br>
-      • Antes de qualquer SN confira o estado e quantidade de suas células<br>
-      • Ressuspender antes de pipetar<br>
-      • Sempre proteger o Controle Celular na pipetagem<br>
-      • Pipete as celulas da linha mais diluida (H) para a menos diluida (A)<br>
-      • Ressuspender células na calha<br>
+  </div>
 
-    </div>
-</div>
-
-
-
-    <script type="module">
-
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script type="module">
     // Importações do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, collection, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-    import { getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, updateDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-     // Inicialização do Firebase
+    // Inicialização do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
       authDomain: "hub-de-calculadoras.firebaseapp.com",
@@ -499,204 +512,213 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
+  </script>
+  
+  <script>
+    // Funções globais
     document.addEventListener('DOMContentLoaded', function() {
-        console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
+      console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares, com auxílio do DeepSeek Chat.");
     });
 
-
-    function togglePassoAPasso() {
-        const div = document.getElementById('passoAPasso');
-        div.style.display = div.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function toggleEtapasSoroneutralizacao() {
-        const div = document.getElementById('etapasSoroneutralizacao');
-        div.style.display = div.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function toggleObservacoesTeste() {
-        const div = document.getElementById('observacoesTeste');
-        div.style.display = div.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function calcular() {
-        const titulacaoInput = document.getElementById('titulacao').value.trim();
-        const amostras = parseInt(document.getElementById('amostras').value);
-
-        if (!titulacaoInput || isNaN(amostras) || amostras < 1) {
-            alert("Preencha todos os campos corretamente!");
-            return;
-        }
-
-        // Converter titulação para potência de 10
-        let expoente = parseFloat(titulacaoInput.replace("10^", "").replace(",", "."));
-        const valorDecimal = Math.pow(10, expoente);
-        const volumeVirus = valorDecimal / 2000;
-
-        // Cálculo de placas necessárias (6 amostras por placa, arredondando para cima)
-        let placasNecessarias;
-        if (amostras <= 6) {
-            placasNecessarias = 1;
-        } else {
-            placasNecessarias = 1 + Math.ceil((amostras - 6) / 12);
-        }
-        
-        // Cálculo de volume preciso por amostra
-        let volumeTotal = 0;
-        if (amostras <= 6) {
-            // Primeira placa completa (5ml)
-            volumeTotal = 5000;
-        } else {
-            // Primeira placa (6 amostras)
-            volumeTotal = 5000;
-            
-            // Amostras restantes
-            const amostrasRestantes = amostras - 6;
-            
-            // Calcular volume para placas adicionais (0.4167ml por amostra)
-            const volumePorAmostra = 5000 / 12; // ~416.67µl por amostra
-            volumeTotal += Math.ceil(amostrasRestantes * volumePorAmostra);
-        }
-
-        // Aplicar margem de segurança de 20%
-        const volumeComMargem = Math.ceil(volumeTotal * 1.2);
-
-        // Calcular quantidade inicial
-        let quantidadeInicial = volumeComMargem / volumeVirus;
-        
-        // Calcular diluições - agora garantindo que a última diluição seja > 100µl
-        let diluicoes = [];
-        let fatorDiluicao = 1;
-        let quantidadeAtual = quantidadeInicial;
-        
-        // Adiciona a primeira diluição (original)
-        diluicoes.push({fator: fatorDiluicao, valor: quantidadeAtual});
-        
-        // Continua multiplicando por 10 até que a quantidade seja > 100µl
-        while (quantidadeAtual <= 100) {
-            quantidadeAtual *= 10;
-            fatorDiluicao *= 10;
-            diluicoes.push({fator: fatorDiluicao, valor: quantidadeAtual});
-        }
-
-        // Construir resultado
-        let resultadoHTML = `
-            <strong>Titulação:</strong> 10<sup>${expoente}</sup> = ${valorDecimal.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
-            <strong>Ajuste TCID₅₀:</strong> ${valorDecimal.toLocaleString('pt-BR')} / 2000 = ${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})}<br>
-            <strong>Amostras:</strong> ${amostras}<br>
-            <strong>Placas Necessárias:</strong> ${placasNecessarias}<br>
-            <strong>Volume Mínimo:</strong> ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
-            <strong>Volume com Margem:</strong> ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml<br>
-            <strong>Volume Viral:</strong> ${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br><br>
-            <strong>Diluições Necessárias:</strong><br>`;
-
-        diluicoes.forEach((dil, index) => {
-            let notacao = index === 0 ? '' : `×10<sup>${index}</sup>`;
-            resultadoHTML += `10<sup>${expoente}</sup> ${notacao} → ${dil.valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl<br>`;
-        });
-
-        document.getElementById('resultado').innerHTML = resultadoHTML;
-        document.getElementById('copiar-resultado').style.display = 'block';
-    }
-
-    function copiarResultado() {
-        try {
-            // Obter os valores diretamente dos campos de entrada
-            const titulacaoInput = document.getElementById('titulacao').value.trim();
-            const amostras = document.getElementById('amostras').value;
-            
-            // Converter titulação para formato legível
-            const expoente = titulacaoInput.replace("10^", "").replace(",", ".");
-            const valorDecimal = Math.pow(10, parseFloat(expoente)).toLocaleString('pt-BR', {maximumFractionDigits: 4});
-            const volumeVirus = (Math.pow(10, parseFloat(expoente)) / 2000).toLocaleString('pt-BR', {maximumFractionDigits: 4});
-            
-            // Calcular placas necessárias
-            const placasNecessarias = amostras <= 6 ? 1 : 1 + Math.ceil((amostras - 6) / 12);
-            
-            // Calcular volumes
-            let volumeTotal = amostras <= 6 ? 5000 : 5000 + Math.ceil((amostras - 6) * (5000 / 12));
-            const volumeComMargem = Math.ceil(volumeTotal * 1.2);
-            
-            // Calcular quantidade inicial e diluições
-            let quantidadeInicial = volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000);
-            let diluicoes = [quantidadeInicial];
-            
-            // Adicionar diluições até que a quantidade seja > 100µl
-            while (quantidadeInicial <= 100) {
-                quantidadeInicial *= 10;
-                diluicoes.push(quantidadeInicial);
-            }
-            
-            // Construir texto formatado para cópia
-            const textoParaCopiar = [
-                `Titulação: 10^${expoente} = ${valorDecimal}`,
-                `Ajuste TCID₅₀: ${valorDecimal} / 2000 = ${volumeVirus}`,
-                `Amostras: ${amostras}`,
-                `Placas Necessárias: ${placasNecessarias}`,
-                `Volume Mínimo: ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml`,
-                `Volume com Margem: ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml`,
-                `Volume Viral: ${diluicoes[0].toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`,
-                '',
-                `Diluições:`
-            ];
-            
-            // Adicionar cada diluição ao texto
-            diluicoes.forEach((dil, index) => {
-                const notacao = index === 0 ? '' : ` ×10^${index}`;
-                textoParaCopiar.push(`10^${expoente}${notacao} → ${dil.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`);
-            });
-
-            // Juntar tudo com quebras de linha
-            const textoFinal = textoParaCopiar.join('\n');
-
-            // Criar elemento temporário para copiar
-            const textarea = document.createElement('textarea');
-            textarea.value = textoFinal;
-            document.body.appendChild(textarea);
-            textarea.select();
-            
-            // Executar cópia
-            const copiado = document.execCommand('copy');
-            document.body.removeChild(textarea);
-            
-            // Feedback visual
-            const btn = document.getElementById('copiar-resultado');
-            if (copiado) {
-                btn.textContent = '✅ Copiado!';
-                btn.style.backgroundColor = '#4caf50';
-                setTimeout(() => {
-                    btn.textContent = '📋 Copiar Resultado';
-                    btn.style.backgroundColor = '#1b5e20';
-                }, 2000);
-            } else {
-                throw new Error('Não foi possível copiar');
-            }
-        } catch (error) {
-            console.error("Erro ao copiar:", error);
-            alert("Erro ao copiar. Você pode selecionar e copiar manualmente.");
-        }
-    }
-
-    document.getElementById("hub-button").onclick = () => {
-        window.location.href = "hub.html";
-      };
-
-    window.calcular = calcular;
-    window.copiarResultado = copiarResultado;
-    window.togglePassoAPasso = togglePassoAPasso;
-    window.toggleEtapasSoroneutralizacao = toggleEtapasSoroneutralizacao;
-    window.toggleObservacoesTeste = toggleObservacoesTeste;
-
-    </script>
-
-    <script>
-        
-    // Regular script (not module) - functions will be globally available
     function abrirImagem() {
       window.open("https://i.pinimg.com/736x/5b/09/2b/5b092b1687e129c5f6714bf69bf1b3f1.jpg", "_blank");
     }
 
-    </script>
+    function calcular() {
+      const titulacaoInput = document.getElementById('titulacao').value.trim();
+      const amostras = parseInt(document.getElementById('amostras').value);
+
+      if (!titulacaoInput || isNaN(amostras) || amostras < 1) {
+        alert("Preencha todos os campos corretamente!");
+        return;
+      }
+
+      // Converter titulação para potência de 10
+      let expoente = parseFloat(titulacaoInput.replace("10^", "").replace(",", "."));
+      const valorDecimal = Math.pow(10, expoente);
+      const volumeVirus = valorDecimal / 2000;
+
+      // Cálculo de placas necessárias
+      let placasNecessarias;
+      if (amostras <= 6) {
+        placasNecessarias = 1;
+      } else {
+        placasNecessarias = 1 + Math.ceil((amostras - 6) / 12);
+      }
+      
+      // Cálculo de volume preciso por amostra
+      let volumeTotal = 0;
+      if (amostras <= 6) {
+        // Primeira placa completa (5ml)
+        volumeTotal = 5000;
+      } else {
+        // Primeira placa (6 amostras)
+        volumeTotal = 5000;
+        
+        // Amostras restantes
+        const amostrasRestantes = amostras - 6;
+        
+        // Calcular volume para placas adicionais
+        const volumePorAmostra = 5000 / 12; // ~416.67µl por amostra
+        volumeTotal += Math.ceil(amostrasRestantes * volumePorAmostra);
+      }
+
+      // Aplicar margem de segurança de 20%
+      const volumeComMargem = Math.ceil(volumeTotal * 1.2);
+
+      // Calcular quantidade inicial
+      let quantidadeInicial = volumeComMargem / volumeVirus;
+      
+      // Calcular diluições
+      let diluicoes = [];
+      let fatorDiluicao = 1;
+      let quantidadeAtual = quantidadeInicial;
+      
+      diluicoes.push({fator: fatorDiluicao, valor: quantidadeAtual});
+      
+      // Continua multiplicando por 10 até que a quantidade seja > 100µl
+      while (quantidadeAtual <= 100) {
+        quantidadeAtual *= 10;
+        fatorDiluicao *= 10;
+        diluicoes.push({fator: fatorDiluicao, valor: quantidadeAtual});
+      }
+
+      // Construir resultado com Bootstrap
+      let resultadoHTML = `
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Titulação:</strong> 
+            <span>10<sup>${expoente}</sup> = ${valorDecimal.toLocaleString('pt-BR', {maximumFractionDigits: 4})}</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">TCID<sub>50</sub>:</strong> 
+            <span>${volumeVirus.toLocaleString('pt-BR', {maximumFractionDigits: 4})}</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Amostras:</strong> ${amostras}
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Placas:</strong> ${placasNecessarias}
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Volume Mínimo:</strong> 
+            <span>${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Volume Margem:</strong> 
+            <span>${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml</span>
+          </div>
+          <div class="col-12 mb-2">
+            <strong class="text-success">Volume Viral:</strong> 
+            <span>${diluicoes[0].valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl</span>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <h5 class="text-success mb-3">Diluições Necessárias:</h5>
+        <div class="diluicoes">`;
+
+      diluicoes.forEach((dil, index) => {
+        let notacao = index === 0 ? '' : `×10<sup>${index}</sup>`;
+        resultadoHTML += `<div class="mb-1">10<sup>${expoente}</sup> ${notacao} → 
+          <span class="badge bg-success">${dil.valor.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl</span></div>`;
+      });
+
+      resultadoHTML += `</div>`;
+
+      // Mostrar resultado e botão de copiar
+      const resultadoDiv = document.getElementById('resultado');
+      resultadoDiv.innerHTML = resultadoHTML;
+      resultadoDiv.classList.remove('d-none');
+      
+      document.getElementById('copiar-resultado').classList.remove('d-none');
+    }
+
+    function copiarResultado() {
+      try {
+        // Obter os valores diretamente dos campos de entrada
+        const titulacaoInput = document.getElementById('titulacao').value.trim();
+        const amostras = document.getElementById('amostras').value;
+        
+        // Converter titulação para formato legível
+        const expoente = titulacaoInput.replace("10^", "").replace(",", ".");
+        const valorDecimal = Math.pow(10, parseFloat(expoente)).toLocaleString('pt-BR', {maximumFractionDigits: 4});
+        const volumeVirus = (Math.pow(10, parseFloat(expoente)) / 2000).toLocaleString('pt-BR', {maximumFractionDigits: 4});
+        
+        // Calcular placas necessárias
+        const placasNecessarias = amostras <= 6 ? 1 : 1 + Math.ceil((amostras - 6) / 12);
+        
+        // Calcular volumes
+        let volumeTotal = amostras <= 6 ? 5000 : 5000 + Math.ceil((amostras - 6) * (5000 / 12));
+        const volumeComMargem = Math.ceil(volumeTotal * 1.2);
+        
+        // Calcular quantidade inicial e diluições
+        let quantidadeInicial = volumeComMargem / (Math.pow(10, parseFloat(expoente)) / 2000);
+        let diluicoes = [quantidadeInicial];
+        
+        // Adicionar diluições até que a quantidade seja > 100µl
+        while (quantidadeInicial <= 100) {
+          quantidadeInicial *= 10;
+          diluicoes.push(quantidadeInicial);
+        }
+        
+        // Construir texto formatado para cópia
+        const textoParaCopiar = [
+          `Titulação: 10^${expoente} = ${valorDecimal}`,
+          `Ajuste TCID₅₀: ${valorDecimal} / 2000 = ${volumeVirus}`,
+          `Amostras: ${amostras}`,
+          `Placas Necessárias: ${placasNecessarias}`,
+          `Volume Mínimo: ${(volumeTotal/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml`,
+          `Volume com Margem: ${(volumeComMargem/1000).toLocaleString('pt-BR', {maximumFractionDigits: 2})} ml`,
+          `Volume Viral: ${diluicoes[0].toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`,
+          '',
+          `Diluições:`
+        ];
+        
+        // Adicionar cada diluição ao texto
+        diluicoes.forEach((dil, index) => {
+          const notacao = index === 0 ? '' : ` ×10^${index}`;
+          textoParaCopiar.push(`10^${expoente}${notacao} → ${dil.toLocaleString('pt-BR', {maximumFractionDigits: 4})} µl`);
+        });
+
+        // Juntar tudo com quebras de linha
+        const textoFinal = textoParaCopiar.join('\n');
+
+        // Criar elemento temporário para copiar
+        const textarea = document.createElement('textarea');
+        textarea.value = textoFinal;
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        // Executar cópia
+        const copiado = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        // Feedback visual
+        const btn = document.getElementById('copiar-resultado');
+        if (copiado) {
+          btn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Copiado!';
+          btn.classList.add('btn-success');
+          btn.classList.remove('btn-outline-success');
+          setTimeout(() => {
+            btn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copiar Resultado';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-success');
+          }, 2000);
+        } else {
+          throw new Error('Não foi possível copiar');
+        }
+      } catch (error) {
+        console.error("Erro ao copiar:", error);
+        alert("Erro ao copiar. Você pode selecionar e copiar manualmente.");
+      }
+    }
+
+    // Tornar funções globalmente acessíveis
+    window.calcular = calcular;
+    window.copiarResultado = copiarResultado;
+    window.abrirImagem = abrirImagem;
+  </script>
 </body>
 </html>

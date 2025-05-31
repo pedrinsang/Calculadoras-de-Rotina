@@ -4,287 +4,372 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Calculadora de Vacinas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <style>
-    /* ===== Reset e Estilos Gerais ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --verde-escuro: #1b5e20;
+      --verde-medio: #388e3c;
+      --verde-claro: #a5d6a7;
+      --verde-bg: #e8f5e9;
+      --verde-hover: #43a047;
+      --verde-btn: #2e7d32;
+      --verde-btn-hover: #388e3c;
     }
-
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #87daa0, #51c778);
       min-height: 100vh;
+      background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 80%);
       display: flex;
-      justify-content: center;
       align-items: center;
-      padding: 20px;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 1.5rem;
     }
-
-    .botao-container {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .button-voltar, .button-mural {
-      padding: 10px 20px;
-      background-color: #1b5e20;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    .container {
+    
+    .calculadora-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(27,94,32,0.10);
+      padding: 2rem;
+      max-width: 700px;
       width: 100%;
-      max-width: 550px;
-      background: white;
-      color: #1b5e20;
-      border-radius: 10px;
-      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-      padding: 20px;
-      margin: 0 auto;
+      margin: 0;
     }
-
+    
+    .calculadora-title {
+      color: var(--verde-escuro);
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.5px;
+    }
+    
     .logo {
-      width: 100%;
-      max-width: 200px;
-      margin: 0 auto 20px;
+      max-width: 150px;
+      margin: 1rem auto;
       display: block;
     }
-
-    h2 {
+    
+    .form-label {
+      color: var(--verde-escuro);
+      font-weight: 600;
+    }
+    
+    .form-control:focus {
+      border-color: var(--verde-medio);
+      box-shadow: 0 0 0 0.2rem rgba(56, 142, 60, 0.25);
+    }
+    
+    .btn-success {
+      background-color: var(--verde-btn);
+      border-color: var(--verde-btn);
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-success:hover, .btn-success:focus {
+      background-color: var(--verde-btn-hover);
+      border-color: var(--verde-btn-hover);
+    }
+    
+    .btn-outline-success {
+      color: var(--verde-btn);
+      border-color: var(--verde-btn);
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-outline-success:hover, .btn-outline-success:focus {
+      background-color: var(--verde-btn);
+      border-color: var(--verde-btn);
+    }
+    
+    .resultado-card {
+      background: var(--verde-bg);
+      border-left: 5px solid var(--verde-medio);
+      border-radius: 8px;
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+    }
+    
+    .option-card {
+      background-color: var(--verde-bg);
+      border: 2px solid var(--verde-escuro);
+      border-radius: 12px;
+      padding: 1rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
       text-align: center;
-      margin-bottom: 15px;
+      margin-bottom: 1rem;
     }
-
-    /* ===== Instruções ===== */
-    .instrucoes {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border: 1px solid #e0e0e0;
+    
+    .option-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(27,94,32,0.15);
     }
-
-    /* ===== Botões ===== */
-    .button-group {
-      display: grid;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    .calc-button {
-      padding: 15px;
-      background: #e8f5e9;
-      border: 2px solid #1b5e20;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      text-align: center;
-      transition: all 0.3s;
-    }
-
-    .calc-button:hover {
-      background: #c8e6c9;
-      transform: translateY(-2px);
-    }
-
-    .calc-button.active {
-      background: #1b5e20;
+    
+    .option-card.active {
+      background-color: var(--verde-escuro);
       color: white;
     }
-
-    /* ===== Calculadoras ===== */
-    .calculadora {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.5s ease-out;
-    }
-
-    .calculadora.active {
-      max-height: 1000px;
-      transition: max-height 0.5s ease-in;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin: 15px 0 5px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #1b5e20;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button[type="button"] {
-      width: 100%;
-      padding: 12px;
-      margin: 20px 0;
-      background: #1b5e20;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button[type="button"]:hover {
-      background: #388e3c;
-    }
-
-    .resultado {
-      padding: 15px;
-      background: #e8f5e9;
-      border-left: 4px solid #388e3c;
-      border-radius: 6px;
-      margin: 15px 0;
-    }
-
-    /* Botão copiar - ESTILO ATUALIZADO */
-    .botao-copiar {
-      width: 100%;
-      padding: 12px;
-      background: #1b5e20;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-top: 10px;
+    
+    .calculadora-section {
       display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      overflow: hidden;
+      max-height: 0;
     }
-
-    .botao-copiar:hover {
-      background: #388e3c;
+    
+    .calculadora-section.active {
+      display: block;
+      opacity: 1;
+      max-height: 1000px;
     }
-
-    .botao-copiar.copiado {
-      background-color: #4caf50;
+    
+    .calculadora-section h4 {
+      color: var(--verde-escuro);
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      border-bottom: 2px solid var(--verde-claro);
+      padding-bottom: 0.5rem;
     }
-
-    /* ===== Mobile ===== */
-    @media (max-width: 480px) {
+    
+    @media (max-width: 768px) {
       body {
-        padding: 10px;
+        padding: 1rem 0.5rem;
       }
-
-      .container {
-        padding: 10px;
-      }
-
-      .calc-button {
-        padding: 12px;
-        font-size: 14px;
-      }
-
-      button[type="button"], .botao-copiar {
-        padding: 10px;
-        font-size: 14px;
+      
+      .calculadora-card {
+        padding: 1.25rem;
       }
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-  <div class="botao-container">
-    <a href="hub.html" id="hub-button" class="button-voltar">Voltar ao Hub</a>
-    <a href="mural.html" id="mural-button" class="button-mural">Acessar Mural</a>
-  </div>
+  <div class="calculadora-card container">
+    <div class="d-flex justify-content-between mb-3">
+      <a href="hub.html" class="btn btn-outline-success">
+        <i class="bi bi-house me-1"></i> Voltar ao Hub
+      </a>
+      <a href="mural.html" class="btn btn-outline-success">
+        <i class="bi bi-clipboard2-check me-1"></i> Acessar Mural
+      </a>
+    </div>
+    
     <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
          alt="Logo Setor de Virologia UFSM" 
-         class="logo">
-    <h2>Calculadora de Vacinas</h2>
+         class="logo img-fluid">
+         
+    <h2 class="calculadora-title mb-4"><i class="bi bi-virus me-2"></i>Calculadora de Vacinas</h2>
 
-    <div class="instrucoes">
-      <strong>Como usar:</strong><br>
-      1. Selecione o tipo de cálculo<br>
-      2. Preencha os campos necessários<br>
-      3. Clique em "Calcular"<br>
-      4. Os resultados aparecerão abaixo
-    </div>
 
-    <div class="button-group">
-      <div class="calc-button" onclick="toggleCalculator('bovina')">
-        Vacina Bovina
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="option-card" id="opcao-bovina" onclick="toggleCalculator('bovina')">
+          <i class="bi bi-calculator fs-4 d-block mb-2"></i>
+          <span class="fw-bold">Vacina Bovina</span>
+        </div>
       </div>
-      <div class="calc-button" onclick="toggleCalculator('canina')">
-        Vacina Canina
+      <div class="col-md-4">
+        <div class="option-card" id="opcao-canina" onclick="toggleCalculator('canina')">
+          <i class="bi bi-calculator fs-4 d-block mb-2"></i>
+          <span class="fw-bold">Vacina Canina</span>
+        </div>
       </div>
-      <div class="calc-button" onclick="toggleCalculator('formol')">
-        Calculadora de Formol
+      <div class="col-md-4">
+        <div class="option-card" id="opcao-formol" onclick="toggleCalculator('formol')">
+          <i class="bi bi-eyedropper fs-4 d-block mb-2"></i>
+          <span class="fw-bold">Formol</span>
+        </div>
       </div>
     </div>
 
     <!-- Calculadoras -->
-    <div id="bovina" class="calculadora">
-      <label for="papiloma-bovina">Gramas de Papiloma:</label>
-      <input type="number" id="papiloma-bovina" placeholder="Ex: 100">
+    <div id="bovina" class="calculadora-section">
+      <h4 class="text-center"><i class="bi bi-capsule me-2"></i>Vacina Bovina</h4>
       
-      <label for="vacinas-bovina">Quantidade de Vacinas:</label>
-      <input type="number" id="vacinas-bovina" placeholder="Ex: 20">
+      <div class="mb-3">
+        <label for="papiloma-bovina" class="form-label">Gramas de Papiloma:</label>
+        <div class="input-group">
+          <input type="number" id="papiloma-bovina" class="form-control" placeholder="Ex: 100">
+          <span class="input-group-text">g</span>
+        </div>
+      </div>
       
-      <button type="button" onclick="calcularBovina()">Calcular</button>
-      <div id="resultado-bovina" class="resultado"></div>
-      <button class="botao-copiar" id="copiar-resultado-bovina" onclick="copiarResultado('bovina')">📋 Copiar Resultado</button>
+      <div class="mb-3">
+        <label for="vacinas-bovina" class="form-label">Quantidade de Vacinas:</label>
+        <div class="input-group">
+          <input type="number" id="vacinas-bovina" class="form-control" placeholder="Ex: 20">
+          <span class="input-group-text">unidades</span>
+        </div>
+      </div>
+      
+      <div class="d-grid">
+        <button type="button" class="btn btn-success" onclick="calcularBovina()">
+          <i class="bi bi-calculator me-2"></i>Calcular
+        </button>
+      </div>
+      
+      <div id="resultado-bovina" class="resultado-card mt-4 d-none"></div>
+      
+      <div class="d-grid mt-3">
+        <button class="btn btn-outline-success d-none" id="copiar-resultado-bovina" onclick="copiarResultado('bovina')">
+          <i class="bi bi-clipboard me-1"></i> Copiar Resultado
+        </button>
+      </div>
     </div>
 
-    <div id="canina" class="calculadora">
-      <label for="papiloma-canina">Gramas de Papiloma:</label>
-      <input type="number" id="papiloma-canina" placeholder="Ex: 50">
+    <div id="canina" class="calculadora-section">
+      <h4 class="text-center"><i class="bi bi-capsule me-2"></i>Vacina Canina</h4>
       
-      <label for="vacinas-canina">Quantidade de Vacinas:</label>
-      <input type="number" id="vacinas-canina" placeholder="Ex: 10">
+      <div class="mb-3">
+        <label for="papiloma-canina" class="form-label">Gramas de Papiloma:</label>
+        <div class="input-group">
+          <input type="number" id="papiloma-canina" class="form-control" placeholder="Ex: 50">
+          <span class="input-group-text">g</span>
+        </div>
+      </div>
       
-      <button type="button" onclick="calcularCanina()">Calcular</button>
-      <div id="resultado-canina" class="resultado"></div>
-      <button class="botao-copiar" id="copiar-resultado-canina" onclick="copiarResultado('canina')">📋 Copiar Resultado</button>
+      <div class="mb-3">
+        <label for="vacinas-canina" class="form-label">Quantidade de Vacinas:</label>
+        <div class="input-group">
+          <input type="number" id="vacinas-canina" class="form-control" placeholder="Ex: 10">
+          <span class="input-group-text">unidades</span>
+        </div>
+      </div>
+      
+      <div class="d-grid">
+        <button type="button" class="btn btn-success" onclick="calcularCanina()">
+          <i class="bi bi-calculator me-2"></i>Calcular
+        </button>
+      </div>
+      
+      <div id="resultado-canina" class="resultado-card mt-4 d-none"></div>
+      
+      <div class="d-grid mt-3">
+        <button class="btn btn-outline-success d-none" id="copiar-resultado-canina" onclick="copiarResultado('canina')">
+          <i class="bi bi-clipboard me-1"></i> Copiar Resultado
+        </button>
+      </div>
     </div>
 
-    <div id="formol" class="calculadora">
-      <label for="volume-recuperado">Volume Recuperado (ml):</label>
-      <input type="number" id="volume-recuperado" placeholder="Ex: 500">
+    <div id="formol" class="calculadora-section">
+      <h4 class="text-center"><i class="bi bi-eyedropper me-2"></i>Calculadora de Formol</h4>
       
-      <button type="button" onclick="calcularFormol()">Calcular Formol</button>
-      <div id="resultado-formol" class="resultado"></div>
-      <button class="botao-copiar" id="copiar-resultado-formol" onclick="copiarResultado('formol')">📋 Copiar Resultado</button>
+      <div class="mb-3">
+        <label for="volume-recuperado" class="form-label">Volume Recuperado:</label>
+        <div class="input-group">
+          <input type="number" id="volume-recuperado" class="form-control" placeholder="Ex: 500">
+          <span class="input-group-text">ml</span>
+        </div>
+      </div>
+      
+      <div class="d-grid">
+        <button type="button" class="btn btn-success" onclick="calcularFormol()">
+          <i class="bi bi-calculator me-2"></i>Calcular Formol
+        </button>
+      </div>
+      
+      <div id="resultado-formol" class="resultado-card mt-4 d-none"></div>
+      
+      <div class="d-grid mt-3">
+        <button class="btn btn-outline-success d-none" id="copiar-resultado-formol" onclick="copiarResultado('formol')">
+          <i class="bi bi-clipboard me-1"></i> Copiar Resultado
+        </button>
+      </div>
+    </div>
+
+    <div class="accordion mt-4" id="infoVacinas">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#infoVacinaContent">
+            <i class="bi bi-info-circle me-2"></i> Informações Adicionais
+          </button>
+        </h2>
+        <div id="infoVacinaContent" class="accordion-collapse collapse" data-bs-parent="#infoVacinas">
+          <div class="accordion-body">
+            <h5 class="mb-3">Composição das Vacinas</h5>
+            
+            <div class="card mb-3">
+              <div class="card-header bg-light">
+                <strong>Vacina Bovina</strong>
+              </div>
+              <div class="card-body">
+                <ul class="mb-0">
+                  <li>5g de papiloma por dose</li>
+                  <li>20ml de solução de Hanks por dose</li>
+                  <li>5ml de clorofórmio por dose</li>
+                  <li>Volume final: 15ml por dose</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div class="card mb-3">
+              <div class="card-header bg-light">
+                <strong>Vacina Canina</strong>
+              </div>
+              <div class="card-body">
+                <ul class="mb-0">
+                  <li>1g de papiloma por dose</li>
+                  <li>10ml de solução de Hanks por dose</li>
+                  <li>1ml de clorofórmio por dose</li>
+                  <li>Volume final: 6ml por dose</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header bg-light">
+                <strong>Adição de Formol</strong>
+              </div>
+              <div class="card-body">
+                <p>O formol é adicionado na concentração de 0,5% do volume total recuperado após o preparo da vacina.</p>
+                <p class="mb-0 alert alert-warning">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                  Sempre use equipamentos de proteção ao manipular formol.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Créditos -->
+    <div class="text-center mt-4">
+      <small class="text-muted">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</small>
     </div>
   </div>
 
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
-    });
-
     let calculadoraAtiva = null;
 
-    function toggleCalculator(tipo) {
-      const calculadora = document.getElementById(tipo);
-      const botao = document.querySelector(`.calc-button[onclick="toggleCalculator('${tipo}')"]`);
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares, com auxílio do ChatGPT.");
+    });
 
-      if(calculadoraAtiva === tipo) {
-        // Fechar calculadora
-        calculadora.classList.remove('active');
-        botao.classList.remove('active');
-        calculadoraAtiva = null;
-      } else {
-        // Fechar calculadora anterior
-        if(calculadoraAtiva) {
-          document.getElementById(calculadoraAtiva).classList.remove('active');
-          document.querySelector(`.calc-button[onclick="toggleCalculator('${calculadoraAtiva}')"]`).classList.remove('active');
-        }
-        
-        // Abrir nova
-        calculadora.classList.add('active');
-        botao.classList.add('active');
+    function toggleCalculator(tipo) {
+      // Esconder todas as calculadoras e resetar opções
+      document.querySelectorAll('.calculadora-section').forEach(el => {
+        el.classList.remove('active');
+      });
+      
+      document.querySelectorAll('.option-card').forEach(el => {
+        el.classList.remove('active');
+      });
+      
+      // Ativar a calculadora selecionada
+      if (tipo !== calculadoraAtiva) {
+        document.getElementById(tipo).classList.add('active');
+        document.getElementById(`opcao-${tipo}`).classList.add('active');
         calculadoraAtiva = tipo;
+      } else {
+        calculadoraAtiva = null;
       }
     }
 
@@ -292,71 +377,159 @@
       const papiloma = parseFloat(document.getElementById('papiloma-bovina').value);
       const vacinas = parseFloat(document.getElementById('vacinas-bovina').value);
       
-      if (isNaN(papiloma) || isNaN(vacinas)) {
-        alert("Preencha todos os campos!");
+      if (isNaN(papiloma) || isNaN(vacinas) || papiloma <= 0 || vacinas <= 0) {
+        alert("Por favor, preencha ambos os campos com valores válidos.");
         return;
       }
 
       const necessario = vacinas * 5;
+      const vacinasExtras = Math.floor((papiloma - necessario) / 5);
+      
       const resultadoDiv = document.getElementById('resultado-bovina');
       resultadoDiv.innerHTML = `
-        <strong>Papiloma Necessário:</strong> ${necessario}g<br>
-        <strong>Vacinas Extras:</strong> ${Math.floor((papiloma - necessario) / 5)}<br>
-        <strong>Hanks:</strong> ${vacinas * 20}ml<br>
-        <strong>Cloroformio:</strong> ${vacinas * 5}ml<br>
-        <strong>Volume Total:</strong> ${vacinas * 15}ml
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Papiloma Necessário:</strong> 
+            <span>${necessario}g</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Vacinas Extras:</strong> 
+            <span>${vacinasExtras >= 0 ? vacinasExtras : 0}</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Hanks:</strong> 
+            <span>${vacinas * 20}ml</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Clorofórmio:</strong> 
+            <span>${vacinas * 5}ml</span>
+          </div>
+          <div class="col-12 mb-2">
+            <strong class="text-success">Volume Total:</strong> 
+            <span>${vacinas * 15}ml</span>
+          </div>
+        </div>
       `;
       
-      document.getElementById('copiar-resultado-bovina').style.display = 'block';
+      resultadoDiv.classList.remove('d-none');
+      document.getElementById('copiar-resultado-bovina').classList.remove('d-none');
     }
 
     function calcularCanina() {
       const papiloma = parseFloat(document.getElementById('papiloma-canina').value);
       const vacinas = parseFloat(document.getElementById('vacinas-canina').value);
       
-      if (isNaN(papiloma) || isNaN(vacinas)) {
-        alert("Preencha todos os campos!");
+      if (isNaN(papiloma) || isNaN(vacinas) || papiloma <= 0 || vacinas <= 0) {
+        alert("Por favor, preencha ambos os campos com valores válidos.");
         return;
       }
 
       const necessario = vacinas * 1;
+      const vacinasExtras = Math.floor(papiloma - necessario);
+      
       const resultadoDiv = document.getElementById('resultado-canina');
       resultadoDiv.innerHTML = `
-        <strong>Papiloma Necessário:</strong> ${necessario}g<br>
-        <strong>Vacinas Extras:</strong> ${Math.floor(papiloma - necessario)}<br>
-        <strong>Hanks:</strong> ${vacinas * 10}ml<br>
-        <strong>Cloroformio:</strong> ${vacinas * 1}ml<br>
-        <strong>Volume Total:</strong> ${vacinas * 6}ml
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Papiloma Necessário:</strong> 
+            <span>${necessario}g</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Vacinas Extras:</strong> 
+            <span>${vacinasExtras >= 0 ? vacinasExtras : 0}</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Hanks:</strong> 
+            <span>${vacinas * 10}ml</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong class="text-success">Clorofórmio:</strong> 
+            <span>${vacinas * 1}ml</span>
+          </div>
+          <div class="col-12 mb-2">
+            <strong class="text-success">Volume Total:</strong> 
+            <span>${vacinas * 6}ml</span>
+          </div>
+        </div>
       `;
       
-      document.getElementById('copiar-resultado-canina').style.display = 'block';
+      resultadoDiv.classList.remove('d-none');
+      document.getElementById('copiar-resultado-canina').classList.remove('d-none');
     }
 
     function calcularFormol() {
       const volume = parseFloat(document.getElementById('volume-recuperado').value);
       
-      if (isNaN(volume)) {
-        alert("Preencha o campo!");
+      if (isNaN(volume) || volume <= 0) {
+        alert("Por favor, insira um volume válido.");
         return;
       }
 
-      const formol = (volume * 0.5)/100;
-      document.getElementById('resultado-formol').innerHTML = `
-        <strong>Formol Necessário:</strong> ${formol.toFixed(2)}ml<br>
-        <small>(0.5% do volume total)</small>
+      const formol = (volume * 0.5) / 100;
+      const resultadoDiv = document.getElementById('resultado-formol');
+      resultadoDiv.innerHTML = `
+        <div class="text-center">
+          <h5 class="mb-3">Resultado</h5>
+          <div class="d-inline-block p-3 bg-light rounded-circle mb-3" style="width: 100px; height: 100px; border: 2px solid var(--verde-medio);">
+            <div class="d-flex flex-column justify-content-center align-items-center h-100">
+              <strong class="fs-5">${formol.toFixed(3)}</strong>
+              <small>ml</small>
+            </div>
+          </div>
+          <p class="mb-0">
+            <strong class="d-block mb-2">Volume de Formol Necessário</strong>
+            <span class="text-muted">(0,5% do volume total)</span>
+          </p>
+        </div>
       `;
       
-      document.getElementById('copiar-resultado-formol').style.display = 'block';
+      resultadoDiv.classList.remove('d-none');
+      document.getElementById('copiar-resultado-formol').classList.remove('d-none');
     }
 
     function copiarResultado(tipo) {
       try {
-        const resultadoDiv = document.getElementById(`resultado-${tipo}`);
-        const textoParaCopiar = resultadoDiv.innerText;
+        // Obter os valores para formatar o texto
+        let textoFinal = '';
+        
+        if (tipo === 'bovina') {
+          const papiloma = document.getElementById('papiloma-bovina').value;
+          const vacinas = document.getElementById('vacinas-bovina').value;
+          const necessario = vacinas * 5;
+          const vacinasExtras = Math.floor((papiloma - necessario) / 5);
+          
+          textoFinal = `Vacina Bovina:\n` +
+                      `Papiloma Necessário: ${necessario}g\n` +
+                      `Vacinas Extras: ${vacinasExtras >= 0 ? vacinasExtras : 0}\n` +
+                      `Hanks: ${vacinas * 20}ml\n` +
+                      `Clorofórmio: ${vacinas * 5}ml\n` +
+                      `Volume Total: ${vacinas * 15}ml`;
+        }
+        else if (tipo === 'canina') {
+          const papiloma = document.getElementById('papiloma-canina').value;
+          const vacinas = document.getElementById('vacinas-canina').value;
+          const necessario = vacinas * 1;
+          const vacinasExtras = Math.floor(papiloma - necessario);
+          
+          textoFinal = `Vacina Canina:\n` +
+                      `Papiloma Necessário: ${necessario}g\n` +
+                      `Vacinas Extras: ${vacinasExtras >= 0 ? vacinasExtras : 0}\n` +
+                      `Hanks: ${vacinas * 10}ml\n` +
+                      `Clorofórmio: ${vacinas * 1}ml\n` +
+                      `Volume Total: ${vacinas * 6}ml`;
+        }
+        else if (tipo === 'formol') {
+          const volume = document.getElementById('volume-recuperado').value;
+          const formol = (volume * 0.5) / 100;
+          
+          textoFinal = `Cálculo de Formol:\n` +
+                      `Volume Recuperado: ${volume}ml\n` +
+                      `Formol Necessário: ${formol.toFixed(3)}ml (0,5% do volume total)`;
+        }
         
         // Criar elemento temporário para copiar
         const textarea = document.createElement('textarea');
-        textarea.value = textoParaCopiar;
+        textarea.value = textoFinal;
         document.body.appendChild(textarea);
         textarea.select();
         
@@ -367,11 +540,13 @@
         // Feedback visual
         const btn = document.getElementById(`copiar-resultado-${tipo}`);
         if (copiado) {
-          btn.textContent = '✅ Copiado!';
-          btn.classList.add('copiado');
+          btn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Copiado!';
+          btn.classList.add('btn-success');
+          btn.classList.remove('btn-outline-success');
           setTimeout(() => {
-            btn.textContent = '📋 Copiar Resultado';
-            btn.classList.remove('copiado');
+            btn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copiar Resultado';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-success');
           }, 2000);
         } else {
           throw new Error('Não foi possível copiar');
@@ -381,6 +556,13 @@
         alert("Erro ao copiar. Você pode selecionar e copiar manualmente.");
       }
     }
+
+    // Tornar funções globalmente acessíveis
+    window.toggleCalculator = toggleCalculator;
+    window.calcularBovina = calcularBovina;
+    window.calcularCanina = calcularCanina;
+    window.calcularFormol = calcularFormol;
+    window.copiarResultado = copiarResultado;
   </script>
 </body>
 </html>
