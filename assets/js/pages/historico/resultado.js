@@ -23,7 +23,7 @@ window.mostrarResultados = async (id) => {
         const tarefa = tarefaSnap.data();
         
         // Check for both SN, ELISA, and PCR types
-        const isSN = tarefa.tipo === "SN IBR" || tarefa.tipo === "SN BVDV";
+        const isSN = tarefa.tipo && (tarefa.tipo.includes("SN IBR") || tarefa.tipo.includes("SN BVDV"));
         const isELISA = tarefa.tipo.includes("ELISA");
         const isPCR = tarefa.tipo.includes("PCR");
         const isRAIVA = tarefa.tipo.includes("RAIVA");
