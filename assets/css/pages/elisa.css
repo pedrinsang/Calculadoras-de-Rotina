@@ -1,0 +1,47 @@
+/* Estilos específicos para a página ELISA */
+
+/* Estilo para checkboxes do protocolo */
+.form-check-input:checked {
+  background-color: var(--verde-btn);
+  border-color: var(--verde-btn);
+}
+
+.form-check-label.completed {
+  text-decoration: line-through;
+  color: #6c757d;
+}
+
+/* Espaçamento específico para os protocolos */
+.card .form-check {
+  margin-bottom: 0.75rem;
+  padding-left: 0.5rem;
+}
+
+/* Estilos para os alertas de dicas e precauções */
+.alert-heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.alert ul {
+  padding-left: 1.25rem;
+  margin-bottom: 0;
+}
+
+.alert ul li {
+  margin-bottom: 0.35rem;
+}
+
+.alert ul li:last-child {
+  margin-bottom: 0;
+}
+
+/* Melhorias visuais para o card do checklist */
+.card-body .d-grid {
+  margin-top: 1rem;
+}
+
+#protocoloLeucose .card,
+#protocoloBvdv .card {
+  border-left: 4px solid var(--verde-medio);
+}

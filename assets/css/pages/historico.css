@@ -1,0 +1,475 @@
+/* Estilos específicos para a página de histórico */
+
+/* Container Principal */
+.historico-card {
+  padding: 1.5rem 1.25rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0;
+  height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.historico-title {
+  color: #1b5e20;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+  letter-spacing: 1px;
+}
+
+.historico-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 0.5rem;
+}
+
+.historico-item {
+  background: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(27,94,32,0.06);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 6px solid #a5d6a7;
+  position: relative;
+}
+
+/* Botões e Labels */
+.historico-btn {
+  background: #2e7d32;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  border: none;
+  transition: background 0.2s;
+}
+
+.historico-btn:hover, .historico-btn:focus {
+  background: #388e3c;
+  color: #fff;
+}
+
+.historico-form-label {
+  color: #1b5e20;
+  font-weight: 500;
+}
+
+/* Botões de Ação */
+.btn-detalhe {
+  background: #3f51b5;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-detalhe:hover, .btn-detalhe:focus {
+  background: #303f9f;
+  color: #fff;
+}
+
+.btn-resultado {
+  background: #2196f3;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-resultado:hover, .btn-resultado:focus {
+  background: #1976d2;
+  color: #fff;
+}
+
+.btn-download {
+  background: #4caf50;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-download:hover, .btn-download:focus {
+  background: #388e3c;
+  color: #fff;
+}
+
+.btn-restaurar {
+  background: #ff9800;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-restaurar:hover, .btn-restaurar:focus {
+  background: #f57c00;
+  color: #fff;
+}
+
+.btn-excluir {
+  background: #f44336;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-excluir:hover, .btn-excluir:focus {
+  background: #d32f2f;
+  color: #fff;
+}
+
+/* Grupo de botões e utilitários */
+.historico-acoes {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.white-space-pre-line {
+  white-space: pre-line;
+}
+
+.min-width-100 {
+  min-width: 100px;
+}
+
+.fixed-width-button {
+  width: 110px !important;
+  text-align: center;
+  justify-content: center;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+/* Modais */
+.modal-content {
+  border-radius: 16px;
+}
+
+.modal-resultados {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1060;
+}
+
+.modal-resultados-content {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  padding: 2rem;
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Detalhes de itens */
+.detalhe-item {
+  display: block;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.8rem;
+}
+
+.detalhe-label {
+  display: block;
+  width: 100%;
+  font-weight: 600;
+  color: #1b5e20;
+  margin-bottom: 0.3rem;
+}
+
+.detalhe-valor {
+  display: block;
+  width: 100%;
+}
+
+/* Tabelas */
+.tabela-resultados {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.tabela-resultados th, .tabela-resultados td {
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.tabela-resultados th {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  font-weight: 600;
+}
+
+.tabela-resultados tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Media Queries específicas */
+
+/* Telas Extra grandes (desktops grandes, TVs) */
+@media (min-width: 1400px) {
+  .historico-card {
+    max-width: 1320px;
+    padding: 2rem;
+  }
+  
+  .historico-title {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .historico-item {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left-width: 8px;
+  }
+}
+
+/* Telas grandes (desktops) */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .historico-card {
+    max-width: 1140px;
+  }
+}
+
+/* Telas médias (tablets e laptops pequenos) */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  .historico-card {
+    padding: 1.25rem 1rem;
+  }
+  
+  .historico-title {
+    font-size: 1.8rem;
+  }
+  
+  .historico-item {
+    padding: 0.9rem;
+  }
+  
+  #modal-detalhes .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .detalhe-item {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  .detalhe-label {
+    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+  }
+  
+  .detalhe-valor {
+    font-size: 1rem;
+  }
+}
+
+/* Smartphones e tablets pequenos */
+@media (max-width: 767.98px) {
+  body {
+    align-items: flex-start;
+  }
+  
+  .historico-card {
+    padding: 1rem 0.75rem;
+    height: calc(100vh - 1rem);
+    border-radius: 12px;
+  }
+  
+  .historico-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .historico-btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .historico-item {
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    border-left-width: 5px;
+  }
+  
+  #search-button {
+    width: 100% !important;
+  }
+  
+  .fixed-width-button {
+    width: auto !important;
+  }
+  
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+  
+  .detalhe-item {
+    display: block !important;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 0.8rem;
+  }
+  
+  .detalhe-label {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 0.3rem;
+  }
+  
+  .detalhe-valor {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .modal-body {
+    padding: 1rem 0.75rem;
+  }
+  
+  #modal-detalhes-content {
+    font-size: 0.95rem;
+  }
+}
+
+/* Smartphones */
+@media (max-width: 575.98px) {
+  .d-flex.flex-wrap.gap-2 {
+    gap: 0.25rem !important;
+  }
+  
+  .d-flex.flex-wrap.gap-2 .btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .alert {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Smartphones pequenos */
+@media (max-width: 400px) {
+  .historico-card {
+    padding: 0.75rem 0.3rem;
+  }
+  
+  .historico-title {
+    font-size: 1.3rem;
+  }
+  
+  .historico-btn {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+  }
+  
+  .d-flex.flex-wrap.gap-2 .btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn-sm {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+  }
+  
+  .historico-item h5 {
+    font-size: 1.1rem;
+  }
+  
+  .historico-item {
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Smartphones muito pequenos */
+@media (max-width: 320px) {
+  .historico-card {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .historico-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .historico-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .historico-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .d-flex.flex-wrap.gap-2 {
+    gap: 0.2rem !important;
+    justify-content: center;
+  }
+  
+  .d-flex.flex-wrap.gap-2 .btn {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.7rem;
+  }
+  
+  .modal-body {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  #modal-detalhes-content {
+    font-size: 0.85rem;
+  }
+  
+  .modal-header h5 {
+    font-size: 1rem;
+  }
+}
+
+/* Orientação paisagem em dispositivos móveis */
+@media (max-height: 500px) and (orientation: landscape) {
+  body {
+    align-items: flex-start;
+  }
+  
+  .historico-card {
+    height: auto;
+    min-height: calc(100vh - 1rem);
+  }
+  
+  .historico-title {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .row.mb-3, .mb-4 {
+    margin-bottom: 0.5rem !important;
+  }
+}
