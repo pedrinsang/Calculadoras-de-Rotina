@@ -44,6 +44,7 @@
 #protocoloLeucose .card,
 #protocoloBvdv .card {
   border-left: 4px solid var(--verde-medio);
+  padding: 15px;
 }
 
 .btn-top-nav {
