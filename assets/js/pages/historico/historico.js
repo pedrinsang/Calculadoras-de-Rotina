@@ -504,11 +504,17 @@ ${tarefa.observacoes}
                     </div>
                 </div>` : ''}
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" class="btn btn-warning" onclick="voltarParaMural('${id}')">Restaurar</button>
+            <div class="modal-footer d-flex flex-wrap gap-1 justify-content-end">
+                <button type="button" class="btn btn-secondary btn-sm px-2 py-1" data-bs-dismiss="modal" style="font-size: 0.8rem;">
+                    <i class="bi bi-x-circle me-1"></i>Fechar
+                </button>
+                <button type="button" class="btn btn-warning btn-sm px-2 py-1" onclick="voltarParaMural('${id}')" style="font-size: 0.8rem;">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar
+                </button>
                 ${tarefa.resultados ? `
-                    <button type="button" class="btn btn-primary" onclick="mostrarResultados('${id}')">Resultados</button>
+                    <button type="button" class="btn btn-primary btn-sm px-2 py-1" onclick="mostrarResultados('${id}')" style="font-size: 0.8rem;">
+                        <i class="bi bi-clipboard-data me-1"></i>Resultados
+                    </button>
                 ` : ''}
             </div>
         `;
