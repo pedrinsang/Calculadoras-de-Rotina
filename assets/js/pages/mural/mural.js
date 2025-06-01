@@ -83,8 +83,7 @@ export function mostrarFeedback(mensagem, tipo = "success") {
             break;
         case "error":
             titulo = "Erro";
-            icone = '<i class="bi bi-x-circle-fill"></i>';
-            tipo = "error"; // Normalizando o nome da classe
+            icone = '<i class="bi bi-exclamation-circle-fill"></i>';
             break;
         case "warning":
             titulo = "Atenção";
@@ -97,6 +96,7 @@ export function mostrarFeedback(mensagem, tipo = "success") {
         default:
             titulo = "Notificação";
             icone = '<i class="bi bi-bell-fill"></i>';
+            tipo = "info"; // Padrão para tipos desconhecidos
     }
     
     // Criar elemento de notificação
@@ -111,8 +111,9 @@ export function mostrarFeedback(mensagem, tipo = "success") {
             <div class="notification-title">${titulo}</div>
             <div class="notification-message">${mensagem}</div>
         </div>
-        <button class="notification-close" aria-label="Fechar">&times;</button>
-        <div class="notification-progress"></div>
+        <button class="notification-close" aria-label="Fechar">
+            <i class="bi bi-x"></i>
+        </button>
     `;
     
     // Adicionar ao container
@@ -121,10 +122,6 @@ export function mostrarFeedback(mensagem, tipo = "success") {
     // Mostrar com animação
     setTimeout(() => {
         notification.classList.add('show');
-        
-        // Animar a barra de progresso
-        const progressBar = notification.querySelector('.notification-progress');
-        progressBar.style.animation = 'progress 5s linear forwards';
         
         // Configurar evento de fechar no botão
         const closeButton = notification.querySelector('.notification-close');
@@ -160,30 +157,30 @@ function normalizarDataParaUTC(dataString) {
     ));
 }
 
+// Atualizar a função formatarDataParaExibicao para mostrar também a hora
 export function formatarDataParaExibicao(dataUTC) {
     return dataUTC.toLocaleDateString("pt-BR", {
         timeZone: "America/Sao_Paulo",
         day: "2-digit",
         month: "2-digit",
-        year: "numeric"
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
     });
 }
 
 // Obter sigla do usuário
 async function getSiglaUsuario(user) {
     try {
-        if (!user) return "N/A";
-        
         const userRef = doc(db, "usuarios", user.uid);
         const userSnap = await getDoc(userRef);
         
         if (userSnap.exists()) {
             return userSnap.data().sigla || "N/A";
         }
-        
         return "N/A";
     } catch (error) {
-        console.error("Erro ao obter sigla do usuário:", error);
+        console.error("Erro ao buscar sigla do usuário:", error);
         return "N/A";
     }
 }
@@ -202,7 +199,6 @@ async function adicionarTarefaModal() {
         const quantidadeInput = document.getElementById("quantidade-modal");
         const gramaturaInput = document.getElementById("gramatura-modal");
         const complementoInput = document.getElementById("complemento-modal");
-        const dataInput = document.getElementById("data-modal");
         const proprietarioNomeInput = document.getElementById("proprietario-nome-modal");
         const proprietarioMunicipioInput = document.getElementById("proprietario-municipio-modal");
         const proprietarioContatoInput = document.getElementById("proprietario-contato-modal");
@@ -212,11 +208,10 @@ async function adicionarTarefaModal() {
         const observacoesInput = document.getElementById("observacoes-modal");
 
         // Validate required fields exist
-        if (!idInput || !tipoInput || !quantidadeInput || !dataInput) {
+        if (!idInput || !tipoInput || !quantidadeInput) {
             throw new Error("Campos obrigatórios não encontrados no formulário");
         }
 
-        // Get values with null checks
         const novaTarefa = {
             id: idInput.value.trim(),
             tipo: tipoInput.value,
@@ -237,12 +232,11 @@ async function adicionarTarefaModal() {
                 municipio: veterinarioMunicipioInput ? veterinarioMunicipioInput.value.trim() : "",
                 contato: veterinarioContatoInput ? veterinarioContatoInput.value.trim() : ""
             },
-            dataRecebimento: new Date(dataInput.value),
             observacoes: observacoesInput ? observacoesInput.value.trim() : "",
             status: "pendente",
-            criadoEm: Timestamp.now(),
+            criadoEm: Timestamp.now(), // Apenas criadoEm, removendo dataRecebimento
             criadoPor: user.uid,
-            siglaResponsavel: await getSiglaUsuario(user)
+            siglaResponsavel: await getSiglaUsuario(user) // Aguarda a busca da sigla
         };
 
         // Validate required data
@@ -251,10 +245,7 @@ async function adicionarTarefaModal() {
         if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
 
         // Add to Firestore
-        await addDoc(collection(db, "tarefas"), {
-            ...novaTarefa,
-            dataRecebimento: Timestamp.fromDate(novaTarefa.dataRecebimento)
-        });
+        await addDoc(collection(db, "tarefas"), novaTarefa);
 
         // Fechar o modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('tarefa-modal'));
@@ -423,7 +414,11 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                     <h5 class="card-title mb-1 text-success fw-bold">${tarefa.id}</h5>
                     <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${(tarefa.tipo === "PCR" || tarefa.tipo === "RAIVA") && tarefa.complemento ? ` ${tarefa.complemento}` : ''}</div>
                     <div class="mb-1"><span class="fw-medium">Quantidade:</span> ${tarefa.quantidade || '0'}</div>
-                    <div><span class="fw-medium">Recebimento:</span> ${dataRecebimento}</div>
+                    <div><span class="fw-medium">Recebimento:</span> ${
+    tarefa.criadoEm?.toDate
+        ? formatarDataParaExibicao(tarefa.criadoEm.toDate())
+        : "Data não disponível"
+}</div>
                   </div>
                 </div>
                 
@@ -590,6 +585,7 @@ window.concluirTarefa = async (id) => {
             ...tarefa,
             dataConclusao: Timestamp.now(),
             concluidoPor: auth.currentUser.uid
+            // criadoEm já está preservado com o mesmo valor de dataRecebimento
         });
         
         await deleteDoc(tarefaRef);
@@ -683,35 +679,15 @@ window.editarTarefaModal = async (id) => {
             try {
                 mostrarLoading();
                 
-                const dataInput = document.getElementById("data-modal").value;
-                const dataLocal = new Date(dataInput);
-                const dataUTC = new Date(dataLocal.getTime() + dataLocal.getTimezoneOffset() * 60000);
-                
+                // Atualizar a tarefa mantendo apenas criadoEm original
                 await updateDoc(tarefaRef, {
                     id: document.getElementById("id-modal").value,
                     tipo: document.getElementById("tipo-modal").value,
                     quantidade: parseInt(document.getElementById("quantidade-modal").value),
-                    gramatura: document.getElementById("tipo-modal").value === "VACINA" 
-                            ? (document.getElementById("gramatura-modal").value 
-                            ? parseFloat(document.getElementById("gramatura-modal").value) 
-                            : null)
-                            : null,
-                    complemento: (document.getElementById("tipo-modal").value === "PCR" || 
-                            document.getElementById("tipo-modal").value === "RAIVA")
-                            ? document.getElementById("complemento-modal").value.trim()
-                            : null,
-                    proprietario: {
-                        nome: document.getElementById("proprietario-nome-modal").value.trim(),
-                        municipio: document.getElementById("proprietario-municipio-modal").value.trim(),
-                        contato: document.getElementById("proprietario-contato-modal").value.trim()
-                    },
-                    veterinario: {
-                        nome: document.getElementById("veterinario-nome-modal").value.trim(),
-                        municipio: document.getElementById("veterinario-municipio-modal").value.trim(),
-                        contato: document.getElementById("veterinario-contato-modal").value.trim()
-                    },
-                    dataRecebimento: Timestamp.fromDate(dataUTC),
-                    atualizadoEm: Timestamp.now(),
+                    // Outros campos...
+                    atualizadoEm: Timestamp.now(), // Registra quando foi editada
+                    // NÃO incluir criadoEm aqui para preservar o timestamp original
+                    // NÃO incluir dataRecebimento
                     observacoes: document.getElementById("observacoes-modal").value.trim()
                 });
                 
@@ -752,25 +728,31 @@ window.mostrarDetalhes = async (id) => {
         
         const tarefa = docSnap.data();
         let siglaUsuario = "N/A";
-        
         if (tarefa.siglaResponsavel && tarefa.siglaResponsavel !== "N/A") {
             siglaUsuario = tarefa.siglaResponsavel;
         } else if (tarefa.criadoPor) {
-            // Lógica existente para buscar sigla
-            // ...
+            // Busca a sigla do usuário no banco, se não estiver salva na tarefa
+            try {
+                const userRef = doc(db, "usuarios", tarefa.criadoPor);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    siglaUsuario = userSnap.data().sigla || "N/A";
+                }
+            } catch (e) {
+                // Se der erro, mantém "N/A"
+            }
         }
 
-        const dataRecebimento = tarefa.dataRecebimento?.toDate 
-            ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
+        // Formatar data/hora de recebimento (registro)
+        const dataRecebimento = tarefa.criadoEm?.toDate
+            ? formatarDataParaExibicao(tarefa.criadoEm.toDate())
             : "Data não disponível";
 
-        // Remove existing modal if present
+        // Remove modal antigo se existir
         let modalElement = document.getElementById("modal-detalhes");
-        if (modalElement) {
-            modalElement.remove();
-        }
-        
-        // Status badge with appropriate color
+        if (modalElement) modalElement.remove();
+
+        // Status badge
         let statusBadge = "";
         if (tarefa.status === 'em-progresso') {
             statusBadge = '<span class="badge bg-primary">Em Progresso</span>';
@@ -780,109 +762,114 @@ window.mostrarDetalhes = async (id) => {
             statusBadge = '<span class="badge bg-warning text-dark">Pendente</span>';
         }
 
-        // Criar modal com layout aprimorado
-        const modalHTML = `
-            <div class="modal fade" id="modal-detalhes" tabindex="-1" aria-labelledby="detalhesTarefaLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 shadow">
-                        <div class="modal-header bg-light">
-                            <h5 class="modal-title" id="detalhesTarefaLabel">
-                                <i class="bi bi-info-circle-fill text-success me-2"></i>
-                                <span class="fw-bold text-success">Detalhes da Tarefa</span>
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        // Modal HTML igual ao do histórico
+        const modalContent = `
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle-fill text-success me-2"></i>
+                    <span class="fw-bold text-success">Detalhes da Tarefa</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="card border-0 mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-3 text-success fw-bold">
+                            <i class="bi bi-card-heading me-2"></i>Informações Básicas
+                        </h6>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">ID:</div>
+                            <div class="col-7 fw-medium">${tarefa.id || 'N/A'}</div>
                         </div>
-                        <div class="modal-body p-4">
-                            <div class="card border-0 mb-3 shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="card-subtitle mb-3 text-success fw-bold">
-                                        <i class="bi bi-card-heading me-2"></i>Informações Básicas
-                                    </h6>
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">ID:</div>
-                                        <div class="col-7 fw-medium">${tarefa.id || 'N/A'}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">Tipo:</div>
-                                        <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">Quantidade:</div>
-                                        <div class="col-7 fw-medium">${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
-                                            ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
-                                            : "amostras"}</div>
-                                    </div>
-                                    ${tarefa.complemento ? `
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">Complemento:</div>
-                                        <div class="col-7 fw-medium">${tarefa.complemento.trim()}</div>
-                                    </div>` : ''}
-                                </div>
-                            </div>
-                            
-                            <div class="card border-0 mb-3 shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="card-subtitle mb-3 text-success fw-bold">
-                                        <i class="bi bi-people-fill me-2"></i>Contatos
-                                    </h6>
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">Proprietário:</div>
-                                        <div class="col-7 fw-medium">${typeof tarefa.proprietario === 'object' 
-                                            ? tarefa.proprietario?.nome || 'N/A'
-                                            : tarefa.proprietario || 'N/A'}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">Veterinário:</div>
-                                        <div class="col-7 fw-medium">${typeof tarefa.veterinario === 'object'
-                                            ? tarefa.veterinario?.nome || 'N/A'
-                                            : tarefa.veterinario || 'N/A'}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="card border-0 mb-3 shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="card-subtitle mb-3 text-success fw-bold">
-                                        <i class="bi bi-calendar3 me-2"></i>Status e Datas
-                                    </h6>
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">Status:</div>
-                                        <div class="col-7">${statusBadge}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">Recebimento:</div>
-                                        <div class="col-7 fw-medium">${dataRecebimento}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-5 text-muted">Responsável:</div>
-                                        <div class="col-7 fw-medium">${siglaUsuario}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            ${tarefa.observacoes ? `
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="card-subtitle mb-3 text-success fw-bold">
-                                        <i class="bi bi-card-text me-2"></i>Observações
-                                    </h6>
-                                    <div class="bg-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem;">
-${tarefa.observacoes}
-                                    </div>
-                                </div>
-                            </div>` : ''}
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Tipo:</div>
+                            <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Quantidade:</div>
+                            <div class="col-7 fw-medium">${tarefa.quantidade || '0'} ${tarefa.tipo === "VACINA" 
+                                ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
+                                : "amostras"}</div>
+                        </div>
+                        ${tarefa.complemento ? `
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Complemento:</div>
+                            <div class="col-7 fw-medium">${tarefa.complemento.trim()}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+                <div class="card border-0 mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-3 text-success fw-bold">
+                            <i class="bi bi-people-fill me-2"></i>Contatos
+                        </h6>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Proprietário:</div>
+                            <div class="col-7 fw-medium">${typeof tarefa.proprietario === 'object' 
+                                ? tarefa.proprietario?.nome || 'N/A'
+                                : tarefa.proprietario || 'N/A'}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Veterinário:</div>
+                            <div class="col-7 fw-medium">${typeof tarefa.veterinario === 'object'
+                                ? tarefa.veterinario?.nome || 'N/A'
+                                : tarefa.veterinario || 'N/A'}</div>
                         </div>
                     </div>
                 </div>
+                <div class="card border-0 mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-3 text-success fw-bold">
+                            <i class="bi bi-calendar3 me-2"></i>Status e Datas
+                        </h6>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Status:</div>
+                            <div class="col-7">${statusBadge}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Recebimento:</div>
+                            <div class="col-7 fw-medium">${dataRecebimento}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Responsável:</div>
+                            <div class="col-7 fw-medium">${siglaUsuario}</div>
+                        </div>
+                    </div>
+                </div>
+                ${tarefa.observacoes ? `
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-3 text-success fw-bold">
+                            <i class="bi bi-card-text me-2"></i>Observações
+                        </h6>
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem;">
+${tarefa.observacoes}
+                        </div>
+                    </div>
+                </div>` : ''}
             </div>
         `;
-        
-        // Add modal to body
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        // Show modal using Bootstrap
-        const modal = new bootstrap.Modal(document.getElementById('modal-detalhes'));
+
+        // Cria e mostra o modal
+        const modalDiv = document.createElement("div");
+        modalDiv.className = "modal fade";
+        modalDiv.id = "modal-detalhes";
+        modalDiv.tabIndex = -1;
+        modalDiv.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    ${modalContent}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+
+        const modal = new bootstrap.Modal(modalDiv);
         modal.show();
+
+        modalDiv.addEventListener('hidden.bs.modal', function () {
+            modalDiv.remove();
+        });
 
     } catch (error) {
         console.error("Erro ao mostrar detalhes:", error);
@@ -1007,7 +994,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         
-        // Inicializar autenticação e carregar dados (recuperado do primeiro evento)
+        // Inicializar autenticação e carregar dados (recuperada do primeiro evento)
         mostrarLoading();
         onAuthStateChanged(auth, (user) => {
             try {
