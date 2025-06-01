@@ -2,6 +2,9 @@
 
 /* Container Principal */
 .historico-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(27,94,32,0.10);
   padding: 1.5rem 1.25rem;
   max-width: 1200px;
   width: 100%;
@@ -12,7 +15,7 @@
 }
 
 .historico-title {
-  color: #1b5e20;
+  color: var(--verde-escuro);
   font-weight: 700;
   text-align: center;
   margin-bottom: 1rem;
@@ -31,13 +34,13 @@
   box-shadow: 0 2px 8px rgba(27,94,32,0.06);
   padding: 1rem;
   margin-bottom: 1rem;
-  border-left: 6px solid #a5d6a7;
+  border-left: 6px solid var(--verde-claro);
   position: relative;
 }
 
 /* Botões e Labels */
 .historico-btn {
-  background: #2e7d32;
+  background: var(--verde-btn);
   color: #fff;
   border-radius: 20px;
   padding: 0.5rem 1.5rem;
@@ -47,12 +50,12 @@
 }
 
 .historico-btn:hover, .historico-btn:focus {
-  background: #388e3c;
+  background: var(--verde-btn-hover);
   color: #fff;
 }
 
 .historico-form-label {
-  color: #1b5e20;
+  color: var(--verde-escuro);
   font-weight: 500;
 }
 
@@ -156,11 +159,7 @@
   padding-right: 8px !important;
 }
 
-/* Modais */
-.modal-content {
-  border-radius: 16px;
-}
-
+/* Modais específicos */
 .modal-resultados {
   position: fixed;
   top: 0;
@@ -198,7 +197,7 @@
   display: block;
   width: 100%;
   font-weight: 600;
-  color: #1b5e20;
+  color: var(--verde-escuro);
   margin-bottom: 0.3rem;
 }
 
@@ -220,8 +219,8 @@
 }
 
 .tabela-resultados th {
-  background-color: #e8f5e9;
-  color: #1b5e20;
+  background-color: var(--verde-bg);
+  color: var(--verde-escuro);
   font-weight: 600;
 }
 
@@ -229,9 +228,7 @@
   background-color: #f9f9f9;
 }
 
-/* Media Queries específicas */
-
-/* Telas Extra grandes (desktops grandes, TVs) */
+/* Media Queries específicas para histórico */
 @media (min-width: 1400px) {
   .historico-card {
     max-width: 1320px;
@@ -250,14 +247,12 @@
   }
 }
 
-/* Telas grandes (desktops) */
 @media (min-width: 1200px) and (max-width: 1399.98px) {
   .historico-card {
     max-width: 1140px;
   }
 }
 
-/* Telas médias (tablets e laptops pequenos) */
 @media (min-width: 768px) and (max-width: 1199.98px) {
   .historico-card {
     padding: 1.25rem 1rem;
@@ -290,12 +285,7 @@
   }
 }
 
-/* Smartphones e tablets pequenos */
 @media (max-width: 767.98px) {
-  body {
-    align-items: flex-start;
-  }
-  
   .historico-card {
     padding: 1rem 0.75rem;
     height: calc(100vh - 1rem);
@@ -326,14 +316,9 @@
     width: auto !important;
   }
   
-  .modal-dialog {
-    margin: 0.5rem;
-  }
-  
   .detalhe-item {
     display: block !important;
     margin-bottom: 0.8rem;
-    border-bottom: 1px solid #e9ecef;
     padding-bottom: 0.8rem;
   }
   
@@ -347,17 +332,8 @@
     display: block !important;
     width: 100% !important;
   }
-  
-  .modal-body {
-    padding: 1rem 0.75rem;
-  }
-  
-  #modal-detalhes-content {
-    font-size: 0.95rem;
-  }
 }
 
-/* Smartphones */
 @media (max-width: 575.98px) {
   .d-flex.flex-wrap.gap-2 {
     gap: 0.25rem !important;
@@ -367,14 +343,8 @@
     padding: 0.2rem 0.5rem;
     font-size: 0.8rem;
   }
-  
-  .alert {
-    padding: 0.5rem;
-    font-size: 0.9rem;
-  }
 }
 
-/* Smartphones pequenos */
 @media (max-width: 400px) {
   .historico-card {
     padding: 0.75rem 0.3rem;
@@ -389,16 +359,6 @@
     font-size: 0.85rem;
   }
   
-  .d-flex.flex-wrap.gap-2 .btn {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.75rem;
-  }
-  
-  .btn-sm {
-    padding: 0.15rem 0.4rem;
-    font-size: 0.75rem;
-  }
-  
   .historico-item h5 {
     font-size: 1.1rem;
   }
@@ -409,7 +369,6 @@
   }
 }
 
-/* Smartphones muito pequenos */
 @media (max-width: 320px) {
   .historico-card {
     padding: 0.5rem 0.25rem;
@@ -429,36 +388,9 @@
     padding: 0.5rem;
     margin-bottom: 0.5rem;
   }
-  
-  .d-flex.flex-wrap.gap-2 {
-    gap: 0.2rem !important;
-    justify-content: center;
-  }
-  
-  .d-flex.flex-wrap.gap-2 .btn {
-    padding: 0.15rem 0.3rem;
-    font-size: 0.7rem;
-  }
-  
-  .modal-body {
-    padding: 0.75rem 0.5rem;
-  }
-  
-  #modal-detalhes-content {
-    font-size: 0.85rem;
-  }
-  
-  .modal-header h5 {
-    font-size: 1rem;
-  }
 }
 
-/* Orientação paisagem em dispositivos móveis */
 @media (max-height: 500px) and (orientation: landscape) {
-  body {
-    align-items: flex-start;
-  }
-  
   .historico-card {
     height: auto;
     min-height: calc(100vh - 1rem);
