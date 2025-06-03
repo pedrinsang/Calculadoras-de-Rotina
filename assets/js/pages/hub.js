@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
     window.location.href = "../index.html";
   } else {
     document.querySelector('.user-name').textContent = usuario.nome;
+    
+    // Garantir que elementos de ação do usuário estão visíveis
+    document.querySelector('.user-actions').style.display = 'flex';
   }
 
   // Configurar botão de logout
