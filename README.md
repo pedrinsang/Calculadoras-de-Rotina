@@ -96,16 +96,7 @@ Para obter uma cópia local funcionando, siga estas etapas.
     -   `assets/js/pages/historico/historico.js`
     -   `assets/js/pages/historico/resultado.js`
 
-    A chave de API (`apiKey`) e outros detalhes de configuração do Firebase estão diretamente no código.
-    ```javascript
-    // Exemplo de assets/js/main.js
-    const firebaseConfig = {
-        apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M", // Esta é uma chave pública
-        authDomain: "hub-de-calculadoras.firebaseapp.com",
-        projectId: "hub-de-calculadoras",
-        // ...outras configurações
-    };
-    ```
+   
     **Nota:** Para um ambiente de produção ou se você for fazer seu próprio deploy, é altamente recomendável que você crie seu próprio projeto Firebase e substitua essas credenciais pelas suas. Armazenar chaves de API diretamente no código-fonte do cliente é aceitável para chaves públicas do Firebase, mas para qualquer chave sensível (que não parece ser o caso aqui para a configuração básica do Firebase SDK), utilize variáveis de ambiente ou um sistema de configuração seguro.
 
 3.  **Acesse a Aplicação:**
