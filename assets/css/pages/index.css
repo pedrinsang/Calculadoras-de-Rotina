@@ -1,0 +1,139 @@
+/* Estilos específicos para a página de login/cadastro */
+
+body {
+  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Impede qualquer scroll */
+  margin: 0;
+  padding: 0;
+}
+
+.container.py-4 {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+}
+
+.card {
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(60,60,60,0.13);
+  max-width: 430px;
+  width: 100%;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.logo {
+  max-width: 200px;
+  margin-bottom: 0.7rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-label {
+  color: var(--verde-escuro);
+  font-weight: 600;
+}
+
+.form-control:focus {
+  border-color: var(--verde-medio);
+  box-shadow: 0 0 0 0.2rem #a5d6a7;
+}
+
+.btn-success, .btn-success:focus {
+  background-color: var(--verde-btn);
+  border-color: var(--verde-btn);
+  font-weight: 600;
+  border-radius: 2rem;
+  transition: background 0.2s;
+}
+
+.btn-success:hover {
+  background-color: var(--verde-btn-hover);
+  border-color: var(--verde-btn-hover);
+}
+
+.form-check-input:checked {
+  background-color: var(--verde-btn);
+  border-color: var(--verde-btn);
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1.2rem;
+  top: 70%;
+  transform: translateY(-50%);
+  height: 38px;
+  display: flex;
+  align-items: center;  
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  user-select: none;
+  font-size: 1.3rem;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 38px;
+}
+
+.position-relative .form-control {
+  padding-right: 2.5rem;
+}
+
+.alert {
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.creditos {
+  color: #a1a1a1;
+  font-size: 0.8rem;
+  margin-top: 18px;
+  text-align: center;
+}
+
+/* Botão de instalação do PWA */
+#installBtn {
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  display: none;
+}
+
+/* Instruções de instalação para iOS */
+#iosInstallInstructions {
+  display: none; 
+  position: fixed; 
+  bottom: 20px; 
+  right: 20px; 
+  background: #1b5e20; 
+  color: white; 
+  padding: 12px 15px; 
+  border-radius: 8px; 
+  z-index: 999; 
+  max-width: 220px; 
+  font-size: 14px; 
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+  .card {
+    max-width: 98vw;
+    border-radius: 1.2rem;
+  }
+  
+  .logo {
+    max-width: 130px;
+  }
+}
