@@ -679,15 +679,17 @@ window.editarTarefaModal = async (id) => {
             try {
                 mostrarLoading();
                 
+                // NOVO: Capturar os valores atuais dos filtros antes da atualização
+                const filtroTipoAtual = document.getElementById("filtro-tipo").value;
+                const filtroOrdemAtual = document.getElementById("filtro-ordem").value;
+                
                 // Atualizar a tarefa mantendo apenas criadoEm original
                 await updateDoc(tarefaRef, {
                     id: document.getElementById("id-modal").value,
                     tipo: document.getElementById("tipo-modal").value,
                     quantidade: parseInt(document.getElementById("quantidade-modal").value),
                     // Outros campos...
-                    atualizadoEm: Timestamp.now(), // Registra quando foi editada
-                    // NÃO incluir criadoEm aqui para preservar o timestamp original
-                    // NÃO incluir dataRecebimento
+                    atualizadoEm: Timestamp.now(),
                     observacoes: document.getElementById("observacoes-modal").value.trim()
                 });
                 
@@ -695,7 +697,8 @@ window.editarTarefaModal = async (id) => {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('tarefa-modal'));
                 if (modal) modal.hide();
                 
-                carregarTarefas();
+                // MODIFICADO: Carregar tarefas mantendo os filtros atuais
+                carregarTarefas(filtroTipoAtual, filtroOrdemAtual);
                 mostrarFeedback("Tarefa atualizada com sucesso!", "success");
             } catch (error) {
                 console.error("Erro ao atualizar:", error);

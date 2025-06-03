@@ -13,11 +13,12 @@ body {
 /* Container principal do hub com fundo branco */
 .hub-container {
   background-color: white;
-  max-width: 450px;
-  padding: 1.5rem;
+  max-width: 700px; /* AUMENTADO: de 450px para 700px */
+  width: 100%; /* ADICIONADO: garante que use toda a largura disponível */
+  padding: 2.5rem; /* AUMENTADO: de 1.5rem para 2.5rem */
   text-align: center;
   border-radius: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08); /* MELHORADO: sombra mais suave e expansiva */
 }
 
 /* Título principal */
@@ -25,105 +26,110 @@ body {
   color: var(--verde-escuro);
   font-weight: 700;
   text-align: center;
-  margin-bottom: 0.5rem;
-  font-size: 2rem;
+  margin-bottom: 0.75rem; /* AUMENTADO: de 0.5rem para 0.75rem */
+  font-size: 2.5rem; /* AUMENTADO: de 2rem para 2.5rem */
 }
 
 /* Subtítulo */
 .hub-subtitle {
   color: var(--verde-medio);
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem; /* AUMENTADO: de 1.5rem para 2rem */
+  font-size: 1.2rem; /* ADICIONADO: aumentado o tamanho da fonte */
 }
 
 /* Grid de cards */
 .hub-grid {
   display: block;
-  margin-top: 1rem;
+  margin-top: 1.5rem; /* AUMENTADO: de 1rem para 1.5rem */
 }
 
 /* Botões principais (Protocolos e Mural) */
 .main-buttons {
   display: flex;
   justify-content: space-between;
-  gap: 0.6rem; /* Reduzido de 1rem */
-  margin: 1.25rem 0; /* Reduzido de 1.5rem */
+  gap: 1rem; /* AUMENTADO: de 0.6rem para 1rem */
+  margin: 2rem 0; /* AUMENTADO: de 1.25rem para 2rem */
 }
 
 .main-button {
   background-color: var(--verde-btn);
   color: white;
-  border-radius: 12px;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
+  border-radius: 16px; /* AUMENTADO: de 12px para 16px */
+  padding: 1.25rem 1.5rem; /* AUMENTADO: de 0.75rem 1rem para 1.25rem 1.5rem */
+  font-size: 1.2rem; /* AUMENTADO: de 1rem para 1.2rem */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.8rem; /* AUMENTADO: de 0.5rem para 0.8rem */
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s; /* ADICIONADO: efeito de transform */
   flex: 1;
   justify-content: center;
-  max-width: none; /* Remove a limitação de largura */
+  max-width: none;
 }
 
 .main-button:hover {
   background-color: var(--verde-btn-hover);
   color: white;
+  transform: translateY(-3px); /* ADICIONADO: leve elevação no hover */
 }
 
 .main-button i {
-  font-size: 1.25rem;
+  font-size: 1.5rem; /* AUMENTADO: de 1.25rem para 1.5rem */
 }
 
 /* Links das calculadoras em linha */
 .calculadoras-links {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem; /* Reduzido de 0.75rem */
-  margin: 1rem 0; /* Reduzido de 1.5rem */
+  gap: 0.75rem; /* AUMENTADO: de 0.4rem para 0.75rem */
+  margin: 2rem 0; /* AUMENTADO: de 1rem para 2rem */
 }
 
 .calculadora-link {
-  background-color: #a5d6a7; /* Verde claro como na imagem */
-  border-radius: 12px;
-  padding: 0.75rem;
+  background-color: #a5d6a7;
+  border-radius: 16px; /* AUMENTADO: de 12px para 16px */
+  padding: 1.1rem; /* AUMENTADO: de 0.75rem para 1.1rem */
   color: var(--verde-escuro);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 1.1rem; /* AUMENTADO: de 0.95rem para 1.1rem */
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  transition: background-color 0.2s;
-  margin-bottom: 0; /* Removido o espaço de 0.5rem */
+  gap: 0.5rem; /* AUMENTADO: de 0.3rem para 0.5rem */
+  transition: background-color 0.2s, transform 0.2s;
+  margin-bottom: 0;
 }
 
 .calculadora-link:hover {
   background-color: var(--verde-bg);
+  transform: translateY(-2px); /* ADICIONADO: leve elevação no hover */
 }
 
 /* Nome do usuário e informações */
 .user-info {
-  display: block;
-  margin-top: 1.2rem; /* Reduzido de 2rem */
+  display: block !important;
+  margin-top: 2rem !important; /* AUMENTADO: de 1.2rem para 2rem */
+  visibility: visible !important;
 }
 
 .user-name {
-  margin-bottom: 0.5rem; /* Reduzido de 0.75rem */
+  margin-bottom: 0.75rem; /* AUMENTADO: de 0.5rem para 0.75rem */
   display: block;
   font-weight: 600;
   color: var(--verde-medio);
+  font-size: 1.1rem; /* ADICIONADO: aumentado o tamanho da fonte */
 }
 
 /* Ícone de usuário antes do nome */
 .user-name:before {
   content: "";
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 24px; /* AUMENTADO: de 20px para 24px */
+  height: 24px; /* AUMENTADO: de 20px para 24px */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
-  margin-right: 5px;
+  margin-right: 8px; /* AUMENTADO: de 5px para 8px */
   vertical-align: middle;
 }
 
@@ -131,10 +137,10 @@ body {
 .logout-button {
   background-color: transparent;
   border: 1px solid red;
-  border-radius: 50px; /* Botão mais arredondado */
-  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  padding: 0.6rem 1.8rem; /* AUMENTADO: de 0.5rem 1.5rem para 0.6rem 1.8rem */
   color: red;
-  font-size: 0.9rem;
+  font-size: 1rem; /* AUMENTADO: de 0.9rem para 1rem */
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
@@ -150,15 +156,82 @@ body {
 /* Rodapé */
 .hub-footer {
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.9rem; /* AUMENTADO: de 0.8rem para 0.9rem */
   color: #666;
-  margin-top: 2rem;
+  margin-top: 2.5rem; /* AUMENTADO: de 2rem para 2.5rem */
 }
 
-/* Responsividade */
+/* Ações do usuário */
+.user-actions {
+  display: flex !important;
+  gap: 15px !important; /* AUMENTADO: de 10px para 15px */
+  margin-top: 15px !important; /* AUMENTADO: de 10px para 15px */
+  justify-content: center !important;
+  visibility: visible !important;
+}
+
+/* Botão da conta */
+.account-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px; /* AUMENTADO: de 8px 12px para 10px 16px */
+  background-color: var(--verde-medio);
+  color: white;
+  border-radius: 10px; /* AUMENTADO: de 8px para 10px */
+  border: none;
+  font-size: 1rem; /* AUMENTADO: de 14px para 1rem */
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.account-button:hover {
+  background-color: var(--verde-btn-hover);
+  color: white;
+}
+
+.account-button i {
+  margin-right: 8px; /* AUMENTADO: de 5px para 8px */
+}
+
+/* Estilo para o botão de engrenagem */
+.gear-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px; /* AUMENTADO: de 36px para 48px */
+  height: 48px; /* AUMENTADO: de 36px para 48px */
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: #666;
+}
+
+.gear-button i {
+  font-size: 1.5rem; /* AUMENTADO: de 1.2rem para 1.5rem */
+}
+
+.gear-button:hover {
+  background-color: #ddd;
+  color: #333;
+  transform: rotate(30deg);
+}
+
+/* Responsividade - MANTIDA PARA DISPOSITIVOS MÓVEIS */
 @media (max-width: 768px) {
   .hub-container {
     padding: 1.5rem;
+    max-width: 450px;
+  }
+  
+  .hub-title {
+    font-size: 2rem;
+  }
+  
+  .hub-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
   }
   
   .hub-grid {
@@ -166,17 +239,52 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
   
-  .hub-card {
-    padding: 1.25rem;
+  .main-buttons {
+    gap: 0.6rem;
+    margin: 1.25rem 0;
   }
   
-  .hub-card i {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-  }
-  
-  .hub-card h3 {
+  .main-button {
+    padding: 0.75rem 1rem;
     font-size: 1rem;
+    border-radius: 12px;
+  }
+  
+  .main-button i {
+    font-size: 1.25rem;
+  }
+  
+  .calculadoras-links {
+    gap: 0.4rem;
+    margin: 1rem 0;
+  }
+  
+  .calculadora-link {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    border-radius: 12px;
+  }
+  
+  .user-info {
+    margin-top: 1.2rem !important;
+  }
+  
+  .user-name {
+    font-size: initial;
+  }
+  
+  .user-name:before {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .gear-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .gear-button i {
+    font-size: 1.2rem;
   }
 }
 
