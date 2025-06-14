@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventário de Botijões de Nitrogênio</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/pages/inventario-nitrogenio.css">
+</head>
+<body>
+  <!-- Container principal unificado -->
+  <div class="main-container">
+    <!-- Seção do cabeçalho -->
+    <div class="header-section">
+      <div class="row align-items-center">
+        <div class="col-12 col-lg-7 mb-3 mb-lg-0">
+          <h1 class="title-responsive">
+            <i class="bi bi-thermometer-snow me-2"></i>
+            <span class="title-text">Inventário de Botijões de Nitrogênio</span>
+          </h1>
+        </div>
+        <div class="col-12 col-lg-5">
+          <div class="d-flex flex-column flex-sm-row gap-2 justify-content-lg-end">
+            <button id="gerar-relatorio" class="btn btn-relatorio btn-responsive">
+              <i class="bi bi-file-earmark-text"></i>
+              <span class="btn-text-desktop">Gerar Relatório</span>
+              <span class="btn-text-mobile">Relatório</span>
+            </button>
+            <button id="adicionar-item" class="btn btn-adicionar btn-responsive">
+              <i class="bi bi-plus-circle"></i>
+              <span class="btn-text-desktop">Adicionar Item</span>
+              <span class="btn-text-mobile">Adicionar</span>
+            </button>
+            <a href="inventario-selecao.html" class="btn btn-voltar btn-responsive">
+              <i class="bi bi-arrow-left-circle"></i>
+              <span class="btn-text-desktop">Voltar</span>
+              <span class="btn-text-mobile">Voltar</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de filtros -->
+    <div class="filters-section">
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-4">
+          <label class="form-label fw-semibold mb-2">
+            <i class="bi bi-search me-1"></i>Buscar
+          </label>
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="bi bi-search"></i>
+            </span>
+            <input type="text" id="filtro-busca" class="form-control" 
+                   placeholder="Buscar por identificação, rack, caixa...">
+          </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2">
+          <label class="form-label fw-semibold mb-2">
+            <i class="bi bi-grid-3x3 me-1"></i>Rack
+          </label>
+          <select id="filtro-rack" class="form-select">
+            <option value="">Todos os Racks</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2">
+          <label class="form-label fw-semibold mb-2">
+            <i class="bi bi-box me-1"></i>Caixa
+          </label>
+          <select id="filtro-caixa" class="form-select">
+            <option value="">Todas as Caixas</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-6 col-lg-2">
+          <label class="form-label fw-semibold mb-2">&nbsp;</label>
+          <button id="limpar-filtros" class="btn btn-outline-secondary w-100 btn-responsive">
+            <i class="bi bi-x-circle"></i>
+            <span class="btn-text-desktop">Limpar Filtros</span>
+            <span class="btn-text-mobile">Limpar</span>
+          </button>
+        </div>
+        <div class="col-12 col-md-6 col-lg-2">
+          <label class="form-label fw-semibold mb-2">
+            <i class="bi bi-graph-up me-1"></i>Total
+          </label>
+          <div class="info-badge">
+            <span id="total-itens" class="badge bg-info fs-6">0 itens</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção da tabela -->
+    <div class="table-section">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" id="tabela-inventario">
+          <thead>
+            <tr>
+              <th style="width: 8%;">Rack</th>
+              <th style="width: 8%;">Caixa</th>
+              <th style="width: 10%;">Posição</th>
+              <th style="width: 35%;">Identificação</th>
+              <th style="width: 10%;">Qtd.</th>
+              <th style="width: 24%;" class="d-none d-lg-table-cell">Observações</th>
+              <th style="width: 15%;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-inventario">
+            <!-- Dados inseridos dinamicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-5 d-none">
+      <div class="spinner-border text-info" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="mt-3 text-muted fw-semibold">Carregando dados do inventário...</p>
+    </div>
+
+    <!-- Container de feedback -->
+    <div id="feedback-container"></div>
+  </div>
+
+  <!-- Modal para Adicionar/Editar Item -->
+  <div class="modal fade" id="modal-item" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title" id="modal-title">
+            <i class="bi bi-plus-circle me-2"></i>Novo Item
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-item">
+            <div class="row g-3">
+              <div class="col-6 col-md-4">
+                <label for="rack" class="form-label fw-semibold">
+                  <i class="bi bi-grid-3x3 me-1"></i>Rack *
+                </label>
+                <input type="text" class="form-control" id="rack" required maxlength="10" 
+                       placeholder="Ex: 1, 2, A...">
+              </div>
+              <div class="col-6 col-md-4">
+                <label for="caixa" class="form-label fw-semibold">
+                  <i class="bi bi-box me-1"></i>Caixa *
+                </label>
+                <input type="text" class="form-control" id="caixa" required maxlength="10" 
+                       placeholder="Ex: A, B, 1...">
+              </div>
+              <div class="col-12 col-md-4">
+                <label for="posicao" class="form-label fw-semibold">
+                  <i class="bi bi-geo-alt me-1"></i>Posição *
+                </label>
+                <input type="text" class="form-control" id="posicao" required maxlength="10" 
+                       placeholder="Ex: A1, B2...">
+              </div>
+              <div class="col-6 col-md-6">
+                <label for="quantidade" class="form-label fw-semibold">
+                  <i class="bi bi-123 me-1"></i>Quantidade *
+                </label>
+                <input type="number" class="form-control" id="quantidade" min="0" max="9999" required 
+                       placeholder="0">
+              </div>
+              <div class="col-6 col-md-6">
+                <label for="identificacao" class="form-label fw-semibold">
+                  <i class="bi bi-tag me-1"></i>Identificação *
+                </label>
+                <input type="text" class="form-control" id="identificacao" required maxlength="100" 
+                       placeholder="Ex: Vírus BVDV Tipo 1">
+              </div>
+              <div class="col-12">
+                <label for="observacoes" class="form-label fw-semibold">
+                  <i class="bi bi-chat-left-text me-1"></i>Observações
+                </label>
+                <textarea class="form-control" id="observacoes" rows="3" maxlength="500" 
+                          placeholder="Observações adicionais sobre o item..."></textarea>
+                <div class="form-text">Máximo 500 caracteres</div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+          </button>
+          <button type="button" class="btn btn-info" id="salvar-item">
+            <i class="bi bi-check-circle me-1"></i>Salvar Item
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div class="modal fade" id="modal-excluir" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Exclusão
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-3">
+            <i class="bi bi-trash3 text-danger" style="font-size: 3rem;"></i>
+          </div>
+          <p class="text-center mb-3">Tem certeza que deseja excluir este item do inventário?</p>
+          <div class="alert alert-warning mb-0">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Atenção:</strong> Esta ação não pode ser desfeita.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmar-exclusao">
+            <i class="bi bi-trash3 me-1"></i>Excluir Item
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../assets/js/pages/inventario-nitrogenio.js"></script>
+</body>
+</html>
+

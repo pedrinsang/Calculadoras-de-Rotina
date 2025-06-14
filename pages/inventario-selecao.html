@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seleção de Inventário</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/pages/inventario-selecao.css"> <!-- CSS específico para esta página -->
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="text-center mb-4">
+      <img src="../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM" class="logo-sm mb-3">
+      <h1 class="display-5 fw-bold text-success">Inventário do Laboratório</h1>
+      <p class="lead">Selecione o tipo de inventário que deseja acessar:</p>
+    </div>
+
+    <div class="row justify-content-center g-4">
+      <div class="col-md-5">
+        <a href="inventario-freezer.html" class="card text-decoration-none inventory-card shadow-sm">
+          <div class="card-body text-center p-4">
+            <i class="bi bi-snow fs-1 text-primary mb-3"></i>
+            <h4 class="card-title">Inventário de Freezers</h4>
+            <p class="card-text text-muted">Gerenciar amostras e itens armazenados nos freezers.</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-5">
+        <a href="inventario-nitrogenio.html" class="card text-decoration-none inventory-card shadow-sm">
+          <div class="card-body text-center p-4">
+            <i class="bi bi-box-seam fs-1 text-info mb-3"></i>
+            <h4 class="card-title">Inventário de Botijões de Nitrogênio</h4>
+            <p class="card-text text-muted">Controlar o armazenamento em nitrogênio líquido.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="hub.html" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Voltar ao Hub
+        </a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
