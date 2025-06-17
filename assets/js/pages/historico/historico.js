@@ -1,4 +1,7 @@
+// Imports do Firebase - VERSÃO CORRIGIDA
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import {
+    getFirestore,
     collection,
     getDocs,
     query,
@@ -9,10 +12,30 @@ import {
     doc,
     getDoc,
     addDoc,
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { db, auth } from "../../main.js"; // Fix the path
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { 
+    getAuth,
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+// Imports locais
 import { gerarDocx } from './baixarDoc.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+// Configuração do Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
+    authDomain: "hub-de-calculadoras.firebaseapp.com",
+    projectId: "hub-de-calculadoras",
+    storageBucket: "hub-de-calculadoras.appspot.com",
+    messagingSenderId: "203883856586",
+    appId: "1:203883856586:web:a00536536a32ae76c5aa33",
+    measurementId: "G-7H314CT9SH"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
@@ -111,7 +134,7 @@ export function mostrarFeedback(mensagem, tipo = "success") {
 // Assegurar que as funções do módulo são acessíveis globalmente
 window.mostrarFeedback = mostrarFeedback;
 
-// Atualize a função filtrarTarefas
+// Filtrar tarefas
 function filtrarTarefas(termo) {
   const historicoList = document.getElementById("historico-list");
   const searchInput = document.getElementById("search-input");
@@ -120,13 +143,11 @@ function filtrarTarefas(termo) {
   // Adicionar indicador visual de busca ativa
   if (termo) {
     searchInput.classList.add("border-primary");
-    // Remova todas as classes relacionadas a cores e adicione a classe de aviso
     searchButton.classList.remove("btn-success");
     searchButton.classList.add("btn-warning", "text-white");
     searchButton.innerHTML = `<i class="bi bi-x-circle"></i> Limpar`;
   } else {
     searchInput.classList.remove("border-primary");
-    // Remova classes de aviso e adicione a classe de sucesso
     searchButton.classList.remove("btn-warning");
     searchButton.classList.add("btn-success", "text-white");
     searchButton.innerHTML = `<i class="bi bi-search"></i> Buscar`;
@@ -198,7 +219,7 @@ function destacarTermos(texto, termo) {
   return resultado;
 }
 
-// Adicione esta função para implementar debounce
+// Debounce function
 function debounce(func, timeout = 300) {
   let timer;
   return (...args) => {
@@ -207,7 +228,7 @@ function debounce(func, timeout = 300) {
   };
 }
 
-// Substitua ambos os blocos DOMContentLoaded por um único bloco organizado
+// Event listeners principais
 document.addEventListener("DOMContentLoaded", () => {
   // Botão voltar
   document.getElementById("voltar-button").onclick = () => {
@@ -249,18 +270,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      excluirTarefasAntigas().then(() => {
-        carregarHistorico();
-      });
-    } else {
-      window.location.href = "index.html";
+  // Verificação de autenticação e status do usuário
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "../index.html";
+        return;
+    }
+    
+    try {
+        // Verificar se usuário está ativo
+        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.ativo === false) {
+                window.location.href = "desativado.html";
+                return;
+            }
+        }
+        
+        // Se chegou até aqui, usuário está ativo - carregar histórico
+        await carregarHistorico();
+        
+    } catch (error) {
+        console.error("Erro ao verificar status do usuário:", error);
+        // Em caso de erro, tentar carregar histórico mesmo assim
+        await carregarHistorico();
     }
   });
 });
 
-// Função para renderizar as tarefas na lista
+// Renderizar tarefas na lista
 function renderizarTarefas(tarefas) {
   const historicoList = document.getElementById("historico-list");
   const searchTermo = document.getElementById("search-input").value;
@@ -300,7 +339,6 @@ function renderizarTarefas(tarefas) {
       if (tarefa.proprietario && tarefa.proprietario.nome) {
         proprietarioDisplay = searchTermo ? destacarTermos(tarefa.proprietario.nome, searchTermo) : tarefa.proprietario.nome;
       }
-      // Caso contrário, mantém como N/A
     } else if (tarefa.proprietario) {
       // Se não é um objeto, mas tem algum valor string
       proprietarioDisplay = searchTermo ? destacarTermos(tarefa.proprietario, searchTermo) : tarefa.proprietario;
@@ -332,7 +370,7 @@ function renderizarTarefas(tarefas) {
   });
 }
 
-// ADICIONE ESTAS NOVAS FUNÇÕES
+// Voltar tarefa para o mural
 window.voltarParaMural = async (id) => {
   try {
     if (!confirm("Tem certeza que deseja enviar esta tarefa de volta ao mural?")) return;
@@ -355,13 +393,13 @@ window.voltarParaMural = async (id) => {
       quantidade: tarefa.quantidade,
       gramatura: tarefa.gramatura || null,
       complemento: tarefa.complemento || null,
-      proprietario: tarefa.proprietario || null, // PRESERVAR proprietário
-      veterinario: tarefa.veterinario || null,   // PRESERVAR veterinário
+      proprietario: tarefa.proprietario || null,
+      veterinario: tarefa.veterinario || null,
       observacoes: tarefa.observacoes || "",
       status: "pendente",
       criadoEm: tarefa.criadoEm || Timestamp.now(),
-      criadoPor: tarefa.criadoPor || auth.currentUser.uid, // PRESERVAR criador original
-      siglaResponsavel: tarefa.siglaResponsavel || "N/A",  // PRESERVAR sigla original
+      criadoPor: tarefa.criadoPor || auth.currentUser.uid,
+      siglaResponsavel: tarefa.siglaResponsavel || "N/A",
       resultados: tarefa.resultados || null
     });
     
@@ -377,7 +415,7 @@ window.voltarParaMural = async (id) => {
   }
 };
 
-// Função para formatar data para exibição
+// Formatar data para exibição
 function formatarDataParaExibicao(data) {
     if (!data) return "Data não disponível";
     
@@ -390,8 +428,7 @@ function formatarDataParaExibicao(data) {
     return `${dia}/${mes}/${ano} às ${hora}:${minutos}`;
 }
 
-
-// Function to show task details in the Bootstrap modal
+// Mostrar detalhes da tarefa
 window.mostrarDetalhes = async (id) => {
     try {
         const tarefaRef = doc(db, "historico", id);
@@ -422,7 +459,7 @@ window.mostrarDetalhes = async (id) => {
             proprietarioDisplay = tarefa.proprietario;
         }
 
-        // Montar o modal igual ao do mural.js
+        // Montar o modal
         const modalContent = `
             <div class="modal-header bg-light">
                 <h5 class="modal-title">
@@ -550,7 +587,7 @@ ${tarefa.observacoes}
     }
 };
 
-// Função para excluir tarefas concluídas há mais de 1 ano
+// Excluir tarefas antigas (mais de 1 ano)
 async function excluirTarefasAntigas() {
   try {
     const umAnoAtras = new Date();
@@ -578,7 +615,6 @@ async function excluirTarefasAntigas() {
     console.error("Erro ao excluir tarefas antigas:", error);
   }
 }
-      
 
 // Carregar histórico
 async function carregarHistorico() {
@@ -621,4 +657,10 @@ async function carregarHistorico() {
     historicoList.innerHTML = `<p>Erro ao carregar histórico: ${error.message}</p>`;
   }
 }
+
+// Função para mostrar resultados (se você tiver essa funcionalidade)
+window.mostrarResultados = (id) => {
+    console.log("Mostrar resultados para tarefa:", id);
+    // Implementar conforme necessário
+};
 

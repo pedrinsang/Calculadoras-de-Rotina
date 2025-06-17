@@ -227,8 +227,23 @@ async function handleLogin() {
       return;
     }
 
-    // Salvar dados do usuário
     const usuario = querySnapshot.docs[0].data();
+    
+    // Verificar se usuário está aprovado
+    if (!usuario.aprovado) {
+      showAlert('Sua conta ainda não foi aprovada pelo administrador. Aguarde a aprovação.', 'alert-warning');
+      await signOut(auth);
+      return;
+    }
+
+    // Verificar se usuário está ativo
+    if (!usuario.ativo) {
+      // Em vez de mostrar alert e fazer logout, redirecionar para página de auto-exclusão
+      window.location.href = "pages/desativado.html";
+      return;
+    }
+
+    // Salvar dados do usuário
     localStorage.setItem("usuario", JSON.stringify(usuario));
     
     // Configurar persistência baseada na preferência
@@ -418,16 +433,19 @@ async function handleCadastro() {
     const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
     const user = userCredential.user;
 
-    // Salvar dados no Firestore
+    // Salvar dados no Firestore com role
     await setDoc(doc(db, "usuarios", user.uid), {
       uid: user.uid,
       nome,
       sigla,
       email,
-      dataCadastro: new Date().toISOString()
+      dataCadastro: new Date().toISOString(),
+      role: "user", // padrão para usuários normais
+      ativo: true,  // controle de ativação
+      aprovado: false // aguarda aprovação do admin
     });
 
-    showAlert('Cadastro realizado com sucesso!', 'alert-success');
+    showAlert('Cadastro realizado! Aguarde aprovação do administrador.', 'alert-success');
     showForm("login-form");
     
     // Limpar formulário

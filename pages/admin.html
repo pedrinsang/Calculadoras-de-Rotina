@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo | Setor de Virologia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/pages/admin.css">
+</head>
+<body>
+    <div class="container admin-card shadow">
+        <h1 class="admin-title mb-3">
+            <i class="bi bi-shield-check me-2"></i>Painel Administrativo
+        </h1>
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button id="hub-button" class="admin-btn-outline">
+                <i class="bi bi-house me-1"></i> Voltar ao Hub
+            </button>
+            <div class="admin-stats">
+                <span class="badge bg-warning" id="pending-count">0 pendentes</span>
+                <span class="badge bg-success" id="active-count">0 ativos</span>
+            </div>
+        </div>
+
+        <!-- Abas de navegação -->
+        <ul class="nav nav-tabs mb-3" id="admin-tabs">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#usuarios-pendentes">
+                    <i class="bi bi-clock-history me-1"></i>Usuários Pendentes
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#usuarios-ativos">
+                    <i class="bi bi-people me-1"></i>Usuários Ativos
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#configuracoes">
+                    <i class="bi bi-gear me-1"></i>Configurações
+                </button>
+            </li>
+            <!-- Nova aba para Migração de Usuários -->
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#migracao-usuarios">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Migração
+                </button>
+            </li>
+        </ul>
+
+        <!-- Conteúdo das abas -->
+        <div class="tab-content">
+            <!-- Usuários Pendentes -->
+            <div class="tab-pane fade show active" id="usuarios-pendentes">
+                <div id="usuarios-pendentes-lista">
+                    <p class="text-center text-muted">Carregando usuários pendentes...</p>
+                </div>
+            </div>
+
+            <!-- Usuários Ativos -->
+            <div class="tab-pane fade" id="usuarios-ativos">
+                <div id="usuarios-ativos-lista">
+                    <p class="text-center text-muted">Carregando usuários ativos...</p>
+                </div>
+            </div>
+
+            <!-- Configurações -->
+            <div class="tab-pane fade" id="configuracoes">
+                <div class="config-section">
+                    <h4><i class="bi bi-key me-2"></i>Código Secreto</h4>
+                    <div class="input-group mb-3">
+                        <input type="text" id="codigo-secreto" class="form-control" placeholder="Código atual">
+                        <button class="btn btn-success" id="atualizar-codigo">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Migração de Usuários -->
+            <div class="tab-pane fade" id="migracao-usuarios">
+                <div class="content-header">
+                    <h2><i class="bi bi-arrow-clockwise me-2"></i>Migração de Usuários</h2>
+                    <p>Detecte e atualize usuários com dados incompletos</p>
+                </div>
+                
+                <div class="migration-tools">
+                    <div class="config-card">
+                        <div class="config-header">
+                            <div class="config-icon">
+                                <i class="bi bi-search"></i>
+                            </div>
+                            <div>
+                                <h4>Detectar Usuários Desatualizados</h4>
+                                <p>Encontre usuários sem os campos obrigatórios</p>
+                            </div>
+                        </div>
+                        <div class="config-content">
+                            <button class="btn-modern btn-info" id="detectar-usuarios">
+                                <i class="bi bi-search"></i>
+                                <span>Detectar Usuários</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="config-card" id="usuarios-desatualizados" style="display: none;">
+                        <div class="config-header">
+                            <div class="config-icon">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <div>
+                                <h4>Usuários Encontrados</h4>
+                                <p>Usuários que precisam ser atualizados</p>
+                            </div>
+                        </div>
+                        <div class="config-content">
+                            <div id="lista-usuarios-desatualizados"></div>
+                            <button class="btn-modern btn-success" id="atualizar-todos-usuarios" style="display: none;">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                <span>Atualizar Todos</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="../assets/js/pages/admin.js"></script>
+</body>
+</html>

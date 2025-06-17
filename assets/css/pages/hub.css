@@ -208,6 +208,25 @@ body {
   color: #666;
 }
 
+.admin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px; /* AUMENTADO: de 36px para 48px */
+  border-radius: 50px;
+  background-color: var(--verde-btn);
+  transition: background-color 0.2s, transform 0.2s;
+  text-decoration: none;
+  color: #ffffff;
+  border: var(--verde-escuro);
+  padding: 0.6rem 1.8rem;
+}
+
+.admin-btn:hover {
+  background-color: var(--verde-btn-hover);
+  transform: translateY(-3px);
+}
+
 .gear-button i {
   font-size: 1.5rem; /* AUMENTADO: de 1.2rem para 1.5rem */
 }
@@ -218,8 +237,29 @@ body {
   transform: rotate(30deg);
 }
 
+/* Botão Admin - adicionar no final do hub.css */
+.gear-button.admin-btn {
+  background: var(--verde-medio);
+  color: white;
+  border: 2px solid var(--verde-escuro);
+}
+
+.gear-button.admin-btn:hover {
+  background: var(--verde-escuro);
+  color: white;
+  transform: scale(1.1);
+}
+
+.gear-button.admin-btn i {
+  color: white;
+}
+
 /* Responsividade - MANTIDA PARA DISPOSITIVOS MÓVEIS */
 @media (max-width: 768px) {
+  .user-actions {
+    gap: 5px !important; 
+  }
+  
   .hub-container {
     padding: 1.5rem;
     max-width: 450px;
@@ -279,8 +319,8 @@ body {
   }
   
   .gear-button {
-    width: 36px;
-    height: 36px;
+    width: 48px;
+    height: 48px;
   }
   
   .gear-button i {
