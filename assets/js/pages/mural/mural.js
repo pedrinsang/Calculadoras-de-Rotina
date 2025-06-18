@@ -1,4 +1,7 @@
+// Imports do Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { 
+    getFirestore,
     collection,
     getDocs,
     Timestamp,
@@ -10,15 +13,54 @@ import {
     query,
     where,
     orderBy
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { 
+    getAuth,
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-import { db, auth } from "../../main.js";
+// Imports locais
 import { registrarResultadoSN, registrarResultadoELISA, registrarResultadoPCR, registrarResultadoRAIVA, registrarResultadoICC} from "./regresultado.js";
 
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+// Configuração do Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
+    authDomain: "hub-de-calculadoras.firebaseapp.com",
+    projectId: "hub-de-calculadoras",
+    storageBucket: "hub-de-calculadoras.appspot.com",
+    messagingSenderId: "203883856586",
+    appId: "1:203883856586:web:a00536536a32ae76c5aa33",
+    measurementId: "G-7H314CT9SH"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
+});
+
+// Verificação de usuário ativo/inativo no início
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "../index.html";
+        return;
+    }
+    
+    try {
+        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.ativo === false) {
+                window.location.href = "desativado.html";
+                return;
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao verificar status do usuário:", error);
+    }
 });
 
 // Substitua suas funções de loading com estas:

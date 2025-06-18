@@ -46,9 +46,17 @@
     <div class="user-info">
       <div class="user-name"></div>
       <div class="user-actions">
+        <!-- Botão Admin (só aparece para admins) -->
+        <button id="admin-button" class="admin-btn" style="display: none;" title="Painel Administrativo">
+          <i class="bi bi-shield-check"></i> Admin
+        </button>
+        
+        <!-- Botão de configurações existente -->
         <a href="conta.html" class="gear-button" title="Configurações da conta">
           <i class="bi bi-gear"></i>
         </a>
+        
+        <!-- Botão de logout existente -->
         <button id="logout-button" class="logout-button">
           <i class="bi bi-box-arrow-right"></i> Sair
         </button>
