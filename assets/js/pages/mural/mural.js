@@ -240,7 +240,7 @@ async function adicionarTarefaModal() {
         const tipoInput = document.getElementById("tipo-modal");
         const quantidadeInput = document.getElementById("quantidade-modal");
         const gramaturaInput = document.getElementById("gramatura-modal");
-        const complementoInput = document.getElementById("complemento-modal");
+        const pcrTipoInput = document.getElementById("pcr-tipo-modal");
         const proprietarioNomeInput = document.getElementById("proprietario-nome-modal");
         const proprietarioMunicipioInput = document.getElementById("proprietario-municipio-modal");
         const proprietarioContatoInput = document.getElementById("proprietario-contato-modal");
@@ -261,8 +261,8 @@ async function adicionarTarefaModal() {
             gramatura: tipoInput.value === "VACINA" && gramaturaInput 
                 ? parseFloat(gramaturaInput.value) || null
                 : null,
-            complemento: (tipoInput.value === "PCR" || tipoInput.value === "RAIVA") && complementoInput
-                ? complementoInput.value.trim()
+            pcrTipo: tipoInput.value === "PCR" && pcrTipoInput
+                ? pcrTipoInput.value.trim()
                 : null,
             proprietario: {
                 nome: proprietarioNomeInput ? proprietarioNomeInput.value.trim() : "",
@@ -325,8 +325,102 @@ function prepararModalAdicao() {
     const tipoValue = document.getElementById('tipo-modal').value;
     document.getElementById('gramatura-container-modal').style.display = 
         tipoValue === "VACINA" ? "block" : "none";
-    document.getElementById('complemento-container-modal').style.display = 
-        (tipoValue === "PCR" || tipoValue === "RAIVA") ? "block" : "none";
+    document.getElementById('pcr-container-modal').style.display = 
+        tipoValue === "PCR" ? "block" : "none";
+    
+    // Configurar menu flutuante de PCR
+    configurarMenuPCR();
+}
+
+// Função para configurar o menu flutuante de PCR
+function configurarMenuPCR() {
+    const tipoModalSelect = document.getElementById('tipo-modal');
+    const pcrContainer = document.getElementById('pcr-container-modal');
+    const pcrTipoInput = document.getElementById('pcr-tipo-modal');
+    const pcrFloatingMenu = document.getElementById('pcr-floating-menu');
+    
+    if (!pcrTipoInput || !pcrFloatingMenu) {
+        console.warn('Elementos PCR não encontrados:', { pcrTipoInput, pcrFloatingMenu });
+        return;
+    }
+    
+    // Controlar exibição do container PCR
+    if (tipoModalSelect) {
+        tipoModalSelect.addEventListener('change', function() {
+            const isVacina = this.value === "VACINA";
+            const isPCR = this.value === "PCR";
+            
+            // Mostrar/ocultar gramatura para VACINA
+            const gramaturaContainer = document.getElementById('gramatura-container-modal');
+            if (gramaturaContainer) {
+                gramaturaContainer.style.display = isVacina ? "block" : "none";
+            }
+            
+            // Mostrar/ocultar PCR tipo para PCR
+            if (pcrContainer) {
+                pcrContainer.style.display = isPCR ? "block" : "none";
+                if (!isPCR && pcrTipoInput) {
+                    pcrTipoInput.value = '';
+                }
+            }
+        });
+    }
+    
+    // Controlar menu flutuante de PCR
+    // Remover listeners antigos se existirem
+    const newPcrTipoInput = pcrTipoInput.cloneNode(true);
+    pcrTipoInput.parentNode.replaceChild(newPcrTipoInput, pcrTipoInput);
+    
+    const newPcrFloatingMenu = pcrFloatingMenu.cloneNode(true);
+    pcrFloatingMenu.parentNode.replaceChild(newPcrFloatingMenu, pcrFloatingMenu);
+    
+    // Atualizar referências
+    const finalPcrTipoInput = document.getElementById('pcr-tipo-modal');
+    const finalPcrFloatingMenu = document.getElementById('pcr-floating-menu');
+    
+    // Mostrar menu ao clicar no input
+    finalPcrTipoInput.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const rect = this.getBoundingClientRect();
+        
+        // Usar posição fixed em vez de absolute
+        finalPcrFloatingMenu.style.position = 'fixed';
+        finalPcrFloatingMenu.style.top = rect.bottom + 'px';
+        finalPcrFloatingMenu.style.left = rect.left + 'px';
+        finalPcrFloatingMenu.style.width = rect.width + 'px';
+        finalPcrFloatingMenu.style.zIndex = '9999';
+        finalPcrFloatingMenu.classList.add('show');
+    });
+    
+    // Selecionar item do menu
+    finalPcrFloatingMenu.addEventListener('click', function(e) {
+        if (e.target.classList.contains('pcr-menu-item')) {
+            const value = e.target.getAttribute('data-value');
+            finalPcrTipoInput.value = value;
+            
+            // Remover seleção anterior
+            document.querySelectorAll('.pcr-menu-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Adicionar seleção atual
+            e.target.classList.add('selected');
+            
+            // Fechar menu
+            finalPcrFloatingMenu.classList.remove('show');
+        }
+    });
+    
+    // Fechar menu ao clicar fora
+    document.addEventListener('click', function(e) {
+        if (finalPcrTipoInput && finalPcrFloatingMenu && 
+            !finalPcrTipoInput.contains(e.target) && 
+            !finalPcrFloatingMenu.contains(e.target)) {
+            finalPcrFloatingMenu.classList.remove('show');
+        }
+    });
 }
 
 // Função para carregar tarefas
@@ -454,7 +548,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
                   <div class="mb-2">
                     <h5 class="card-title mb-1 text-success fw-bold">${tarefa.id}</h5>
-                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${(tarefa.tipo === "PCR" || tarefa.tipo === "RAIVA") && tarefa.complemento ? ` ${tarefa.complemento}` : ''}</div>
+                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${tarefa.tipo === "PCR" && tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}</div>
                     <div class="mb-1"><span class="fw-medium">Quantidade:</span> ${tarefa.quantidade || '0'}</div>
                     <div><span class="fw-medium">Recebimento:</span> ${
     tarefa.criadoEm?.toDate
@@ -688,11 +782,11 @@ window.editarTarefaModal = async (id) => {
             document.getElementById("gramatura-container-modal").style.display = "none";
         }
         
-        if (tipo === "PCR" || tipo === "RAIVA") {
-            document.getElementById("complemento-container-modal").style.display = "block";
-            document.getElementById("complemento-modal").value = tarefa.complemento || "";
+        if (tipo === "PCR") {
+            document.getElementById("pcr-container-modal").style.display = "block";
+            document.getElementById("pcr-tipo-modal").value = tarefa.pcrTipo || "";
         } else {
-            document.getElementById("complemento-container-modal").style.display = "none";
+            document.getElementById("pcr-container-modal").style.display = "none";
         }
         
         const dataRecebimento = tarefa.dataRecebimento?.toDate();
@@ -715,6 +809,9 @@ window.editarTarefaModal = async (id) => {
             document.getElementById("veterinario-contato-modal").value = tarefa.veterinario.contato || "";
 
         }
+        
+        // Configurar menu flutuante de PCR
+        configurarMenuPCR();
 
         // Configurar o botão salvar para atualizar tarefa
         document.getElementById('salvar-tarefa-modal').onclick = async () => {
@@ -725,15 +822,54 @@ window.editarTarefaModal = async (id) => {
                 const filtroTipoAtual = document.getElementById("filtro-tipo").value;
                 const filtroOrdemAtual = document.getElementById("filtro-ordem").value;
                 
-                // Atualizar a tarefa mantendo apenas criadoEm original
-                await updateDoc(tarefaRef, {
+                // Obter valores dos campos
+                const tipoValue = document.getElementById("tipo-modal").value;
+                const updateData = {
                     id: document.getElementById("id-modal").value,
-                    tipo: document.getElementById("tipo-modal").value,
+                    tipo: tipoValue,
                     quantidade: parseInt(document.getElementById("quantidade-modal").value),
-                    // Outros campos...
                     atualizadoEm: Timestamp.now(),
                     observacoes: document.getElementById("observacoes-modal").value.trim()
-                });
+                };
+
+                // Adicionar campos condicionais
+                if (tipoValue === "VACINA") {
+                    const gramaturaInput = document.getElementById("gramatura-modal");
+                    updateData.gramatura = gramaturaInput ? parseFloat(gramaturaInput.value) || null : null;
+                } else {
+                    updateData.gramatura = null;
+                }
+
+                if (tipoValue === "PCR") {
+                    const pcrTipoInput = document.getElementById("pcr-tipo-modal");
+                    updateData.pcrTipo = pcrTipoInput ? pcrTipoInput.value.trim() : null;
+                } else {
+                    updateData.pcrTipo = null;
+                }
+
+                // Atualizar campos de proprietário e veterinário
+                const proprietarioNome = document.getElementById("proprietario-nome-modal").value.trim();
+                const proprietarioMunicipio = document.getElementById("proprietario-municipio-modal").value.trim();
+                const proprietarioContato = document.getElementById("proprietario-contato-modal").value.trim();
+                
+                updateData.proprietario = {
+                    nome: proprietarioNome,
+                    municipio: proprietarioMunicipio,
+                    contato: proprietarioContato
+                };
+
+                const veterinarioNome = document.getElementById("veterinario-nome-modal").value.trim();
+                const veterinarioMunicipio = document.getElementById("veterinario-municipio-modal").value.trim();
+                const veterinarioContato = document.getElementById("veterinario-contato-modal").value.trim();
+                
+                updateData.veterinario = {
+                    nome: veterinarioNome,
+                    municipio: veterinarioMunicipio,
+                    contato: veterinarioContato
+                };
+
+                // Atualizar a tarefa
+                await updateDoc(tarefaRef, updateData);
                 
                 // Fechar o modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('tarefa-modal'));
@@ -828,7 +964,7 @@ window.mostrarDetalhes = async (id) => {
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 text-muted">Tipo:</div>
-                            <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}</div>
+                            <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}${tarefa.tipo === "PCR" && tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}</div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 text-muted">Quantidade:</div>
@@ -836,11 +972,6 @@ window.mostrarDetalhes = async (id) => {
                                 ? `vacinas${tarefa.gramatura ? ` (${tarefa.gramatura}g)` : ''}` 
                                 : "amostras"}</div>
                         </div>
-                        ${tarefa.complemento ? `
-                        <div class="row mb-2">
-                            <div class="col-5 text-muted">Complemento:</div>
-                            <div class="col-7 fw-medium">${tarefa.complemento.trim()}</div>
-                        </div>` : ''}
                     </div>
                 </div>
                 <div class="card border-0 mb-3 shadow-sm">

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/pages/mural.css">
+  <link rel="stylesheet" href="../assets/css/pages/pcr-menu.css">
 </head>
 <body>
   <div class="container mural-card shadow">
@@ -59,7 +60,7 @@
           <input type="text" id="id" name="id" class="form-control" required>
         </div>
         <div class="col-md-4">
-          <label for="tipo" class="mural-form-label">Tipo de Amostra:</label>
+          <label for="tipo" class="mural-form-label">Teste:</label>
           <select id="tipo" name="tipo" class="form-select" required>
             <option value="SN BVDV-1">SN BVDV-1</option>
             <option value="SN BVDV-2">SN BVDV-2</option>
@@ -71,10 +72,6 @@
             <option value="ICC">ICC</option>
             <option value="RAIVA">RAIVA</option>
           </select>
-        </div>
-        <div class="col-md-4" id="complemento-container" style="display:none;">
-          <label for="complemento" class="mural-form-label">Complemento:</label>
-          <input type="text" id="complemento" name="complemento" class="form-control">
         </div>
         <div class="col-md-4">
           <label for="quantidade" class="mural-form-label">Quantidade:</label>
@@ -178,9 +175,22 @@
                     <option value="RAIVA">RAIVA</option>
                   </select>
                 </div>
-                <div class="col-md-4" id="complemento-container-modal" style="display:none;">
-                  <label for="complemento-modal" class="mural-form-label">Complemento:</label>
-                  <input type="text" id="complemento-modal" name="complemento" class="form-control">
+                <div class="col-md-4" id="pcr-container-modal" style="display:none;">
+                  <label for="pcr-tipo-modal" class="mural-form-label">Tipo de PCR:</label>
+                  <div class="pcr-input-container">
+                    <input type="text" id="pcr-tipo-modal" name="pcrTipo" class="form-control pcr-input-readonly" readonly placeholder="Selecione o tipo de PCR">
+                    <i class="bi bi-chevron-down pcr-dropdown-icon"></i>
+                    <div id="pcr-floating-menu" class="pcr-floating-menu">
+                      <div class="pcr-menu-item" data-value="PCR">PCR</div>
+                      <div class="pcr-menu-item" data-value="RT-PCR">RT-PCR</div>
+                      <div class="pcr-menu-item" data-value="Duplex Rota e Corona Bovino">Duplex Rota e Corona Bovino</div>
+                      <div class="pcr-menu-item" data-value="Duplex Rota e Corona Equino">Duplex Rota e Corona Equino</div>
+                      <div class="pcr-menu-item" data-value="Multiplex Crostas Bovina">Multiplex Crostas Bovina</div>
+                      <div class="pcr-menu-item" data-value="Multiplex Diarreia Neonatal Bovina">Multiplex Diarreia Neonatal Bovina</div>
+                      <div class="pcr-menu-item" data-value="Multiplex Doença Respiratória Bovina">Multiplex Doença Respiratória Bovina</div>
+                      <div class="pcr-menu-item" data-value="Multiplex Encefalites Equina">Multiplex Encefalites Equina</div>
+                    </div>
+                  </div>
                 </div>
                 <div class="col-md-4">
                   <label for="quantidade-modal" class="mural-form-label">Quantidade:</label>
