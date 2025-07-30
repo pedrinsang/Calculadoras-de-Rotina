@@ -22,6 +22,47 @@ import {
 // Imports locais
 import { gerarDocx } from './baixarDoc.js';
 
+// Prevenir erro da API do Google
+window.__iframefcb190700 = function() {
+    console.log('Google API callback interceptado');
+};
+
+// Interceptar outros callbacks do Google
+window.__google_recaptcha_client = false;
+window.gapi = window.gapi || {};
+
+// Prevenir erros de reCAPTCHA
+if (typeof window.grecaptcha !== 'undefined') {
+    window.grecaptcha.ready = function(callback) {
+        if (callback) callback();
+    };
+} else {
+    window.grecaptcha = {
+        ready: function(callback) {
+            if (callback) callback();
+        },
+        render: function() { return null; },
+        execute: function() { return Promise.resolve(''); }
+    };
+}
+
+// Interceptar erros globais da API do Google
+window.addEventListener('error', function(e) {
+    if (e.filename && e.filename.includes('api.js')) {
+        console.warn('Erro da API do Google interceptado:', e.message);
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Interceptar promises rejeitadas da API do Google
+window.addEventListener('unhandledrejection', function(e) {
+    if (e.reason && e.reason.toString().includes('Google')) {
+        console.warn('Promise rejeitada da API do Google interceptada:', e.reason);
+        e.preventDefault();
+    }
+});
+
 // ============================================================================
 // CORREÇÃO PARA SERVICEWORKER
 // ============================================================================
@@ -310,6 +351,22 @@ function configurarLimpezaAutomatica() {
 // FUNÇÕES PRINCIPAIS
 // ============================================================================
 
+// Função para formatar o tipo de teste com detalhes do PCR
+function formatarTipoTeste(tarefa) {
+    let tipoFormatado = tarefa.tipo || 'N/A';
+    
+    // Se for PCR e tiver pcrTipo, adicionar essa informação
+    if (tarefa.tipo === 'PCR' && tarefa.pcrTipo) {
+        tipoFormatado = `PCR - ${tarefa.pcrTipo}`;
+    }
+    // Se for PCR e tiver complemento (para casos antigos)
+    else if (tarefa.tipo === 'PCR' && tarefa.complemento) {
+        tipoFormatado = `PCR - ${tarefa.complemento}`;
+    }
+    
+    return tipoFormatado;
+}
+
 export function mostrarFeedback(mensagem, tipo = "success") {
     // Verificar se container de notificações existe, senão criar
     let container = document.querySelector('.toastify-container');
@@ -459,7 +516,7 @@ async function carregarHistorico() {
 // FILTRAR TAREFAS
 // ============================================================================
 
-// Filtrar tarefas
+// ...existing code...
 function filtrarTarefas(termo) {
     const historicoList = document.getElementById("historico-list");
     const searchInput = document.getElementById("search-input");
@@ -497,12 +554,14 @@ function filtrarTarefas(termo) {
         const camposDeBusca = [
             tarefa.id || '',
             tarefa.tipo || '',
+            tarefa.pcrTipo || '', // Adicionar tipo de PCR na busca
             tarefa.observacoes || '',
             tarefa.complemento || '',
             typeof tarefa.proprietario === 'object' 
                 ? tarefa.proprietario?.nome || ''
                 : tarefa.proprietario || '',
-            tarefa.siglaResponsavel || ''
+            tarefa.siglaResponsavel || '',
+            formatarTipoTeste(tarefa) // Incluir o tipo formatado completo na busca
         ];
         
         // Converte todos para lowercase
@@ -586,8 +645,9 @@ function renderizarTarefas(tarefas) {
 
         // Destacar texto nos principais campos se houver busca ativa
         const id = searchTermo ? destacarTermos(tarefa.id || 'Sem ID', searchTermo) : (tarefa.id || 'Sem ID');
-        const tipo = searchTermo ? destacarTermos(tarefa.tipo || 'N/A', searchTermo) : (tarefa.tipo || 'N/A');
-        const complemento = tarefa.complemento ? (searchTermo ? destacarTermos(tarefa.complemento, searchTermo) : tarefa.complemento) : '';
+        const tipoFormatado = formatarTipoTeste(tarefa);
+        const tipo = searchTermo ? destacarTermos(tipoFormatado, searchTermo) : tipoFormatado;
+        const complemento = tarefa.complemento && tarefa.tipo !== 'PCR' ? (searchTermo ? destacarTermos(tarefa.complemento, searchTermo) : tarefa.complemento) : '';
 
         // Tratamento de proprietário para evitar [object Object]
         let proprietarioDisplay = 'N/A';
@@ -606,7 +666,7 @@ function renderizarTarefas(tarefas) {
             <div class="d-flex justify-content-between align-items-start flex-wrap">
                 <div>
                     <h5 class="mb-1 text-success fw-bold">${id}</h5>
-                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipo}${complemento ? ` ${complemento}` : ''}</div>
+                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipo}${complemento ? ` - ${complemento}` : ''}</div>
                     <div><span class="fw-medium">Concluído em:</span> ${tarefa.dataConclusao?.toDate().toLocaleDateString("pt-BR") || 'N/A'}</div>
                     <div><span class="fw-medium">Proprietário:</span> ${proprietarioDisplay}</div>
                 </div>
@@ -742,7 +802,7 @@ window.mostrarDetalhes = async (id) => {
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 text-muted">Tipo:</div>
-                            <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}</div>
+                            <div class="col-7 fw-medium">${formatarTipoTeste(tarefa)}</div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 text-muted">Quantidade:</div>
@@ -849,11 +909,223 @@ ${tarefa.observacoes}
     }
 };
 
-// Função para mostrar resultados (se você tiver essa funcionalidade)
-window.mostrarResultados = (id) => {
-    console.log("Mostrar resultados para tarefa:", id);
-    // Implementar conforme necessário
+// Função para mostrar resultados
+window.mostrarResultados = async (id) => {
+    try {
+        console.log("Carregando resultados para tarefa:", id);
+        
+        // Buscar tarefa no histórico
+        const tarefaDoc = await getDoc(doc(db, "historico", id));
+        
+        if (!tarefaDoc.exists()) {
+            mostrarFeedback("Tarefa não encontrada", "error");
+            return;
+        }
+        
+        const tarefa = tarefaDoc.data();
+        
+        if (!tarefa.resultados) {
+            mostrarFeedback("Esta tarefa não possui resultados registrados", "warning");
+            return;
+        }
+        
+        // Gerar conteúdo baseado no tipo de teste
+        let modalContent = '';
+        
+        if (tarefa.tipo === "SN") {
+            modalContent = gerarModalResultadosSN(tarefa);
+        } else if (tarefa.tipo === "PCR") {
+            modalContent = gerarModalResultadosPCRSimples(tarefa);
+        } else {
+            // Para outros tipos, mostrar uma mensagem direcionando para o botão "Resultados" detalhado
+            modalContent = `
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard-data me-2"></i>Resultados - ${tarefa.tipo}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-5">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+                        <h6 class="mt-2">Visualização detalhada disponível</h6>
+                        <p class="mb-3">Para visualizar os resultados deste tipo de teste de forma detalhada, utilize o botão <strong>"Resultados"</strong> na tabela.</p>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                            <i class="bi bi-check-circle me-1"></i>Entendi
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Remover modal antigo se existir
+        let modalElement = document.getElementById("modal-resultados");
+        if (modalElement) modalElement.remove();
+        
+        // Criar e mostrar o modal
+        const modalDiv = document.createElement("div");
+        modalDiv.className = "modal fade";
+        modalDiv.id = "modal-resultados";
+        modalDiv.tabIndex = -1;
+        modalDiv.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow">
+                    ${modalContent}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        
+        const modal = new bootstrap.Modal(modalDiv);
+        modal.show();
+        
+        modalDiv.addEventListener('hidden.bs.modal', function () {
+            modalDiv.remove();
+        });
+        
+    } catch (error) {
+        console.error("Erro ao mostrar resultados:", error);
+        mostrarFeedback("Erro ao carregar resultados", "error");
+    }
 };
+
+// Função para gerar modal de resultados SN
+function gerarModalResultadosSN(tarefa) {
+    const resultados = tarefa.resultados;
+    
+    return `
+        <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">
+                <i class="bi bi-clipboard-data me-2"></i>Resultados - ${tarefa.tipo}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-light border-start border-success border-4 mb-4">
+                <div class="row">
+                    <div class="col-md-4"><strong>ID:</strong> ${tarefa.id}</div>
+                    <div class="col-md-4"><strong>Quantidade:</strong> ${tarefa.quantidade}</div>
+                    <div class="col-md-4"><strong>Data:</strong> ${resultados.dataRegistro ? new Date(resultados.dataRegistro.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A'}</div>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Identificações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.negativas ? `
+                            <tr>
+                                <td class="table-light"><strong>Negativas (&lt;1:4)</strong></td>
+                                <td>${resultados.negativas}</td>
+                            </tr>
+                        ` : ''}
+                        
+                        <tr class="table-light">
+                            <td colspan="2" class="text-center fw-bold">Títulos Positivos</td>
+                        </tr>
+                        
+                        ${['titulo4', 'titulo8', 'titulo16', 'titulo32', 'titulo64', 'titulo128', 'titulo256', 'titulo512'].map(titulo => {
+                            const valor = resultados[titulo];
+                            const tituloLabel = titulo === 'titulo512' ? '1:≥512' : `1:${titulo.replace('titulo', '')}`;
+                            return valor ? `
+                                <tr>
+                                    <td><strong>${tituloLabel}</strong></td>
+                                    <td>${valor}</td>
+                                </tr>
+                            ` : '';
+                        }).join('')}
+                        
+                        <tr class="table-light">
+                            <td colspan="2" class="text-center fw-bold">Outros</td>
+                        </tr>
+                        
+                        ${resultados.improprias ? `
+                            <tr>
+                                <td><strong>Impróprias</strong></td>
+                                <td>${resultados.improprias}</td>
+                            </tr>
+                        ` : ''}
+                        ${resultados.toxicas ? `
+                            <tr>
+                                <td><strong>Tóxicas</strong></td>
+                                <td>${resultados.toxicas}</td>
+                            </tr>
+                        ` : ''}
+                        ${resultados.insuficiente ? `
+                            <tr>
+                                <td><strong>Quant. insuf.</strong></td>
+                                <td>${resultados.insuficiente}</td>
+                            </tr>
+                        ` : ''}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i>Fechar
+            </button>
+        </div>
+    `;
+}
+
+// Função para PCR simples
+function gerarModalResultadosPCRSimples(tarefa) {
+    const resultados = tarefa.resultados;
+    
+    return `
+        <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">
+                <i class="bi bi-clipboard-data me-2"></i>Resultados - ${tarefa.tipo}${tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-light border-start border-success border-4 mb-4">
+                <div class="row">
+                    <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
+                    <div class="col-md-6"><strong><i class="bi bi-123 me-2"></i>Quantidade:</strong> ${tarefa.quantidade}</div>
+                </div>
+            </div>
+            <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Nota:</strong> Para visualização detalhada dos resultados de PCR, use o botão "Resultados" no card da tarefa.
+            </div>
+            <div class="table-responsive">
+                <table class="tabela-resultados table table-hover">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Identificação da amostra</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras && resultados.amostras.length > 0 ? resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td>
+                                    <span class="badge ${amostra.resultado === 'positivo' ? 'bg-danger' : amostra.resultado === 'negativo' ? 'bg-success' : 'bg-secondary'}">
+                                        ${amostra.resultado ? amostra.resultado.charAt(0).toUpperCase() + amostra.resultado.slice(1) : 'Não informado'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('') : `<tr><td colspan="2" class="text-center">Nenhuma amostra encontrada</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i>Fechar
+            </button>
+        </div>
+    `;
+}
 
 // ============================================================================
 // INICIALIZAÇÃO PRINCIPAL
