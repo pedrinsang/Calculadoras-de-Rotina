@@ -216,7 +216,7 @@ async function registrarResultadoELISA(id) {
 
         modal.innerHTML = `
             <div class="modal-resultados-content">
-                <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo}${tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}</h3>
+                <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}</h3>
                 <div class="alert alert-light border-start border-success border-4">
                     <div class="row">
                         <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -337,8 +337,8 @@ async function registrarResultadoELISA(id) {
     }
 }
 
-// Função para registrar resultado PCR
-async function registrarResultadoPCR(id) {
+// Função para registrar resultado Molecular
+async function registrarResultadoMolecular(id) {
     try {
         mostrarLoading();
 
@@ -349,11 +349,11 @@ async function registrarResultadoPCR(id) {
 
         const tarefa = tarefaSnap.data();
 
-        // Verificar o tipo específico de PCR e chamar a função apropriada
-        switch(tarefa.pcrTipo) {
+        // Verificar o tipo específico de Molecular e chamar a função apropriada
+        switch(tarefa.subTipo) {
             case "PCR":
             case "RT-PCR":
-                return registrarResultadoPCRSimples(tarefa, tarefaRef);
+                return registrarResultadoMolecularSimples(tarefa, tarefaRef);
             case "Duplex Rota e Corona Bovino":
                 return registrarResultadoDuplexRotaCoronaBovino(tarefa, tarefaRef);
             case "Duplex Rota e Corona Equino":
@@ -367,7 +367,7 @@ async function registrarResultadoPCR(id) {
             case "Multiplex Encefalites Equina":
                 return registrarResultadoMultiplexEncefalitesEquina(tarefa, tarefaRef);
             default:
-                return registrarResultadoPCRSimples(tarefa, tarefaRef);
+                return registrarResultadoMolecularSimples(tarefa, tarefaRef);
         }
 
     } catch (error) {
@@ -379,7 +379,7 @@ async function registrarResultadoPCR(id) {
 }
 
 // Função para PCR simples (sem seleção de DNA/RNA)
-async function registrarResultadoPCRSimples(tarefa, tarefaRef) {
+async function registrarResultadoMolecularSimples(tarefa, tarefaRef) {
     // Array de amostras baseado na quantidade
     const amostras = [];
     for (let i = 0; i < tarefa.quantidade; i++) {
@@ -396,7 +396,7 @@ async function registrarResultadoPCRSimples(tarefa, tarefaRef) {
 
     modal.innerHTML = `
         <div class="modal-resultados-content">
-            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo}${tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}</h3>
+            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}</h3>
             <div class="alert alert-light border-start border-success border-4">
                 <div class="row">
                     <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -530,7 +530,7 @@ async function registrarResultadoDuplexRotaCoronaBovino(tarefa, tarefaRef) {
 
     modal.innerHTML = `
         <div class="modal-resultados-content">
-            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.pcrTipo}</h3>
+            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.subTipo}</h3>
             <div class="alert alert-light border-start border-success border-4">
                 <div class="row">
                     <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -714,7 +714,7 @@ async function registrarResultadoDuplexRotaCoronaEquino(tarefa, tarefaRef) {
 
     modal.innerHTML = `
         <div class="modal-resultados-content">
-            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.pcrTipo}</h3>
+            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.subTipo}</h3>
             <div class="alert alert-light border-start border-success border-4">
                 <div class="row">
                     <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -900,7 +900,7 @@ async function registrarResultadoMultiplexCrostasBovina(tarefa, tarefaRef) {
 
     modal.innerHTML = `
         <div class="modal-resultados-content" style="max-width: 90%; max-height: 85vh; overflow-y: auto;">
-            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.pcrTipo}</h3>
+            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.subTipo}</h3>
             <div class="alert alert-light border-start border-success border-4">
                 <div class="row">
                     <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -1162,7 +1162,7 @@ async function registrarResultadoMultiplexDiarreiaBovinaNeonatal(tarefa, tarefaR
 
     modal.innerHTML = `
         <div class="modal-resultados-content" style="max-width: 95%; max-height: 90vh; overflow-y: auto;">
-            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.pcrTipo}</h3>
+            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.subTipo}</h3>
             <div class="alert alert-light border-start border-success border-4">
                 <div class="row">
                     <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -1458,7 +1458,7 @@ async function registrarResultadoMultiplexDoencaRespiratoriaBovina(tarefa, taref
 
     modal.innerHTML = `
         <div class="modal-resultados-content" style="max-width: 95%; max-height: 90vh; overflow-y: auto;">
-            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.pcrTipo}</h3>
+            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.subTipo}</h3>
             <div class="alert alert-light border-start border-success border-4">
                 <div class="row">
                     <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -1754,7 +1754,7 @@ async function registrarResultadoMultiplexEncefalitesEquina(tarefa, tarefaRef) {
 
     modal.innerHTML = `
         <div class="modal-resultados-content" style="max-width: 95%; max-height: 90vh; overflow-y: auto;">
-            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.pcrTipo}</h3>
+            <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo} - ${tarefa.subTipo}</h3>
             <div class="alert alert-light border-start border-success border-4">
                 <div class="row">
                     <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -2055,7 +2055,7 @@ async function registrarResultadoRAIVA(id) {
 
         modal.innerHTML = `
             <div class="modal-resultados-content">
-                <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo}${tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}</h3>
+                <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}</h3>
                 <div class="alert alert-light border-start border-success border-4">
                     <div class="row">
                         <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -2203,7 +2203,7 @@ async function registrarResultadoICC(id) {
 
         modal.innerHTML = `
             <div class="modal-resultados-content">
-                <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo}${tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}</h3>
+                <h3 class="text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Registrar Resultados - ${tarefa.tipo}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}</h3>
                 <div class="alert alert-light border-start border-success border-4">
                     <div class="row">
                         <div class="col-md-6"><strong><i class="bi bi-upc me-2"></i>ID:</strong> ${tarefa.id}</div>
@@ -2327,4 +2327,4 @@ async function registrarResultadoICC(id) {
     }
 }
 
-export { registrarResultadoSN, registrarResultadoELISA, registrarResultadoPCR, registrarResultadoRAIVA, registrarResultadoICC };
+export { registrarResultadoSN, registrarResultadoELISA, registrarResultadoMolecular, registrarResultadoRAIVA, registrarResultadoICC };

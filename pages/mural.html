@@ -34,13 +34,10 @@
         <label class="mural-form-label me-2" for="filtro-tipo"><i class="bi bi-funnel"></i> Filtrar por tipo:</label>
         <select id="filtro-tipo" class="form-select d-inline-block w-auto">
           <option value="Todos">Todos</option>
-          <option value="SN BVDV-1">SN BVDV-1</option>
-          <option value="SN BVDV-2">SN BVDV-2</option>
-          <option value="SN IBR">SN IBR</option>
+          <option value="SN">SN</option>
           <option value="VACINA">VACINA</option>
-          <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
-          <option value="ELISA BVDV">ELISA BVDV</option>
-          <option value="PCR">PCR</option>
+          <option value="ELISA">ELISA</option>
+          <option value="MOLECULAR">MOLECULAR</option>
           <option value="ICC">ICC</option>
           <option value="RAIVA">RAIVA</option>
         </select>
@@ -62,13 +59,10 @@
         <div class="col-md-4">
           <label for="tipo" class="mural-form-label">Teste:</label>
           <select id="tipo" name="tipo" class="form-select" required>
-            <option value="SN BVDV-1">SN BVDV-1</option>
-            <option value="SN BVDV-2">SN BVDV-2</option>
-            <option value="SN IBR">SN IBR</option>
+            <option value="SN">SN</option>
             <option value="VACINA">VACINA</option>
-            <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
-            <option value="ELISA BVDV">ELISA BVDV</option>
-            <option value="PCR">PCR</option>
+            <option value="ELISA">ELISA</option>
+            <option value="MOLECULAR">MOLECULAR</option>
             <option value="ICC">ICC</option>
             <option value="RAIVA">RAIVA</option>
           </select>
@@ -162,23 +156,43 @@
                   <input type="text" id="id-modal" name="id" class="form-control" required>
                 </div>
                 <div class="col-md-4">
-                  <label for="tipo-modal" class="mural-form-label">Tipo de Amostra:</label>
+                  <label for="tipo-modal" class="mural-form-label">Teste:</label>
                   <select id="tipo-modal" name="tipo" class="form-select" required>
-                    <option value="SN BVDV-1">SN BVDV-1</option>
-                    <option value="SN BVDV-2">SN BVDV-2</option>
-                    <option value="SN IBR">SN IBR</option>
+                    <option value="SN">SN</option>
                     <option value="VACINA">VACINA</option>
-                    <option value="ELISA LEUCOSE">ELISA LEUCOSE</option>
-                    <option value="ELISA BVDV">ELISA BVDV</option>
-                    <option value="PCR">PCR</option>
+                    <option value="ELISA">ELISA</option>
+                    <option value="MOLECULAR">MOLECULAR</option>
                     <option value="ICC">ICC</option>
                     <option value="RAIVA">RAIVA</option>
                   </select>
                 </div>
+                <div class="col-md-4" id="sn-container-modal" style="display:none;">
+                  <label for="sn-tipo-modal" class="mural-form-label">Tipo de SN:</label>
+                  <div class="sn-input-container">
+                    <input type="text" id="sn-tipo-modal" name="subTipo" class="form-control sn-input-readonly" readonly placeholder="Selecione o tipo de SN">
+                    <i class="bi bi-chevron-down sn-dropdown-icon"></i>
+                    <div id="sn-floating-menu" class="sn-floating-menu">
+                      <div class="sn-menu-item" data-value="SN BVDV-1">SN BVDV-1</div>
+                      <div class="sn-menu-item" data-value="SN BVDV-2">SN BVDV-2</div>
+                      <div class="sn-menu-item" data-value="SN IBR">SN IBR</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4" id="elisa-container-modal" style="display:none;">
+                  <label for="elisa-tipo-modal" class="mural-form-label">Tipo de ELISA:</label>
+                  <div class="elisa-input-container">
+                    <input type="text" id="elisa-tipo-modal" name="subTipo" class="form-control elisa-input-readonly" readonly placeholder="Selecione o tipo de ELISA">
+                    <i class="bi bi-chevron-down elisa-dropdown-icon"></i>
+                    <div id="elisa-floating-menu" class="elisa-floating-menu">
+                      <div class="elisa-menu-item" data-value="ELISA LEUCOSE">ELISA LEUCOSE</div>
+                      <div class="elisa-menu-item" data-value="ELISA BVDV">ELISA BVDV</div>
+                    </div>
+                  </div>
+                </div>
                 <div class="col-md-4" id="pcr-container-modal" style="display:none;">
-                  <label for="pcr-tipo-modal" class="mural-form-label">Tipo de PCR:</label>
+                  <label for="pcr-tipo-modal" class="mural-form-label">Tipo de Molecular:</label>
                   <div class="pcr-input-container">
-                    <input type="text" id="pcr-tipo-modal" name="pcrTipo" class="form-control pcr-input-readonly" readonly placeholder="Selecione o tipo de PCR">
+                    <input type="text" id="pcr-tipo-modal" name="subTipo" class="form-control pcr-input-readonly" readonly placeholder="Selecione o tipo de Molecular">
                     <i class="bi bi-chevron-down pcr-dropdown-icon"></i>
                     <div id="pcr-floating-menu" class="pcr-floating-menu">
                       <div class="pcr-menu-item" data-value="PCR">PCR</div>

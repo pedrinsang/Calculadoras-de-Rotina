@@ -5,6 +5,19 @@ import { gerarDocx } from "./baixarDoc.js";
 
 let modalAtual = null;
 
+// Função auxiliar para formatar o tipo completo da tarefa
+function formatarTipoCompleto(tarefa) {
+    if (tarefa.subTipo) {
+        return `${tarefa.tipo} - ${tarefa.subTipo}`;
+    } else if (tarefa.pcrTipo) {
+        return `${tarefa.tipo} - ${tarefa.pcrTipo}`;
+    } else if (tarefa.complemento) {
+        return `${tarefa.tipo} - ${tarefa.complemento}`;
+    } else {
+        return tarefa.tipo;
+    }
+}
+
 window.mostrarResultados = async (id) => {
     try {
         // Se já existe um modal aberto, fecha ele primeiro
@@ -22,14 +35,14 @@ window.mostrarResultados = async (id) => {
         
         const tarefa = tarefaSnap.data();
         
-        // Check for both SN, ELISA, and PCR types
-        const isSN = tarefa.tipo && (tarefa.tipo.includes("SN IBR") || tarefa.tipo.includes("SN BVDV"));
-        const isELISA = tarefa.tipo.includes("ELISA");
-        const isPCR = tarefa.tipo.includes("PCR");
+        // Check for both SN, ELISA, and Molecular/PCR types
+        const isSN = tarefa.tipo && (tarefa.tipo.includes("SN IBR") || tarefa.tipo.includes("SN BVDV") || (tarefa.tipo === "SN" && tarefa.subTipo));
+        const isELISA = tarefa.tipo.includes("ELISA") || (tarefa.tipo === "ELISA" && tarefa.subTipo);
+        const isMolecular = tarefa.tipo.includes("PCR") || (tarefa.tipo === "Molecular" && tarefa.subTipo);
         const isRAIVA = tarefa.tipo.includes("RAIVA");
         const isICC = tarefa.tipo.includes("ICC");
         
-        if (!isSN && !isELISA && !isPCR && !isRAIVA && !isICC) {
+        if (!isSN && !isELISA && !isMolecular && !isRAIVA && !isICC) {
             mostrarFeedback("Este tipo de tarefa não possui resultados específicos", "warning");
             return;
         }
@@ -49,7 +62,7 @@ window.mostrarResultados = async (id) => {
             const modalContent = `
                 <div class="modal-resultados-content">
                     <div class="modal-resultados-header">
-                        <h3>${tarefa.tipo} ${tarefa.complemento || ''}</h3>
+                        <h3>${formatarTipoCompleto(tarefa)}</h3>
                         <button id="fechar-modal-x" class="modal-close-btn" aria-label="Fechar">
                             <i class="bi bi-x"></i>
                         </button>
@@ -68,7 +81,7 @@ window.mostrarResultados = async (id) => {
                     </div>
                     
                     <div class="modal-resultados-body">
-                        ${getTableContent(tarefa, isSN, isELISA, isPCR, isRAIVA, isICC)}
+                        ${getTableContent(tarefa, isSN, isELISA, isMolecular, isRAIVA, isICC)}
                     </div>
                 </div>
             `;
@@ -156,7 +169,7 @@ window.mostrarResultados = async (id) => {
 };
 
 // Função para gerar o conteúdo da tabela de acordo com o tipo
-function getTableContent(tarefa, isSN, isELISA, isPCR, isRAIVA, isICC) {
+function getTableContent(tarefa, isSN, isELISA, isMolecular, isRAIVA, isICC) {
     if (isSN) {
         return `
             <table class="tabela-resultados tabela-resultados-view compact-table">
@@ -221,7 +234,7 @@ function getTableContent(tarefa, isSN, isELISA, isPCR, isRAIVA, isICC) {
               </tbody>
             </table>
         `;
-    } else if (isPCR) {
+    } else if (isMolecular) {
         // Detectar tipo específico de PCR
         const tipoPCR = detectarTipoPCR(tarefa);
         return gerarTabelaPCR(tarefa, tipoPCR);
