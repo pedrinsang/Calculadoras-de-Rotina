@@ -647,13 +647,20 @@ function renderizarTarefas(tarefas) {
         
         const showResultsButton = (tarefa.tipo === "SN" && tarefa.subTipo) ||
                                 (tarefa.tipo === "ELISA" && tarefa.subTipo) ||
-                                (tarefa.tipo === "Molecular" && tarefa.subTipo) ||
+                                (tarefa.tipo === "MOLECULAR" && tarefa.subTipo) ||
                                 tarefa.tipo === "RAIVA" ||
                                 tarefa.tipo === "ICC" ||
                                 // Compatibilidade com dados antigos
                                 tarefa.tipo.includes("SN") ||
                                 tarefa.tipo.includes("ELISA") ||
                                 tarefa.tipo.includes("PCR");
+
+        console.log("🔍 [historico.js] DEBUG - Botão de resultados:", {
+            id: tarefa.id,
+            tipo: tarefa.tipo,
+            subTipo: tarefa.subTipo,
+            showResultsButton
+        });
 
         // Destacar texto nos principais campos se houver busca ativa
         const id = searchTermo ? destacarTermos(tarefa.id || 'Sem ID', searchTermo) : (tarefa.id || 'Sem ID');
@@ -951,7 +958,7 @@ window.mostrarResultados = async (id) => {
         
         if (tarefa.tipo === "SN") {
             modalContent = gerarModalResultadosSN(tarefa);
-        } else if (tarefa.tipo === "Molecular" || tarefa.tipo === "PCR") {
+        } else if (tarefa.tipo === "MOLECULAR" || tarefa.tipo === "PCR") {
             modalContent = gerarModalResultadosPCRSimples(tarefa);
         } else {
             // Para outros tipos, mostrar uma mensagem direcionando para o botão "Resultados" detalhado

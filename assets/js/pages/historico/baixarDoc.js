@@ -89,6 +89,7 @@ export async function gerarDocx(tarefa) {
         // Carregue as imagens
         const logoLabBase64 = await getImageAsBase64('assets/images/logo-sv.png');
         const logoUFSMBase64 = await getImageAsBase64('assets/images/logo-ufsm.png');
+        const assinaturaBase64 = await getImageAsBase64('assets/images/Assinatura.png');
 
         // Lide com diferentes formatos de dados do proprietário e veterinário
         const proprietario = {
@@ -234,21 +235,104 @@ export async function gerarDocx(tarefa) {
         let tituloLaudo, testeRealizado, nomeArquivo;
         const isELISA = tarefa.tipo.includes("ELISA");
 
+        console.log("Tipo de teste:", tarefa.tipo); // Debug para verificar o tipo
+        console.log("Dados completos da tarefa:", JSON.stringify(tarefa, null, 2)); // Debug completo
+
+        // Função para formatar datas com múltiplas opções de fallback
+        function formatarData(data, dataDefault = new Date()) {
+            if (!data) return dataDefault.toLocaleDateString('pt-BR');
+            
+            // Se for um timestamp do Firebase
+            if (data.toDate && typeof data.toDate === 'function') {
+                return data.toDate().toLocaleDateString('pt-BR');
+            }
+            
+            // Se for uma string de data
+            if (typeof data === 'string') {
+                const parsedDate = new Date(data);
+                if (!isNaN(parsedDate.getTime())) {
+                    return parsedDate.toLocaleDateString('pt-BR');
+                }
+            }
+            
+            // Se for um objeto Date
+            if (data instanceof Date && !isNaN(data.getTime())) {
+                return data.toLocaleDateString('pt-BR');
+            }
+            
+            // Fallback para data atual
+            return dataDefault.toLocaleDateString('pt-BR');
+        }
+
+        // Preparar as datas
+        const dataEntrada = formatarData(tarefa.criadoEm || tarefa.dataRecebimento || tarefa.dataInicio);
+        const dataLaudo = formatarData(tarefa.dataConclusao);
+        
+        console.log("Data de entrada formatada:", dataEntrada);
+        console.log("Data do laudo formatada:", dataLaudo);
+        console.log("criadoEm original:", tarefa.criadoEm);
+        console.log("dataRecebimento original:", tarefa.dataRecebimento);
+
+        // Função para extrair subtipo da SN
+        function extrairSubtipoSN() {
+            if (!isSN) return "";
+            
+            const tipoParaVerificar = tarefa.subTipo || tarefa.tipo;
+            if (!tipoParaVerificar) return "";
+            
+            const tipoUpper = tipoParaVerificar.toUpperCase();
+            
+            // Detectar subtipo baseado na string
+            if (tipoUpper.includes("IBR") || tipoUpper.includes("BOHV-1")) {
+                return "IBR";
+            } else if (tipoUpper.includes("BVDV-2")) {
+                return "BVDV-2";
+            } else if (tipoUpper.includes("BVDV-3") || tipoUpper.includes("HOBI")) {
+                return "BVDV-3";
+            } else if (tipoUpper.includes("BVDV-1") || (tipoUpper.includes("BVDV") && !tipoUpper.includes("BVDV-2") && !tipoUpper.includes("BVDV-3"))) {
+                return "BVDV-1";
+            } else if (tipoUpper.includes("EHV-1") || tipoUpper.includes("EHV1")) {
+                return "EHV-1";
+            }
+            
+            return "SN";
+        }
+
         switch(tarefa.tipo) {
             case "SN IBR":
+            case "SN BoHV-1":
+            case "IBR":
                 tituloLaudo = "Sorologia BoHV-1 (IBR)";
                 testeRealizado = "Soro-Neutralização para BoHV-1 (cepa Cooper ~ 100TCID50)";
                 nomeArquivo = "IBR";
                 break;
             case "SN BVDV":
+            case "SN BVDV-1":
+            case "BVDV":
                 tituloLaudo = "Sorologia BVDV";
                 testeRealizado = "Soro-neutralização para BVDV-1 (cepa Singer ~ 100TCID50)";
                 nomeArquivo = "BVDV";
                 break;
             case "ELISA LEUCOSE":
                 tituloLaudo = "Sorologia Vírus da Leucose Bovina";
-                testeRealizado = "ELISA Anticorpo Vírus da Leucose Bovina";
+                testeRealizado = "ELISA Anticorpo Vírus da Leucose Bovina (IDEXX®)";
                 nomeArquivo = "ELISA_LEUCOSE";
+                break;
+            case "ELISA":
+                // Verificar subtipo para ELISA
+                if (tarefa.subTipo === "ELISA LEUCOSE") {
+                    tituloLaudo = "Sorologia Vírus da Leucose Bovina";
+                    testeRealizado = "ELISA Anticorpo Vírus da Leucose Bovina (IDEXX®)";
+                    nomeArquivo = "ELISA_LEUCOSE";
+                } else if (tarefa.subTipo === "ELISA BVDV") {
+                    tituloLaudo = "Sorologia Vírus da Diarreia Bovina - BVDV";
+                    testeRealizado = "ELISA para Antígeno contra Vírus da Diarreia Bovina - BVDV (IDEXX®)";
+                    nomeArquivo = "ELISA_BVDV";
+                } else {
+                    tituloLaudo = "Laudo Laboratorial";
+                    testeRealizado = "ELISA";
+                    nomeArquivo = "ELISA";
+                }
                 break;
             case "ELISA BVDV":
                 tituloLaudo = "Sorologia Vírus da Diarreia Bovina - BVDV";
@@ -266,6 +350,26 @@ export async function gerarDocx(tarefa) {
                 }
                 nomeArquivo = "PCR";
                 break;
+            case "MOLECULAR":
+                // Verificar subtipo molecular específico
+                if (tarefa.subTipo === "Multiplex Encefalites Equina") {
+                    tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
+                    testeRealizado = "Multiplex RT-PCR e PCR";
+                    nomeArquivo = "MULTIPLEX_ENCEFALITES";
+                } else if (tarefa.subTipo && tarefa.subTipo.includes("Multiplex")) {
+                    tituloLaudo = `Diagnóstico Molecular (${tarefa.subTipo})`;
+                    testeRealizado = tarefa.subTipo;
+                    nomeArquivo = "MULTIPLEX";
+                } else if (tarefa.resultados?.acidoNucleico === 'RNA') {
+                    tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
+                    testeRealizado = "RT-PCR: pesquisa de ácido nucléico viral (RNA) nas amostras";
+                    nomeArquivo = "RT_PCR";
+                } else {
+                    tituloLaudo = "Diagnóstico Molecular (PCR)";
+                    testeRealizado = "PCR: pesquisa de ácido nucléico viral (DNA) nas amostras";
+                    nomeArquivo = "PCR";
+                }
+                break;
             case "RAIVA":
                 tituloLaudo = "Diagnóstico de RAIVA";
                 testeRealizado = "(  ) Imunoflorescência (  ) RT-PCR";
@@ -276,10 +380,25 @@ export async function gerarDocx(tarefa) {
                 testeRealizado = "Isolamento em Cultivo Celular";
                 nomeArquivo = "ICC";
                 break;
+            default:
+                // Caso padrão para tipos SN não específicos ou outros
+                if (tarefa.tipo.includes("SN")) {
+                    tituloLaudo = "Sorologia - Soroneutralização";
+                    testeRealizado = "Soro-neutralização (SN)";
+                    nomeArquivo = "SN";
+                } else {
+                    tituloLaudo = "Laudo Laboratorial";
+                    testeRealizado = tarefa.tipo || "Teste não especificado";
+                    nomeArquivo = "LAUDO";
+                }
+                break;
         }
 
         // Add a new condition for PCR type
         const isPCR = tarefa.tipo.includes("PCR");
+
+        // Add a new condition for MOLECULAR type
+        const isMOLECULAR = tarefa.tipo === "MOLECULAR";
 
         // Add a new condition for RAIVA type
         const isRAIVA = tarefa.tipo === "RAIVA";
@@ -287,8 +406,83 @@ export async function gerarDocx(tarefa) {
         // Add a new condition for ICC type
         const isICC = tarefa.tipo === "ICC";
 
+        // Add a new condition for SN type - mais flexível
+        const isSN = tarefa.tipo && (tarefa.tipo.includes("SN") || tarefa.tipo.includes("Soro"));
+
+        console.log("isSN detectado:", isSN); // Debug
+
+        // Função para gerar os checkboxes de tipos de SN
+        function gerarCheckboxesSN(tipoAtual) {
+            console.log("=== DEBUG CHECKBOXES ===");
+            console.log("Gerando checkboxes para tipo:", tipoAtual);
+            console.log("SubTipo da tarefa:", tarefa.subTipo);
+            console.log("Tipo original:", JSON.stringify(tipoAtual));
+            
+            // Usar subTipo se disponível, senão usar tipo
+            const tipoParaVerificar = tarefa.subTipo || tipoAtual;
+            console.log("Tipo que será verificado:", tipoParaVerificar);
+            
+            const tipos = [
+                { codigo: "BVDV-1", nome: "BVDV-1" },
+                { codigo: "BVDV-2", nome: "BVDV-2" }, 
+                { codigo: "BVDV-3", nome: "BVDV-3/HoBi" },
+                { codigo: "BoHV-1", nome: "BoHV-1" },
+                { codigo: "EHV-1", nome: "EHV-1" }
+            ];
+
+            let checkboxes = "";
+            tipos.forEach((tipo, index) => {
+                let isSelected = false;
+                
+                // Lógica de detecção melhorada e corrigida
+                if (tipoParaVerificar) {
+                    const tipoUpper = tipoParaVerificar.toUpperCase();
+                    
+                    console.log(`Verificando ${tipo.nome}:`);
+                    console.log(`  tipoUpper: "${tipoUpper}"`);
+                    
+                    // Lógica específica para cada tipo
+                    if (tipo.codigo === "BoHV-1") {
+                        // Para BoHV-1, verifica IBR ou BoHV-1
+                        isSelected = tipoUpper.includes("IBR") || tipoUpper.includes("BOHV-1");
+                        console.log(`  IBR/BoHV-1 check: ${isSelected}`);
+                    } else if (tipo.codigo === "BVDV-1") {
+                        // Para BVDV-1, verifica se tem BVDV mas não especifica 2 ou 3
+                        isSelected = tipoUpper.includes("BVDV") && !tipoUpper.includes("BVDV-2") && !tipoUpper.includes("BVDV-3");
+                        console.log(`  BVDV-1 check: ${isSelected}`);
+                    } else if (tipo.codigo === "BVDV-2") {
+                        // Para BVDV-2, verifica especificamente BVDV-2
+                        isSelected = tipoUpper.includes("BVDV-2");
+                        console.log(`  BVDV-2 check: ${isSelected}`);
+                    } else if (tipo.codigo === "BVDV-3") {
+                        // Para BVDV-3, verifica BVDV-3 ou HoBi
+                        isSelected = tipoUpper.includes("BVDV-3") || tipoUpper.includes("HOBI");
+                        console.log(`  BVDV-3/HoBi check: ${isSelected}`);
+                    } else if (tipo.codigo === "EHV-1") {
+                        // Para EHV-1, verifica EHV-1
+                        isSelected = tipoUpper.includes("EHV-1") || tipoUpper.includes("EHV1");
+                        console.log(`  EHV-1 check: ${isSelected}`);
+                    }
+                    
+                    console.log(`  Resultado para ${tipo.nome}: ${isSelected}`);
+                }
+                
+                const checkbox = isSelected ? "( X )" : "(     )";
+                checkboxes += `${checkbox} ${tipo.nome}`;
+                
+                if (index < tipos.length - 1) {
+                    checkboxes += "; ";
+                }
+            });
+
+            console.log("Resultado final dos checkboxes:", checkboxes);
+            console.log("=== FIM DEBUG CHECKBOXES ===");
+            return checkboxes;
+        }
+
         // Cria a tabela de resultados baseada no tipo
         let tabelaResultados;
+        let tabelaResultadosEncefalites; // Declarar aqui para que seja acessível em todo o escopo
         
         if (isELISA || isRAIVA || isICC) { // Add ICC here
             // Tabela ELISA, RAIVA e ICC
@@ -547,6 +741,332 @@ export async function gerarDocx(tarefa) {
                 ],
                 width: { size: 100, type: WidthType.PERCENTAGE }
             });
+        } else if (isMOLECULAR) {
+            // Tabela específica para Diagnóstico Molecular
+            if (tarefa.subTipo === "Multiplex Encefalites Equina") {
+
+                // Adicionar tabela de resultados específica para Multiplex Encefalites
+                tabelaResultadosEncefalites = new Table({
+                    columnWidths: [1500, 1000, 1000, 1000, 1000, 1000],
+                    rows: [
+                        // Cabeçalho da tabela de resultados
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Identificação da amostra",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "RABV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "EHV-1",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Flavivirus",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Alphavirus",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "VEEV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                })
+                            ]
+                        }),
+                        // Linhas de dados
+                        ...(tarefa.resultados?.amostras || []).map(amostra =>
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.identificacao || "-",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.virusRaiva || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.ehv1 || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.flavivirus || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.alphavirus || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.veev || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    })
+                                ]
+                            })
+                        )
+                    ],
+                    width: { size: 100, type: WidthType.PERCENTAGE }
+                });
+            } else {
+                // Para outros subtipos moleculares, usar formato padrão
+                tabelaResultados = new Table({
+                    columnWidths: [3000, 3000],
+                    rows: [
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Identificação da amostra",
+                                            bold: true,
+                                            size: 24,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Resultado",
+                                            bold: true,
+                                            size: 24,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" }
+                                })
+                            ]
+                        }),
+                        ...(tarefa.resultados?.amostras || []).map(amostra =>
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.identificacao || "-",
+                                                size: 24,
+                                                font: "Arial"
+                                            })]
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.resultado || "-",
+                                                size: 24,
+                                                font: "Arial"
+                                            })]
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 }
+                                    })
+                                ]
+                            })
+                        )
+                    ],
+                    width: { size: 100, type: WidthType.PERCENTAGE }
+                });
+            }
         } else {
             // Sua tabela SN existente
             tabelaResultados = new Table({
@@ -1062,29 +1582,83 @@ export async function gerarDocx(tarefa) {
                 alignment: AlignmentType.CENTER,
                 spacing: { after: 400 }
             }),
-            // Identificação e datas
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: `Identificação: ${tarefa.id || 'SV /25'}                                             Número de amostras: ${tarefa.quantidade || ''}`,
-                        bold: true,
-                        size: 24,
-                        font: "Arial"
-                    })
-                ],
-                spacing: { after: 100 }
-            }),
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: `Data de entrada: ${tarefa.dataRecebimento?.toDate?.().toLocaleDateString('pt-BR') || '/2025'}                                   Data do laudo: ${tarefa.dataConclusao?.toDate?.().toLocaleDateString('pt-BR') || '/2025'}`,
-                        bold: true,
-                        size: 24,
-                        font: "Arial"
-                    })
-                ],
-                spacing: { after: 400 }
-            }),
+            
+            // Para ELISA, usar formato específico da imagem
+            ...(isELISA ? [
+                // Identificação e Número de amostras
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Identificação: ${tarefa.id || 'SV /25'}                                          Número de amostras: ${tarefa.quantidade || ''}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 100 }
+                }),
+                // Data de entrada e Data do laudo
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Data de entrada: ${dataEntrada}                                   Data do laudo: ${dataLaudo}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 200 }
+                }),
+                // Material
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Material: ${tarefa.materialRecebido || ''}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 100 }
+                }),
+                // Teste realizado
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Teste realizado: ${testeRealizado}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 400 }
+                })
+            ] : [
+                // Para outros tipos, usar formato original
+                // Identificação e datas
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Identificação: ${tarefa.id || 'SV /25'}                                          Número de amostras: ${tarefa.quantidade || ''}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 100 }
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Data de entrada: ${dataEntrada}                                   Data do laudo: ${dataLaudo}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 400 }
+                })
+            ]),
             ...(isPCR ? [
                 new Paragraph({
                     children: [
@@ -1120,23 +1694,153 @@ export async function gerarDocx(tarefa) {
                         })
                     ],
                     spacing: { after: 100 }
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Material: ${tarefa.materialRecebido || ''}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 100 }
                 })
             ] : []),
             
-            ...(!isPCR ? [
+            ...(!isPCR && !isELISA ? [
                 // Teste realizado (agora dinâmico)
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `Teste realizado: ${testeRealizado}`,
+                            text: "Teste Realizado: " + (testeRealizado || ""),
                             bold: true,
-                            size: 22,
+                            size: 24,
                             font: "Arial"
                         })
                     ],
-                    spacing: { after: 600 }
                 }),
+                
+                // Adicionar checkboxes para testes SN
+                ...(isSN ? [
+                    new Paragraph({
+                        text: "",
+                        spacing: { after: 200 }
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: gerarCheckboxesSN(tarefa.tipo),
+                                bold: false,
+                                size: 24,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 400 }
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Outro.............................................................................................",
+                                bold: false,
+                                size: 24,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 600 }
+                    })
+                ] : [])
             ] : []),
+
+             // Para Multiplex Encefalites, adicionar informações específicas antes da tabela de resultados
+            ...(tarefa.subTipo === "Multiplex Encefalites Equina" ? [
+                // Material
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Material: ${tarefa.materialRecebido || ''}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                // Espécie
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Espécie: Equino",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                
+                // Alvos
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Alvos:",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Vírus da Raiva (RaBV);",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Herpesvírus Equino tipo 1 (EHV-1)",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Flavivirus",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Alphavirus",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Vírus da Encefalite Equina Venezuelana (VEEV)",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 300 }
+                })
+            ] : []),
+
             // Tabela de proprietário e veterinário
             new Table({
                 columnWidths: [3000, 3000],
@@ -1232,11 +1936,34 @@ export async function gerarDocx(tarefa) {
             // Espaçamento antes da tabela de resultados
             new Paragraph({
                 text: "",
-                spacing: { after: 400 }
+                spacing: { after: 100 }
             }),
 
             // Usar a tabela de resultados correta
             tabelaResultados,
+
+           
+
+            // Para Multiplex Encefalites, adicionar também a tabela de resultados específica
+            ...(tarefa.subTipo === "Multiplex Encefalites Equina" ? [
+                // Espaçamento entre tabelas
+                new Paragraph({
+                    text: "",
+                    spacing: { after: 100 }
+                }),
+                // Título da tabela de resultados
+                new Paragraph({
+                    children: [new TextRun({
+                        text: "Resultado",
+                        bold: true,
+                        size: 28,
+                        font: "Arial"
+                    })],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 }
+                }),
+                tabelaResultadosEncefalites
+            ] : []),
 
             // Espaçamento antes da tabela de rodapé
             new Paragraph({
@@ -1246,7 +1973,7 @@ export async function gerarDocx(tarefa) {
         );
 
         // Add note only for SN tests
-        if (!isELISA && !isPCR && !isRAIVA && !isICC) {
+        if (!isELISA && !isPCR && !isRAIVA && !isICC && !isMOLECULAR) {
             sections.push(
                 new Table({
                     columnWidths: [1500, 1500, 4000],
@@ -1443,13 +2170,25 @@ export async function gerarDocx(tarefa) {
             
             // Assinatura
             new Paragraph({
+                children: [
+                    new ImageRun({
+                        data: assinaturaBase64,
+                        transformation: {
+                            width: 75   ,
+                            height: 100
+                        }
+                    })
+                ],
+                alignment: AlignmentType.RIGHT,
+                spacing: { before: 400 }
+            }),
+            new Paragraph({
                 children: [new TextRun({
                     text: "Eduardo Furtado Flores",
                     size: 17,
                     font: "Arial"
                 })],
-                alignment: AlignmentType.RIGHT,
-                spacing: { before: 400 }
+                alignment: AlignmentType.RIGHT
             }),
             new Paragraph({
                 children: [new TextRun({
@@ -1502,7 +2241,32 @@ export async function gerarDocx(tarefa) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `LAUDO ${nomeArquivo} ${tarefa.id.replace(/\//g, '_')}.docx`;
+        
+        // Gerar nome do arquivo personalizado para SN
+        let nomeArquivoFinal;
+        if (isSN) {
+            const subtipoSN = extrairSubtipoSN();
+            const identificacao = tarefa.id || 'SV';
+            nomeArquivoFinal = `LAUDO SN ${subtipoSN} ${identificacao.replace(/\//g, '_')}.docx`;
+        } else if (isMOLECULAR) {
+            const identificacao = tarefa.id || 'SV';
+            if (tarefa.subTipo) {
+                nomeArquivoFinal = `LAUDO MOLECULAR ${tarefa.subTipo.replace(/\s+/g, '_').toUpperCase()} ${identificacao.replace(/\//g, '_')}.docx`;
+            } else {
+                nomeArquivoFinal = `LAUDO ${nomeArquivo} ${identificacao.replace(/\//g, '_')}.docx`;
+            }
+        } else if (isELISA && (tarefa.tipo === "ELISA LEUCOSE" || tarefa.subTipo === "ELISA LEUCOSE")) {
+            const identificacao = tarefa.id || 'SV';
+            nomeArquivoFinal = `LAUDO ELISA LEUCOSE ${identificacao.replace(/\//g, '_')}.docx`;
+        } else if (isELISA && (tarefa.tipo === "ELISA BVDV" || tarefa.subTipo === "ELISA BVDV")) {
+            const identificacao = tarefa.id || 'SV';
+            nomeArquivoFinal = `LAUDO ELISA BVDV ${identificacao.replace(/\//g, '_')}.docx`;
+        } else {
+            nomeArquivoFinal = `LAUDO ${nomeArquivo} ${tarefa.id.replace(/\//g, '_')}.docx`;
+        }
+        
+        link.download = nomeArquivoFinal;
+        console.log("Nome do arquivo gerado:", nomeArquivoFinal);
         link.click();
         URL.revokeObjectURL(url);
         

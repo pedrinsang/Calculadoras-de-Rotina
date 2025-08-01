@@ -250,6 +250,7 @@ async function adicionarTarefaModal() {
         const veterinarioMunicipioInput = document.getElementById("veterinario-municipio-modal");
         const veterinarioContatoInput = document.getElementById("veterinario-contato-modal");
         const observacoesInput = document.getElementById("observacoes-modal");
+        const materialRecebidoInput = document.getElementById("material-recebido-modal");
 
         // Validate required fields exist
         if (!idInput || !tipoInput || !quantidadeInput) {
@@ -258,7 +259,7 @@ async function adicionarTarefaModal() {
 
         // Determinar subtipo baseado no tipo principal
         let subTipo = null;
-        if (tipoInput.value === "Molecular" && pcrTipoInput) {
+        if (tipoInput.value === "MOLECULAR" && pcrTipoInput) {
             subTipo = pcrTipoInput.value.trim() || null;
         } else if (tipoInput.value === "SN" && snTipoInput) {
             subTipo = snTipoInput.value.trim() || null;
@@ -285,6 +286,7 @@ async function adicionarTarefaModal() {
                 contato: veterinarioContatoInput ? veterinarioContatoInput.value.trim() : ""
             },
             observacoes: observacoesInput ? observacoesInput.value.trim() : "",
+            materialRecebido: materialRecebidoInput ? materialRecebidoInput.value.trim() : "",
             status: "pendente",
             criadoEm: Timestamp.now(), // Apenas criadoEm, removendo dataRecebimento
             criadoPor: user.uid,
@@ -341,7 +343,7 @@ function prepararModalAdicao() {
     
     const pcrContainer = document.getElementById('pcr-container-modal');
     if (pcrContainer) {
-        pcrContainer.style.display = tipoValue === "Molecular" ? "block" : "none";
+        pcrContainer.style.display = tipoValue === "MOLECULAR" ? "block" : "none";
     }
     
     const snContainer = document.getElementById('sn-container-modal');
@@ -391,8 +393,8 @@ function configurarTipoChangeListener() {
         // Controlar containers dos submenus
         const pcrContainer = document.getElementById('pcr-container-modal');
         if (pcrContainer) {
-            pcrContainer.style.display = tipoValue === "Molecular" ? "block" : "none";
-            if (tipoValue !== "Molecular") {
+            pcrContainer.style.display = tipoValue === "MOLECULAR" ? "block" : "none";
+            if (tipoValue !== "MOLECULAR") {
                 const pcrInput = document.getElementById('pcr-tipo-modal');
                 if (pcrInput) pcrInput.value = '';
             }
@@ -686,7 +688,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
 
             const showResultsButton = (tarefa.tipo === "SN" && tarefa.subTipo) || 
                                     (tarefa.tipo === "ELISA" && tarefa.subTipo) ||
-                                    (tarefa.tipo === "Molecular" && tarefa.subTipo) ||
+                                    (tarefa.tipo === "MOLECULAR" && tarefa.subTipo) ||
                                     tarefa.tipo === "RAIVA" ||
                                     tarefa.tipo === "ICC" ||
                                     // Compatibilidade com dados antigos
@@ -979,7 +981,7 @@ window.editarTarefaModal = async (id) => {
         }
         
         // Controlar e preencher containers dos submenus
-        if (tipo === "Molecular") {
+        if (tipo === "MOLECULAR") {
             document.getElementById("pcr-container-modal").style.display = "block";
             document.getElementById("pcr-tipo-modal").value = tarefa.subTipo || "";
         } else {
@@ -1007,6 +1009,7 @@ window.editarTarefaModal = async (id) => {
         }
         
         document.getElementById("observacoes-modal").value = tarefa.observacoes || "";
+        document.getElementById("material-recebido-modal").value = tarefa.materialRecebido || "";
 
         if (tarefa.proprietario) {
             document.getElementById("proprietario-nome-modal").value = tarefa.proprietario.nome || "";
@@ -1040,7 +1043,8 @@ window.editarTarefaModal = async (id) => {
                     tipo: tipoValue,
                     quantidade: parseInt(document.getElementById("quantidade-modal").value),
                     atualizadoEm: Timestamp.now(),
-                    observacoes: document.getElementById("observacoes-modal").value.trim()
+                    observacoes: document.getElementById("observacoes-modal").value.trim(),
+                    materialRecebido: document.getElementById("material-recebido-modal").value.trim()
                 };
 
                 // Adicionar campos condicionais
@@ -1053,7 +1057,7 @@ window.editarTarefaModal = async (id) => {
 
                 // Determinar subtipo baseado no tipo principal
                 let subTipo = null;
-                if (tipoValue === "Molecular") {
+                if (tipoValue === "MOLECULAR") {
                     const pcrTipoInput = document.getElementById("pcr-tipo-modal");
                     subTipo = pcrTipoInput ? pcrTipoInput.value.trim() : null;
                 } else if (tipoValue === "SN") {
@@ -1234,6 +1238,17 @@ window.mostrarDetalhes = async (id) => {
                         </div>
                     </div>
                 </div>
+                ${tarefa.materialRecebido ? `
+                <div class="card border-0 mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-3 text-success fw-bold">
+                            <i class="bi bi-box-seam me-2"></i>Material Recebido
+                        </h6>
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem;">
+${tarefa.materialRecebido}
+                        </div>
+                    </div>
+                </div>` : ''}
                 ${tarefa.observacoes ? `
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
