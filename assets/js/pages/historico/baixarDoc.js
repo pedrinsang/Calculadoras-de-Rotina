@@ -225,10 +225,6 @@ export async function gerarDocx(tarefa) {
                     insideVertical: { style: BorderStyle.NONE }
                 }
             }),
-            new Paragraph({
-                text: "",
-                spacing: { after: 200 }
-            }),
         ];
 
         // Define os textos variáveis conforme o tipo de teste
@@ -343,10 +339,10 @@ export async function gerarDocx(tarefa) {
                 // Check if DNA or RNA was selected
                 if (tarefa.resultados?.acidoNucleico === 'RNA') {
                     tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
-                    testeRealizado = "PCR: pesquisa de ácido nucléico viral (RNA) nas amostras";
+                    testeRealizado = "RT-PCR - pesquisa de ácido nucléico viral (RNA)";
                 } else {
                     tituloLaudo = "Diagnóstico Molecular (PCR)";
-                    testeRealizado = "PCR: pesquisa de ácido nucléico viral (DNA) nas amostras";
+                    testeRealizado = "PCR - pesquisa de ácido nucléico viral (DNA)";
                 }
                 nomeArquivo = "PCR";
                 break;
@@ -356,17 +352,45 @@ export async function gerarDocx(tarefa) {
                     tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
                     testeRealizado = "Multiplex RT-PCR e PCR";
                     nomeArquivo = "MULTIPLEX_ENCEFALITES";
+                } else if (tarefa.subTipo === "Multiplex Crostas Bovina") {
+                    tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
+                    testeRealizado = "Multiplex RT-PCR e PCR";
+                    nomeArquivo = "MULTIPLEX_CROSTAS_BOV";
+                } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Diarreia Neonatal"))) {
+                    tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
+                    testeRealizado = "Multiplex RT-PCR e PCR";
+                    nomeArquivo = "MULTIPLEX_DIARREIA_NEONATAL_BOV";
+                } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR Doença Respiratória Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Doença Respiratória"))) {
+                    tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
+                    testeRealizado = "Multiplex RT-PCR e PCR";
+                    nomeArquivo = "MULTIPLEX_DOENÇA_RESP_BOV";
+                } else if (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino" || tarefa.subTipo === "Duplex Rota e Corona Bovino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Bovino") || tarefa.subTipo.includes("Duplex Rota e Corona Bovino")))) {
+                    tituloLaudo = "Diagnóstico Molecular (Duplex RT-PCR)";
+                    testeRealizado = "Duplex RT-PCR";
+                    nomeArquivo = "DUPLEX_RT-PCR_ROTA_CORONA_BOV";
+                } else if (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino" || tarefa.subTipo === "Duplex Rota e Corona Equino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Equino") || tarefa.subTipo.includes("Duplex Rota e Corona Equino")))) {
+                    tituloLaudo = "Diagnóstico Molecular (Duplex RT-PCR)";
+                    testeRealizado = "Duplex RT-PCR";
+                    nomeArquivo = "DUPLEX_RT-PCR_ROTA_CORONA_EQ";
                 } else if (tarefa.subTipo && tarefa.subTipo.includes("Multiplex")) {
                     tituloLaudo = `Diagnóstico Molecular (${tarefa.subTipo})`;
                     testeRealizado = tarefa.subTipo;
                     nomeArquivo = "MULTIPLEX";
+                } else if (tarefa.subTipo === "RT-PCR") {
+                    tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
+                    testeRealizado = "RT-PCR - pesquisa de ácido nucléico viral (RNA)";
+                    nomeArquivo = "RT-PCR";
+                } else if (tarefa.subTipo === "PCR") {
+                    tituloLaudo = "Diagnóstico Molecular (PCR)";
+                    testeRealizado = "PCR - pesquisa de ácido nucléico viral (DNA)";
+                    nomeArquivo = "PCR";
                 } else if (tarefa.resultados?.acidoNucleico === 'RNA') {
                     tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
-                    testeRealizado = "RT-PCR: pesquisa de ácido nucléico viral (RNA) nas amostras";
-                    nomeArquivo = "RT_PCR";
+                    testeRealizado = "RT-PCR - pesquisa de ácido nucléico viral (RNA)";
+                    nomeArquivo = "RT-PCR";
                 } else {
                     tituloLaudo = "Diagnóstico Molecular (PCR)";
-                    testeRealizado = "PCR: pesquisa de ácido nucléico viral (DNA) nas amostras";
+                    testeRealizado = "PCR - pesquisa de ácido nucléico viral (DNA)";
                     nomeArquivo = "PCR";
                 }
                 break;
@@ -376,7 +400,7 @@ export async function gerarDocx(tarefa) {
                 nomeArquivo = "RAIVA";
                 break;
             case "ICC":
-                tituloLaudo = "Diagnóstico de Isolamento em Cultivo Celular";
+                tituloLaudo = "Isolamento em Cultivo Celular";
                 testeRealizado = "Isolamento em Cultivo Celular";
                 nomeArquivo = "ICC";
                 break;
@@ -483,6 +507,8 @@ export async function gerarDocx(tarefa) {
         // Cria a tabela de resultados baseada no tipo
         let tabelaResultados;
         let tabelaResultadosEncefalites; // Declarar aqui para que seja acessível em todo o escopo
+        let tituloSecao; // Para títulos específicos dos subtipos MOLECULAR
+        let informacoes; // Para informações específicas dos subtipos MOLECULAR
         
         if (isELISA || isRAIVA || isICC) { // Add ICC here
             // Tabela ELISA, RAIVA e ICC
@@ -743,6 +769,28 @@ export async function gerarDocx(tarefa) {
             });
         } else if (isMOLECULAR) {
             // Tabela específica para Diagnóstico Molecular
+            console.log("=== DEBUG MOLECULAR ===");
+            console.log("É MOLECULAR:", isMOLECULAR);
+            console.log("SubTipo da tarefa:", tarefa.subTipo);
+            console.log("Tipo da tarefa:", tarefa.tipo);
+            console.log("Comparação 'Multiplex Encefalites Equina':", tarefa.subTipo === "Multiplex Encefalites Equina");
+            console.log("Comparação 'Multiplex Crostas Bovina':", tarefa.subTipo === "Multiplex Crostas Bovina");
+            console.log("Comparação 'Multiplex RT-PCR e PCR Diarreia Neonatal Bovina':", tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina");
+            console.log("Comparação 'Multiplex Diarreia Neonatal Bovina':", tarefa.subTipo === "Multiplex Diarreia Neonatal Bovina");
+            console.log("Comparação 'Multiplex RT-PCR e PCR Doença Respiratória Bovina':", tarefa.subTipo === "Multiplex RT-PCR e PCR Doença Respiratória Bovina");
+            console.log("Comparação 'Multiplex Doença Respiratória Bovina':", tarefa.subTipo === "Multiplex Doença Respiratória Bovina");
+            console.log("Comparação 'Duplex RT-PCR Rota e Corona Bovino':", tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino");
+            console.log("Comparação 'Duplex Rota e Corona Bovino':", tarefa.subTipo === "Duplex Rota e Corona Bovino");
+            console.log("Comparação 'Duplex RT-PCR Rota e Corona Equino':", tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino");
+            console.log("Comparação 'Duplex Rota e Corona Equino':", tarefa.subTipo === "Duplex Rota e Corona Equino");
+            console.log("Inclui 'Diarreia Neonatal':", tarefa.subTipo && tarefa.subTipo.includes("Diarreia Neonatal"));
+            console.log("Inclui 'Doença Respiratória':", tarefa.subTipo && tarefa.subTipo.includes("Doença Respiratória"));
+            console.log("Inclui 'Duplex RT-PCR Rota e Corona':", tarefa.subTipo && tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona"));
+            console.log("Inclui 'Duplex Rota e Corona':", tarefa.subTipo && tarefa.subTipo.includes("Duplex Rota e Corona"));
+            console.log("Nome exato do subTipo recebido:", JSON.stringify(tarefa.subTipo));
+            console.log("Tipo de dados do subTipo:", typeof tarefa.subTipo);
+            console.log("=== FIM DEBUG MOLECULAR ===");
+            
             if (tarefa.subTipo === "Multiplex Encefalites Equina") {
 
                 // Adicionar tabela de resultados específica para Multiplex Encefalites
@@ -995,6 +1043,1104 @@ export async function gerarDocx(tarefa) {
                                 ]
                             })
                         )
+                    ],
+                    width: { size: 100, type: WidthType.PERCENTAGE }
+                });
+            } else if (tarefa.subTipo === "Multiplex Crostas Bovina") {
+                // Tabela específica para Multiplex Crostas Bovina
+                console.log("=== DETECTOU MULTIPLEX CROSTAS BOVINA ===");
+                console.log("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
+                console.log("Amostras:", tarefa.resultados?.amostras);
+                console.log("=== FIM DEBUG CROSTAS ===");
+                
+                tabelaResultados = new Table({
+                    columnWidths: [1500, 1000, 1000, 1000, 1000],
+                    rows: [
+                        // Cabeçalho da tabela de resultados
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Identificação da amostra",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "VaCV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "PCPV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BPSV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BoHV-2",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                })
+                            ]
+                        }),
+                        // Linhas de dados
+                        ...(tarefa.resultados?.amostras || []).map((amostra, index) => {
+                            console.log(`=== AMOSTRA ${index + 1} ===`);
+                            console.log("Dados completos da amostra:", JSON.stringify(amostra, null, 2));
+                            console.log("TODOS OS CAMPOS DA AMOSTRA:");
+                            Object.keys(amostra).forEach(key => {
+                                console.log(`  ${key}: ${amostra[key]}`);
+                            });
+                            console.log("vaccinia:", amostra.vaccinia);
+                            console.log("pseudocowpox:", amostra.pseudocowpox);
+                            console.log("estomatitePapular:", amostra.estomatitePapular);
+                            console.log("boHV2:", amostra.boHV2);
+                            console.log("bohv2:", amostra.bohv2);
+                            console.log("BoHV2:", amostra.BoHV2);
+                            console.log("herpesvirus2:", amostra.herpesvirus2);
+                            console.log("herpesvirus:", amostra.herpesvirus);
+                            console.log("herpesvirus-bovino-2:", amostra["herpesvirus-bovino-2"]);
+                            console.log("Herpesvirus Bovino 2:", amostra["Herpesvirus Bovino 2"]);
+                            console.log("=== FIM AMOSTRA ===");
+                            
+                            return new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.identificacao || "-",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.vaccinia || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.pseudocowpox || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.estomatitePapular || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.herpesvirus || amostra.boHV2 || amostra.bohv2 || amostra.BoHV2 || amostra.herpesvirus2 || amostra["herpesvirus-bovino-2"] || amostra["Herpesvirus Bovino 2"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    })
+                                ]
+                            });
+                        })
+                    ],
+                    width: { size: 100, type: WidthType.PERCENTAGE }
+                });
+            } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Diarreia Neonatal"))) {
+                // Tabela específica para Multiplex RT-PCR e PCR Diarreia Neonatal Bovina
+                console.log("=== DETECTOU MULTIPLEX DIARREIA NEONATAL BOVINA ===");
+                console.log("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
+                console.log("Amostras:", tarefa.resultados?.amostras);
+                console.log("=== FIM DEBUG DIARREIA ===");
+                
+                tabelaResultados = new Table({
+                    columnWidths: [1200, 800, 800, 800, 800, 800],
+                    rows: [
+                        // Cabeçalho da tabela de resultados
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Identificação da amostra",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "E. coli",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Salmonella",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BCoV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BRoV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Crypto",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                })
+                            ]
+                        }),
+                        // Linhas de dados
+                        ...(tarefa.resultados?.amostras || []).map((amostra, index) => {
+                            console.log(`=== AMOSTRA DIARREIA ${index + 1} ===`);
+                            console.log("Dados completos da amostra:", JSON.stringify(amostra, null, 2));
+                            console.log("TODOS OS CAMPOS DA AMOSTRA:");
+                            Object.keys(amostra).forEach(key => {
+                                console.log(`  ${key}: ${amostra[key]}`);
+                            });
+                            console.log("ecoli:", amostra.ecoli);
+                            console.log("salmonella:", amostra.salmonella);
+                            console.log("bcov:", amostra.bcov);
+                            console.log("brov:", amostra.brov);
+                            console.log("crypto:", amostra.crypto);
+                            console.log("coronavirusBovino:", amostra.coronavirusBovino);
+                            console.log("rotavirusBovino:", amostra.rotavirusBovino);
+                            console.log("cryptosporidium:", amostra.cryptosporidium);
+                            console.log("=== FIM AMOSTRA DIARREIA ===");
+                            
+                            return new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.identificacao || "-",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.ecoli || amostra["e-coli"] || amostra.eColi || amostra["E. coli"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.salmonella || amostra.Salmonella || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.coronavirusBovino || amostra.bcov || amostra.BCoV || amostra.coronavirus || amostra["coronavirus-bovino"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.rotavirusBovino || amostra.brov || amostra.BRoV || amostra.rotavirus || amostra["rotavirus-bovino"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.cryptosporidium || amostra.crypto || amostra.Crypto || amostra["cryptosporidium-parvum"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    })
+                                ]
+                            });
+                        })
+                    ],
+                    width: { size: 100, type: WidthType.PERCENTAGE }
+                });
+            } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR Doença Respiratória Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Doença Respiratória"))) {
+                // Tabela específica para Multiplex RT-PCR e PCR Doença Respiratória Bovina
+                console.log("=== DETECTOU MULTIPLEX DOENÇA RESPIRATÓRIA BOVINA ===");
+                console.log("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
+                console.log("Amostras:", tarefa.resultados?.amostras);
+                console.log("=== FIM DEBUG RESPIRATÓRIA ===");
+                
+                tabelaResultados = new Table({
+                    columnWidths: [1200, 800, 800, 800, 800, 800],
+                    rows: [
+                        // Cabeçalho da tabela de resultados
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Identificação da amostra",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BCoV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BRSV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BoHV-1/5",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BVDV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BPIV-3",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                })
+                            ]
+                        }),
+                        // Linhas de dados
+                        ...(tarefa.resultados?.amostras || []).map((amostra, index) => {
+                            console.log(`=== AMOSTRA RESPIRATÓRIA ${index + 1} ===`);
+                            console.log("Dados completos da amostra:", JSON.stringify(amostra, null, 2));
+                            console.log("TODOS OS CAMPOS DA AMOSTRA:");
+                            Object.keys(amostra).forEach(key => {
+                                console.log(`  ${key}: ${amostra[key]}`);
+                            });
+                            console.log("coronavirusBovino:", amostra.coronavirusBovino);
+                            console.log("brsv:", amostra.brsv);
+                            console.log("bohv:", amostra.bohv);
+                            console.log("boHV1:", amostra.boHV1);
+                            console.log("bvdv:", amostra.bvdv);
+                            console.log("bpiv3:", amostra.bpiv3);
+                            console.log("=== FIM AMOSTRA RESPIRATÓRIA ===");
+                            
+                            return new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.identificacao || "-",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.coronavirusBovino || amostra.bcov || amostra.BCoV || amostra.coronavirus || amostra["coronavirus-bovino"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.brsv || amostra.BRSV || amostra.virusRespiratorioSincicial || amostra["virus-respiratorio-sincicial"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.bohv || amostra.boHV1 || amostra.bohv1 || amostra.BoHV1 || amostra.herpesvirus1 || amostra["herpesvirus-bovino-1"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.bvdv || amostra.BVDV || amostra.diarreiaViralBovina || amostra["diarreia-viral-bovina"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.bpiv3 || amostra.BPIV3 || amostra.parainfluenza3 || amostra["parainfluenza-3"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    })
+                                ]
+                            });
+                        })
+                    ],
+                    width: { size: 100, type: WidthType.PERCENTAGE }
+                });
+            } else if (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino" || tarefa.subTipo === "Duplex Rota e Corona Bovino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Bovino") || tarefa.subTipo.includes("Duplex Rota e Corona Bovino")))) {
+                // Tabela específica para Duplex RT-PCR Rota e Corona Bovino / Duplex Rota e Corona Bovino
+                console.log("=== DETECTOU DUPLEX RT-PCR ROTA E CORONA BOVINO ===");
+                console.log("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
+                console.log("Amostras:", tarefa.resultados?.amostras);
+                console.log("=== FIM DEBUG DUPLEX RT-PCR ===");
+                
+                tabelaResultados = new Table({
+                    columnWidths: [2000, 2000, 2000],
+                    rows: [
+                        // Cabeçalho da tabela
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Identificação da amostra",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BCoV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "BRoV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                })
+                            ]
+                        }),
+                        // Linhas de dados
+                        ...(tarefa.resultados?.amostras || []).map((amostra, index) => {
+                            console.log(`=== AMOSTRA DUPLEX RT-PCR ${index + 1} ===`);
+                            console.log("Dados completos da amostra:", JSON.stringify(amostra, null, 2));
+                            console.log("TODOS OS CAMPOS DA AMOSTRA:");
+                            Object.keys(amostra).forEach(key => {
+                                console.log(`  ${key}: ${amostra[key]}`);
+                            });
+                            console.log("bcov:", amostra.bcov);
+                            console.log("BCoV:", amostra.BCoV);
+                            console.log("coronavirusBovino:", amostra.coronavirusBovino);
+                            console.log("brov:", amostra.brov);
+                            console.log("BRoV:", amostra.BRoV);
+                            console.log("rotavirusBovino:", amostra.rotavirusBovino);
+                            console.log("=== FIM AMOSTRA DUPLEX RT-PCR ===");
+                            
+                            return new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.identificacao || "-",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.bcov || amostra.BCoV || amostra.coronavirusBovino || amostra.coronavirus || amostra["coronavirus-bovino"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.brov || amostra.BRoV || amostra.rotavirusBovino || amostra.rotavirus || amostra["rotavirus-bovino"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    })
+                                ]
+                            });
+                        })
+                    ],
+                    width: { size: 100, type: WidthType.PERCENTAGE }
+                });
+            } else if (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino" || tarefa.subTipo === "Duplex Rota e Corona Equino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Equino") || tarefa.subTipo.includes("Duplex Rota e Corona Equino")))) {
+                // Tabela específica para Duplex RT-PCR Rota e Corona Equino / Duplex Rota e Corona Equino
+                console.log("=== DETECTOU DUPLEX RT-PCR ROTA E CORONA EQUINO ===");
+                console.log("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
+                console.log("Amostras:", tarefa.resultados?.amostras);
+                console.log("=== FIM DEBUG DUPLEX RT-PCR EQUINO ===");
+                
+                tabelaResultados = new Table({
+                    columnWidths: [2000, 2000, 2000],
+                    rows: [
+                        // Cabeçalho da tabela
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "Identificação da amostra",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "CoV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({
+                                            text: "RoV",
+                                            bold: true,
+                                            size: 20,
+                                            font: "Arial",
+                                            color: "FFFFFF"
+                                        })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                    verticalAlign: VerticalAlign.CENTER,
+                                    shading: { fill: "#1b5e20", type: "clear" },
+                                    borders: {
+                                        top: { style: "single", size: 1 },
+                                        bottom: { style: "single", size: 1 },
+                                        left: { style: "single", size: 1 },
+                                        right: { style: "single", size: 1 }
+                                    }
+                                })
+                            ]
+                        }),
+                        // Linhas de dados
+                        ...(tarefa.resultados?.amostras || []).map((amostra, index) => {
+                            console.log(`=== AMOSTRA DUPLEX RT-PCR EQUINO ${index + 1} ===`);
+                            console.log("Dados completos da amostra:", JSON.stringify(amostra, null, 2));
+                            console.log("TODOS OS CAMPOS DA AMOSTRA:");
+                            Object.keys(amostra).forEach(key => {
+                                console.log(`  ${key}: ${amostra[key]}`);
+                            });
+                            console.log("cov:", amostra.cov);
+                            console.log("CoV:", amostra.CoV);
+                            console.log("coronavirusEquino:", amostra.coronavirusEquino);
+                            console.log("rov:", amostra.rov);
+                            console.log("RoV:", amostra.RoV);
+                            console.log("rotavirusEquino:", amostra.rotavirusEquino);
+                            console.log("=== FIM AMOSTRA DUPLEX RT-PCR EQUINO ===");
+                            
+                            return new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.identificacao || "-",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.cov || amostra.CoV || amostra.coronavirusEquino || amostra.coronavirus || amostra["coronavirus-equino"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({
+                                            children: [new TextRun({
+                                                text: amostra.rov || amostra.RoV || amostra.rotavirusEquino || amostra.rotavirus || amostra["rotavirus-equino"] || "",
+                                                size: 20,
+                                                font: "Arial"
+                                            })],
+                                            alignment: AlignmentType.CENTER
+                                        })],
+                                        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                                        verticalAlign: VerticalAlign.CENTER,
+                                        borders: {
+                                            top: { style: "single", size: 1 },
+                                            bottom: { style: "single", size: 1 },
+                                            left: { style: "single", size: 1 },
+                                            right: { style: "single", size: 1 }
+                                        }
+                                    })
+                                ]
+                            });
+                        })
                     ],
                     width: { size: 100, type: WidthType.PERCENTAGE }
                 });
@@ -1589,7 +2735,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `Identificação: ${tarefa.id || 'SV /25'}                                          Número de amostras: ${tarefa.quantidade || ''}`,
+                            text: `Identificação: ${tarefa.id || 'SV /25'}                                      Número de amostras: ${tarefa.quantidade || ''}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -1639,7 +2785,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `Identificação: ${tarefa.id || 'SV /25'}                                          Número de amostras: ${tarefa.quantidade || ''}`,
+                            text: `Identificação: ${tarefa.id || 'SV /25'}                                   Número de amostras: ${tarefa.quantidade || ''}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -1721,6 +2867,342 @@ export async function gerarDocx(tarefa) {
                     ],
                 }),
                 
+                // Informações específicas para Multiplex Doença Respiratória Bovina
+                ...(tarefa.subTipo === "Multiplex RT-PCR e PCR Doença Respiratória Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Doença Respiratória")) ? [
+                    new Paragraph({
+                        text: "",
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: `Material: ${tarefa.materialRecebido || ''}`,
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Espécie: Bovino",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Alvos:",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Coronavírus bovino (BCoV);",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Vírus Respiratório Sincicial Bovino (BRSV);",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Herpesvírus Bovino (BoHV-1/5)",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Vírus da Diarreia Viral Bovina (BVDV)",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Vírus da Parainfluenza Bovina tipo 3 (BPIV-3)",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 200 }
+                    })
+                ] : []),
+                
+                // Informações específicas para Multiplex Encefalites Equina
+                ...(tarefa.subTipo === "Multiplex Encefalites Equina" ? [
+                    new Paragraph({
+                        text: "",
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: `Material: ${tarefa.materialRecebido || ''}`,
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Espécie: Equino",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Alvos:",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Vírus da Raiva (RaBV);",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Herpesvírus Equino tipo 1 (EHV-1);",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Flavivirus;",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Alphavirus;",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Vírus da Encefalite Equina Venezuelana (VEEV)",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 200 }
+                    })
+                ] : []),
+                
+                // Informações específicas para PCR Molecular simples (tipo MOLECULAR + subTipo PCR ou RT-PCR)
+                ...(tarefa.tipo === "MOLECULAR" && (tarefa.subTipo === "PCR" || tarefa.subTipo === "RT-PCR") ? [
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: `Material: ${tarefa.materialRecebido || ''}`,
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: `Espécie: ${tarefa.especie || ''}`,
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: `Alvo: ${tarefa.virus || ''}`,
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 200 }
+                    })
+                ] : []),
+                
+                // Informações específicas para Duplex RT-PCR Rota e Corona Bovino
+                ...(tarefa.tipo === "MOLECULAR" && (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino" || tarefa.subTipo === "Duplex Rota e Corona Bovino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Bovino") || tarefa.subTipo.includes("Duplex Rota e Corona Bovino")))) ? [
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Material:",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Espécie: Bovino",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Alvos:",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Coronavírus Bovino (BCoV);",
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Rotavírus Bovino (BRoV)",
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 200 }
+                    })
+                ] : []),
+                
+                // Informações específicas para Duplex RT-PCR Rota e Corona Equino
+                ...(tarefa.tipo === "MOLECULAR" && (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino" || tarefa.subTipo === "Duplex Rota e Corona Equino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Equino") || tarefa.subTipo.includes("Duplex Rota e Corona Equino")))) ? [
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Material:",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Espécie: Equino",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Alvos:",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Coronavírus (CoV);",
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Rotavírus (RoV)",
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 200 }
+                    })
+                ] : []),
+                
+                // Informações específicas para ICC
+                ...(tarefa.tipo === "ICC" ? [
+                    new Paragraph({
+                        text: "",
+                    }),
+                    
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Material:                                                   Espécie:",
+                                bold: true,
+                                size: 22,
+                                font: "Arial"
+                            })
+                        ],
+                        spacing: { after: 200 }
+                    })
+                ] : []),
+                
                 // Adicionar checkboxes para testes SN
                 ...(isSN ? [
                     new Paragraph({
@@ -1752,8 +3234,8 @@ export async function gerarDocx(tarefa) {
                 ] : [])
             ] : []),
 
-             // Para Multiplex Encefalites, adicionar informações específicas antes da tabela de resultados
-            ...(tarefa.subTipo === "Multiplex Encefalites Equina" ? [
+            // Para Multiplex Crostas Bovina, adicionar informações específicas antes da tabela de resultados
+            ...(tarefa.subTipo === "Multiplex Crostas Bovina" ? [
                 // Material
                 new Paragraph({
                     children: [
@@ -1769,7 +3251,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "Espécie: Equino",
+                            text: "Espécie: Bovino",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -1791,7 +3273,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "Vírus da Raiva (RaBV);",
+                            text: "Vaccínia (VaCV);",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -1801,7 +3283,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "Herpesvírus Equino tipo 1 (EHV-1)",
+                            text: "Pseudocowpox (PCPV);",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -1811,7 +3293,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "Flavivirus",
+                            text: "Estomatite Papular Bovina (BPSV);",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -1821,7 +3303,46 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "Alphavirus",
+                            text: "Herpesvírus Bovino tipo 2 (BoHV-2)",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ],
+                    spacing: { after: 300 }
+                })
+            ] : []),
+
+            // Para Multiplex RT-PCR e PCR Diarreia Neonatal Bovina, adicionar informações específicas antes da tabela de resultados
+            ...(tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Diarreia Neonatal")) ? [
+                // Material
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Material: ${tarefa.materialRecebido || ''}`,
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                // Espécie
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Espécie: Bovino",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                
+                // Alvos
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Alvos:",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -1831,7 +3352,47 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "Vírus da Encefalite Equina Venezuelana (VEEV)",
+                            text: "E. coli",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Salmonella",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Coronavírus Bovino (BCoV);",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Rotavírus Bovino (BRoV)",
+                            bold: true,
+                            size: 24,
+                            font: "Arial"
+                        })
+                    ]
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "Cryptosporidium parvum (Crypto)",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -1932,6 +3493,12 @@ export async function gerarDocx(tarefa) {
                 ],
                 width: { size: 100, type: WidthType.PERCENTAGE }
             }),
+
+            // Título específico para subtipos MOLECULAR (se definido)
+            ...(tituloSecao ? [tituloSecao] : []),
+            
+            // Informações específicas para subtipos MOLECULAR (se definido)
+            ...(informacoes ? [informacoes] : []),
 
             // Espaçamento antes da tabela de resultados
             new Paragraph({
@@ -2174,7 +3741,7 @@ export async function gerarDocx(tarefa) {
                     new ImageRun({
                         data: assinaturaBase64,
                         transformation: {
-                            width: 75   ,
+                            width: 75,
                             height: 100
                         }
                     })

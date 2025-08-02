@@ -2269,7 +2269,7 @@ async function registrarResultadoICC(id) {
             document.removeEventListener("keydown", handleKeyDown);
         };
 
-        modal.querySelector("#fechar-modal_resultados").onclick = fecharModal;
+        modal.querySelector("#fechar-modal-resultados").onclick = fecharModal;
         modal.querySelector("#cancelar-resultados").onclick = fecharModal;
 
         modal.querySelector("#salvar-resultados").onclick = async () => {
