@@ -1,5 +1,5 @@
-/* Estilos para o menu flutuante de PCR */
-.pcr-floating-menu {
+/* Estilos para os menus flutuantes de PCR, SN e ELISA */
+.pcr-floating-menu, .sn-floating-menu, .elisa-floating-menu {
     position: fixed !important;
     background: white;
     border: 1px solid #dee2e6;
@@ -12,45 +12,45 @@
     display: none;
 }
 
-.pcr-floating-menu.show {
+.pcr-floating-menu.show, .sn-floating-menu.show, .elisa-floating-menu.show {
     display: block !important;
 }
 
-.pcr-menu-item {
+.pcr-menu-item, .sn-menu-item, .elisa-menu-item {
     padding: 10px 15px;
     cursor: pointer;
     border-bottom: 1px solid #f8f9fa;
     transition: background-color 0.2s;
 }
 
-.pcr-menu-item:hover {
+.pcr-menu-item:hover, .sn-menu-item:hover, .elisa-menu-item:hover {
     background-color: #f8f9fa;
 }
 
-.pcr-menu-item:last-child {
+.pcr-menu-item:last-child, .sn-menu-item:last-child, .elisa-menu-item:last-child {
     border-bottom: none;
 }
 
-.pcr-menu-item.selected {
+.pcr-menu-item.selected, .sn-menu-item.selected, .elisa-menu-item.selected {
     background-color: #e7f3ff;
     color: #0066cc;
 }
 
-.pcr-input-container {
+.pcr-input-container, .sn-input-container, .elisa-input-container {
     position: relative;
 }
 
-.pcr-input-readonly {
+.pcr-input-readonly, .sn-input-readonly, .elisa-input-readonly {
     cursor: pointer;
     background-color: #f8f9fa;
 }
 
-.pcr-input-readonly:focus {
+.pcr-input-readonly:focus, .sn-input-readonly:focus, .elisa-input-readonly:focus {
     background-color: #f8f9fa;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-.pcr-dropdown-icon {
+.pcr-dropdown-icon, .sn-dropdown-icon, .elisa-dropdown-icon {
     position: absolute;
     right: 10px;
     top: 50%;

@@ -355,13 +355,21 @@ function configurarLimpezaAutomatica() {
 function formatarTipoTeste(tarefa) {
     let tipoFormatado = tarefa.tipo || 'N/A';
     
-    // Se for PCR e tiver pcrTipo, adicionar essa informação
-    if (tarefa.tipo === 'PCR' && tarefa.pcrTipo) {
+    // Nova estrutura com subTipo
+    if (tarefa.subTipo) {
+        tipoFormatado = `${tarefa.tipo} - ${tarefa.subTipo}`;
+    }
+    // Compatibilidade com estrutura antiga - PCR com pcrTipo
+    else if (tarefa.tipo === 'PCR' && tarefa.pcrTipo) {
         tipoFormatado = `PCR - ${tarefa.pcrTipo}`;
     }
-    // Se for PCR e tiver complemento (para casos antigos)
+    // Compatibilidade com estrutura antiga - PCR com complemento
     else if (tarefa.tipo === 'PCR' && tarefa.complemento) {
         tipoFormatado = `PCR - ${tarefa.complemento}`;
+    }
+    // Compatibilidade com tipos antigos que tinham subtipo no próprio tipo
+    else if (tarefa.tipo && (tarefa.tipo.includes('SN ') || tarefa.tipo.includes('ELISA '))) {
+        tipoFormatado = tarefa.tipo;
     }
     
     return tipoFormatado;
@@ -637,11 +645,22 @@ function renderizarTarefas(tarefas) {
         const historicoItem = document.createElement("div");
         historicoItem.className = "historico-item";
         
-        const showResultsButton = tarefa.tipo.includes("SN") || 
+        const showResultsButton = (tarefa.tipo === "SN" && tarefa.subTipo) ||
+                                (tarefa.tipo === "ELISA" && tarefa.subTipo) ||
+                                (tarefa.tipo === "MOLECULAR" && tarefa.subTipo) ||
+                                tarefa.tipo === "RAIVA" ||
+                                tarefa.tipo === "ICC" ||
+                                // Compatibilidade com dados antigos
+                                tarefa.tipo.includes("SN") ||
                                 tarefa.tipo.includes("ELISA") ||
-                                tarefa.tipo.includes("PCR") ||
-                                tarefa.tipo.includes("RAIVA") ||
-                                tarefa.tipo.includes("ICC");
+                                tarefa.tipo.includes("PCR");
+
+        console.log("🔍 [historico.js] DEBUG - Botão de resultados:", {
+            id: tarefa.id,
+            tipo: tarefa.tipo,
+            subTipo: tarefa.subTipo,
+            showResultsButton
+        });
 
         // Destacar texto nos principais campos se houver busca ativa
         const id = searchTermo ? destacarTermos(tarefa.id || 'Sem ID', searchTermo) : (tarefa.id || 'Sem ID');
@@ -714,6 +733,9 @@ window.voltarParaMural = async (id) => {
             tipo: tarefa.tipo,
             quantidade: tarefa.quantidade,
             gramatura: tarefa.gramatura || null,
+            // Preservar estrutura nova e antiga de subtipos
+            subTipo: tarefa.subTipo || null,
+            pcrTipo: tarefa.pcrTipo || null,  // Para compatibilidade com dados antigos
             complemento: tarefa.complemento || null,
             proprietario: tarefa.proprietario || null,
             veterinario: tarefa.veterinario || null,
@@ -722,7 +744,9 @@ window.voltarParaMural = async (id) => {
             criadoEm: tarefa.criadoEm || Timestamp.now(),
             criadoPor: tarefa.criadoPor || auth.currentUser.uid,
             siglaResponsavel: tarefa.siglaResponsavel || "N/A",
-            resultados: tarefa.resultados || null
+            resultados: tarefa.resultados || null,
+            // Preservar também a data de recebimento se existir
+            dataRecebimento: tarefa.dataRecebimento || null
         });
         
         // Remover do histórico
@@ -934,7 +958,7 @@ window.mostrarResultados = async (id) => {
         
         if (tarefa.tipo === "SN") {
             modalContent = gerarModalResultadosSN(tarefa);
-        } else if (tarefa.tipo === "PCR") {
+        } else if (tarefa.tipo === "MOLECULAR" || tarefa.tipo === "PCR") {
             modalContent = gerarModalResultadosPCRSimples(tarefa);
         } else {
             // Para outros tipos, mostrar uma mensagem direcionando para o botão "Resultados" detalhado
@@ -996,7 +1020,7 @@ function gerarModalResultadosSN(tarefa) {
     return `
         <div class="modal-header bg-success text-white">
             <h5 class="modal-title">
-                <i class="bi bi-clipboard-data me-2"></i>Resultados - ${tarefa.tipo}
+                <i class="bi bi-clipboard-data me-2"></i>Resultados - ${formatarTipoTeste(tarefa)}
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
@@ -1081,7 +1105,7 @@ function gerarModalResultadosPCRSimples(tarefa) {
     return `
         <div class="modal-header bg-success text-white">
             <h5 class="modal-title">
-                <i class="bi bi-clipboard-data me-2"></i>Resultados - ${tarefa.tipo}${tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}
+                <i class="bi bi-clipboard-data me-2"></i>Resultados - ${formatarTipoTeste(tarefa)}
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
@@ -1094,7 +1118,7 @@ function gerarModalResultadosPCRSimples(tarefa) {
             </div>
             <div class="alert alert-info mb-3">
                 <i class="bi bi-info-circle me-2"></i>
-                <strong>Nota:</strong> Para visualização detalhada dos resultados de PCR, use o botão "Resultados" no card da tarefa.
+                <strong>Nota:</strong> Para visualização detalhada dos resultados de testes Moleculares, use o botão "Resultados" no card da tarefa.
             </div>
             <div class="table-responsive">
                 <table class="tabela-resultados table table-hover">

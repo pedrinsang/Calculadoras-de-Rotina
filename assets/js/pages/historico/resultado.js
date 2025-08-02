@@ -5,6 +5,19 @@ import { gerarDocx } from "./baixarDoc.js";
 
 let modalAtual = null;
 
+// Função auxiliar para formatar o tipo completo da tarefa
+function formatarTipoCompleto(tarefa) {
+    if (tarefa.subTipo) {
+        return `${tarefa.tipo} - ${tarefa.subTipo}`;
+    } else if (tarefa.pcrTipo) {
+        return `${tarefa.tipo} - ${tarefa.pcrTipo}`;
+    } else if (tarefa.complemento) {
+        return `${tarefa.tipo} - ${tarefa.complemento}`;
+    } else {
+        return tarefa.tipo;
+    }
+}
+
 window.mostrarResultados = async (id) => {
     try {
         // Se já existe um modal aberto, fecha ele primeiro
@@ -22,22 +35,39 @@ window.mostrarResultados = async (id) => {
         
         const tarefa = tarefaSnap.data();
         
-        // Check for both SN, ELISA, and PCR types
-        const isSN = tarefa.tipo && (tarefa.tipo.includes("SN IBR") || tarefa.tipo.includes("SN BVDV"));
-        const isELISA = tarefa.tipo.includes("ELISA");
-        const isPCR = tarefa.tipo.includes("PCR");
+        console.log("🔍 [resultado.js] DEBUG - Dados da tarefa:", {
+            id: tarefa.id,
+            tipo: tarefa.tipo,
+            subTipo: tarefa.subTipo,
+            pcrTipo: tarefa.pcrTipo,
+            complemento: tarefa.complemento
+        });
+        
+        // Check for both SN, ELISA, and Molecular/PCR types
+        const isSN = tarefa.tipo && (tarefa.tipo.includes("SN IBR") || tarefa.tipo.includes("SN BVDV") || (tarefa.tipo === "SN" && tarefa.subTipo));
+        const isELISA = tarefa.tipo.includes("ELISA") || (tarefa.tipo === "ELISA" && tarefa.subTipo);
+        const isPCRSimples = tarefa.tipo === "PCR";
+        const isMolecular = tarefa.tipo === "MOLECULAR";
         const isRAIVA = tarefa.tipo.includes("RAIVA");
         const isICC = tarefa.tipo.includes("ICC");
         
-        if (!isSN && !isELISA && !isPCR && !isRAIVA && !isICC) {
+        console.log("🔍 [resultado.js] DEBUG - Flags de detecção:", {
+            isSN, isELISA, isPCRSimples, isMolecular, isRAIVA, isICC,
+            tipoOriginal: tarefa.tipo
+        });
+        
+        if (!isSN && !isELISA && !isPCRSimples && !isMolecular && !isRAIVA && !isICC) {
             mostrarFeedback("Este tipo de tarefa não possui resultados específicos", "warning");
             return;
         }
         
         if (!tarefa.resultados) {
+            console.log("❌ [resultado.js] Tarefa sem resultados registrados");
             mostrarFeedback("Esta tarefa não possui resultados registrados", "warning");
             return;
         }
+        
+        console.log("✅ [resultado.js] Tarefa possui resultados:", tarefa.resultados);
 
         // Cria o modal apenas se não houver nenhum aberto
         if (!modalAtual) {
@@ -49,7 +79,7 @@ window.mostrarResultados = async (id) => {
             const modalContent = `
                 <div class="modal-resultados-content">
                     <div class="modal-resultados-header">
-                        <h3>${tarefa.tipo} ${tarefa.complemento || ''}</h3>
+                        <h3>${formatarTipoCompleto(tarefa)}</h3>
                         <button id="fechar-modal-x" class="modal-close-btn" aria-label="Fechar">
                             <i class="bi bi-x"></i>
                         </button>
@@ -68,7 +98,7 @@ window.mostrarResultados = async (id) => {
                     </div>
                     
                     <div class="modal-resultados-body">
-                        ${getTableContent(tarefa, isSN, isELISA, isPCR, isRAIVA, isICC)}
+                        ${getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAIVA, isICC)}
                     </div>
                 </div>
             `;
@@ -156,7 +186,7 @@ window.mostrarResultados = async (id) => {
 };
 
 // Função para gerar o conteúdo da tabela de acordo com o tipo
-function getTableContent(tarefa, isSN, isELISA, isPCR, isRAIVA, isICC) {
+function getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAIVA, isICC) {
     if (isSN) {
         return `
             <table class="tabela-resultados tabela-resultados-view compact-table">
@@ -221,8 +251,34 @@ function getTableContent(tarefa, isSN, isELISA, isPCR, isRAIVA, isICC) {
               </tbody>
             </table>
         `;
-    } else if (isPCR) {
-        // Detectar tipo específico de PCR
+    } else if (isPCRSimples) {
+        // Para PCR simples - tabela básica sem avisos
+        console.log("✅ [resultado.js] Usando PCR simples - sem detecção automática");
+        return `
+            <table class="tabela-resultados tabela-resultados-view compact-table">
+                <thead>
+                    <tr>
+                        <th>Identificação da amostra</th>
+                        <th>Resultado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tarefa.resultados.amostras.map((amostra, index) => `
+                        <tr>
+                            <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                            <td>
+                                <span class="badge ${getBadgeClass(amostra.resultado)}">
+                                    ${formatarResultado(amostra.resultado)}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } else if (isMolecular) {
+        // Para MOLECULAR - detectar tipo específico de PCR
+        console.log("🔬 [resultado.js] Usando MOLECULAR - com detecção automática");
         const tipoPCR = detectarTipoPCR(tarefa);
         return gerarTabelaPCR(tarefa, tipoPCR);
     } else {
@@ -255,6 +311,7 @@ function detectarTipoPCR(tarefa) {
     console.log("🔍 [resultado.js] DEBUG PCR - Dados da tarefa:", {
         id: tarefa.id,
         tipo: tarefa.tipo,
+        subTipo: tarefa.subTipo,
         pcrTipo: tarefa.pcrTipo,
         complemento: tarefa.complemento,
         temAmostras: resultados.amostras && resultados.amostras.length > 0
@@ -265,7 +322,29 @@ function detectarTipoPCR(tarefa) {
         return 'simples';
     }
     
-    // 1. PRIMEIRA PRIORIDADE: Detectar pelo campo pcrTipo
+    // 1. PRIMEIRA PRIORIDADE: Detectar pelo campo subTipo (MOLECULAR)
+    if (tarefa.subTipo) {
+        console.log("✅ [resultado.js] Detectado pelo subTipo:", tarefa.subTipo);
+        const subTipoLower = tarefa.subTipo.toLowerCase();
+        
+        if (subTipoLower.includes('duplex')) {
+            if (subTipoLower.includes('bovino')) return 'duplexBovino';
+            if (subTipoLower.includes('equino')) return 'duplexEquino';
+            if (subTipoLower.includes('rota e corona') || (subTipoLower.includes('rota') && subTipoLower.includes('corona'))) return 'duplexRotaCorona';
+        }
+        
+        if (subTipoLower.includes('multiplex')) {
+            if (subTipoLower.includes('crostas')) return 'multiplexCrostas';
+            if (subTipoLower.includes('diarreia')) return 'multiplexDiarreia';
+            if (subTipoLower.includes('respirator')) return 'multiplexRespiratoria';
+            if (subTipoLower.includes('encefalite')) {
+                console.log("🎯 [resultado.js] Retornando multiplexEncefalites");
+                return 'multiplexEncefalites';
+            }
+        }
+    }
+    
+    // 2. SEGUNDA PRIORIDADE: Detectar pelo campo pcrTipo
     if (tarefa.pcrTipo) {
         console.log("✅ [resultado.js] Detectado pelo pcrTipo:", tarefa.pcrTipo);
         const pcrTipoLower = tarefa.pcrTipo.toLowerCase();
@@ -273,6 +352,7 @@ function detectarTipoPCR(tarefa) {
         if (pcrTipoLower.includes('duplex')) {
             if (pcrTipoLower.includes('bovino')) return 'duplexBovino';
             if (pcrTipoLower.includes('equino')) return 'duplexEquino';
+            if (pcrTipoLower.includes('rota e corona') || (pcrTipoLower.includes('rota') && pcrTipoLower.includes('corona'))) return 'duplexRotaCorona';
         }
         
         if (pcrTipoLower.includes('multiplex')) {
@@ -283,7 +363,7 @@ function detectarTipoPCR(tarefa) {
         }
     }
     
-    // 2. SEGUNDA PRIORIDADE: Detectar pelo complemento
+    // 3. TERCEIRA PRIORIDADE: Detectar pelo complemento
     if (tarefa.complemento) {
         const complementoLower = tarefa.complemento.toLowerCase();
         console.log("🔍 [resultado.js] Analisando complemento:", complementoLower);
@@ -291,6 +371,7 @@ function detectarTipoPCR(tarefa) {
         if (complementoLower.includes('duplex')) {
             if (complementoLower.includes('bovino')) return 'duplexBovino';
             if (complementoLower.includes('equino')) return 'duplexEquino';
+            if (complementoLower.includes('rota e corona') || (complementoLower.includes('rota') && complementoLower.includes('corona'))) return 'duplexRotaCorona';
         }
         
         if (complementoLower.includes('multiplex')) {
@@ -301,7 +382,7 @@ function detectarTipoPCR(tarefa) {
         }
     }
     
-    // 3. TERCEIRA PRIORIDADE: Detectar pelas propriedades das amostras
+    // 4. QUARTA PRIORIDADE: Detectar pelas propriedades das amostras
     const primeiraAmostra = resultados.amostras[0];
     const propriedades = Object.keys(primeiraAmostra);
     console.log("🔍 [resultado.js] Propriedades da primeira amostra:", propriedades);
@@ -320,7 +401,7 @@ function detectarTipoPCR(tarefa) {
     
     // Multiplex Crostas
     if (primeiraAmostra.vaccinia !== undefined || primeiraAmostra.pseudocowpox !== undefined || 
-        primeiraAmostra.estomatitePapular !== undefined || primeiraAmostra.herpesvirus2 !== undefined) {
+        primeiraAmostra.estomatitePapular !== undefined || primeiraAmostra.herpesvirus !== undefined) {
         console.log("✅ [resultado.js] Detectado Multiplex Crostas pelas propriedades");
         return 'multiplexCrostas';
     }
@@ -334,13 +415,16 @@ function detectarTipoPCR(tarefa) {
     
     // Multiplex Respiratória
     if (primeiraAmostra.brsv !== undefined || primeiraAmostra.bohv !== undefined || 
-        primeiraAmostra.bvdv !== undefined || primeiraAmostra.bpiv3 !== undefined) {
+        primeiraAmostra.bvdv !== undefined || primeiraAmostra.bpiv3 !== undefined || 
+        primeiraAmostra.coronavirusBovino !== undefined) {
         console.log("✅ [resultado.js] Detectado Multiplex Respiratória pelas propriedades");
         return 'multiplexRespiratoria';
     }
     
     // Multiplex Encefalites
-    if (primeiraAmostra.virusRaiva !== undefined || primeiraAmostra.ehv1 !== undefined) {
+    if (primeiraAmostra.virusRaiva !== undefined || primeiraAmostra.ehv1 !== undefined || 
+        primeiraAmostra.flavivirus !== undefined || primeiraAmostra.alphavirus !== undefined || 
+        primeiraAmostra.veev !== undefined) {
         console.log("✅ [resultado.js] Detectado Multiplex Encefalites pelas propriedades");
         return 'multiplexEncefalites';
     }
@@ -353,11 +437,15 @@ function detectarTipoPCR(tarefa) {
 function gerarTabelaPCR(tarefa, tipoPCR) {
     const resultados = tarefa.resultados;
     
+    console.log("📊 [resultado.js] gerarTabelaPCR chamada com tipoPCR:", tipoPCR);
+    
     switch (tipoPCR) {
         case 'duplexBovino':
             return gerarTabelaDuplexBovino(resultados);
         case 'duplexEquino':
             return gerarTabelaDuplexEquino(resultados);
+        case 'duplexRotaCorona':
+            return gerarTabelaDuplexRotaCorona(resultados);
         case 'multiplexCrostas':
             return gerarTabelaMultiplexCrostas(resultados);
         case 'multiplexDiarreia':
@@ -365,8 +453,10 @@ function gerarTabelaPCR(tarefa, tipoPCR) {
         case 'multiplexRespiratoria':
             return gerarTabelaMultiplexRespiratoria(resultados);
         case 'multiplexEncefalites':
+            console.log("🎯 [resultado.js] Chamando gerarTabelaMultiplexEncefalites");
             return gerarTabelaMultiplexEncefalites(resultados);
         default:
+            console.log("⚠️ [resultado.js] Usando PCR simples como fallback para:", tipoPCR);
             return gerarTabelaPCRSimples(tarefa, resultados);
     }
 }
@@ -379,20 +469,13 @@ function gerarTabelaDuplexBovino(resultados) {
                 <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Bovino</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr>
-                            <th>Identificação</th>
-                            <th>Resultado</th>
-                        </tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
                             <tr>
                                 <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
-                                <td>
-                                    <span class="badge ${getBadgeClass(amostra.coronavirusBovino)}">
-                                        ${formatarResultado(amostra.coronavirusBovino)}
-                                    </span>
-                                </td>
+                                <td><span class="badge ${getBadgeClass(amostra.coronavirusBovino)}">${formatarResultado(amostra.coronavirusBovino)}</span></td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -402,20 +485,53 @@ function gerarTabelaDuplexBovino(resultados) {
                 <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>Rotavírus Bovino</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr>
-                            <th>Identificação</th>
-                            <th>Resultado</th>
-                        </tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
                             <tr>
                                 <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
-                                <td>
-                                    <span class="badge ${getBadgeClass(amostra.rotavirusBovino)}">
-                                        ${formatarResultado(amostra.rotavirusBovino)}
-                                    </span>
-                                </td>
+                                <td><span class="badge ${getBadgeClass(amostra.rotavirusBovino)}">${formatarResultado(amostra.rotavirusBovino)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// Duplex RT-PCR Rota e Corona Bovino
+function gerarTabelaDuplexRotaCorona(resultados) {
+    return `
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Bovino (BCoV)</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.bcov || amostra.BCoV || amostra.coronavirusBovino)}">${formatarResultado(amostra.bcov || amostra.BCoV || amostra.coronavirusBovino)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>Rotavírus Bovino (BRoV)</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.brov || amostra.BRoV || amostra.rotavirusBovino)}">${formatarResultado(amostra.brov || amostra.BRoV || amostra.rotavirusBovino)}</span></td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -427,51 +543,48 @@ function gerarTabelaDuplexBovino(resultados) {
 
 // Duplex Equino
 function gerarTabelaDuplexEquino(resultados) {
+    console.log("🐎 [gerarTabelaDuplexEquino] Dados recebidos:", JSON.stringify(resultados, null, 2));
     return `
         <div class="row">
             <div class="col-md-6">
-                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Equino</h6>
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Equino (CoV)</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr>
-                            <th>Identificação</th>
-                            <th>Resultado</th>
-                        </tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
-                        ${resultados.amostras.map((amostra, index) => `
+                        ${resultados.amostras.map((amostra, index) => {
+                            // Buscar o valor de CoV com fallbacks
+                            const covResult = amostra.cov || amostra.CoV || amostra.coronavirusEquino || amostra['coronavírus equino'] || amostra.cequino || amostra.CEquino || "";
+                            console.log(`🦠 [CoV] Amostra ${index + 1}: cov=${amostra.cov}, CoV=${amostra.CoV}, coronavirusEquino=${amostra.coronavirusEquino}, resultado=${covResult}`);
+                            return `
                             <tr>
                                 <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
-                                <td>
-                                    <span class="badge ${getBadgeClass(amostra.coronavirusEquino)}">
-                                        ${formatarResultado(amostra.coronavirusEquino)}
-                                    </span>
-                                </td>
+                                <td><span class="badge ${getBadgeClass(covResult)}">${formatarResultado(covResult)}</span></td>
                             </tr>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </tbody>
                 </table>
             </div>
             <div class="col-md-6">
-                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>Rotavírus Equino</h6>
+                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>Rotavírus Equino (RoV)</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr>
-                            <th>Identificação</th>
-                            <th>Resultado</th>
-                        </tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
-                        ${resultados.amostras.map((amostra, index) => `
+                        ${resultados.amostras.map((amostra, index) => {
+                            // Buscar o valor de RoV com fallbacks
+                            const rovResult = amostra.rov || amostra.RoV || amostra.rotavirusEquino || amostra['rotavírus equino'] || amostra.requino || amostra.REquino || "";
+                            console.log(`🌀 [RoV] Amostra ${index + 1}: rov=${amostra.rov}, RoV=${amostra.RoV}, rotavirusEquino=${amostra.rotavirusEquino}, resultado=${rovResult}`);
+                            return `
                             <tr>
                                 <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
-                                <td>
-                                    <span class="badge ${getBadgeClass(amostra.rotavirusEquino)}">
-                                        ${formatarResultado(amostra.rotavirusEquino)}
-                                    </span>
-                                </td>
+                                <td><span class="badge ${getBadgeClass(rovResult)}">${formatarResultado(rovResult)}</span></td>
                             </tr>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </tbody>
                 </table>
             </div>
@@ -539,7 +652,7 @@ function gerarTabelaMultiplexCrostas(resultados) {
                         ${resultados.amostras.map((amostra, index) => `
                             <tr>
                                 <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
-                                <td><span class="badge ${getBadgeClass(amostra.herpesvirus2)}">${formatarResultado(amostra.herpesvirus2)}</span></td>
+                                <td><span class="badge ${getBadgeClass(amostra.herpesvirus)}">${formatarResultado(amostra.herpesvirus)}</span></td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -549,66 +662,257 @@ function gerarTabelaMultiplexCrostas(resultados) {
     `;
 }
 
-// Simplifico as outras funções - Multiplex Diarreia, Respiratória e Encefalites
+// Multiplex Diarreia
 function gerarTabelaMultiplexDiarreia(resultados) {
-    const patogenos = [
-        { key: 'ecoli', nome: 'E. coli', cor: 'danger' },
-        { key: 'salmonella', nome: 'Salmonella', cor: 'warning' },
-        { key: 'coronavirusBovino', nome: 'Coronavírus Bovino', cor: 'primary' },
-        { key: 'rotavirusBovino', nome: 'Rotavírus Bovino', cor: 'info' },
-        { key: 'cryptosporidium', nome: 'Cryptosporidium', cor: 'success' }
-    ];
-    
-    return gerarTabelaMultiplex(resultados, patogenos, 'Multiplex Diarreia Neonatal Bovina');
+    return `
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-danger mb-3"><i class="bi bi-virus me-2"></i>E. coli</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.ecoli)}">${formatarResultado(amostra.ecoli)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-warning mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>Salmonella</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.salmonella)}">${formatarResultado(amostra.salmonella)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-success mb-3 mt-4"><i class="bi bi-virus me-2"></i>Cryptosporidium</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.cryptosporidium)}">${formatarResultado(amostra.cryptosporidium)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Bovino</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.coronavirusBovino)}">${formatarResultado(amostra.coronavirusBovino)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-info mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>Rotavírus Bovino</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.rotavirusBovino)}">${formatarResultado(amostra.rotavirusBovino)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
 }
 
 function gerarTabelaMultiplexRespiratoria(resultados) {
-    const patogenos = [
-        { key: 'brsv', nome: 'BRSV', cor: 'primary' },
-        { key: 'bohv', nome: 'BoHV-1', cor: 'success' },
-        { key: 'bvdv', nome: 'BVDV', cor: 'danger' },
-        { key: 'bpiv3', nome: 'BPIV-3', cor: 'secondary' }
-    ];
-    
-    return gerarTabelaMultiplex(resultados, patogenos, 'Multiplex Respiratória Bovina');
+    return `
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Bovino</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.coronavirusBovino)}">${formatarResultado(amostra.coronavirusBovino)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-info mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>BRSV</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.brsv)}">${formatarResultado(amostra.brsv)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-success mb-3 mt-4"><i class="bi bi-virus me-2"></i>BoHV-1</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.bohv)}">${formatarResultado(amostra.bohv)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-danger mb-3"><i class="bi bi-virus me-2"></i>BVDV</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.bvdv)}">${formatarResultado(amostra.bvdv)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-secondary mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>BPIV-3</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.bpiv3)}">${formatarResultado(amostra.bpiv3)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
 }
 
 function gerarTabelaMultiplexEncefalites(resultados) {
-    const patogenos = [
-        { key: 'virusRaiva', nome: 'Vírus da Raiva', cor: 'danger' },
-        { key: 'ehv1', nome: 'EHV-1', cor: 'primary' }
-    ];
+    console.log("🎯 [resultado.js] gerarTabelaMultiplexEncefalites executada com resultados:", resultados);
     
-    return gerarTabelaMultiplex(resultados, patogenos, 'Multiplex Encefalites Equinas');
-}
-
-// Função genérica para multiplex
-function gerarTabelaMultiplex(resultados, patogenos, titulo) {
     return `
-        <h6 class="text-muted mb-3">${titulo}</h6>
-        <div class="table-responsive">
-            <table class="tabela-resultados tabela-resultados-view compact-table">
-                <thead>
-                    <tr>
-                        <th>Identificação da amostra</th>
-                        ${patogenos.map(p => `<th class="text-${p.cor}">${p.nome}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-                    ${resultados.amostras.map((amostra, index) => `
-                        <tr>
-                            <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
-                            ${patogenos.map(p => `
-                                <td class="text-center">
-                                    <span class="badge ${getBadgeClass(amostra[p.key])}">
-                                        ${formatarResultado(amostra[p.key])}
-                                    </span>
-                                </td>
-                            `).join('')}
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-danger mb-3"><i class="bi bi-virus me-2"></i>Vírus da Raiva</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.virusRaiva)}">${formatarResultado(amostra.virusRaiva)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-primary mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>EHV-1</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.ehv1)}">${formatarResultado(amostra.ehv1)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-warning mb-3 mt-4"><i class="bi bi-virus me-2"></i>Flavivírus</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.flavivirus)}">${formatarResultado(amostra.flavivirus)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-success mb-3"><i class="bi bi-virus me-2"></i>Alphavírus</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.alphavirus)}">${formatarResultado(amostra.alphavirus)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <h6 class="text-secondary mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>VEEV</h6>
+                <table class="tabela-resultados tabela-resultados-view compact-table">
+                    <thead>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
+                    </thead>
+                    <tbody>
+                        ${resultados.amostras.map((amostra, index) => `
+                            <tr>
+                                <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
+                                <td><span class="badge ${getBadgeClass(amostra.veev)}">${formatarResultado(amostra.veev)}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
         </div>
     `;
 }
@@ -618,12 +922,33 @@ function gerarTabelaPCRSimples(tarefa, resultados) {
     const primeiraAmostra = resultados.amostras && resultados.amostras[0] ? resultados.amostras[0] : {};
     const propriedades = Object.keys(primeiraAmostra);
     
+    // Verificar se é PCR simples molecular legítimo (tipo MOLECULAR + subTipo PCR ou RT-PCR ou Duplex RT-PCR)
+    const isPCRSimplesLegitimo = tarefa.tipo === "MOLECULAR" && (
+        tarefa.subTipo === "PCR" || 
+        tarefa.subTipo === "RT-PCR" || 
+        tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino" || 
+        tarefa.subTipo === "Duplex Rota e Corona Bovino" ||
+        tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino" || 
+        tarefa.subTipo === "Duplex Rota e Corona Equino" ||
+        (tarefa.subTipo && (
+            tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona") || 
+            tarefa.subTipo.includes("Duplex Rota e Corona")
+        ))
+    );
+    
+    console.log("🔍 [resultado.js] gerarTabelaPCRSimples - isPCRSimplesLegitimo:", isPCRSimplesLegitimo, {
+        tipo: tarefa.tipo,
+        subTipo: tarefa.subTipo
+    });
+    
     return `
-        <div class="alert alert-warning mb-3">
-            <strong>PCR não identificado automaticamente</strong><br>
-            <small>Tipo: ${tarefa.pcrTipo || 'N/A'} | Complemento: ${tarefa.complemento || 'N/A'}</small><br>
-            <small>Propriedades encontradas: ${propriedades.join(', ') || 'Nenhuma'}</small>
-        </div>
+        ${!isPCRSimplesLegitimo ? `
+            <div class="alert alert-warning mb-3">
+                <strong>PCR não identificado automaticamente</strong><br>
+                <small>Tipo: ${tarefa.pcrTipo || 'N/A'} | Complemento: ${tarefa.complemento || 'N/A'}</small><br>
+                <small>Propriedades encontradas: ${propriedades.join(', ') || 'Nenhuma'}</small>
+            </div>
+        ` : ''}
         <table class="tabela-resultados tabela-resultados-view compact-table">
             <thead>
                 <tr>

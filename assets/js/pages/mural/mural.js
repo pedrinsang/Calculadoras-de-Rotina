@@ -20,7 +20,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
 // Imports locais
-import { registrarResultadoSN, registrarResultadoELISA, registrarResultadoPCR, registrarResultadoRAIVA, registrarResultadoICC} from "./regresultado.js";
+import { registrarResultadoSN, registrarResultadoELISA, registrarResultadoMolecular, registrarResultadoRAIVA, registrarResultadoICC} from "./regresultado.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -241,6 +241,8 @@ async function adicionarTarefaModal() {
         const quantidadeInput = document.getElementById("quantidade-modal");
         const gramaturaInput = document.getElementById("gramatura-modal");
         const pcrTipoInput = document.getElementById("pcr-tipo-modal");
+        const snTipoInput = document.getElementById("sn-tipo-modal");
+        const elisaTipoInput = document.getElementById("elisa-tipo-modal");
         const proprietarioNomeInput = document.getElementById("proprietario-nome-modal");
         const proprietarioMunicipioInput = document.getElementById("proprietario-municipio-modal");
         const proprietarioContatoInput = document.getElementById("proprietario-contato-modal");
@@ -248,21 +250,30 @@ async function adicionarTarefaModal() {
         const veterinarioMunicipioInput = document.getElementById("veterinario-municipio-modal");
         const veterinarioContatoInput = document.getElementById("veterinario-contato-modal");
         const observacoesInput = document.getElementById("observacoes-modal");
+        const materialRecebidoInput = document.getElementById("material-recebido-modal");
 
         // Validate required fields exist
         if (!idInput || !tipoInput || !quantidadeInput) {
             throw new Error("Campos obrigatórios não encontrados no formulário");
         }
 
+        // Determinar subtipo baseado no tipo principal
+        let subTipo = null;
+        if (tipoInput.value === "MOLECULAR" && pcrTipoInput) {
+            subTipo = pcrTipoInput.value.trim() || null;
+        } else if (tipoInput.value === "SN" && snTipoInput) {
+            subTipo = snTipoInput.value.trim() || null;
+        } else if (tipoInput.value === "ELISA" && elisaTipoInput) {
+            subTipo = elisaTipoInput.value.trim() || null;
+        }
+
         const novaTarefa = {
             id: idInput.value.trim(),
             tipo: tipoInput.value,
+            subTipo: subTipo,
             quantidade: parseInt(quantidadeInput.value),
             gramatura: tipoInput.value === "VACINA" && gramaturaInput 
                 ? parseFloat(gramaturaInput.value) || null
-                : null,
-            pcrTipo: tipoInput.value === "PCR" && pcrTipoInput
-                ? pcrTipoInput.value.trim()
                 : null,
             proprietario: {
                 nome: proprietarioNomeInput ? proprietarioNomeInput.value.trim() : "",
@@ -275,6 +286,7 @@ async function adicionarTarefaModal() {
                 contato: veterinarioContatoInput ? veterinarioContatoInput.value.trim() : ""
             },
             observacoes: observacoesInput ? observacoesInput.value.trim() : "",
+            materialRecebido: materialRecebidoInput ? materialRecebidoInput.value.trim() : "",
             status: "pendente",
             criadoEm: Timestamp.now(), // Apenas criadoEm, removendo dataRecebimento
             criadoPor: user.uid,
@@ -323,104 +335,254 @@ function prepararModalAdicao() {
     
     // Ajustar campos condicionais
     const tipoValue = document.getElementById('tipo-modal').value;
-    document.getElementById('gramatura-container-modal').style.display = 
-        tipoValue === "VACINA" ? "block" : "none";
-    document.getElementById('pcr-container-modal').style.display = 
-        tipoValue === "PCR" ? "block" : "none";
     
-    // Configurar menu flutuante de PCR
-    configurarMenuPCR();
+    const gramaturaContainer = document.getElementById('gramatura-container-modal');
+    if (gramaturaContainer) {
+        gramaturaContainer.style.display = tipoValue === "VACINA" ? "block" : "none";
+    }
+    
+    const pcrContainer = document.getElementById('pcr-container-modal');
+    if (pcrContainer) {
+        pcrContainer.style.display = tipoValue === "MOLECULAR" ? "block" : "none";
+    }
+    
+    const snContainer = document.getElementById('sn-container-modal');
+    if (snContainer) {
+        snContainer.style.display = tipoValue === "SN" ? "block" : "none";
+    }
+    
+    const elisaContainer = document.getElementById('elisa-container-modal');
+    if (elisaContainer) {
+        elisaContainer.style.display = tipoValue === "ELISA" ? "block" : "none";
+    }
+    
+    // Configurar menus flutuantes
+    try {
+        configurarMenusFlutantes();
+    } catch (error) {
+        console.warn('Erro ao configurar menu PCR:', error);
+    }
 }
 
-// Função para configurar o menu flutuante de PCR
-function configurarMenuPCR() {
+// Função para configurar todos os menus flutuantes
+function configurarMenusFlutantes() {
+    configurarMenuPCR();
+    configurarMenuSN();
+    configurarMenuELISA();
+    configurarTipoChangeListener();
+}
+
+// Função para configurar o listener do tipo de teste
+function configurarTipoChangeListener() {
     const tipoModalSelect = document.getElementById('tipo-modal');
-    const pcrContainer = document.getElementById('pcr-container-modal');
-    const pcrTipoInput = document.getElementById('pcr-tipo-modal');
-    const pcrFloatingMenu = document.getElementById('pcr-floating-menu');
-    
-    if (!pcrTipoInput || !pcrFloatingMenu) {
-        console.warn('Elementos PCR não encontrados:', { pcrTipoInput, pcrFloatingMenu });
+    if (!tipoModalSelect || tipoModalSelect.hasAttribute('data-tipo-configured')) {
         return;
     }
     
-    // Controlar exibição do container PCR
-    if (tipoModalSelect) {
-        tipoModalSelect.addEventListener('change', function() {
-            const isVacina = this.value === "VACINA";
-            const isPCR = this.value === "PCR";
-            
-            // Mostrar/ocultar gramatura para VACINA
-            const gramaturaContainer = document.getElementById('gramatura-container-modal');
-            if (gramaturaContainer) {
-                gramaturaContainer.style.display = isVacina ? "block" : "none";
+    tipoModalSelect.setAttribute('data-tipo-configured', 'true');
+    
+    tipoModalSelect.addEventListener('change', function() {
+        const tipoValue = this.value;
+        
+        // Controlar gramatura (VACINA)
+        const gramaturaContainer = document.getElementById('gramatura-container-modal');
+        if (gramaturaContainer) {
+            gramaturaContainer.style.display = tipoValue === "VACINA" ? "block" : "none";
+        }
+        
+        // Controlar containers dos submenus
+        const pcrContainer = document.getElementById('pcr-container-modal');
+        if (pcrContainer) {
+            pcrContainer.style.display = tipoValue === "MOLECULAR" ? "block" : "none";
+            if (tipoValue !== "MOLECULAR") {
+                const pcrInput = document.getElementById('pcr-tipo-modal');
+                if (pcrInput) pcrInput.value = '';
             }
-            
-            // Mostrar/ocultar PCR tipo para PCR
-            if (pcrContainer) {
-                pcrContainer.style.display = isPCR ? "block" : "none";
-                if (!isPCR && pcrTipoInput) {
-                    pcrTipoInput.value = '';
-                }
+        }
+        
+        const snContainer = document.getElementById('sn-container-modal');
+        if (snContainer) {
+            snContainer.style.display = tipoValue === "SN" ? "block" : "none";
+            if (tipoValue !== "SN") {
+                const snInput = document.getElementById('sn-tipo-modal');
+                if (snInput) snInput.value = '';
             }
-        });
+        }
+        
+        const elisaContainer = document.getElementById('elisa-container-modal');
+        if (elisaContainer) {
+            elisaContainer.style.display = tipoValue === "ELISA" ? "block" : "none";
+            if (tipoValue !== "ELISA") {
+                const elisaInput = document.getElementById('elisa-tipo-modal');
+                if (elisaInput) elisaInput.value = '';
+            }
+        }
+    });
+}
+function configurarMenuPCR() {
+    const pcrTipoInput = document.getElementById('pcr-tipo-modal');
+    const pcrFloatingMenu = document.getElementById('pcr-floating-menu');
+    
+    // Verificar se todos os elementos existem
+    if (!pcrTipoInput || !pcrFloatingMenu) {
+        console.warn('Elementos PCR não encontrados. Funcionalidade PCR pode não funcionar corretamente.');
+        return;
     }
     
-    // Controlar menu flutuante de PCR
-    // Remover listeners antigos se existirem
-    const newPcrTipoInput = pcrTipoInput.cloneNode(true);
-    pcrTipoInput.parentNode.replaceChild(newPcrTipoInput, pcrTipoInput);
+    // Verificar se já foi configurado
+    if (pcrTipoInput.hasAttribute('data-pcr-configured')) {
+        return;
+    }
     
-    const newPcrFloatingMenu = pcrFloatingMenu.cloneNode(true);
-    pcrFloatingMenu.parentNode.replaceChild(newPcrFloatingMenu, pcrFloatingMenu);
+    pcrTipoInput.setAttribute('data-pcr-configured', 'true');
     
-    // Atualizar referências
-    const finalPcrTipoInput = document.getElementById('pcr-tipo-modal');
-    const finalPcrFloatingMenu = document.getElementById('pcr-floating-menu');
-    
-    // Mostrar menu ao clicar no input
-    finalPcrTipoInput.addEventListener('click', function(e) {
+    // Configurar eventos do menu flutuante PCR
+    pcrTipoInput.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
         const rect = this.getBoundingClientRect();
         
-        // Usar posição fixed em vez de absolute
-        finalPcrFloatingMenu.style.position = 'fixed';
-        finalPcrFloatingMenu.style.top = rect.bottom + 'px';
-        finalPcrFloatingMenu.style.left = rect.left + 'px';
-        finalPcrFloatingMenu.style.width = rect.width + 'px';
-        finalPcrFloatingMenu.style.zIndex = '9999';
-        finalPcrFloatingMenu.classList.add('show');
+        // Usar posição fixed
+        pcrFloatingMenu.style.position = 'fixed';
+        pcrFloatingMenu.style.top = rect.bottom + 'px';
+        pcrFloatingMenu.style.left = rect.left + 'px';
+        pcrFloatingMenu.style.width = rect.width + 'px';
+        pcrFloatingMenu.style.zIndex = '9999';
+        pcrFloatingMenu.classList.add('show');
     });
     
-    // Selecionar item do menu
-    finalPcrFloatingMenu.addEventListener('click', function(e) {
-        if (e.target.classList.contains('pcr-menu-item')) {
-            const value = e.target.getAttribute('data-value');
-            finalPcrTipoInput.value = value;
-            
-            // Remover seleção anterior
-            document.querySelectorAll('.pcr-menu-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            // Adicionar seleção atual
-            e.target.classList.add('selected');
-            
-            // Fechar menu
-            finalPcrFloatingMenu.classList.remove('show');
-        }
-    });
+    // Configurar clicks nos items do menu
+    if (!pcrFloatingMenu.hasAttribute('data-pcr-configured')) {
+        pcrFloatingMenu.setAttribute('data-pcr-configured', 'true');
+        
+        pcrFloatingMenu.addEventListener('click', function(e) {
+            if (e.target.classList.contains('pcr-menu-item')) {
+                const value = e.target.getAttribute('data-value');
+                pcrTipoInput.value = value;
+                
+                // Remover seleção anterior
+                document.querySelectorAll('.pcr-menu-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                // Adicionar seleção atual
+                e.target.classList.add('selected');
+                
+                // Fechar menu
+                pcrFloatingMenu.classList.remove('show');
+            }
+        });
+        
+        // Fechar menu ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!pcrTipoInput.contains(e.target) && !pcrFloatingMenu.contains(e.target)) {
+                pcrFloatingMenu.classList.remove('show');
+            }
+        });
+    }
+}
+
+// Função para configurar o menu flutuante de SN
+function configurarMenuSN() {
+    const snTipoInput = document.getElementById('sn-tipo-modal');
+    const snFloatingMenu = document.getElementById('sn-floating-menu');
     
-    // Fechar menu ao clicar fora
-    document.addEventListener('click', function(e) {
-        if (finalPcrTipoInput && finalPcrFloatingMenu && 
-            !finalPcrTipoInput.contains(e.target) && 
-            !finalPcrFloatingMenu.contains(e.target)) {
-            finalPcrFloatingMenu.classList.remove('show');
-        }
-    });
+    if (!snTipoInput || !snFloatingMenu) {
+        return;
+    }
+    
+    if (!snTipoInput.hasAttribute('data-sn-configured')) {
+        snTipoInput.setAttribute('data-sn-configured', 'true');
+        
+        snTipoInput.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const rect = this.getBoundingClientRect();
+            snFloatingMenu.style.position = 'fixed';
+            snFloatingMenu.style.top = rect.bottom + 'px';
+            snFloatingMenu.style.left = rect.left + 'px';
+            snFloatingMenu.style.width = rect.width + 'px';
+            snFloatingMenu.style.zIndex = '9999';
+            snFloatingMenu.classList.add('show');
+        });
+    }
+    
+    if (!snFloatingMenu.hasAttribute('data-sn-configured')) {
+        snFloatingMenu.setAttribute('data-sn-configured', 'true');
+        
+        snFloatingMenu.addEventListener('click', function(e) {
+            if (e.target.classList.contains('sn-menu-item')) {
+                const value = e.target.getAttribute('data-value');
+                snTipoInput.value = value;
+                
+                document.querySelectorAll('.sn-menu-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                e.target.classList.add('selected');
+                snFloatingMenu.classList.remove('show');
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!snTipoInput.contains(e.target) && !snFloatingMenu.contains(e.target)) {
+                snFloatingMenu.classList.remove('show');
+            }
+        });
+    }
+}
+
+// Função para configurar o menu flutuante de ELISA
+function configurarMenuELISA() {
+    const elisaTipoInput = document.getElementById('elisa-tipo-modal');
+    const elisaFloatingMenu = document.getElementById('elisa-floating-menu');
+    
+    if (!elisaTipoInput || !elisaFloatingMenu) {
+        return;
+    }
+    
+    if (!elisaTipoInput.hasAttribute('data-elisa-configured')) {
+        elisaTipoInput.setAttribute('data-elisa-configured', 'true');
+        
+        elisaTipoInput.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const rect = this.getBoundingClientRect();
+            elisaFloatingMenu.style.position = 'fixed';
+            elisaFloatingMenu.style.top = rect.bottom + 'px';
+            elisaFloatingMenu.style.left = rect.left + 'px';
+            elisaFloatingMenu.style.width = rect.width + 'px';
+            elisaFloatingMenu.style.zIndex = '9999';
+            elisaFloatingMenu.classList.add('show');
+        });
+    }
+    
+    if (!elisaFloatingMenu.hasAttribute('data-elisa-configured')) {
+        elisaFloatingMenu.setAttribute('data-elisa-configured', 'true');
+        
+        elisaFloatingMenu.addEventListener('click', function(e) {
+            if (e.target.classList.contains('elisa-menu-item')) {
+                const value = e.target.getAttribute('data-value');
+                elisaTipoInput.value = value;
+                
+                document.querySelectorAll('.elisa-menu-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                e.target.classList.add('selected');
+                elisaFloatingMenu.classList.remove('show');
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!elisaTipoInput.contains(e.target) && !elisaFloatingMenu.contains(e.target)) {
+                elisaFloatingMenu.classList.remove('show');
+            }
+        });
+    }
 }
 
 // Função para carregar tarefas
@@ -450,23 +612,33 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             return;
         }
 
-        // Substitua a parte do filtro na função carregarTarefas
-
+        // Lógica de filtro atualizada para nova estrutura
         let q;
         if (filtro === "Todos") {
             q = query(
                 collection(db, "tarefas"),
                 orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
             );
-        } else if (filtro === "SN BVDV-1") {
-            // Consulta especial para SN BVDV-1 que também inclui SN BVDV
+        } else if (filtro === "SN") {
+            // Para SN, incluímos tanto os novos (tipo="SN") quanto os antigos (tipo específico de SN)
             q = query(
                 collection(db, "tarefas"),
-                where("tipo", "in", ["SN BVDV-1", "SN BVDV"]),
+                orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
+            );
+        } else if (filtro === "ELISA") {
+            // Para ELISA, incluímos tanto os novos (tipo="ELISA") quanto os antigos (tipo específico de ELISA)
+            q = query(
+                collection(db, "tarefas"),
+                orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
+            );
+        } else if (filtro === "MOLECULAR") {
+            // Para MOLECULAR, incluímos tanto os novos (tipo="MOLECULAR") quanto os antigos (tipo="PCR")
+            q = query(
+                collection(db, "tarefas"),
                 orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
             );
         } else {
-            // Consulta normal para outros tipos
+            // Para outros tipos, filtramos normalmente
             q = query(
                 collection(db, "tarefas"),
                 where("tipo", "==", filtro),
@@ -485,6 +657,28 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
         muralList.innerHTML = "";
         querySnapshot.forEach((doc) => {
             const tarefa = doc.data();
+            
+            // Aplicar filtro manual para SN, ELISA e MOLECULAR que incluem dados antigos
+            let incluirTarefa = true;
+            if (filtro === "SN") {
+                incluirTarefa = tarefa.tipo === "SN" || 
+                              tarefa.tipo === "SN IBR" || 
+                              tarefa.tipo === "SN BVDV-1" ||
+                              tarefa.tipo === "SN BVDV-2";
+            } else if (filtro === "ELISA") {
+                incluirTarefa = tarefa.tipo === "ELISA" ||
+                              tarefa.tipo === "ELISA LEUCOSE" ||
+                              tarefa.tipo === "ELISA BVDV";
+            } else if (filtro === "MOLECULAR") {
+                incluirTarefa = tarefa.tipo === "MOLECULAR" ||
+                              tarefa.tipo === "PCR";
+            } else if (filtro !== "Todos") {
+                incluirTarefa = tarefa.tipo === filtro;
+            }
+            
+            if (!incluirTarefa) {
+                return; // Pula esta tarefa
+            }
             const dataRecebimento = tarefa.dataRecebimento?.toDate
                 ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
                 : "Data não disponível";
@@ -492,14 +686,18 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             const statusClass = tarefa.status === 'em-progresso' ? 'em-progresso' : '';
             const concluidoClass = tarefa.status === 'concluido' ? 'concluido' : statusClass;
 
-            const showResultsButton = tarefa.tipo === "SN IBR" || 
+            const showResultsButton = (tarefa.tipo === "SN" && tarefa.subTipo) || 
+                                    (tarefa.tipo === "ELISA" && tarefa.subTipo) ||
+                                    (tarefa.tipo === "MOLECULAR" && tarefa.subTipo) ||
+                                    tarefa.tipo === "RAIVA" ||
+                                    tarefa.tipo === "ICC" ||
+                                    // Compatibilidade com dados antigos
+                                    tarefa.tipo === "SN IBR" || 
                                     tarefa.tipo === "SN BVDV-1" ||
                                     tarefa.tipo === "SN BVDV-2" ||
                                     tarefa.tipo === "ELISA LEUCOSE" ||
                                     tarefa.tipo === "ELISA BVDV" ||
-                                    tarefa.tipo === "PCR" ||
-                                    tarefa.tipo === "RAIVA" ||
-                                    tarefa.tipo === "ICC";
+                                    tarefa.tipo === "PCR";
 
             const amostraItem = document.createElement("div");
             amostraItem.className = `card mb-4 shadow-sm ${concluidoClass}`;
@@ -548,7 +746,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
                   <div class="mb-2">
                     <h5 class="card-title mb-1 text-success fw-bold">${tarefa.id}</h5>
-                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${tarefa.tipo === "PCR" && tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}</div>
+                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}</div>
                     <div class="mb-1"><span class="fw-medium">Quantidade:</span> ${tarefa.quantidade || '0'}</div>
                     <div><span class="fw-medium">Recebimento:</span> ${
     tarefa.criadoEm?.toDate
@@ -782,11 +980,26 @@ window.editarTarefaModal = async (id) => {
             document.getElementById("gramatura-container-modal").style.display = "none";
         }
         
-        if (tipo === "PCR") {
+        // Controlar e preencher containers dos submenus
+        if (tipo === "MOLECULAR") {
             document.getElementById("pcr-container-modal").style.display = "block";
-            document.getElementById("pcr-tipo-modal").value = tarefa.pcrTipo || "";
+            document.getElementById("pcr-tipo-modal").value = tarefa.subTipo || "";
         } else {
             document.getElementById("pcr-container-modal").style.display = "none";
+        }
+        
+        if (tipo === "SN") {
+            document.getElementById("sn-container-modal").style.display = "block";
+            document.getElementById("sn-tipo-modal").value = tarefa.subTipo || "";
+        } else {
+            document.getElementById("sn-container-modal").style.display = "none";
+        }
+        
+        if (tipo === "ELISA") {
+            document.getElementById("elisa-container-modal").style.display = "block";
+            document.getElementById("elisa-tipo-modal").value = tarefa.subTipo || "";
+        } else {
+            document.getElementById("elisa-container-modal").style.display = "none";
         }
         
         const dataRecebimento = tarefa.dataRecebimento?.toDate();
@@ -796,6 +1009,7 @@ window.editarTarefaModal = async (id) => {
         }
         
         document.getElementById("observacoes-modal").value = tarefa.observacoes || "";
+        document.getElementById("material-recebido-modal").value = tarefa.materialRecebido || "";
 
         if (tarefa.proprietario) {
             document.getElementById("proprietario-nome-modal").value = tarefa.proprietario.nome || "";
@@ -810,8 +1024,8 @@ window.editarTarefaModal = async (id) => {
 
         }
         
-        // Configurar menu flutuante de PCR
-        configurarMenuPCR();
+        // Configurar todos os menus flutuantes
+        configurarMenusFlutantes();
 
         // Configurar o botão salvar para atualizar tarefa
         document.getElementById('salvar-tarefa-modal').onclick = async () => {
@@ -829,7 +1043,8 @@ window.editarTarefaModal = async (id) => {
                     tipo: tipoValue,
                     quantidade: parseInt(document.getElementById("quantidade-modal").value),
                     atualizadoEm: Timestamp.now(),
-                    observacoes: document.getElementById("observacoes-modal").value.trim()
+                    observacoes: document.getElementById("observacoes-modal").value.trim(),
+                    materialRecebido: document.getElementById("material-recebido-modal").value.trim()
                 };
 
                 // Adicionar campos condicionais
@@ -840,12 +1055,23 @@ window.editarTarefaModal = async (id) => {
                     updateData.gramatura = null;
                 }
 
-                if (tipoValue === "PCR") {
+                // Determinar subtipo baseado no tipo principal
+                let subTipo = null;
+                if (tipoValue === "MOLECULAR") {
                     const pcrTipoInput = document.getElementById("pcr-tipo-modal");
-                    updateData.pcrTipo = pcrTipoInput ? pcrTipoInput.value.trim() : null;
-                } else {
-                    updateData.pcrTipo = null;
+                    subTipo = pcrTipoInput ? pcrTipoInput.value.trim() : null;
+                } else if (tipoValue === "SN") {
+                    const snTipoInput = document.getElementById("sn-tipo-modal");
+                    subTipo = snTipoInput ? snTipoInput.value.trim() : null;
+                } else if (tipoValue === "ELISA") {
+                    const elisaTipoInput = document.getElementById("elisa-tipo-modal");
+                    subTipo = elisaTipoInput ? elisaTipoInput.value.trim() : null;
                 }
+                
+                updateData.subTipo = subTipo;
+                
+                // Remover campos antigos se existirem
+                updateData.pcrTipo = null;
 
                 // Atualizar campos de proprietário e veterinário
                 const proprietarioNome = document.getElementById("proprietario-nome-modal").value.trim();
@@ -964,7 +1190,7 @@ window.mostrarDetalhes = async (id) => {
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 text-muted">Tipo:</div>
-                            <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}${tarefa.tipo === "PCR" && tarefa.pcrTipo ? ` - ${tarefa.pcrTipo}` : ''}</div>
+                            <div class="col-7 fw-medium">${tarefa.tipo || 'N/A'}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}</div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-5 text-muted">Quantidade:</div>
@@ -1012,6 +1238,17 @@ window.mostrarDetalhes = async (id) => {
                         </div>
                     </div>
                 </div>
+                ${tarefa.materialRecebido ? `
+                <div class="card border-0 mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-3 text-success fw-bold">
+                            <i class="bi bi-box-seam me-2"></i>Material Recebido
+                        </h6>
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem;">
+${tarefa.materialRecebido}
+                        </div>
+                    </div>
+                </div>` : ''}
                 ${tarefa.observacoes ? `
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
@@ -1067,16 +1304,16 @@ window.registrarResultado = async (id) => {
         const tarefa = tarefaSnap.data();
         const tipo = (tarefa.tipo || "").trim().toUpperCase();
 
-        if (tipo.includes("ELISA")) {
+        if (tipo === "ELISA") {
             await registrarResultadoELISA(id);
             return;
         }
-        if (tipo.includes("SN")) {
+        if (tipo === "SN") {
             await registrarResultadoSN(id);
             return;
         }
-        if (tipo.includes("PCR")) {
-            await registrarResultadoPCR(id);
+        if (tipo === "MOLECULAR") {
+            await registrarResultadoMolecular(id);
             return;
         }
         if (tipo === "RAIVA") {
