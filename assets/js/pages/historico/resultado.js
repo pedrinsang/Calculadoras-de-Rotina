@@ -44,7 +44,7 @@ window.mostrarResultados = async (id) => {
         });
         
         // Check for both SN, ELISA, and Molecular/PCR types
-        const isSN = tarefa.tipo && (tarefa.tipo.includes("SN IBR") || tarefa.tipo.includes("SN BVDV") || (tarefa.tipo === "SN" && tarefa.subTipo));
+        const isSN = tarefa.tipo && (tarefa.tipo.includes("SN IBR") || tarefa.tipo.includes("SN BVDV") || tarefa.tipo.includes("SN HoBi") || tarefa.tipo.includes("SN EHV-1") || (tarefa.tipo === "SN" && tarefa.subTipo));
         const isELISA = tarefa.tipo.includes("ELISA") || (tarefa.tipo === "ELISA" && tarefa.subTipo);
         const isPCRSimples = tarefa.tipo === "PCR";
         const isMolecular = tarefa.tipo === "MOLECULAR";
@@ -119,7 +119,7 @@ window.mostrarResultados = async (id) => {
             }, 10);
 
             // Update the button click handler
-            if (tarefa.tipo === "SN IBR" || tarefa.tipo === "SN BVDV") {
+            if (tarefa.tipo === "SN IBR" || tarefa.tipo === "SN BVDV" || tarefa.tipo === "SN HoBi" || tarefa.tipo === "SN EHV-1") {
                 const btnCopiar = modal.querySelector("#copiar-resultados");
                 if (btnCopiar) {
                     btnCopiar.onclick = () => {
@@ -976,8 +976,8 @@ function gerarTabelaPCRSimples(tarefa, resultados) {
 function getBadgeClass(resultado) {
     if (!resultado) return 'bg-secondary';
     const res = resultado.toLowerCase();
-    if (res === 'positivo') return 'bg-danger';
-    if (res === 'negativo') return 'bg-success';
+    if (res === 'positivo') return 'bg-success';
+    if (res === 'negativo') return 'bg-danger';
     return 'bg-secondary';
 }
 

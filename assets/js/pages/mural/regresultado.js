@@ -386,7 +386,7 @@ async function registrarResultadoMolecularSimples(tarefa, tarefaRef) {
         amostras.push({
             id: i + 1,
             identificacao: tarefa.resultados?.amostras?.[i]?.identificacao || "",
-            resultado: tarefa.resultados?.amostras?.[i]?.resultado || ""
+            resultado: tarefa.resultados?.amostras?.[i]?.resultado || "negativo" // Padrão negativo para novos registros
         });
     }
 
@@ -887,10 +887,10 @@ async function registrarResultadoMultiplexCrostasBovina(tarefa, tarefaRef) {
         amostras.push({
             id: i + 1,
             identificacao: tarefa.resultados?.amostras?.[i]?.identificacao || "",
-            vaccinia: tarefa.resultados?.amostras?.[i]?.vaccinia || "",
-            pseudocowpox: tarefa.resultados?.amostras?.[i]?.pseudocowpox || "",
-            estomatitePapular: tarefa.resultados?.amostras?.[i]?.estomatitePapular || "",
-            herpesvirus: tarefa.resultados?.amostras?.[i]?.herpesvirus || ""
+            vaccinia: tarefa.resultados?.amostras?.[i]?.vaccinia || "negativo", // Padrão negativo
+            pseudocowpox: tarefa.resultados?.amostras?.[i]?.pseudocowpox || "negativo", // Padrão negativo
+            estomatitePapular: tarefa.resultados?.amostras?.[i]?.estomatitePapular || "negativo", // Padrão negativo
+            herpesvirus: tarefa.resultados?.amostras?.[i]?.herpesvirus || "negativo" // Padrão negativo
         });
     }
 
@@ -1148,11 +1148,11 @@ async function registrarResultadoMultiplexDiarreiaBovinaNeonatal(tarefa, tarefaR
         amostras.push({
             id: i + 1,
             identificacao: tarefa.resultados?.amostras?.[i]?.identificacao || "",
-            ecoli: tarefa.resultados?.amostras?.[i]?.ecoli || "",
-            salmonella: tarefa.resultados?.amostras?.[i]?.salmonella || "",
-            coronavirusBovino: tarefa.resultados?.amostras?.[i]?.coronavirusBovino || "",
-            rotavirusBovino: tarefa.resultados?.amostras?.[i]?.rotavirusBovino || "",
-            cryptosporidium: tarefa.resultados?.amostras?.[i]?.cryptosporidium || ""
+            ecoli: tarefa.resultados?.amostras?.[i]?.ecoli || "negativo", // Padrão negativo
+            salmonella: tarefa.resultados?.amostras?.[i]?.salmonella || "negativo", // Padrão negativo
+            coronavirusBovino: tarefa.resultados?.amostras?.[i]?.coronavirusBovino || "negativo", // Padrão negativo
+            rotavirusBovino: tarefa.resultados?.amostras?.[i]?.rotavirusBovino || "negativo", // Padrão negativo
+            cryptosporidium: tarefa.resultados?.amostras?.[i]?.cryptosporidium || "negativo" // Padrão negativo
         });
     }
 
@@ -1444,11 +1444,11 @@ async function registrarResultadoMultiplexDoencaRespiratoriaBovina(tarefa, taref
         amostras.push({
             id: i + 1,
             identificacao: tarefa.resultados?.amostras?.[i]?.identificacao || "",
-            coronavirusBovino: tarefa.resultados?.amostras?.[i]?.coronavirusBovino || "",
-            brsv: tarefa.resultados?.amostras?.[i]?.brsv || "",
-            bohv: tarefa.resultados?.amostras?.[i]?.bohv || "",
-            bvdv: tarefa.resultados?.amostras?.[i]?.bvdv || "",
-            bpiv3: tarefa.resultados?.amostras?.[i]?.bpiv3 || ""
+            coronavirusBovino: tarefa.resultados?.amostras?.[i]?.coronavirusBovino || "negativo", // Padrão negativo
+            brsv: tarefa.resultados?.amostras?.[i]?.brsv || "negativo", // Padrão negativo
+            bohv: tarefa.resultados?.amostras?.[i]?.bohv || "negativo", // Padrão negativo
+            bvdv: tarefa.resultados?.amostras?.[i]?.bvdv || "negativo", // Padrão negativo
+            bpiv3: tarefa.resultados?.amostras?.[i]?.bpiv3 || "negativo" // Padrão negativo
         });
     }
 
@@ -1740,11 +1740,11 @@ async function registrarResultadoMultiplexEncefalitesEquina(tarefa, tarefaRef) {
         amostras.push({
             id: i + 1,
             identificacao: tarefa.resultados?.amostras?.[i]?.identificacao || "",
-            virusRaiva: tarefa.resultados?.amostras?.[i]?.virusRaiva || "",
-            ehv1: tarefa.resultados?.amostras?.[i]?.ehv1 || "",
-            flavivirus: tarefa.resultados?.amostras?.[i]?.flavivirus || "",
-            alphavirus: tarefa.resultados?.amostras?.[i]?.alphavirus || "",
-            veev: tarefa.resultados?.amostras?.[i]?.veev || ""
+            virusRaiva: tarefa.resultados?.amostras?.[i]?.virusRaiva || "negativo", // Padrão negativo
+            ehv1: tarefa.resultados?.amostras?.[i]?.ehv1 || "negativo", // Padrão negativo
+            flavivirus: tarefa.resultados?.amostras?.[i]?.flavivirus || "negativo", // Padrão negativo
+            alphavirus: tarefa.resultados?.amostras?.[i]?.alphavirus || "negativo", // Padrão negativo
+            veev: tarefa.resultados?.amostras?.[i]?.veev || "negativo" // Padrão negativo
         });
     }
 
@@ -2045,7 +2045,7 @@ async function registrarResultadoRAIVA(id) {
             amostras.push({
                 id: i + 1,
                 identificacao: tarefa.resultados?.amostras?.[i]?.identificacao || "",
-                resultado: tarefa.resultados?.amostras?.[i]?.resultado || ""
+                resultado: tarefa.resultados?.amostras?.[i]?.resultado || "negativo" // Padrão negativo
             });
         }
 
@@ -2113,63 +2113,111 @@ async function registrarResultadoRAIVA(id) {
 
         document.body.appendChild(modal);
 
+        // Variável para controlar se o salvamento está em andamento
+        let salvandoResultados = false;
+
         // Fechar modal
         const fecharModal = () => {
-            if (document.body.contains(modal)) {
-                document.body.removeChild(modal);
+            try {
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
+                document.removeEventListener("keydown", handleKeyDown);
+            } catch (error) {
+                console.error("Erro ao fechar modal RAIVA:", error);
             }
-            document.removeEventListener("keydown", handleKeyDown);
         };
 
-        modal.querySelector("#fechar-modal-resultados").onclick = fecharModal;
-        modal.querySelector("#cancelar-resultados").onclick = fecharModal;
+        // Event listeners com verificação de existência dos elementos
+        const btnFechar = modal.querySelector("#fechar-modal-resultados");
+        const btnCancelar = modal.querySelector("#cancelar-resultados");
+        const btnSalvar = modal.querySelector("#salvar-resultados");
 
-        modal.querySelector("#salvar-resultados").onclick = async () => {
-            try {
-                mostrarLoading();
-                const amostrasAtualizadas = [];
-                const identificacoes = modal.querySelectorAll(".input-identificacao");
-                const resultados = modal.querySelectorAll(".select-resultado");
+        if (btnFechar) btnFechar.onclick = fecharModal;
+        if (btnCancelar) btnCancelar.onclick = fecharModal;
 
-                for (let i = 0; i < tarefa.quantidade; i++) {
-                    amostrasAtualizadas.push({
-                        id: i + 1,
-                        identificacao: identificacoes[i].value.trim(),
-                        resultado: resultados[i].value
-                    });
+        if (btnSalvar) {
+            btnSalvar.onclick = async () => {
+                // Prevenir múltiplos cliques
+                if (salvandoResultados) {
+                    console.log("Salvamento já em andamento...");
+                    return;
                 }
 
-                await updateDoc(tarefaRef, {
-                    resultados: {
-                        amostras: amostrasAtualizadas,
-                        dataRegistro: Timestamp.now()
-                    },
-                    status: "resultados-registrados",
-                    atualizadoEm: Timestamp.now()
-                });
+                try {
+                    salvandoResultados = true;
+                    
+                    // Desabilitar botão durante o salvamento
+                    btnSalvar.disabled = true;
+                    btnSalvar.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Salvando...';
+                    
+                    mostrarLoading();
+                    
+                    const amostrasAtualizadas = [];
+                    const identificacoes = modal.querySelectorAll(".input-identificacao");
+                    const resultados = modal.querySelectorAll(".select-resultado");
 
-                fecharModal();
-                mostrarFeedback("Resultados salvos com sucesso!", "success");
-            } catch (error) {
-                console.error("Erro ao salvar resultados:", error);
-                mostrarFeedback(`Erro: ${error.message}`, "error");
-            } finally {
-                esconderLoading();
-            }
-        };
+                    if (!identificacoes || !resultados || identificacoes.length === 0 || resultados.length === 0) {
+                        throw new Error("Elementos de entrada não encontrados");
+                    }
+
+                    for (let i = 0; i < tarefa.quantidade; i++) {
+                        if (!identificacoes[i] || !resultados[i]) {
+                            throw new Error(`Elementos não encontrados na linha ${i + 1}`);
+                        }
+
+                        amostrasAtualizadas.push({
+                            id: i + 1,
+                            identificacao: identificacoes[i].value.trim(),
+                            resultado: resultados[i].value
+                        });
+                    }
+
+                    await updateDoc(tarefaRef, {
+                        resultados: {
+                            amostras: amostrasAtualizadas,
+                            dataRegistro: Timestamp.now()
+                        },
+                        status: "resultados-registrados",
+                        atualizadoEm: Timestamp.now()
+                    });
+
+                    fecharModal();
+                    mostrarFeedback("Resultados salvos com sucesso!", "success");
+                    
+                } catch (error) {
+                    console.error("Erro ao salvar resultados RAIVA:", error);
+                    mostrarFeedback(`Erro ao salvar resultados: ${error.message}`, "error");
+                    
+                    // Reabilitar botão em caso de erro
+                    if (btnSalvar && document.body.contains(modal)) {
+                        btnSalvar.disabled = false;
+                        btnSalvar.innerHTML = '<i class="bi bi-save me-1"></i>Salvar Resultados';
+                    }
+                } finally {
+                    salvandoResultados = false;
+                    esconderLoading();
+                }
+            };
+        }
 
         // Fechar modal ao clicar fora
         modal.onclick = (e) => {
-            if (e.target === modal) fecharModal();
+            if (e.target === modal && !salvandoResultados) {
+                fecharModal();
+            }
         };
 
         // Fechar com ESC
         const handleKeyDown = (e) => {
-            if (e.key === "Escape") fecharModal();
+            if (e.key === "Escape" && !salvandoResultados) {
+                fecharModal();
+            }
         };
         document.addEventListener("keydown", handleKeyDown);
 
     } catch (error) {
+        console.error("Erro ao registrar resultado RAIVA:", error);
         mostrarFeedback(`Erro: ${error.message}`, "error");
     } finally {
         esconderLoading();
@@ -2261,66 +2309,117 @@ async function registrarResultadoICC(id) {
 
         document.body.appendChild(modal);
 
+        // Variável para controlar se o salvamento está em andamento
+        let salvandoResultados = false;
+
         // Fechar modal
         const fecharModal = () => {
-            if (document.body.contains(modal)) {
-                document.body.removeChild(modal);
+            try {
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
+                document.removeEventListener("keydown", handleKeyDown);
+            } catch (error) {
+                console.error("Erro ao fechar modal ICC:", error);
             }
-            document.removeEventListener("keydown", handleKeyDown);
         };
 
-        modal.querySelector("#fechar-modal-resultados").onclick = fecharModal;
-        modal.querySelector("#cancelar-resultados").onclick = fecharModal;
+        // Event listeners com verificação de existência dos elementos
+        const btnFechar = modal.querySelector("#fechar-modal-resultados");
+        const btnCancelar = modal.querySelector("#cancelar-resultados");
+        const btnSalvar = modal.querySelector("#salvar-resultados");
 
-        modal.querySelector("#salvar-resultados").onclick = async () => {
-            try {
-                mostrarLoading();
-                const amostrasAtualizadas = [];
-                const rows = modal.querySelectorAll(".tabela-resultados tbody tr");
+        if (btnFechar) btnFechar.onclick = fecharModal;
+        if (btnCancelar) btnCancelar.onclick = fecharModal;
 
-                for (let i = 0; i < rows.length; i++) {
-                    const row = rows[i];
-                    const identificacao = row.querySelector(".input-identificacao").value.trim();
-                    const resultado = row.querySelector(".input-resultado").value.trim();
-
-                    amostrasAtualizadas.push({
-                        id: i + 1,
-                        identificacao: identificacao,
-                        resultado: resultado
-                    });
+        if (btnSalvar) {
+            btnSalvar.onclick = async () => {
+                // Prevenir múltiplos cliques
+                if (salvandoResultados) {
+                    console.log("Salvamento já em andamento...");
+                    return;
                 }
 
-                await updateDoc(tarefaRef, {
-                    resultados: {
-                        amostras: amostrasAtualizadas,
-                        dataRegistro: Timestamp.now()
-                    },
-                    status: "resultados-registrados",
-                    atualizadoEm: Timestamp.now()
-                });
+                try {
+                    salvandoResultados = true;
+                    
+                    // Desabilitar botão durante o salvamento
+                    btnSalvar.disabled = true;
+                    btnSalvar.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Salvando...';
+                    
+                    mostrarLoading();
+                    
+                    const amostrasAtualizadas = [];
+                    const rows = modal.querySelectorAll(".tabela-resultados tbody tr");
 
-                fecharModal();
-                mostrarFeedback("Resultados salvos com sucesso!", "success");
-            } catch (error) {
-                console.error("Erro ao salvar resultados:", error);
-                mostrarFeedback(`Erro: ${error.message}`, "error");
-            } finally {
-                esconderLoading();
-            }
-        };
+                    if (!rows || rows.length === 0) {
+                        throw new Error("Nenhuma linha de resultado encontrada");
+                    }
+
+                    for (let i = 0; i < rows.length; i++) {
+                        const row = rows[i];
+                        const inputIdentificacao = row.querySelector(".input-identificacao");
+                        const inputResultado = row.querySelector(".input-resultado");
+
+                        if (!inputIdentificacao || !inputResultado) {
+                            throw new Error(`Elementos de entrada não encontrados na linha ${i + 1}`);
+                        }
+
+                        const identificacao = inputIdentificacao.value.trim();
+                        const resultado = inputResultado.value.trim();
+
+                        amostrasAtualizadas.push({
+                            id: i + 1,
+                            identificacao: identificacao,
+                            resultado: resultado
+                        });
+                    }
+
+                    await updateDoc(tarefaRef, {
+                        resultados: {
+                            amostras: amostrasAtualizadas,
+                            dataRegistro: Timestamp.now()
+                        },
+                        status: "resultados-registrados",
+                        atualizadoEm: Timestamp.now()
+                    });
+
+                    fecharModal();
+                    mostrarFeedback("Resultados salvos com sucesso!", "success");
+                    
+                } catch (error) {
+                    console.error("Erro ao salvar resultados ICC:", error);
+                    mostrarFeedback(`Erro ao salvar resultados: ${error.message}`, "error");
+                    
+                    // Reabilitar botão em caso de erro
+                    if (btnSalvar && document.body.contains(modal)) {
+                        btnSalvar.disabled = false;
+                        btnSalvar.innerHTML = '<i class="bi bi-save me-1"></i>Salvar Resultados';
+                    }
+                } finally {
+                    salvandoResultados = false;
+                    esconderLoading();
+                }
+            };
+        }
 
         // Fechar modal ao clicar fora
         modal.onclick = (e) => {
-            if (e.target === modal) fecharModal();
+            if (e.target === modal && !salvandoResultados) {
+                fecharModal();
+            }
         };
 
         // Fechar com ESC
         const handleKeyDown = (e) => {
-            if (e.key === "Escape") fecharModal();
+            if (e.key === "Escape" && !salvandoResultados) {
+                fecharModal();
+            }
         };
         document.addEventListener("keydown", handleKeyDown);
 
     } catch (error) {
+        console.error("Erro ao registrar resultado ICC:", error);
         mostrarFeedback(`Erro: ${error.message}`, "error");
     } finally {
         esconderLoading();

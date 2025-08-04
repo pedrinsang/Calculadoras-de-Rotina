@@ -309,6 +309,18 @@ export async function gerarDocx(tarefa) {
                 testeRealizado = "Soro-neutralização para BVDV-1 (cepa Singer ~ 100TCID50)";
                 nomeArquivo = "BVDV";
                 break;
+            case "SN HoBi":
+            case "SN BVDV-3":
+                tituloLaudo = "Sorologia HoBi";
+                testeRealizado = "Soro-neutralização para HoBi (cepa D32/00_'HoBi' ~ 100TCID50)";
+                nomeArquivo = "HoBi";
+                break;
+            case "SN EHV-1":
+            case "EHV-1":
+                tituloLaudo = "Sorologia EHV-1";
+                testeRealizado = "Soro-neutralização para EHV-1 (cepa Army 183 ~ 100TCID50)";
+                nomeArquivo = "EHV-1";
+                break;
             case "ELISA LEUCOSE":
                 tituloLaudo = "Sorologia Vírus da Leucose Bovina";
                 testeRealizado = "ELISA Anticorpo Vírus da Leucose Bovina (IDEXX®)";
@@ -378,11 +390,11 @@ export async function gerarDocx(tarefa) {
                     nomeArquivo = "MULTIPLEX";
                 } else if (tarefa.subTipo === "RT-PCR") {
                     tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
-                    testeRealizado = "RT-PCR - pesquisa de ácido nucléico viral (RNA)";
+                    testeRealizado = tarefa.alvo ? `RT-PCR - pesquisa de ácido nucléico viral (RNA)` : "RT-PCR - pesquisa de ácido nucléico viral (RNA)";
                     nomeArquivo = "RT-PCR";
                 } else if (tarefa.subTipo === "PCR") {
                     tituloLaudo = "Diagnóstico Molecular (PCR)";
-                    testeRealizado = "PCR - pesquisa de ácido nucléico viral (DNA)";
+                    testeRealizado = tarefa.alvo ? `PCR - pesquisa de ácido nucléico viral (DNA)` : "PCR - pesquisa de ácido nucléico viral (DNA)";
                     nomeArquivo = "PCR";
                 } else if (tarefa.resultados?.acidoNucleico === 'RNA') {
                     tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
@@ -3068,7 +3080,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: `Alvo: ${tarefa.virus || ''}`,
+                                text: `Alvo: ${tarefa.alvo || ''}`,
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3759,7 +3771,7 @@ export async function gerarDocx(tarefa) {
             }),
             new Paragraph({
                 children: [new TextRun({
-                    text: "CRMV/RS 1574",
+                    text: "CRMV/RS 3178",
                     size: 17,
                     font: "Arial"
                 })],

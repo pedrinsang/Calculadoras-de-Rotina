@@ -358,14 +358,29 @@ function formatarTipoTeste(tarefa) {
     // Nova estrutura com subTipo
     if (tarefa.subTipo) {
         tipoFormatado = `${tarefa.tipo} - ${tarefa.subTipo}`;
+        
+        // Adicionar alvo se for PCR/RT-PCR e tiver alvo definido
+        if ((tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') && tarefa.alvo) {
+            tipoFormatado += ` - ${tarefa.alvo}`;
+        }
     }
     // Compatibilidade com estrutura antiga - PCR com pcrTipo
     else if (tarefa.tipo === 'PCR' && tarefa.pcrTipo) {
         tipoFormatado = `PCR - ${tarefa.pcrTipo}`;
+        
+        // Adicionar alvo se tiver definido
+        if (tarefa.alvo) {
+            tipoFormatado += ` - ${tarefa.alvo}`;
+        }
     }
     // Compatibilidade com estrutura antiga - PCR com complemento
     else if (tarefa.tipo === 'PCR' && tarefa.complemento) {
         tipoFormatado = `PCR - ${tarefa.complemento}`;
+        
+        // Adicionar alvo se tiver definido
+        if (tarefa.alvo) {
+            tipoFormatado += ` - ${tarefa.alvo}`;
+        }
     }
     // Compatibilidade com tipos antigos que tinham subtipo no próprio tipo
     else if (tarefa.tipo && (tarefa.tipo.includes('SN ') || tarefa.tipo.includes('ELISA '))) {
@@ -563,6 +578,7 @@ function filtrarTarefas(termo) {
             tarefa.id || '',
             tarefa.tipo || '',
             tarefa.pcrTipo || '', // Adicionar tipo de PCR na busca
+            tarefa.alvo || '', // Adicionar alvo na busca
             tarefa.observacoes || '',
             tarefa.complemento || '',
             typeof tarefa.proprietario === 'object' 
@@ -736,6 +752,7 @@ window.voltarParaMural = async (id) => {
             // Preservar estrutura nova e antiga de subtipos
             subTipo: tarefa.subTipo || null,
             pcrTipo: tarefa.pcrTipo || null,  // Para compatibilidade com dados antigos
+            alvo: tarefa.alvo || null,  // Preservar campo alvo
             complemento: tarefa.complemento || null,
             proprietario: tarefa.proprietario || null,
             veterinario: tarefa.veterinario || null,
@@ -832,6 +849,11 @@ window.mostrarDetalhes = async (id) => {
                             <div class="col-5 text-muted">Quantidade:</div>
                             <div class="col-7 fw-medium">${tarefa.quantidade || '0'}</div>
                         </div>
+                        ${tarefa.alvo ? `
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">Alvo:</div>
+                            <div class="col-7 fw-medium">${tarefa.alvo}</div>
+                        </div>` : ''}
                         ${tarefa.complemento ? `
                         <div class="row mb-2">
                             <div class="col-5 text-muted">Complemento:</div>
