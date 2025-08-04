@@ -243,6 +243,7 @@ async function adicionarTarefaModal() {
         const pcrTipoInput = document.getElementById("pcr-tipo-modal");
         const snTipoInput = document.getElementById("sn-tipo-modal");
         const elisaTipoInput = document.getElementById("elisa-tipo-modal");
+        const alvoInput = document.getElementById("alvo-modal");
         const proprietarioNomeInput = document.getElementById("proprietario-nome-modal");
         const proprietarioMunicipioInput = document.getElementById("proprietario-municipio-modal");
         const proprietarioContatoInput = document.getElementById("proprietario-contato-modal");
@@ -259,8 +260,13 @@ async function adicionarTarefaModal() {
 
         // Determinar subtipo baseado no tipo principal
         let subTipo = null;
+        let alvo = null;
         if (tipoInput.value === "MOLECULAR" && pcrTipoInput) {
             subTipo = pcrTipoInput.value.trim() || null;
+            // Capturar alvo apenas para PCR e RT-PCR simples
+            if ((subTipo === "PCR" || subTipo === "RT-PCR") && alvoInput) {
+                alvo = alvoInput.value.trim() || null;
+            }
         } else if (tipoInput.value === "SN" && snTipoInput) {
             subTipo = snTipoInput.value.trim() || null;
         } else if (tipoInput.value === "ELISA" && elisaTipoInput) {
@@ -271,6 +277,7 @@ async function adicionarTarefaModal() {
             id: idInput.value.trim(),
             tipo: tipoInput.value,
             subTipo: subTipo,
+            alvo: alvo, // Adicionar campo alvo
             quantidade: parseInt(quantidadeInput.value),
             gramatura: tipoInput.value === "VACINA" && gramaturaInput 
                 ? parseFloat(gramaturaInput.value) || null
@@ -392,11 +399,18 @@ function configurarTipoChangeListener() {
         
         // Controlar containers dos submenus
         const pcrContainer = document.getElementById('pcr-container-modal');
+        const alvoContainer = document.getElementById('alvo-container-modal');
         if (pcrContainer) {
             pcrContainer.style.display = tipoValue === "MOLECULAR" ? "block" : "none";
             if (tipoValue !== "MOLECULAR") {
                 const pcrInput = document.getElementById('pcr-tipo-modal');
                 if (pcrInput) pcrInput.value = '';
+                // Ocultar e limpar campo alvo também
+                if (alvoContainer) {
+                    alvoContainer.style.display = 'none';
+                    const alvoInput = document.getElementById('alvo-modal');
+                    if (alvoInput) alvoInput.value = '';
+                }
             }
         }
         
@@ -422,6 +436,7 @@ function configurarTipoChangeListener() {
 function configurarMenuPCR() {
     const pcrTipoInput = document.getElementById('pcr-tipo-modal');
     const pcrFloatingMenu = document.getElementById('pcr-floating-menu');
+    const alvoContainer = document.getElementById('alvo-container-modal');
     
     // Verificar se todos os elementos existem
     if (!pcrTipoInput || !pcrFloatingMenu) {
@@ -468,6 +483,23 @@ function configurarMenuPCR() {
                 
                 // Adicionar seleção atual
                 e.target.classList.add('selected');
+                
+                // Mostrar/ocultar campo alvo baseado na seleção
+                if (alvoContainer) {
+                    if (value === 'PCR' || value === 'RT-PCR') {
+                        alvoContainer.style.display = 'block';
+                        // Focar no campo alvo para facilitar o preenchimento
+                        setTimeout(() => {
+                            const alvoInput = document.getElementById('alvo-modal');
+                            if (alvoInput) alvoInput.focus();
+                        }, 100);
+                    } else {
+                        alvoContainer.style.display = 'none';
+                        // Limpar o campo alvo se não for PCR simples
+                        const alvoInput = document.getElementById('alvo-modal');
+                        if (alvoInput) alvoInput.value = '';
+                    }
+                }
                 
                 // Fechar menu
                 pcrFloatingMenu.classList.remove('show');
@@ -664,7 +696,9 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                 incluirTarefa = tarefa.tipo === "SN" || 
                               tarefa.tipo === "SN IBR" || 
                               tarefa.tipo === "SN BVDV-1" ||
-                              tarefa.tipo === "SN BVDV-2";
+                              tarefa.tipo === "SN BVDV-2" ||
+                              tarefa.tipo === "SN HoBi" ||
+                              tarefa.tipo === "SN EHV-1";
             } else if (filtro === "ELISA") {
                 incluirTarefa = tarefa.tipo === "ELISA" ||
                               tarefa.tipo === "ELISA LEUCOSE" ||
@@ -695,6 +729,8 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                                     tarefa.tipo === "SN IBR" || 
                                     tarefa.tipo === "SN BVDV-1" ||
                                     tarefa.tipo === "SN BVDV-2" ||
+                                    tarefa.tipo === "SN HoBi" ||
+                                    tarefa.tipo === "SN EHV-1" ||
                                     tarefa.tipo === "ELISA LEUCOSE" ||
                                     tarefa.tipo === "ELISA BVDV" ||
                                     tarefa.tipo === "PCR";
@@ -746,7 +782,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
                   <div class="mb-2">
                     <h5 class="card-title mb-1 text-success fw-bold">${tarefa.id}</h5>
-                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}</div>
+                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}${tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? ` - ${tarefa.alvo}` : ''}</div>
                     <div class="mb-1"><span class="fw-medium">Quantidade:</span> ${tarefa.quantidade || '0'}</div>
                     <div><span class="fw-medium">Recebimento:</span> ${
     tarefa.criadoEm?.toDate
@@ -1308,11 +1344,11 @@ window.registrarResultado = async (id) => {
             await registrarResultadoELISA(id);
             return;
         }
-        if (tipo === "SN") {
+        if (tipo === "SN" || tipo.includes("SN ")) {
             await registrarResultadoSN(id);
             return;
         }
-        if (tipo === "MOLECULAR") {
+        if (tipo === "MOLECULAR" || tipo === "PCR") {
             await registrarResultadoMolecular(id);
             return;
         }
