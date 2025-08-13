@@ -102,15 +102,38 @@
   background: #e3f2fd;
 }
 
-.card.em-progresso {
-  background-color: #e3f2fd;
-  border-left: 6px solid #1e88e5;
-  border-radius: 0.375rem;
-}
-
 .mural-item.concluido {
   border-left: 6px solid #43a047;
   background: #e8f5e9;
+}
+
+/* Estilo para tarefas vencidas */
+.card.tarefa-vencida {
+  background-color: #ffcdd2 !important;
+  border-left: 6px solid #d32f2f !important;
+  border-radius: 0.375rem;
+}
+
+.card.tarefa-vencida .card-body {
+  background-color: transparent;
+}
+
+/* Estilo para tarefas próximas do prazo (2 dias ou menos) */
+.card.tarefa-urgente {
+  background-color: #fff3cd !important;
+  border-left: 6px solid #ffc107 !important;
+  border-radius: 0.375rem;
+}
+
+.card.tarefa-urgente .card-body {
+  background-color: transparent;
+}
+
+/* Quando a tarefa está em progresso - SOBREPÕE todas as outras cores */
+.card.em-progresso {
+  background-color: #e3f2fd !important;
+  border-left: 6px solid #1e88e5 !important;
+  border-radius: 0.375rem;
 }
 
 /* =======================================
