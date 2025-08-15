@@ -85,9 +85,9 @@
   font-weight: 500;
 }
 
-/* Itens do Mural */
+/* Itens do Mural - FUNDO BRANCO PADRÃO */
 .mural-item {
-  background: #f8fafc;
+  background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(27,94,32,0.06);
   padding: 1rem;
@@ -99,17 +99,17 @@
 
 .mural-item.em-progresso {
   border-left: 6px solid #1e88e5;
-  background: #e3f2fd;
+  background: #ffffff;
 }
 
 .mural-item.concluido {
   border-left: 6px solid #43a047;
-  background: #e8f5e9;
+  background: #ffffff;
 }
 
-/* Estilo para tarefas vencidas */
+/* Estilo para tarefas vencidas - FUNDO BRANCO */
 .card.tarefa-vencida {
-  background-color: #ffcdd2 !important;
+  background-color: #ffffff !important;
   border-left: 6px solid #d32f2f !important;
   border-radius: 0.375rem;
 }
@@ -118,9 +118,9 @@
   background-color: transparent;
 }
 
-/* Estilo para tarefas próximas do prazo (2 dias ou menos) */
+/* Estilo para tarefas próximas do prazo (2 dias ou menos) - FUNDO BRANCO */
 .card.tarefa-urgente {
-  background-color: #fff3cd !important;
+  background-color: #ffffff !important;
   border-left: 6px solid #ffc107 !important;
   border-radius: 0.375rem;
 }
@@ -129,9 +129,9 @@
   background-color: transparent;
 }
 
-/* Quando a tarefa está em progresso - SOBREPÕE todas as outras cores */
+/* Quando a tarefa está em progresso - FUNDO BRANCO */
 .card.em-progresso {
-  background-color: #e3f2fd !important;
+  background-color: #ffffff !important;
   border-left: 6px solid #1e88e5 !important;
   border-radius: 0.375rem;
 }

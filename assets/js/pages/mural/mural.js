@@ -216,7 +216,14 @@ function adicionarDiasUteis(dataInicial, diasUteis) {
     return data;
 }
 
-// Função para obter o prazo em dias úteis baseado no tipo de teste
+// Função para calcular dias corridos (incluindo fins de semana)
+function adicionarDiasCorridos(dataInicial, dias) {
+    let data = new Date(dataInicial);
+    data.setDate(data.getDate() + dias);
+    return data;
+}
+
+// Função para obter o prazo em dias baseado no tipo de teste
 function obterPrazoDiasTeste(tipo, subTipo = null) {
     switch (tipo) {
         case "SN":
@@ -225,28 +232,28 @@ function obterPrazoDiasTeste(tipo, subTipo = null) {
         case "SN BVDV-2":  
         case "SN HoBi":
         case "SN EHV-1":
-            return 15; // SN - 15 dias úteis
+            return { dias: 15, tipo: 'corridos' }; // SN - 15 dias corridos
         
         case "VACINA":
-            return 15; // VACINA - 15 dias úteis
+            return { dias: 10, tipo: 'uteis' }; // VACINA - 10 dias úteis
             
         case "ICC":
-            return 20; // ISOLAMENTO - 20 dias úteis
+            return { dias: 10, tipo: 'uteis' }; // ICC - 10 dias úteis
             
         case "MOLECULAR":
         case "PCR":
-            return 2; // PCR - 2 dias úteis
+            return { dias: 3, tipo: 'uteis' }; // MOLECULAR - 3 dias úteis
             
         case "ELISA":
         case "ELISA LEUCOSE":
         case "ELISA BVDV":
-            return 5; // ELISA - 5 dias úteis
+            return { dias: 5, tipo: 'uteis' }; // ELISA - 5 dias úteis
             
         case "RAIVA":
-            return 5; // RAIVA - 5 dias úteis
+            return { dias: 2, tipo: 'uteis' }; // RAIVA - 2 dias úteis
             
         default:
-            return 15; // Padrão - 15 dias úteis
+            return { dias: 15, tipo: 'corridos' }; // Padrão - 15 dias corridos
     }
 }
 
@@ -262,15 +269,22 @@ async function atualizarPrazosExistentes() {
         querySnapshot.forEach((doc) => {
             const tarefa = doc.data();
             
-            // Verificar se a tarefa não possui dataPrazo ou se está null/undefined
-            if (!tarefa.dataPrazo) {
-                const diasUteisPrazo = obterPrazoDiasTeste(tarefa.tipo, tarefa.subTipo);
+            // Verificar se a tarefa não possui dataPrazo ou tipoPrazo (tarefas antigas que precisam ser atualizadas)
+            if (!tarefa.dataPrazo || !tarefa.tipoPrazo) {
+                const prazoInfo = obterPrazoDiasTeste(tarefa.tipo, tarefa.subTipo);
                 const dataRecebimento = tarefa.criadoEm?.toDate ? tarefa.criadoEm.toDate() : new Date();
-                const dataPrazo = adicionarDiasUteis(dataRecebimento, diasUteisPrazo);
+                
+                let dataPrazo;
+                if (prazoInfo.tipo === 'corridos') {
+                    dataPrazo = adicionarDiasCorridos(dataRecebimento, prazoInfo.dias);
+                } else {
+                    dataPrazo = adicionarDiasUteis(dataRecebimento, prazoInfo.dias);
+                }
                 
                 batch.update(doc.ref, {
                     dataPrazo: Timestamp.fromDate(dataPrazo),
-                    diasUteisPrazo: diasUteisPrazo
+                    diasPrazo: prazoInfo.dias,
+                    tipoPrazo: prazoInfo.tipo
                 });
                 
                 contador++;
@@ -280,7 +294,8 @@ async function atualizarPrazosExistentes() {
         if (contador > 0) {
             await batch.commit();
             console.log(`${contador} tarefas atualizadas com prazos`);
-            mostrarFeedback(`${contador} tarefas foram atualizadas com informações de prazo`, "info");
+            // Remover feedback para não incomodar o usuário quando chamada frequentemente
+            // mostrarFeedback(`${contador} tarefas foram atualizadas com informações de prazo`, "info");
         } else {
             console.log("Todas as tarefas já possuem prazos definidos");
         }
@@ -296,15 +311,31 @@ function calcularPrazoTarefa(tarefa) {
     
     // Se já tem dataPrazo salva, usar ela. Se não, calcular
     let dataPrazo;
-    let diasUteis;
+    let diasPrazo;
+    let tipoPrazo;
     
     if (tarefa.dataPrazo?.toDate) {
         dataPrazo = tarefa.dataPrazo.toDate();
-        diasUteis = tarefa.diasUteisPrazo || obterPrazoDiasTeste(tarefa.tipo, tarefa.subTipo);
+        diasPrazo = tarefa.diasPrazo;
+        tipoPrazo = tarefa.tipoPrazo;
+        
+        // Se não tem informações de tipo de prazo, recalcular baseado no tipo atual
+        if (!tipoPrazo) {
+            const prazoInfo = obterPrazoDiasTeste(tarefa.tipo, tarefa.subTipo);
+            diasPrazo = prazoInfo.dias;
+            tipoPrazo = prazoInfo.tipo;
+        }
     } else {
         // Calcular prazo se não existir
-        diasUteis = obterPrazoDiasTeste(tarefa.tipo, tarefa.subTipo);
-        dataPrazo = adicionarDiasUteis(dataRecebimento, diasUteis);
+        const prazoInfo = obterPrazoDiasTeste(tarefa.tipo, tarefa.subTipo);
+        diasPrazo = prazoInfo.dias;
+        tipoPrazo = prazoInfo.tipo;
+        
+        if (tipoPrazo === 'corridos') {
+            dataPrazo = adicionarDiasCorridos(dataRecebimento, diasPrazo);
+        } else {
+            dataPrazo = adicionarDiasUteis(dataRecebimento, diasPrazo);
+        }
     }
     
     const hoje = new Date();
@@ -312,21 +343,29 @@ function calcularPrazoTarefa(tarefa) {
     // Verificar se está vencido
     const vencido = hoje > dataPrazo;
     
-    // Calcular dias restantes (considerando apenas dias úteis)
+    // Calcular dias restantes
     let diasRestantes = 0;
     if (!vencido) {
-        let dataTemp = new Date(hoje);
-        while (dataTemp < dataPrazo) {
-            dataTemp.setDate(dataTemp.getDate() + 1);
-            if (dataTemp.getDay() >= 1 && dataTemp.getDay() <= 5) {
-                diasRestantes++;
+        if (tipoPrazo === 'corridos') {
+            // Para dias corridos, calcular diferença simples
+            const diffTime = dataPrazo.getTime() - hoje.getTime();
+            diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        } else {
+            // Para dias úteis, contar apenas dias úteis
+            let dataTemp = new Date(hoje);
+            while (dataTemp < dataPrazo) {
+                dataTemp.setDate(dataTemp.getDate() + 1);
+                if (dataTemp.getDay() >= 1 && dataTemp.getDay() <= 5) {
+                    diasRestantes++;
+                }
             }
         }
     }
     
     return {
         dataPrazo,
-        diasUteis,
+        diasPrazo,
+        tipoPrazo,
         vencido,
         diasRestantes,
         dataRecebimento
@@ -408,9 +447,15 @@ async function adicionarTarefaModal() {
         }
 
         // Calcular o prazo baseado no tipo de teste
-        const diasUteisPrazo = obterPrazoDiasTeste(tipoInput.value, subTipo);
+        const prazoInfo = obterPrazoDiasTeste(tipoInput.value, subTipo);
         const dataRecebimento = new Date(); // Data atual
-        const dataPrazo = adicionarDiasUteis(dataRecebimento, diasUteisPrazo);
+        
+        let dataPrazo;
+        if (prazoInfo.tipo === 'corridos') {
+            dataPrazo = adicionarDiasCorridos(dataRecebimento, prazoInfo.dias);
+        } else {
+            dataPrazo = adicionarDiasUteis(dataRecebimento, prazoInfo.dias);
+        }
 
         const novaTarefa = {
             id: idInput.value.trim(),
@@ -436,7 +481,8 @@ async function adicionarTarefaModal() {
             status: "pendente",
             criadoEm: Timestamp.now(), // Apenas criadoEm, removendo dataRecebimento
             dataPrazo: Timestamp.fromDate(dataPrazo), // Nova data do prazo
-            diasUteisPrazo: diasUteisPrazo, // Armazenar dias úteis para referência
+            diasPrazo: prazoInfo.dias, // Armazenar dias para referência
+            tipoPrazo: prazoInfo.tipo, // Armazenar tipo de prazo (corridos ou úteis)
             criadoPor: user.uid,
             siglaResponsavel: await getSiglaUsuario(user) // Aguarda a busca da sigla
         };
@@ -762,6 +808,13 @@ function configurarMenuELISA() {
 async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
     mostrarLoading();
     try {
+        // Atualizar prazos de tarefas existentes silenciosamente
+        try {
+            await atualizarPrazosExistentes();
+        } catch (error) {
+            console.warn("Aviso ao atualizar prazos:", error);
+        }
+        
         const muralList = document.getElementById("mural-list");
         if (!muralList) {
             console.error("Elemento mural-list não encontrado");
@@ -903,12 +956,16 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                 prazoIcon = '<i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>';
             } else if (infoPrazo.diasRestantes <= 2) {
                 // Quando faltam 2 dias ou menos - texto amarelo
-                const diasText = infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis';
+                const diasText = infoPrazo.tipoPrazo === 'corridos' 
+                    ? (infoPrazo.diasRestantes === 1 ? 'dia corrido' : 'dias corridos')
+                    : (infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis');
                 prazoTexto = `<span class="text-warning fw-bold">Vence em ${infoPrazo.diasRestantes} ${diasText}</span> (${infoPrazo.dataPrazo.toLocaleDateString('pt-BR')})`;
                 prazoIcon = '<i class="bi bi-clock-fill text-warning me-1"></i>';
             } else {
                 // Prazo normal - texto verde
-                const diasText = infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis';
+                const diasText = infoPrazo.tipoPrazo === 'corridos' 
+                    ? (infoPrazo.diasRestantes === 1 ? 'dia corrido' : 'dias corridos')
+                    : (infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis');
                 prazoTexto = `<span class="text-success">Vence em ${infoPrazo.diasRestantes} ${diasText}</span> (${infoPrazo.dataPrazo.toLocaleDateString('pt-BR')})`;
                 prazoIcon = '<i class="bi bi-clock text-success me-1"></i>';
             }
@@ -1383,23 +1440,23 @@ window.mostrarDetalhes = async (id) => {
         // Formatar informações do prazo para exibição
         let prazoTexto = '';
         let prazoIcon = '';
-        let prazoClass = '';
         if (infoPrazo.vencido) {
             prazoTexto = `<span class="text-danger fw-bold">VENCIDO</span> (${infoPrazo.dataPrazo.toLocaleDateString('pt-BR')})`;
             prazoIcon = '<i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>';
-            prazoClass = 'bg-danger-subtle';
         } else if (infoPrazo.diasRestantes <= 2) {
             // Quando faltam 2 dias ou menos - texto amarelo
-            const diasText = infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis';
+            const diasText = infoPrazo.tipoPrazo === 'corridos' 
+                ? (infoPrazo.diasRestantes === 1 ? 'dia corrido' : 'dias corridos')
+                : (infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis');
             prazoTexto = `<span class="text-warning fw-bold">${infoPrazo.diasRestantes} ${diasText} restantes</span> (${infoPrazo.dataPrazo.toLocaleDateString('pt-BR')})`;
             prazoIcon = '<i class="bi bi-clock-fill text-warning me-2"></i>';
-            prazoClass = 'bg-warning-subtle';
         } else {
             // Prazo normal - texto verde
-            const diasText = infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis';
+            const diasText = infoPrazo.tipoPrazo === 'corridos' 
+                ? (infoPrazo.diasRestantes === 1 ? 'dia corrido' : 'dias corridos')
+                : (infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis');
             prazoTexto = `<span class="text-success fw-bold">${infoPrazo.diasRestantes} ${diasText} restantes</span> (${infoPrazo.dataPrazo.toLocaleDateString('pt-BR')})`;
             prazoIcon = '<i class="bi bi-clock text-success me-2"></i>';
-            prazoClass = 'bg-success-subtle';
         }
 
         // Remove modal antigo se existir
@@ -1485,7 +1542,7 @@ window.mostrarDetalhes = async (id) => {
                         </div>
                         <div class="row mb-2">
                             <div class="col-12">
-                                <div class="card ${prazoClass} border-0">
+                                <div class="card border-0">
                                     <div class="card-body p-3">
                                         <div class="d-flex align-items-center">
                                             ${prazoIcon}
