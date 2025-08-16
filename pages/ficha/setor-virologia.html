@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Requisição de Testes de Diagnóstico</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/pages/ficha-setor.css">
+  <link rel="stylesheet" href="../../assets/css/pages/ficha-diagnostico.css">
+</head>
+
+<body>
+  <div class="ficha-setor-container">
+    <!-- Botão de voltar -->
+    <div class="back-button-container">
+      <button onclick="window.location.href='../ficha-cadastro.html'" class="back-button">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </button>
+    </div>
+
+    <img src="../../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM" class="logo">
+
+    <h1 class="page-title">FICHA DE REQUISIÇÃO DE TESTES DE DIAGNÓSTICO</h1>
+    <p class="page-subtitle">Setor de Virologia</p>
+
+    <!-- Formulário da ficha -->
+    <div class="ficha-form-container">
+      <form id="ficha-form" class="ficha-form">
+        
+        <!-- Cabeçalho com Data e SV -->
+        <div class="form-header">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="data">DATA:</label>
+              <input type="text" id="data" name="data" placeholder="DD/MM/AAAA" pattern="\d{2}/\d{2}/\d{4}" required>
+            </div>
+            <div class="form-group">
+              <label for="sv">SV:</label>
+              <input type="text" id="sv" name="sv" placeholder="Número SV">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Médico Veterinário -->
+        <div class="form-section medico-section">
+          <h3 class="section-title">MÉDICO VETERINÁRIO</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medico-nome">NOME:</label>
+              <input type="text" id="medico-nome" name="medico-nome" required>
+            </div>
+            <div class="form-group">
+              <label for="medico-cpf">CPF:</label>
+              <input type="text" id="medico-cpf" name="medico-cpf" placeholder="000.000.000-00">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medico-email">E-MAIL:</label>
+              <input type="email" id="medico-email" name="medico-email">
+            </div>
+            <div class="form-group">
+              <label for="medico-telefone">TELEFONE:</label>
+              <input type="tel" id="medico-telefone" name="medico-telefone">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Proprietário ou Responsável -->
+        <div class="form-section proprietario-section">
+          <h3 class="section-title">PROPRIETÁRIO OU RESPONSÁVEL</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proprietario-nome">NOME:</label>
+              <input type="text" id="proprietario-nome" name="proprietario-nome" required>
+            </div>
+            <div class="form-group">
+              <label for="proprietario-cpf">CPF:</label>
+              <input type="text" id="proprietario-cpf" name="proprietario-cpf" placeholder="000.000.000-00">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proprietario-endereco">ENDEREÇO:</label>
+              <input type="text" id="proprietario-endereco" name="proprietario-endereco">
+            </div>
+            <div class="form-group">
+              <label for="proprietario-municipio">MUNICÍPIO:</label>
+              <input type="text" id="proprietario-municipio" name="proprietario-municipio">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Informações das Amostras -->
+        <div class="form-section amostras-section">
+          <h3 class="section-title">INFORMAÇÕES DAS AMOSTRAS</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="identificacao">IDENTIFICAÇÃO (NÚMERO/BRINCOS):</label>
+              <textarea id="identificacao" name="identificacao" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="historico-clinico">HISTÓRICO CLÍNICO:</label>
+              <textarea id="historico-clinico" name="historico-clinico" rows="3"></textarea>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="especie">ESPÉCIE:</label>
+              <input type="text" id="especie" name="especie">
+            </div>
+            <div class="form-group">
+              <label for="total-amostras">TOTAL DE AMOSTRAS:</label>
+              <input type="number" id="total-amostras" name="total-amostras" min="1">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="raca">RAÇA:</label>
+              <input type="text" id="raca" name="raca">
+            </div>
+            <div class="form-group vacinacao-group">
+              <label>VACINAÇÃO:</label>
+              <div class="checkbox-grid">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="vac-bhv1" name="vacinacao" value="bhv1">
+                  <label for="vac-bhv1">BHV-1 (IBR)</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="vac-bvdv" name="vacinacao" value="bvdv">
+                  <label for="vac-bvdv">BVDV</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="vac-raiva" name="vacinacao" value="raiva">
+                  <label for="vac-raiva">RAIVA</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="vac-brucelose" name="vacinacao" value="brucelose">
+                  <label for="vac-brucelose">BRUCELOSE</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="vac-leptospirose" name="vacinacao" value="leptospirose">
+                  <label for="vac-leptospirose">LEPTOSPIROSE</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="vac-herpes-equino" name="vacinacao" value="herpes-equino">
+                  <label for="vac-herpes-equino">HERPESVÍRUS EQUINO</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="vac-nao-sabe" name="vacinacao" value="nao-sabe">
+                  <label for="vac-nao-sabe">NÃO SABE</label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="vac-outros">OUTROS:</label>
+                <input type="text" id="vac-outros" name="vac-outros">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="data-coleta">DATA COLETA:</label>
+              <input type="date" id="data-coleta" name="data-coleta">
+            </div>
+            <div class="form-group">
+              <label for="tipo-amostra">TIPO DE AMOSTRA:</label>
+              <input type="text" id="tipo-amostra" name="tipo-amostra">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Pesquisa de Anticorpos - Sorologia -->
+        <div class="form-section testes-section">
+          <h3 class="section-title">PESQUISA DE ANTICORPOS - SOROLOGIA</h3>
+          
+          <div class="test-grid">
+            <div class="test-group">
+              <h4>SORONEUTRALIZAÇÃO (SN)</h4>
+              <div class="checkbox-item">
+                <input type="checkbox" id="sn-bvdv" name="sorologia" value="sn-bvdv">
+                <label for="sn-bvdv">VÍRUS DA DIARREIA VIRAL BOVINA (BVDV)</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="sn-bohv2" name="sorologia" value="sn-bohv2">
+                <label for="sn-bohv2">HERPESVÍRUS BOVINO (BOHV2) - RINOTRAQUEÍTE INFECCIOSA BOVINA (IBR)</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="sn-ehv1" name="sorologia" value="sn-ehv1">
+                <label for="sn-ehv1">HERPESVÍRUS EQUINO (EHV-1)</label>
+              </div>
+              <div class="form-group">
+                <label for="sn-outro">OUTRO:</label>
+                <input type="text" id="sn-outro" name="sn-outro">
+              </div>
+            </div>
+            
+            <div class="test-group">
+              <h4>ELISA</h4>
+              <div class="checkbox-item">
+                <input type="checkbox" id="elisa-leucose" name="sorologia" value="elisa-leucose">
+                <label for="elisa-leucose">LEUCOSE BOVINA</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Detecção de Antígenos -->
+        <div class="form-section antigenos-section">
+          <h3 class="section-title">DETECÇÃO DE ANTÍGENOS</h3>
+          
+          <div class="test-group">
+            <div class="checkbox-item">
+              <input type="checkbox" id="elisa-bvdv-pi" name="antigenos" value="elisa-bvdv-pi">
+              <label for="elisa-bvdv-pi">ELISA BVDV PI</label>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>TIPO DE AMOSTRA:</label>
+                <div class="checkbox-grid">
+                  <div class="checkbox-item">
+                    <input type="radio" id="amostra-soro" name="tipo-amostra-elisa" value="soro">
+                    <label for="amostra-soro">SORO</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="radio" id="amostra-sangue" name="tipo-amostra-elisa" value="sangue">
+                    <label for="amostra-sangue">SANGUE</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="radio" id="amostra-fragmento" name="tipo-amostra-elisa" value="fragmento">
+                    <label for="amostra-fragmento">FRAGMENTO DE ORELHA</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Detecção de Vírus/Isolamento em Cultivo Celular -->
+        <div class="form-section cultivo-section">
+          <h3 class="section-title">DETECÇÃO DE VÍRUS/ISOLAMENTO EM CULTIVO CELULAR</h3>
+          
+          <div class="test-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="cultivo-bvdv" name="cultivo" value="cultivo-bvdv">
+              <label for="cultivo-bvdv">VÍRUS DA DIARREIA VIRAL BOVINA (BVDV)</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="cultivo-bhv1" name="cultivo" value="cultivo-bhv1">
+              <label for="cultivo-bhv1">HERPESVÍRUS BOVINO TIPO 1 (BHV-1)</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="cultivo-bhv5" name="cultivo" value="cultivo-bhv5">
+              <label for="cultivo-bhv5">HERPESVÍRUS BOVINO TIPO 5 (BHV-5)</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="cultivo-ehv" name="cultivo" value="cultivo-ehv">
+              <label for="cultivo-ehv">HERPESVÍRUS EQUINO (EHV)</label>
+            </div>
+            <div class="form-group">
+              <label for="cultivo-outro">OUTRO:</label>
+              <input type="text" id="cultivo-outro" name="cultivo-outro">
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>TIPO DE AMOSTRA:</label>
+                <div class="checkbox-grid">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="cultivo-sangue-total" name="cultivo-amostra" value="sangue-total">
+                    <label for="cultivo-sangue-total">SANGUE TOTAL</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="cultivo-suabe-nasal" name="cultivo-amostra" value="suabe-nasal">
+                    <label for="cultivo-suabe-nasal">SUABE NASAL</label>
+                  </div>
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="cultivo-suabe-lesao" name="cultivo-amostra" value="suabe-lesao">
+                    <label for="cultivo-suabe-lesao">SUABE DA LESÃO</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Detecção de Vírus/Biologia Molecular -->
+        <div class="form-section molecular-section">
+          <h3 class="section-title">DETECÇÃO DE VÍRUS / BIOLOGIA MOLECULAR</h3>
+          
+          <div class="test-grid">
+            <div class="test-group">
+              <h4>PCR/RT-PCR</h4>
+              <div class="checkbox-grid">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="pcr-bvdv" name="molecular" value="pcr-bvdv">
+                  <label for="pcr-bvdv">BVDV</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="pcr-bhv1" name="molecular" value="pcr-bhv1">
+                  <label for="pcr-bhv1">BHV-1</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="pcr-bhv2" name="molecular" value="pcr-bhv2">
+                  <label for="pcr-bhv2">BHV-2</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="pcr-ectima" name="molecular" value="pcr-ectima">
+                  <label for="pcr-ectima">ECTIMA</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="pcr-ehv1" name="molecular" value="pcr-ehv1">
+                  <label for="pcr-ehv1">EHV-1</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="pcr-cinomose" name="molecular" value="pcr-cinomose">
+                  <label for="pcr-cinomose">CINOMOSE</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="pcr-parvovirus" name="molecular" value="pcr-parvovirus">
+                  <label for="pcr-parvovirus">PARVOVÍRUS</label>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label>TIPO DE AMOSTRA:</label>
+                  <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="mol-urina" name="molecular-amostra" value="urina">
+                      <label for="mol-urina">URINA</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="mol-liquido-vesicular" name="molecular-amostra" value="liquido-vesicular">
+                      <label for="mol-liquido-vesicular">LÍQUIDO VESICULAR</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="mol-secrecao" name="molecular-amostra" value="secrecao">
+                      <label for="mol-secrecao">SECREÇÃO</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="mol-sangue-total" name="molecular-amostra" value="sangue-total">
+                      <label for="mol-sangue-total">SANGUE TOTAL</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="mol-suabe-nasal" name="molecular-amostra" value="suabe-nasal">
+                      <label for="mol-suabe-nasal">SUABE NASAL</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="mol-suabe-lesao" name="molecular-amostra" value="suabe-lesao">
+                      <label for="mol-suabe-lesao">SUABE DA LESÃO</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="mol-liquor" name="molecular-amostra" value="liquor">
+                      <label for="mol-liquor">LÍQUOR</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="mol-outros">OUTROS:</label>
+                    <input type="text" id="mol-outros" name="mol-outros">
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="test-group">
+              <h4>LÍNGUA AZUL</h4>
+              <div class="checkbox-grid">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="la-encefalite" name="lingua-azul" value="encefalite">
+                  <label for="la-encefalite">ENCEFALITE EQUINA</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="la-vaccinia" name="lingua-azul" value="vaccinia">
+                  <label for="la-vaccinia">VACCÍNIA</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="la-rotavirus" name="lingua-azul" value="rotavirus">
+                  <label for="la-rotavirus">ROTAVÍRUS</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="la-coronavirus" name="lingua-azul" value="coronavirus">
+                  <label for="la-coronavirus">CORONAVÍRUS</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="la-brsv" name="lingua-azul" value="brsv">
+                  <label for="la-brsv">BRSV</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="la-ectima-contagioso" name="lingua-azul" value="ectima-contagioso">
+                  <label for="la-ectima-contagioso">ECTIMA CONTAGIOSO</label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="la-outro">OUTRO...</label>
+                <input type="text" id="la-outro" name="la-outro">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Imunofluorescência Raiva -->
+        <div class="form-section raiva-section">
+          <h3 class="section-title">IMUNOFLUORESCÊNCIA RAIVA</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>ESPÉCIE:</label>
+              <div class="checkbox-grid">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="raiva-bovino" name="raiva-especie" value="bovino">
+                  <label for="raiva-bovino">BOVINO</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="raiva-equino" name="raiva-especie" value="equino">
+                  <label for="raiva-equino">EQUINO</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="raiva-canino" name="raiva-especie" value="canino">
+                  <label for="raiva-canino">CANINO</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="raiva-felino" name="raiva-especie" value="felino">
+                  <label for="raiva-felino">FELINO</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="raiva-morcego" name="raiva-especie" value="morcego">
+                  <label for="raiva-morcego">MORCEGO</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Vacina Papilomatose -->
+        <div class="form-section papilomatose-section">
+          <h3 class="section-title">VACINA PAPILOMATOSE</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>ESPÉCIE:</label>
+              <div class="checkbox-grid">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="papil-bovino" name="papilomatose-especie" value="bovino">
+                  <label for="papil-bovino">BOVINO</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="papil-equino" name="papilomatose-especie" value="equino">
+                  <label for="papil-equino">EQUINO</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="papil-canino" name="papilomatose-especie" value="canino">
+                  <label for="papil-canino">CANINO</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="window.location.href='../ficha-cadastro.html'">
+            <i class="bi bi-arrow-left"></i> Cancelar
+          </button>
+          <button type="reset" id="limparFicha" class="btn-secondary">
+            <i class="bi bi-arrow-clockwise"></i> Limpar
+          </button>
+          <button type="button" id="visualizarImpressao" class="btn-info">
+            <i class="bi bi-eye"></i> Visualizar Impressão
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle com Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/js/pages/ficha-diagnostico.js"></script>
+</body>
+</html>

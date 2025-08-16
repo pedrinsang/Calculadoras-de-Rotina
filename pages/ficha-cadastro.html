@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Cadastro - Setor de Virologia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/pages/ficha-cadastro.css">
+</head>
+
+<body>
+  <div class="ficha-container">
+    <!-- Botão de voltar -->
+    <div class="back-button-container">
+      <button onclick="window.location.href='hub.html'" class="back-button">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </button>
+    </div>
+
+    <img src="../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM" class="logo">
+
+    <h1 class="page-title">Ficha de Cadastro</h1>
+    <p class="page-subtitle">Selecione o setor</p>
+
+    <!-- Botões dos setores -->
+    <div class="setores-buttons">
+      <a href="ficha/labac.html" class="setor-button">
+        <i class="bi bi-building"></i>
+        <span>LABAC</span>
+      </a>
+      
+      <a href="ficha/ladopar.html" class="setor-button">
+        <i class="bi bi-building"></i>
+        <span>LADOPAR</span>
+      </a>
+      
+      <a href="ficha/setor-virologia.html" class="setor-button">
+        <i class="bi bi-building"></i>
+        <span>Setor de Virologia</span>
+      </a>
+    </div>
+
+    
+  </div>
+
+  <!-- Bootstrap JS Bundle com Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../assets/js/pages/ficha-cadastro.js"></script>
+</body>
+</html>
