@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LADOPAR - Ficha de Encaminhamento de Amostras</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/pages/ficha-setor.css">
+  <link rel="stylesheet" href="../../assets/css/pages/ficha-diagnostico.css">
+</head>
+
+<body>
+  <div class="ficha-setor-container">
+    <!-- Botão de voltar -->
+    <div class="back-button-container">
+      <button onclick="window.location.href='../ficha-cadastro.html'" class="back-button">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </button>
+    </div>
+
+    <img src="../../assets/images/logo-LADOPAR.png" alt="Logo LADOPAR UFSM" class="logo">
+
+    <h1 class="page-title">LADOPAR - LABORATÓRIO DE DOENÇAS PARASITÁRIAS</h1>
+    <p class="page-subtitle">Ficha de Requisição de Testes de Diagnóstico</p>
+
+    <!-- Formulário da ficha -->
+    <div class="ficha-form-container">
+      <form id="ficha-form" class="ficha-form">
+        
+        <!-- Cabeçalho com Data, Hora e LDP -->
+        <div class="form-header">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="data">DATA:</label>
+              <input type="date" id="data" name="data">
+            </div>
+            <div class="form-group">
+              <label for="hora">HORA:</label>
+              <input type="time" id="hora" name="hora">
+            </div>
+            <div class="form-group">
+              <label for="ldp">LDP:</label>
+              <input type="text" id="ldp" name="ldp">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Médico Veterinário -->
+        <div class="form-section medico-section">
+          <h3 class="section-title">MÉDICO VETERINÁRIO</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medico-nome">NOME:</label>
+              <input type="text" id="medico-nome" name="medico-nome">
+            </div>
+            <div class="form-group">
+              <label for="medico-crmv">CRMV:</label>
+              <input type="text" id="medico-crmv" name="medico-crmv">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medico-email">E-MAIL:</label>
+              <input type="email" id="medico-email" name="medico-email">
+            </div>
+            <div class="form-group">
+              <label for="medico-telefone">TELEFONE:</label>
+              <input type="tel" id="medico-telefone" name="medico-telefone">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medico-cpf">CPF:</label>
+              <input type="text" id="medico-cpf" name="medico-cpf">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Proprietário ou Responsável -->
+        <div class="form-section proprietario-section">
+          <h3 class="section-title">PROPRIETÁRIO OU RESPONSÁVEL</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proprietario-nome">NOME:</label>
+              <input type="text" id="proprietario-nome" name="proprietario-nome">
+            </div>
+            <div class="form-group">
+              <label for="proprietario-telefone">TELEFONE:</label>
+              <input type="tel" id="proprietario-telefone" name="proprietario-telefone">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proprietario-email">E-MAIL:</label>
+              <input type="email" id="proprietario-email" name="proprietario-email">
+            </div>
+            <div class="form-group">
+              <label for="proprietario-municipio">MUNICÍPIO:</label>
+              <input type="text" id="proprietario-municipio" name="proprietario-municipio">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proprietario-cpf">CPF:</label>
+              <input type="text" id="proprietario-cpf" name="proprietario-cpf">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Informações das Amostras -->
+        <div class="form-section amostras-info-section">
+          <h3 class="section-title">INFORMAÇÕES DAS AMOSTRAS</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="amostra-especie">ESPÉCIE:</label>
+              <input type="text" id="amostra-especie" name="amostra-especie">
+            </div>
+            <div class="form-group">
+              <label for="amostra-nome">NOME:</label>
+              <input type="text" id="amostra-nome" name="amostra-nome">
+            </div>
+            <div class="form-group">
+              <label for="amostra-idade">IDADE:</label>
+              <input type="text" id="amostra-idade" name="amostra-idade">
+            </div>
+            <div class="form-group">
+              <label for="amostra-sexo">SEXO:</label>
+              <input type="text" id="amostra-sexo" name="amostra-sexo">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="amostra-raca">RAÇA:</label>
+              <input type="text" id="amostra-raca" name="amostra-raca">
+            </div>
+            <div class="form-group">
+              <label for="amostra-tipo">TIPO DE AMOSTRA:</label>
+              <input type="text" id="amostra-tipo" name="amostra-tipo">
+            </div>
+            <div class="form-group">
+              <label for="amostra-total">TOTAL DE AMOSTRAS:</label>
+              <input type="number" id="amostra-total" name="amostra-total" min="1">
+            </div>
+            <div class="form-group">
+              <label for="data-coleta">DATA DA COLETA:</label>
+              <input type="date" id="data-coleta" name="data-coleta">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="historico-clinico">HISTÓRICO CLÍNICO:</label>
+              <textarea id="historico-clinico" name="historico-clinico" rows="4"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Detecção de Anticorpos - Sorologia -->
+        <div class="form-section sorologia-section">
+          <h3 class="section-title">DETECÇÃO DE ANTICORPOS – SOROLOGIA</h3>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="leishmania-spp" name="sorologia" value="Leishmania spp.">
+              <label for="leishmania-spp">Leishmania spp.</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="neospora-spp" name="sorologia" value="Neospora spp.">
+              <label for="neospora-spp">Neospora spp.</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="toxoplasma-gondii" name="sorologia" value="Toxoplasma gondii">
+              <label for="toxoplasma-gondii">Toxoplasma gondii</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="sarcocystis-spp" name="sorologia" value="Sarcocystis spp.">
+              <label for="sarcocystis-spp">Sarcocystis spp.</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="trypanosoma-spp" name="sorologia" value="Trypanosoma spp.">
+              <label for="trypanosoma-spp">Trypanosoma spp.</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="rifi-simples" name="sorologia" value="RIFI simples">
+              <label for="rifi-simples">RIFI simples</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="rifi-titulacao" name="sorologia" value="RIFI titulação">
+              <label for="rifi-titulacao">RIFI titulação</label>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Amostra necessária: Soro (tubo vermelho)</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Coproparasitológicos -->
+        <div class="form-section coproparasitologicos-section">
+          <h3 class="section-title">COPROPARASITOLÓGICOS</h3>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="opg" name="coproparasitologicos" value="OPG">
+              <label for="opg">OPG</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="centrifugo-flutuacao" name="coproparasitologicos" value="Centrífugo flutuação (Faust / Willis Mollay)">
+              <label for="centrifugo-flutuacao">Centrífugo flutuação (Faust / Willis Mollay)</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="sedimentacao" name="coproparasitologicos" value="Sedimentação (Tremátoda e Cestoda)">
+              <label for="sedimentacao">Sedimentação (Tremátoda e Cestoda)</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="coprocultura" name="coproparasitologicos" value="Coprocultura">
+              <label for="coprocultura">Coprocultura</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="baermann" name="coproparasitologicos" value="Baermann (parasitas pulmonares)">
+              <label for="baermann">Baermann (parasitas pulmonares)</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="pesquisa-giardia" name="coproparasitologicos" value="Pesquisa de Giardia sp. (3 coletas consecutivas em dias alternados)">
+              <label for="pesquisa-giardia">Pesquisa de Giardia sp. (3 coletas consecutivas em dias alternados)</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="silvestres-aves" name="coproparasitologicos" value="Silvestres e aves">
+              <label for="silvestres-aves">Silvestres e aves</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="pesquisa-cryptosporidium" name="coproparasitologicos" value="Pesquisa de Cryptosporidium spp.">
+              <label for="pesquisa-cryptosporidium">Pesquisa de Cryptosporidium spp.</label>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Amostra necessária: Fezes frescas e mantidas sob refrigeração por até 48h.</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Pesquisa Direta -->
+        <div class="form-section pesquisa-direta-section">
+          <h3 class="section-title">PESQUISA DIRETA</h3>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="pesquisa-hemoparasitas" name="pesquisa-direta" value="Pesquisa de Hemoparasitas">
+              <label for="pesquisa-hemoparasitas">Pesquisa de Hemoparasitas</label>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Amostra necessária: Sangue total (tubo roxo) mantidas sob refrigeração por até 24h.</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Biocarrapaticidograma -->
+        <div class="form-section biocarrapaticidograma-section">
+          <h3 class="section-title">BIOCARRAPATICIDOGRAMA</h3>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="amitraz" name="biocarrapaticidograma" value="Amitraz">
+              <label for="amitraz">Aspersin</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="carbazol" name="biocarrapaticidograma" value="Carbazol">
+              <label for="carbazol">Carbeson</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="carvet" name="biocarrapaticidograma" value="Carvet">
+              <label for="carvet">Carvet</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="colosso" name="biocarrapaticidograma" value="Colosso">
+              <label for="colosso">Colosso</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="colosso-fc30" name="biocarrapaticidograma" value="Colosso FC30">
+              <label for="colosso-fc30">Colosso FC30</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="couro-limpo" name="biocarrapaticidograma" value="Couro Limpo">
+              <label for="couro-limpo">Couro Limpo</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="cyperclor-plus" name="biocarrapaticidograma" value="Cyperclor Plus">
+              <label for="cyperclor-plus">Cyperclor Plus</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="cypermil" name="biocarrapaticidograma" value="Cypermil">
+              <label for="cypermil">Cypermeit</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="ectobat" name="biocarrapaticidograma" value="Ectobat">
+              <label for="ectobat">Ectobat 80</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="ectofós" name="biocarrapaticidograma" value="Ectofós">
+              <label for="ectofós">Ectofós</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="flytton-ec50" name="biocarrapaticidograma" value="Flytton EC50">
+              <label for="flytton-ec50">Flytton EC50</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="ibatox" name="biocarrapaticidograma" value="Ibatox">
+              <label for="ibatox">Ibatox</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="nokalt" name="biocarrapaticidograma" value="Nokalt">
+              <label for="nokalt">Nokalt</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="potenty" name="biocarrapaticidograma" value="Potenty">
+              <label for="potenty">Potenty</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="supokill-50" name="biocarrapaticidograma" value="Supokill 50">
+              <label for="supokill-50">Supokill 50</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="texvet-max" name="biocarrapaticidograma" value="TexVet Max">
+              <label for="texvet-max">TexVet Max</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="triatox" name="biocarrapaticidograma" value="Triatox">
+              <label for="triatox">Triatox</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="zion" name="biocarrapaticidograma" value="Zion">
+              <label for="zion">Zion</label>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Amostra necessária: Teleóginas ingurgitadas e mantidas sob refrigeração por até 48h (mínimo 150 teleóginas).</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Biologia Molecular - PCR -->
+        <div class="form-section pcr-section">
+          <h3 class="section-title">BIOLOGIA MOLECULAR - PCR</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Agente etiológico: _____________________ Material recomendado: Sangue total (tubo roxo)</label>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="babesia-bovis" name="pcr" value="Babesia bovis (bovinos)">
+              <label for="babesia-bovis">Babesia bovis (bovinos)</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), líquor, encéfalo, tecidos fetais, baço e fígado.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="babesia-bigemina" name="pcr" value="Babesia bigemina (bovinos)">
+              <label for="babesia-bigemina">Babesia bigemina (bovinos)</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), líquor, encéfalo, tecidos fetais, baço e fígado.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="cryptosporidium-spp" name="pcr" value="Cryptosporidium spp.">
+              <label for="cryptosporidium-spp">Cryptosporidium spp.</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Fezes, suabe retal, fragmento intestinal ou água.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="giardia-duodenalis" name="pcr" value="Giardia duodenalis">
+              <label for="giardia-duodenalis">Giardia duodenalis</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Fezes, suabe retal, fragmento intestinal ou água.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="leishmania-spp-pcr" name="pcr" value="Leishmania spp.">
+              <label for="leishmania-spp-pcr">Leishmania spp.</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), aspirado de linfonodo, medula óssea, baço, pele (com lesão), linfonodo e fígado.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="neospora-spp-pcr" name="pcr" value="Neospora spp.">
+              <label for="neospora-spp-pcr">Neospora spp.</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), placenta, líquidos fetais, encéfalo, coração e fígado.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="rickettsia-spp" name="pcr" value="Rickettsia spp.">
+              <label for="rickettsia-spp">Rickettsia spp.</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo).</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="sarcocystis-spp-pcr" name="pcr" value="Sarcocystis spp.">
+              <label for="sarcocystis-spp-pcr">Sarcocystis spp.</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), músculo esquelético, líquor, encéfalo e coração.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="toxoplasma-gondii-pcr" name="pcr" value="Toxoplasma gondii">
+              <label for="toxoplasma-gondii-pcr">Toxoplasma gondii</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), placenta, líquidos fetais, encéfalo, coração e fígado ou água.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="trypanosoma-spp-pcr" name="pcr" value="Trypanosoma spp.">
+              <label for="trypanosoma-spp-pcr">Trypanosoma spp.</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), encéfalo, coração, fígado e baço.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="trypanosoma-evansi" name="pcr" value="Trypanosoma evansi">
+              <label for="trypanosoma-evansi">Trypanosoma evansi</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), encéfalo, coração, fígado e baço.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="trypanosoma-cruzi" name="pcr" value="Trypanosoma cruzi">
+              <label for="trypanosoma-cruzi">Trypanosoma cruzi</label>
+            </div>
+            <div class="form-group pcr-description">
+              <span>Sangue total (tubo roxo), encéfalo, coração, fígado e baço.</span>
+            </div>
+          </div>
+          
+          <div class="checkbox-grid">
+            <div class="checkbox-item">
+              <input type="checkbox" id="nested-pcr" name="pcr" value="Nested-PCR e restrição enzimática para detecção simultânea de Neospora caninum/Toxoplasma gondii e Sarcocystis spp.">
+              <label for="nested-pcr">Nested-PCR e restrição enzimática para detecção simultânea de Neospora caninum/Toxoplasma gondii e Sarcocystis spp.</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="window.location.href='../ficha-cadastro.html'">
+            <i class="bi bi-arrow-left"></i> Cancelar
+          </button>
+          <button type="reset" id="limparFicha" class="btn-secondary">
+            <i class="bi bi-arrow-clockwise"></i> Limpar
+          </button>
+          <button type="button" id="visualizarImpressaoLadopar" class="btn-info">
+            <i class="bi bi-eye"></i> Visualizar Impressão
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle com Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../../assets/js/pages/ficha/ladopar.js"></script>
+</body>
+</html>

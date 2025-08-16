@@ -1,0 +1,365 @@
+/* Estilos para as páginas dos setores de ficha */
+
+/* Body específico para páginas dos setores */
+body {
+  background-color: #c9e6c9; /* Fundo verde claro como no hub */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0.75rem;
+}
+
+/* Container principal com fundo branco */
+.ficha-setor-container {
+  background-color: white;
+  max-width: 700px;
+  width: 100%;
+  padding: 2.5rem;
+  text-align: center;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  position: relative;
+}
+
+.back-button-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.back-button {
+  background: var(--verde-btn);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.back-button:hover {
+  background: var(--verde-btn-hover);
+  transform: translateY(-2px);
+}
+
+.page-title {
+  color: var(--verde-escuro);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 20px 0 10px 0;
+  text-align: center;
+}
+
+.page-subtitle {
+  color: var(--verde-medio);
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Estilos do formulário */
+.ficha-form-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.ficha-form {
+  background: white;
+  padding: 0;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.section-title {
+  color: var(--verde-escuro);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--verde-claro);
+  padding-bottom: 0.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: var(--verde-escuro);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--verde-btn);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  transform: scale(1.2);
+}
+
+.checkbox-item label {
+  margin: 0;
+  cursor: pointer;
+  color: var(--verde-escuro);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-primary {
+  background-color: var(--verde-btn);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--verde-btn-hover);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--verde-medio);
+  border: 1px solid var(--verde-medio);
+  border-radius: 12px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background-color: var(--verde-medio);
+  color: white;
+}
+
+.tipo-ficha-button:hover small {
+  opacity: 1;
+}
+
+/* Informação do usuário */
+.user-info {
+  display: block !important;
+  margin-top: 2rem !important;
+  visibility: visible !important;
+}
+
+.user-name {
+  margin-bottom: 0.75rem;
+  display: block;
+  font-weight: 600;
+  color: var(--verde-medio);
+  font-size: 1.1rem;
+}
+
+.user-name:before {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.user-actions {
+  display: flex !important;
+  justify-content: center;
+  gap: 1rem;
+  align-items: center;
+}
+
+.admin-btn {
+  background-color: var(--verde-btn);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.admin-btn:hover {
+  background-color: var(--verde-btn-hover);
+  transform: translateY(-2px);
+}
+
+.gear-button {
+  background-color: transparent;
+  border: 1px solid var(--verde-medio);
+  border-radius: 50px;
+  padding: 0.6rem 1.2rem;
+  color: var(--verde-medio);
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.gear-button:hover {
+  background-color: var(--verde-medio);
+  color: white;
+}
+
+.logout-button {
+  background-color: transparent;
+  border: 1px solid red;
+  border-radius: 50px;
+  padding: 0.6rem 1.8rem;
+  color: red;
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logout-button:hover {
+  background-color: red;
+  color: white;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 768px) {
+  .tipos-ficha-buttons {
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .tipos-ficha-buttons {
+    flex-direction: row;
+    justify-content: center;
+    max-width: 800px;
+    gap: 2rem;
+  }
+  
+  .tipo-ficha-button {
+    flex: 1;
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ficha-setor-container {
+    padding: 1.5rem;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .form-section {
+    padding: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
+  }
+  
+  .user-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
