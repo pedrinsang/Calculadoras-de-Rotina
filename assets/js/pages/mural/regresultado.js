@@ -4,8 +4,8 @@ import {
     getDoc,
     updateDoc,
     Timestamp
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { db } from "../../main.js";
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { db } from "../../firebase.js";
 
 // Função para registrar resultado SN
 async function registrarResultadoSN(id) {

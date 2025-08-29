@@ -86,8 +86,8 @@ Para obter uma cópia local funcionando, siga estas etapas.
     ```
 
 2.  **Configuração do Firebase:**
-    Este projeto utiliza Firebase para autenticação e banco de dados. As configurações do Firebase estão presentes nos seguintes arquivos:
-    -   `assets/js/main.js`
+    Este projeto utiliza Firebase para autenticação e banco de dados. A inicialização do Firebase foi centralizada em `assets/js/firebase.js` (SDK v11), e os módulos de página importam `app`, `auth` e/ou `db` a partir desse arquivo:
+    -   `assets/js/firebase.js` (ponto único de inicialização)
     -   `assets/js/pages/index.js`
     -   `assets/js/pages/conta.js`
     -   `assets/js/pages/hub.js`

@@ -1,6 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { 
-  getAuth, 
   signOut, 
   sendPasswordResetEmail,
   onAuthStateChanged,
@@ -9,28 +7,14 @@ import {
   EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { 
-  getFirestore, 
   doc, 
   getDoc, 
   updateDoc,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { app, auth, db } from "../firebase.js";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-  authDomain: "hub-de-calculadoras.firebaseapp.com",
-  projectId: "hub-de-calculadoras",
-  storageBucket: "hub-de-calculadoras.appspot.com",
-  messagingSenderId: "203883856586",
-  appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-  measurementId: "G-7H314CT9SH"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Firebase já inicializado via módulo compartilhado
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log("Página conta.html carregada");
@@ -48,18 +32,28 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Usuário autenticado, agora verificar dados armazenados
-    const usuarioStorage = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
-    
-    if (!usuarioStorage.nome) {
-      console.log("Dados do usuário não encontrados no storage");
-      window.location.href = "../index.html";
-      return;
+    // Usuário autenticado: reconstruir dados se não estiverem no storage
+    let usuarioStorage = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
+    if (!usuarioStorage?.nome) {
+      try {
+        const snap = await getDoc(doc(db, "usuarios", user.uid));
+        if (snap.exists()) {
+          usuarioStorage = { uid: user.uid, ...snap.data() };
+          const manter = localStorage.getItem("manterConectado") === "true";
+          if (manter) {
+            localStorage.setItem("usuario", JSON.stringify(usuarioStorage));
+          } else {
+            sessionStorage.setItem("usuario", JSON.stringify(usuarioStorage));
+          }
+        }
+      } catch (e) {
+        console.warn("Não foi possível reconstruir usuário do Firestore:", e);
+      }
     }
     
     try {
       console.log("Carregando dados do usuário do Firestore");
-      const userDoc = await getDoc(doc(db, "usuarios", usuarioStorage.uid));
+      const userDoc = await getDoc(doc(db, "usuarios", user.uid));
       
       if (userDoc.exists()) {
         const userData = userDoc.data();

@@ -1,6 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
@@ -13,7 +11,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
 import {
-  getFirestore,
   collection,
   addDoc,
   getDocs,
@@ -24,20 +21,10 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-  authDomain: "hub-de-calculadoras.firebaseapp.com",
-  projectId: "hub-de-calculadoras",
-  storageBucket: "hub-de-calculadoras.appspot.com",
-  messagingSenderId: "203883856586",
-  appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-  measurementId: "G-7H314CT9SH"
-};
+// Firebase centralizado
+import { app, auth, db } from "../firebase.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// app, auth e db são importados do módulo compartilhado
 
 // Configurar persistência com base na preferência armazenada
 (async () => {
@@ -498,13 +485,8 @@ function checkAuthState() {
     const forceLogin = new URLSearchParams(window.location.search).get('logout') === 'true';
     
     if (user && !forceLogin) {
-      // Verificar se também temos os dados do usuário armazenados
-      const storedUser = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
-      
-      if (storedUser.nome) {
-        // Só redirecionamos se ambas as condições forem atendidas
-        window.location.href = "pages/hub.html";
-      }
+      // Se usuário já está autenticado, ir direto ao hub; o hub reconstruirá os dados se faltarem
+      window.location.href = "pages/hub.html";
     }
   });
 }
@@ -523,29 +505,44 @@ function setupServiceWorker() {
       navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then(function(registration) {
           console.log('SW registrado com sucesso:', registration.scope);
-          
+
+          // Se houver um SW em espera, perguntar ao usuário
+          if (registration.waiting) {
+            promptUpdate(registration);
+          }
+
+          // Detecta novas atualizações entrando em waiting
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
+            if (!newWorker) return;
             newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'activated') {
-                if(confirm('Nova versão disponível! Recarregar agora?')) {
-                  window.location.reload();
-                }
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Novo SW instalado e em espera
+                promptUpdate(registration);
               }
             });
+          });
+
+          // Quando o SW controlador muda após skipWaiting, recarrega uma vez
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
           });
         })
         .catch(function(error) {
           console.error('Falha no registro do SW:', error);
         });
     });
-    
-    // Ouvir mensagens do Service Worker
-    navigator.serviceWorker.addEventListener('message', event => {
-      if (event.data.type === 'APP_UPDATE') {
-        console.log('Nova versão:', event.data.version);
-      }
-    });
+  }
+}
+
+function promptUpdate(registration) {
+  const shouldUpdate = confirm('Nova versão disponível. Deseja atualizar agora?');
+  if (shouldUpdate && registration.waiting) {
+    // Pede para ativar imediatamente
+    registration.waiting.postMessage('FORCE_UPDATE');
   }
 }
 

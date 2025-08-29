@@ -1,20 +1,13 @@
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { db } from "../firebase.js";
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[SISTEMA] Página carregada, inicializando sistema...');
     loadSavedData();
     updateTitleDisplay();
     setCurrentDate(); // Preencher data atual
-    // generateSVNumber() removido para evitar autocomplete automático do SV
-    // Garantir que o campo SV fique vazio e editável
-    try {
-        const svEl = document.getElementById('sv');
-        if (svEl) {
-            svEl.value = '';
-            svEl.removeAttribute && svEl.removeAttribute('disabled');
-            svEl.readOnly = false;
-        }
-    } catch (e) {
-        console.warn('[SV] Não foi possível limpar o campo SV na inicialização:', e);
-    }
+    // Sugerir automaticamente o próximo SV disponível (permite edição manual se necessário)
+    generateSVNumber();
     
     // Event listeners
     setupEventListeners();
@@ -116,78 +109,46 @@ function setCurrentDate() {
     }
 }
 
-// Função para gerar número SV (agora consulta o mural no Firestore para obter maior SV do ano e preencher o próximo)
+// Helper: obter maior SV do ano via Firestore
+async function obterMaiorSVDoAno(yearSuffix) {
+    try {
+        const tarefasSnapshot = await getDocs(collection(db, 'tarefas'));
+        let maiorNumero = 0;
+        tarefasSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const id = data.id || data.identificacao || data.identificação || '';
+            const match = (id || '').toString().match(/SV\s*(\d+)\/(\d{2})/i);
+            if (match && match[2] === yearSuffix) {
+                const num = parseInt(match[1], 10);
+                if (!isNaN(num) && num > maiorNumero) maiorNumero = num;
+            }
+        });
+        return maiorNumero > 0 ? maiorNumero : null;
+    } catch (err) {
+        if (err && err.code === 'permission-denied') {
+            console.warn('[SV] Sem permissão para ler mural (permission-denied). Usando fallback localStorage.');
+        } else {
+            console.warn('[SV] Erro ao ler tarefas do mural:', err);
+        }
+        return null;
+    }
+}
+
+// Função para gerar número SV (consulta o mural quando possível; fallback em localStorage)
 async function generateSVNumber() {
     const currentYear = new Date().getFullYear();
     const yearSuffix = currentYear.toString().slice(-2); // Últimos 2 dígitos do ano
     const svElement = document.getElementById('sv');
 
     // Primeiro, tentar obter o maior SV existente no mural (Firestore)
-    try {
-        // Inicializar Firebase dinamicamente somente se disponível via SDK
-        let firebaseApp, db;
-        if (typeof window.firebase === 'undefined') {
-            // Carrega SDKs diretamente (compatível com outros módulos já no projeto)
-            // Nota: se a página já inicializou Firebase por outro script, getApps/getApp podem ser usados; aqui fazemos inicialização leve
-            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js');
-            const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js');
-
-            const firebaseConfig = {
-                apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-                authDomain: "hub-de-calculadoras.firebaseapp.com",
-                projectId: "hub-de-calculadoras",
-                storageBucket: "hub-de-calculadoras.appspot.com",
-                messagingSenderId: "203883856586",
-                appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-                measurementId: "G-7H314CT9SH"
-            };
-
-            try {
-                firebaseApp = initializeApp(firebaseConfig);
-                db = getFirestore(firebaseApp);
-            } catch (err) {
-                console.warn('[SV] Falha ao inicializar Firebase no contexto atual:', err);
-                db = null;
-            }
-
-            if (db) {
-                // Buscar todas as tarefas (pode ser otimizado quando necessário)
-                try {
-                    const tarefasSnapshot = await getDocs(collection(db, 'tarefas'));
-                    let maiorNumero = 0;
-
-                    tarefasSnapshot.forEach(doc => {
-                        const data = doc.data();
-                        const id = data.id || data.identificacao || data.identificação || '';
-                        const match = (id || '').toString().match(/SV\s*(\d+)\/(\d{2})/i);
-                        if (match && match[2] === yearSuffix) {
-                            const num = parseInt(match[1], 10);
-                            if (!isNaN(num) && num > maiorNumero) maiorNumero = num;
-                        }
-                    });
-
-                    const proximoNumero = maiorNumero > 0 ? maiorNumero + 1 : null;
-                    if (proximoNumero) {
-                        const numeroFormatado = proximoNumero.toString().padStart(2, '0');
-                        if (svElement) svElement.value = `SV ${numeroFormatado}/${yearSuffix}`;
-                        console.log(`[SV] Próximo número calculado a partir do mural: SV ${numeroFormatado}/${yearSuffix}`);
-                        // Atualiza chave local para consistência
-                        localStorage.setItem(`svNumber_${currentYear}`, proximoNumero);
-                        return;
-                    }
-                } catch (err) {
-                    // Se for erro de permissão, avisar de forma amigável e seguir fallback sem exibir stack
-                    if (err && err.code === 'permission-denied') {
-                        console.warn('[SV] Sem permissão para ler mural (permission-denied). Usando fallback localStorage.');
-                    } else {
-                        console.warn('[SV] Erro ao ler tarefas do mural:', err);
-                    }
-                    // segue para fallback
-                }
-            }
-        }
-    } catch (err) {
-        console.warn('[SV] Falha ao tentar usar Firestore para SV:', err);
+    const maior = await obterMaiorSVDoAno(yearSuffix);
+    if (maior && Number.isInteger(maior)) {
+        const proximoNumero = maior + 1;
+        const numeroFormatado = proximoNumero.toString().padStart(2, '0');
+        if (svElement) svElement.value = `SV ${numeroFormatado}/${yearSuffix}`;
+        console.log(`[SV] Próximo número via mural: SV ${numeroFormatado}/${yearSuffix}`);
+        localStorage.setItem(`svNumber_${currentYear}`, proximoNumero);
+        return;
     }
 
     // Fallback: usar localStorage (comportamento anterior)
@@ -210,61 +171,16 @@ async function getNextSVNumber() {
     const svKey = `svNumber_${currentYear}`;
 
     // Primeiro tentar sincronizar com mural para evitar colisões
-    try {
-        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js');
-        const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js');
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-            authDomain: "hub-de-calculadoras.firebaseapp.com",
-            projectId: "hub-de-calculadoras",
-            storageBucket: "hub-de-calculadoras.appspot.com",
-            messagingSenderId: "203883856586",
-            appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-            measurementId: "G-7H314CT9SH"
-        };
-
-        let db = null;
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-        } catch (err) {
-            console.warn('[SV] Não foi possível inicializar Firebase ao obter próximo SV:', err);
-        }
-
-        if (db) {
-            try {
-                const tarefasSnapshot = await getDocs(collection(db, 'tarefas'));
-                let maiorNumero = 0;
-                tarefasSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    const id = data.id || data.identificacao || data.identificação || '';
-                    const match = (id || '').toString().match(/SV\s*(\d+)\/(\d{2})/i);
-                    if (match && match[2] === yearSuffix) {
-                        const num = parseInt(match[1], 10);
-                        if (!isNaN(num) && num > maiorNumero) maiorNumero = num;
-                    }
-                });
-
-                const proximo = maiorNumero > 0 ? maiorNumero + 1 : 1;
-                localStorage.setItem(svKey, proximo);
-                const numeroFormatado = proximo.toString().padStart(2, '0');
-                const svString = `SV ${numeroFormatado}/${yearSuffix}`;
-                const svElement = document.getElementById('sv');
-                if (svElement) svElement.value = svString;
-                console.log(`[SV] getNextSVNumber reservou: ${svString}`);
-                return svString;
-            } catch (err) {
-                if (err && err.code === 'permission-denied') {
-                    console.warn('[SV] Sem permissão para ler mural ao reservar próximo SV (permission-denied). Usando fallback localStorage.');
-                } else {
-                    console.warn('[SV] Erro ao buscar tarefas para getNextSVNumber:', err);
-                }
-                // seguir para fallback
-            }
-        }
-    } catch (err) {
-        console.warn('[SV] getNextSVNumber falhou ao tentar usar Firestore:', err);
+    const maior = await obterMaiorSVDoAno(yearSuffix);
+    if (maior && Number.isInteger(maior)) {
+        const proximo = maior + 1;
+        localStorage.setItem(svKey, proximo);
+        const numeroFormatado = proximo.toString().padStart(2, '0');
+        const svString = `SV ${numeroFormatado}/${yearSuffix}`;
+        const svElement = document.getElementById('sv');
+        if (svElement) svElement.value = svString;
+        console.log(`[SV] getNextSVNumber via mural reservou: ${svString}`);
+        return svString;
     }
 
     // Fallback: incrementar localStorage
@@ -397,10 +313,10 @@ function saveForm() {
             modal.remove();
         });
 
-        document.getElementById('ficha-review-confirm').addEventListener('click', () => {
+    document.getElementById('ficha-review-confirm').addEventListener('click', async () => {
             try {
                 // Reserve next SV and use it as identification
-                const svNumber = getNextSVNumber(); // increments and returns string
+        const svNumber = await getNextSVNumber(); // increments and returns string
 
                 // Enfileirar ficha para o mural; include the reserved SV as id
                 const muralQueue = JSON.parse(localStorage.getItem('muralQueue') || '[]');
@@ -1231,7 +1147,7 @@ function formatPhone(value){
     }
     return value;
 }
-
+    
 // helper to format CPF progressively while typing (raw digits in -> formatted)
 function formatCPFInput(digits){
     if(!digits) return '';

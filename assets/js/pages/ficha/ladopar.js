@@ -1,39 +1,17 @@
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getFirestore, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { app, auth, db } from "../../../js/firebase.js";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-  authDomain: "hub-de-calculadoras.firebaseapp.com",
-  projectId: "hub-de-calculadoras",
-  storageBucket: "hub-de-calculadoras.appspot.com",
-  messagingSenderId: "203883856586",
-  appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-  measurementId: "G-7H314CT9SH"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Firebase via módulo compartilhado
 
 document.addEventListener('DOMContentLoaded', function () {
   console.log("Página LADOPAR carregada");
   
-  // Verificar se usuário está autenticado
+  // Render otimista similar às outras páginas; onAuthStateChanged fará a validação
   const usuario = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
-  
-  if (!usuario.nome) {
-    window.location.href = "../../index.html";
-  } else {
-    // Verificar se o elemento existe antes de definir textContent
+  if (usuario?.nome) {
     const userNameElement = document.querySelector('.user-name');
-    if (userNameElement) {
-      userNameElement.textContent = usuario.nome;
-    }
-    
-    // Verificar se usuário é admin
+    if (userNameElement) userNameElement.textContent = usuario.nome;
     if (usuario.role === 'admin') {
       const adminButton = document.getElementById('admin-button');
       if (adminButton) {
@@ -43,12 +21,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
       }
     }
-    
-    // Garantir que elementos de ação do usuário estão visíveis se existirem
     const userActions = document.querySelector('.user-actions');
-    if (userActions) {
-      userActions.style.display = 'flex';
-    }
+    if (userActions) userActions.style.display = 'flex';
+  }
+
+  // Preencher automaticamente DATA e HORA se estiverem vazios
+  try {
+    const now = new Date();
+    const hojeISO = now.toISOString().split('T')[0]; // yyyy-mm-dd
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const horaNow = `${hh}:${mm}`; // HH:MM
+
+    const dataEl = document.getElementById('data');
+    if (dataEl && !dataEl.value) dataEl.value = hojeISO;
+
+    const horaEl = document.getElementById('hora');
+    if (horaEl && !horaEl.value) horaEl.value = horaNow;
+  } catch (e) {
+    console.warn('[LADOPAR] Não foi possível auto-preencher data/hora:', e);
   }
 
   // Configurar botão de logout
@@ -375,16 +366,16 @@ function buildLadoparPrintHTML(data) {
     <!-- Cabeçalho com logos reais -->
     <table style="border:none;margin-bottom:10px;">
       <tr>
-        <td class="no-border" style="width:100px;padding:0;vertical-align:middle">
-          <img src="${logoLADOPAR}" style="width:85px;height:85px;object-fit:contain;">
+        <td class="no-border" style="width:160px;padding:0;vertical-align:middle">
+          <img src="${logoLADOPAR}" style="height:150px;width:auto;object-fit:contain;">
         </td>
         <td class="no-border center" style="padding:10px;vertical-align:middle">
           <div style="font-size:16px;font-weight:bold;margin-bottom:6px;">LADOPAR - LABORATÓRIO DE DOENÇAS PARASITÁRIAS</div>
           <div style="font-size:12px;margin-bottom:4px;">DEPARTAMENTO DE MEDICINA VETERINÁRIA PREVENTIVA - CCR / UFSM</div>
           <div style="font-size:14px;font-weight:bold;background:#e6e6e6;padding:6px;border-radius:4px;">FICHA DE REQUISIÇÃO DE TESTES DE DIAGNÓSTICO</div>
         </td>
-        <td class="no-border" style="width:100px;padding:0;text-align:right;vertical-align:middle">
-          <img src="${logoUFSM}" style="width:85px;height:85px;object-fit:contain;">
+        <td class="no-border" style="width:160px;padding:0;text-align:right;vertical-align:middle">
+          <img src="${logoUFSM}" style="height:150px;width:auto;object-fit:contain;">
         </td>
       </tr>
     </table>
@@ -597,14 +588,14 @@ function buildLadoparPrintHTML(data) {
     <!-- Cabeçalho página 2 -->
     <table style="border:none;margin-bottom:10px;">
       <tr>
-        <td class="no-border" style="width:100px;padding:0;">
-          <img src="${logoLADOPAR}" style="width:75px;height:75px;object-fit:contain;">
+        <td class="no-border" style="width:160px;padding:0;">
+          <img src="${logoLADOPAR}" style="height:150px;width:auto;object-fit:contain;">
         </td>
         <td class="no-border center" style="padding:8px;">
           <div style="font-size:14px;font-weight:bold;">FICHA DE REQUISIÇÃO DE TESTES DE DIAGNÓSTICO</div>
         </td>
-        <td class="no-border" style="width:100px;padding:0;text-align:right;">
-          <img src="${logoUFSM}" style="width:75px;height:75px;object-fit:contain;">
+        <td class="no-border" style="width:160px;padding:0;text-align:right;">
+          <img src="${logoUFSM}" style="height:150px;width:auto;object-fit:contain;">
         </td>
       </tr>
     </table>

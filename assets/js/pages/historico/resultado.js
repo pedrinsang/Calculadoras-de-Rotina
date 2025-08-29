@@ -1,5 +1,5 @@
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { db } from "../../main.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { db } from "../../firebase.js";
 import { mostrarFeedback } from "./historico.js";
 import { gerarDocx } from "./baixarDoc.js";
 
