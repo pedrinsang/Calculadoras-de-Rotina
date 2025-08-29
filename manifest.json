@@ -1,7 +1,8 @@
 {
   "name": "Calculadoras de Rotina",
   "short_name": "Virologia",
-  "start_url": "/Calculadoras-de-Rotina/",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#1b5e20",
   "theme_color": "#1b5e20",

@@ -6,13 +6,11 @@
 // ============================================================================
 // IMPORTS DO FIREBASE
 // ============================================================================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { 
     getAuth, 
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { 
-    getFirestore, 
     collection, 
     doc, 
     getDocs, 
@@ -23,23 +21,9 @@ import {
     where, 
     orderBy
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { app, auth, db } from "../firebase.js";
 
-// ============================================================================
-// CONFIGURAÇÃO DO FIREBASE
-// ============================================================================
-const firebaseConfig = {
-    apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-    authDomain: "hub-de-calculadoras.firebaseapp.com",
-    projectId: "hub-de-calculadoras",
-    storageBucket: "hub-de-calculadoras.appspot.com",
-    messagingSenderId: "203883856586",
-    appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-    measurementId: "G-7H314CT9SH"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+// Firebase centralizado
 
 // ============================================================================
 // INICIALIZAÇÃO DO PAINEL

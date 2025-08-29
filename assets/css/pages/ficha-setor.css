@@ -63,6 +63,13 @@ body {
   text-align: center;
 }
 
+/* Logos nos formulários dos setores: altura padronizada e proporção preservada */
+.ficha-setor-container .logo {
+  height: 150px;
+  width: auto;
+  max-width: none;
+}
+
 /* Estilos do formulário */
 .ficha-form-container {
   width: 100%;

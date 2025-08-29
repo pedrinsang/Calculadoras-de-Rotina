@@ -1,32 +1,34 @@
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getFirestore, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { app, auth, db } from "../../../js/firebase.js";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-  authDomain: "hub-de-calculadoras.firebaseapp.com",
-  projectId: "hub-de-calculadoras",
-  storageBucket: "hub-de-calculadoras.appspot.com",
-  messagingSenderId: "203883856586",
-  appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-  measurementId: "G-7H314CT9SH"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Firebase via módulo compartilhado
 
 document.addEventListener('DOMContentLoaded', function () {
   console.log("Página LABAC carregada");
   
-  // Verificar se usuário está autenticado
+  // Render otimista: não redireciona aqui; onAuthStateChanged vai validar
   const usuario = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
-  
-  if (!usuario.nome) {
-    window.location.href = "../../index.html";
-    return;
+  if (usuario?.nome) {
+    const nameEl = document.querySelector('.user-name');
+    if (nameEl) nameEl.textContent = usuario.nome;
+    if (usuario.role === 'admin') {
+      const btn = document.getElementById('admin-button');
+      if (btn) btn.style.display = 'flex';
+    }
+    const actions = document.querySelector('.user-actions');
+    if (actions) actions.style.display = 'flex';
+  }
+
+  // Preencher automaticamente a data de chegada com a data atual (YYYY-MM-DD), se estiver vazia
+  try {
+    const hojeISO = new Date().toISOString().split('T')[0];
+    const dataChegada = document.getElementById('data-chegada');
+    if (dataChegada && !dataChegada.value) {
+      dataChegada.value = hojeISO;
+    }
+  } catch (e) {
+    console.warn('[LABAC] Não foi possível auto-preencher data de chegada:', e);
   }
 
   // Event listener para o botão admin (se existir)
@@ -224,7 +226,7 @@ function buildLabacPrintHTML(data) {
     <table style="border:none;margin-bottom:15px;">
       <tr>
         <td style="border:none;width:140px;padding:0;">
-          <img src="${logoUFSM}" style="width:130px;height:130px;object-fit:contain;">
+          <img src="${logoUFSM}" style="height:150px;width:auto;object-fit:contain;">
         </td>
         <td style="border:none;text-align:center;padding:0;">
           <div style="font-size:16px;font-weight:bold;margin-bottom:5px;">LABAC – LABORATÓRIO DE BACTERIOLOGIA</div>
@@ -234,7 +236,7 @@ function buildLabacPrintHTML(data) {
           <div style="font-size:10px;">Fone: (55) 3220-8632/8632 | labac.ufsm@gmail.com</div>
         </td>
         <td style="border:none;width:140px;padding:0;text-align:right;">
-          <img src="${logoLABAC}" style="width:130px;height:130px;object-fit:contain;">
+          <img src="${logoLABAC}" style="height:150px;width:auto;object-fit:contain;">
         </td>
       </tr>
     </table>

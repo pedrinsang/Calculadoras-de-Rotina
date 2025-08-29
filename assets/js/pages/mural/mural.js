@@ -1,7 +1,5 @@
 // Imports do Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { 
-    getFirestore,
     collection,
     getDocs,
     Timestamp,
@@ -15,32 +13,18 @@ import {
     orderBy,
     writeBatch
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-import { 
-    getAuth,
-    onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { app, auth, db } from "../../../js/firebase.js";
 
 // Imports locais
 import { registrarResultadoSN, registrarResultadoELISA, registrarResultadoMolecular, registrarResultadoRAIVA, registrarResultadoICC} from "./regresultado.js";
 
-// Configuração do Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-    authDomain: "hub-de-calculadoras.firebaseapp.com",
-    projectId: "hub-de-calculadoras",
-    storageBucket: "hub-de-calculadoras.appspot.com",
-    messagingSenderId: "203883856586",
-    appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-    measurementId: "G-7H314CT9SH"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+// Firebase centralizado via módulo compartilhado
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
+    // Pré-preencher identificação com próximo SV no formulário inline (se existir)
+    try { generateSVNumberForField('id'); } catch (e) { console.warn('[SV] Autofill inline indisponível:', e); }
 });
 
 // Verificação de usuário ativo/inativo no início
@@ -400,6 +384,47 @@ async function getSiglaUsuario(user) {
     }
 }
 
+// ---------------------- SV AutoFill (igual às fichas) ----------------------
+async function obterMaiorSVDoAno(yearSuffix) {
+    try {
+        const tarefasSnapshot = await getDocs(collection(db, 'tarefas'));
+        let maiorNumero = 0;
+        tarefasSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            const id = (data.id || data.identificacao || data.identificação || '').toString();
+            const match = id.match(/SV\s*(\d+)\s*\/\s*(\d{2})/i);
+            if (match && match[2] === yearSuffix) {
+                const num = parseInt(match[1], 10);
+                if (!isNaN(num) && num > maiorNumero) maiorNumero = num;
+            }
+        });
+        return maiorNumero > 0 ? maiorNumero : null;
+    } catch (err) {
+        console.warn('[SV] Erro ao ler tarefas do mural para SV:', err);
+        return null;
+    }
+}
+
+async function generateSVNumberForField(fieldId) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    const currentYear = new Date().getFullYear();
+    const yearSuffix = currentYear.toString().slice(-2);
+    const maior = await obterMaiorSVDoAno(yearSuffix);
+    if (maior && Number.isInteger(maior)) {
+        const proximoNumero = maior + 1;
+        const numeroFormatado = proximoNumero.toString().padStart(2, '0');
+        input.value = `SV ${numeroFormatado}/${yearSuffix}`;
+        localStorage.setItem(`svNumber_${currentYear}`, proximoNumero);
+        return;
+    }
+    // Fallback local
+    const svKey = `svNumber_${currentYear}`;
+    let svNumber = parseInt(localStorage.getItem(svKey) || '1', 10);
+    const numeroFormatado = svNumber.toString().padStart(2, '0');
+    input.value = `SV ${numeroFormatado}/${yearSuffix}`;
+}
+
 // Funções de Tarefas
 async function adicionarTarefaModal() {
     mostrarLoading();
@@ -423,8 +448,10 @@ async function adicionarTarefaModal() {
         const veterinarioNomeInput = document.getElementById("veterinario-nome-modal");
         const veterinarioMunicipioInput = document.getElementById("veterinario-municipio-modal");
         const veterinarioContatoInput = document.getElementById("veterinario-contato-modal");
-        const observacoesInput = document.getElementById("observacoes-modal");
+    const observacoesInput = document.getElementById("observacoes-modal");
         const materialRecebidoInput = document.getElementById("material-recebido-modal");
+    const dataInput = document.getElementById("data-modal");
+    const horaInput = document.getElementById("hora-modal");
 
         // Validate required fields exist
         if (!idInput || !tipoInput || !quantidadeInput) {
@@ -448,7 +475,19 @@ async function adicionarTarefaModal() {
 
         // Calcular o prazo baseado no tipo de teste
         const prazoInfo = obterPrazoDiasTeste(tipoInput.value, subTipo);
-        const dataRecebimento = new Date(); // Data atual
+
+        // Compor data/hora de recebimento a partir dos inputs
+        let dataRecebimento = new Date();
+        if (dataInput && dataInput.value) {
+            const base = new Date(dataInput.value);
+            if (horaInput && horaInput.value) {
+                const [h, m] = horaInput.value.split(":").map(Number);
+                base.setHours(h || 0, m || 0, 0, 0);
+            } else {
+                base.setHours(0, 0, 0, 0);
+            }
+            dataRecebimento = base;
+        }
         
         let dataPrazo;
         if (prazoInfo.tipo === 'corridos') {
@@ -479,7 +518,10 @@ async function adicionarTarefaModal() {
             observacoes: observacoesInput ? observacoesInput.value.trim() : "",
             materialRecebido: materialRecebidoInput ? materialRecebidoInput.value.trim() : "",
             status: "pendente",
-            criadoEm: Timestamp.now(), // Apenas criadoEm, removendo dataRecebimento
+            // Guardar o recebimento como data de criação (usado em listagens e histórico)
+            criadoEm: Timestamp.fromDate(dataRecebimento),
+            // Opcional: persistir explicitamente o campo de recebimento
+            dataRecebimento: Timestamp.fromDate(dataRecebimento),
             dataPrazo: Timestamp.fromDate(dataPrazo), // Nova data do prazo
             diasPrazo: prazoInfo.dias, // Armazenar dias para referência
             tipoPrazo: prazoInfo.tipo, // Armazenar tipo de prazo (corridos ou úteis)
@@ -494,6 +536,18 @@ async function adicionarTarefaModal() {
 
         // Add to Firestore
         await addDoc(collection(db, "tarefas"), novaTarefa);
+
+        // Atualizar contador local de SV (reserva simples)
+        try {
+            const currentYear = new Date().getFullYear();
+            const yearSuffix = currentYear.toString().slice(-2);
+            const match = (novaTarefa.id || '').toString().match(/SV\s*(\d+)\s*\/\s*(\d{2})/i);
+            if (match && match[2] === yearSuffix) {
+                const svKey = `svNumber_${currentYear}`;
+                const num = parseInt(match[1], 10);
+                if (!isNaN(num)) localStorage.setItem(svKey, num + 1);
+            }
+        } catch (e) { console.warn('[SV] Não foi possível atualizar reserva local:', e); }
 
         // Fechar o modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('tarefa-modal'));
@@ -525,7 +579,16 @@ function prepararModalAdicao() {
     document.getElementById('salvar-tarefa-modal').onclick = adicionarTarefaModal;
     
     // Datas para hoje
-    document.getElementById('data-modal').valueAsDate = new Date();
+    const agora = new Date();
+    document.getElementById('data-modal').valueAsDate = agora;
+    const horaEl = document.getElementById('hora-modal');
+    if (horaEl) {
+        const hh = String(agora.getHours()).padStart(2, '0');
+        const mm = String(agora.getMinutes()).padStart(2, '0');
+        horaEl.value = `${hh}:${mm}`;
+    }
+    // Sugerir próximo SV como identificação
+    try { generateSVNumberForField('id-modal'); } catch (e) { console.warn('[SV] Autofill modal indisponível:', e); }
     
     // Ajustar campos condicionais
     const tipoValue = document.getElementById('tipo-modal').value;
@@ -1271,10 +1334,18 @@ window.editarTarefaModal = async (id) => {
             document.getElementById("elisa-container-modal").style.display = "none";
         }
         
-        const dataRecebimento = tarefa.dataRecebimento?.toDate();
+        const dataRecebimento = (tarefa.dataRecebimento?.toDate && tarefa.dataRecebimento.toDate()) ||
+                                (tarefa.criadoEm?.toDate && tarefa.criadoEm.toDate()) ||
+                                null;
         if (dataRecebimento) {
             const dataLocal = new Date(dataRecebimento.getTime() - dataRecebimento.getTimezoneOffset() * 60000);
             document.getElementById("data-modal").value = dataLocal.toISOString().split("T")[0];
+            const horaEl = document.getElementById('hora-modal');
+            if (horaEl) {
+                const hh = String(dataLocal.getHours()).padStart(2, '0');
+                const mm = String(dataLocal.getMinutes()).padStart(2, '0');
+                horaEl.value = `${hh}:${mm}`;
+            }
         }
         
         document.getElementById("observacoes-modal").value = tarefa.observacoes || "";
@@ -1339,15 +1410,33 @@ window.editarTarefaModal = async (id) => {
                 
                 updateData.subTipo = subTipo;
                 
-                // Recalcular prazo se o tipo mudou
-                if (tarefa.tipo !== tipoValue) {
-                    const diasUteisPrazo = obterPrazoDiasTeste(tipoValue, subTipo);
-                    const dataRecebimento = tarefa.criadoEm?.toDate ? tarefa.criadoEm.toDate() : new Date();
-                    const novaPrazo = adicionarDiasUteis(dataRecebimento, diasUteisPrazo);
-                    
-                    updateData.dataPrazo = Timestamp.fromDate(novaPrazo);
-                    updateData.diasUteisPrazo = diasUteisPrazo;
+                // Capturar possível alteração de data/hora de recebimento
+                const dataVal = document.getElementById('data-modal').value;
+                const horaVal = document.getElementById('hora-modal')?.value;
+                let recebimentoAtual = (tarefa.dataRecebimento?.toDate && tarefa.dataRecebimento.toDate()) ||
+                                       (tarefa.criadoEm?.toDate && tarefa.criadoEm.toDate()) || new Date();
+                if (dataVal) {
+                    const base = new Date(dataVal);
+                    if (horaVal) {
+                        const [h, m] = horaVal.split(':').map(Number);
+                        base.setHours(h || 0, m || 0, 0, 0);
+                    }
+                    recebimentoAtual = base;
                 }
+
+                // Determinar prazo do tipo/subtipo atual e recalcular com a data/hora escolhida
+                const prazoInfoAtual = obterPrazoDiasTeste(tipoValue, subTipo);
+                let novaDataPrazo;
+                if (prazoInfoAtual.tipo === 'corridos') {
+                    novaDataPrazo = adicionarDiasCorridos(recebimentoAtual, prazoInfoAtual.dias);
+                } else {
+                    novaDataPrazo = adicionarDiasUteis(recebimentoAtual, prazoInfoAtual.dias);
+                }
+                updateData.dataPrazo = Timestamp.fromDate(novaDataPrazo);
+                updateData.diasPrazo = prazoInfoAtual.dias;
+                updateData.tipoPrazo = prazoInfoAtual.tipo;
+                updateData.criadoEm = Timestamp.fromDate(recebimentoAtual);
+                updateData.dataRecebimento = Timestamp.fromDate(recebimentoAtual);
                 
                 // Remover campos antigos se existirem
                 updateData.pcrTipo = null;

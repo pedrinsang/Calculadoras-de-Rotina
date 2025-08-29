@@ -1,33 +1,9 @@
 // Imports do Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { 
-    getAuth, 
-    onAuthStateChanged, 
-    signOut,
-    deleteUser 
-} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { 
-    getFirestore, 
-    doc, 
-    getDoc, 
-    deleteDoc 
-} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { app, auth, db } from "../firebase.js";
 
-// Configuração do Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-    authDomain: "hub-de-calculadoras.firebaseapp.com",
-    projectId: "hub-de-calculadoras",
-    storageBucket: "hub-de-calculadoras.appspot.com",
-    messagingSenderId: "203883856586",
-    appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-    measurementId: "G-7H314CT9SH"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+// Firebase já inicializado via módulo compartilhado
 
 let usuarioAtual = null;
 

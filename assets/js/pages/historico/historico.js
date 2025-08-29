@@ -1,5 +1,5 @@
 // Imports do Firebase - VERSÃO CORRIGIDA
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { app, auth, db } from "../../../js/firebase.js";
 import {
     getFirestore,
     collection,
@@ -95,58 +95,13 @@ async function limparServiceWorkers() {
 }
 
 // Configuração do Firebase com configurações otimizadas
-const firebaseConfig = {
-    apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-    authDomain: "hub-de-calculadoras.firebaseapp.com",
-    projectId: "hub-de-calculadoras",
-    storageBucket: "hub-de-calculadoras.appspot.com",
-    messagingSenderId: "203883856586",
-    appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-    measurementId: "G-7H314CT9SH"
-};
+// Config centralizada via módulo compartilhado
 
 // ============================================================================
 // INICIALIZAÇÃO SEGURA DO FIREBASE
 // ============================================================================
 
-let app, db, auth;
-
-async function inicializarFirebase() {
-    try {
-        console.log('🔥 Inicializando Firebase...');
-        
-        // Inicializar Firebase
-        app = initializeApp(firebaseConfig);
-        
-        // Configurar Firestore com configurações de rede otimizadas
-        db = getFirestore(app);
-        
-        // Configurar Auth
-        auth = getAuth(app);
-        
-        console.log('✅ Firebase inicializado com sucesso');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Erro ao inicializar Firebase:', error);
-        
-        // Se erro de rede, tentar limpar ServiceWorkers
-        if (error.message.includes('ServiceWorker') || 
-            error.message.includes('network') ||
-            error.message.includes('intercepted')) {
-            
-            console.log('🔄 Erro de ServiceWorker detectado - tentando correção...');
-            const recarregou = await limparServiceWorkers();
-            
-            if (!recarregou) {
-                // Se não recarregou, mostrar instrução manual
-                mostrarErroServiceWorker();
-            }
-        }
-        
-        return false;
-    }
-}
+// Firebase já está pronto pelo módulo importado
 
 // Mostrar instruções para correção manual
 function mostrarErroServiceWorker() {
@@ -1264,10 +1219,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const precisaRecarregar = await limparServiceWorkers();
     if (precisaRecarregar) return; // Página será recarregada
     
-    // Inicializar Firebase
-    const firebaseOK = await inicializarFirebase();
-    if (!firebaseOK) return; // Erro será tratado na função
-    
+    // Firebase já está inicializado via módulo compartilhado
     // Continuar com a inicialização normal...
     inicializarAplicacao();
 });

@@ -1,43 +1,23 @@
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getFirestore, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"; // Adicionar getFirestore
+import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { app, auth, db } from "../firebase.js";
 
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAJneFO6AYsj5_w3hIKzPGDa8yR6Psng4M",
-  authDomain: "hub-de-calculadoras.firebaseapp.com",
-  projectId: "hub-de-calculadoras",
-  storageBucket: "hub-de-calculadoras.appspot.com",
-  messagingSenderId: "203883856586",
-  appId: "1:203883856586:web:a00536536a32ae76c5aa33",
-  measurementId: "G-7H314CT9SH"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app); // Adicionar esta linha
+// Firebase já inicializado via módulo compartilhado
 
 document.addEventListener('DOMContentLoaded', function () {
   console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares");
   
-  // Verificar se usuário está autenticado
+  // Render otimista se houver cache; não redireciona aqui
   const usuario = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
-  
-  if (!usuario.nome) {
-    window.location.href = "../index.html";
-  } else {
-    document.querySelector('.user-name').textContent = usuario.nome;
-    
-    // Verificar se usuário é admin
-    console.log("Role do usuário:", usuario.role);
+  if (usuario?.nome) {
+    const nameEl = document.querySelector('.user-name');
+    if (nameEl) nameEl.textContent = usuario.nome;
     if (usuario.role === 'admin') {
-      console.log("Mostrando botão admin");
-      document.getElementById('admin-button').style.display = 'flex';
+      const btn = document.getElementById('admin-button');
+      if (btn) btn.style.display = 'flex';
     }
-    
-    // Garantir que elementos de ação do usuário estão visíveis
-    document.querySelector('.user-actions').style.display = 'flex';
+    const actions = document.querySelector('.user-actions');
+    if (actions) actions.style.display = 'flex';
   }
 
   // Event listener para o botão admin
@@ -77,24 +57,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Verificação de usuário ativo/inativo
 onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        window.location.href = "../index.html";
-        return;
-    }
-    
-    try {
-        // Verificar se usuário está ativo
-        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            if (userData.ativo === false) {
-                console.log("Usuário inativo detectado, redirecionando...");
-                window.location.href = "desativado.html";
-                return;
-            }
+  if (!user) {
+    window.location.href = "../index.html";
+    return;
+  }
+
+  try {
+    // Reconstituir 'usuario' se não houver em storage
+    let stored = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
+    if (!stored?.nome) {
+      const snap = await getDoc(doc(db, 'usuarios', user.uid));
+      if (snap.exists()) {
+        stored = snap.data();
+        const manter = localStorage.getItem('manterConectado') === 'true';
+        if (manter) {
+          localStorage.setItem('usuario', JSON.stringify(stored));
+        } else {
+          sessionStorage.setItem('usuario', JSON.stringify(stored));
         }
-    } catch (error) {
-        console.error("Erro ao verificar status do usuário:", error);
-        // Em caso de erro, continuar normalmente
+      }
     }
+
+    // Verificar ativo/inativo
+    if (stored && stored.ativo === false) {
+      console.log("Usuário inativo detectado, redirecionando...");
+      window.location.href = "desativado.html";
+      return;
+    }
+
+    // Atualizar UI
+    const nameEl = document.querySelector('.user-name');
+    if (nameEl && stored?.nome) nameEl.textContent = stored.nome;
+    const isAdmin = stored?.role === 'admin';
+    const btn = document.getElementById('admin-button');
+    if (btn) btn.style.display = isAdmin ? 'flex' : 'none';
+    const actions = document.querySelector('.user-actions');
+    if (actions) actions.style.display = 'flex';
+  } catch (error) {
+    console.error("Erro ao verificar status do usuário:", error);
+    // Em caso de erro, manter usuário na tela
+  }
 });
