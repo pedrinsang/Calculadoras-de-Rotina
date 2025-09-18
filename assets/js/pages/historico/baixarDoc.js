@@ -333,7 +333,7 @@ export async function gerarDocx(tarefa) {
                     testeRealizado = "ELISA Anticorpo Vírus da Leucose Bovina (IDEXX®)";
                     nomeArquivo = "ELISA_LEUCOSE";
                 } else if (tarefa.subTipo === "ELISA BVDV") {
-                    tituloLaudo = "Sorologia Vírus da Diarreia Bovina - BVDV";
+                    tituloLaudo = "ELISA Vírus da Diarreia Bovina - BVDV";
                     testeRealizado = "ELISA para Antígeno contra Vírus da Diarreia Bovina - BVDV (IDEXX®)";
                     nomeArquivo = "ELISA_BVDV";
                 } else {
@@ -343,7 +343,7 @@ export async function gerarDocx(tarefa) {
                 }
                 break;
             case "ELISA BVDV":
-                tituloLaudo = "Sorologia Vírus da Diarreia Bovina - BVDV";
+                tituloLaudo = "ELISA Vírus da Diarreia Bovina - BVDV";
                 testeRealizado = "ELISA para Antígeno contra Vírus da Diarreia Bovina - BVDV";
                 nomeArquivo = "ELISA_BVDV";
                 break;
@@ -408,7 +408,7 @@ export async function gerarDocx(tarefa) {
                 break;
             case "RAIVA":
                 tituloLaudo = "Diagnóstico de RAIVA";
-                testeRealizado = "(  ) Imunoflorescência (  ) RT-PCR";
+                testeRealizado = "(  ) Imunofluorescência (  ) RT-PCR";
                 nomeArquivo = "RAIVA";
                 break;
             case "ICC":
@@ -3651,7 +3651,7 @@ export async function gerarDocx(tarefa) {
                                     new Paragraph({
                                         children: [
                                             new TextRun({
-                                                text: "www.ufsm.br/sv",
+                                                text: "www.ufsm.br/laboratorios/sv",
                                                 size: 16,
                                                 font: "Arial"
                                             })
@@ -3684,7 +3684,7 @@ export async function gerarDocx(tarefa) {
                                     new Paragraph({
                                         children: [
                                             new TextRun({
-                                                text: "(55) 3220 8034",
+                                                text: "Fone: (55) 3220-8851",
                                                 size: 17,
                                                 font: "Arial"
                                             })
@@ -3694,7 +3694,7 @@ export async function gerarDocx(tarefa) {
                                     new Paragraph({
                                         children: [
                                             new TextRun({
-                                                text: "(55) 3220 8851",
+                                                text: "WhatsApp: (55) 99970-5536",
                                                 size: 17,
                                                 font: "Arial"
                                             })
