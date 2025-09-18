@@ -207,6 +207,17 @@ function adicionarDiasCorridos(dataInicial, dias) {
     return data;
 }
 
+// Parse seguro de input date (yyyy-mm-dd) como data LOCAL (evita interpretar como UTC e voltar um dia no Brasil)
+function parseDateInputLocal(dateStr) {
+    if (!dateStr) return null;
+    const parts = dateStr.split('-').map(Number);
+    if (parts.length !== 3) return null;
+    const [year, month, day] = parts;
+    if (!year || !month || !day) return null;
+    // new Date(year, monthIndex, day) cria no fuso local 00:00 evitando o shift de -3h que derruba a data para o dia anterior
+    return new Date(year, month - 1, day);
+}
+
 // Função para obter o prazo em dias baseado no tipo de teste
 function obterPrazoDiasTeste(tipo, subTipo = null) {
     switch (tipo) {
@@ -259,10 +270,11 @@ async function atualizarPrazosExistentes() {
                 const dataRecebimento = tarefa.criadoEm?.toDate ? tarefa.criadoEm.toDate() : new Date();
                 
                 let dataPrazo;
+                const delta = Math.max(prazoInfo.dias - 1, 0);
                 if (prazoInfo.tipo === 'corridos') {
-                    dataPrazo = adicionarDiasCorridos(dataRecebimento, prazoInfo.dias);
+                    dataPrazo = adicionarDiasCorridos(dataRecebimento, delta);
                 } else {
-                    dataPrazo = adicionarDiasUteis(dataRecebimento, prazoInfo.dias);
+                    dataPrazo = adicionarDiasUteis(dataRecebimento, delta);
                 }
                 
                 batch.update(doc.ref, {
@@ -291,7 +303,10 @@ async function atualizarPrazosExistentes() {
 
 // Função para calcular e formatar o prazo de uma tarefa
 function calcularPrazoTarefa(tarefa) {
-    const dataRecebimento = tarefa.criadoEm?.toDate ? tarefa.criadoEm.toDate() : new Date();
+    // Priorizar dataRecebimento (editável); fallback para criadoEm
+    const dataRecebimento = tarefa.dataRecebimento?.toDate
+        ? tarefa.dataRecebimento.toDate()
+        : (tarefa.criadoEm?.toDate ? tarefa.criadoEm.toDate() : new Date());
     
     // Se já tem dataPrazo salva, usar ela. Se não, calcular
     let dataPrazo;
@@ -315,10 +330,11 @@ function calcularPrazoTarefa(tarefa) {
         diasPrazo = prazoInfo.dias;
         tipoPrazo = prazoInfo.tipo;
         
+        const deltaCalc = Math.max(diasPrazo - 1, 0);
         if (tipoPrazo === 'corridos') {
-            dataPrazo = adicionarDiasCorridos(dataRecebimento, diasPrazo);
+            dataPrazo = adicionarDiasCorridos(dataRecebimento, deltaCalc);
         } else {
-            dataPrazo = adicionarDiasUteis(dataRecebimento, diasPrazo);
+            dataPrazo = adicionarDiasUteis(dataRecebimento, deltaCalc);
         }
     }
     
@@ -479,7 +495,8 @@ async function adicionarTarefaModal() {
         // Compor data/hora de recebimento a partir dos inputs
         let dataRecebimento = new Date();
         if (dataInput && dataInput.value) {
-            const base = new Date(dataInput.value);
+            // IMPORTANTE: não usar new Date("yyyy-mm-dd") pois cria objeto em UTC 00:00 e no fuso -03 vira dia anterior
+            const base = parseDateInputLocal(dataInput.value) || new Date();
             if (horaInput && horaInput.value) {
                 const [h, m] = horaInput.value.split(":").map(Number);
                 base.setHours(h || 0, m || 0, 0, 0);
@@ -490,10 +507,12 @@ async function adicionarTarefaModal() {
         }
         
         let dataPrazo;
+        // Cálculo inclusivo: se dias = 15 e data 17 -> prazo final = 17 + (15-1)
+        const delta = Math.max(prazoInfo.dias - 1, 0);
         if (prazoInfo.tipo === 'corridos') {
-            dataPrazo = adicionarDiasCorridos(dataRecebimento, prazoInfo.dias);
+            dataPrazo = adicionarDiasCorridos(dataRecebimento, delta);
         } else {
-            dataPrazo = adicionarDiasUteis(dataRecebimento, prazoInfo.dias);
+            dataPrazo = adicionarDiasUteis(dataRecebimento, delta);
         }
 
         const novaTarefa = {
@@ -580,7 +599,11 @@ function prepararModalAdicao() {
     
     // Datas para hoje
     const agora = new Date();
-    document.getElementById('data-modal').valueAsDate = agora;
+    const yyyy = agora.getFullYear();
+    const mm = String(agora.getMonth() + 1).padStart(2, '0');
+    const dd = String(agora.getDate()).padStart(2, '0');
+    // Evita bug de +1 dia usando valueAsDate (UTC shift). Preenche manualmente.
+    document.getElementById('data-modal').value = `${yyyy}-${mm}-${dd}`;
     const horaEl = document.getElementById('hora-modal');
     if (horaEl) {
         const hh = String(agora.getHours()).padStart(2, '0');
@@ -974,9 +997,9 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             // Calcular informações de prazo
             const infoPrazo = calcularPrazoTarefa(tarefa);
             
-            const dataRecebimento = tarefa.dataRecebimento?.toDate
+            const dataRecebimentoStr = tarefa.dataRecebimento?.toDate
                 ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
-                : "Data não disponível";
+                : (tarefa.criadoEm?.toDate ? formatarDataParaExibicao(tarefa.criadoEm.toDate()) : "Data não disponível");
 
             const statusClass = tarefa.status === 'em-progresso' ? 'em-progresso' : '';
             const concluidoClass = tarefa.status === 'concluido' ? 'concluido' : statusClass;
@@ -1079,11 +1102,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                     <h5 class="card-title mb-1 text-success fw-bold">${tarefa.id}</h5>
                     <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}${tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? ` - ${tarefa.alvo}` : ''}</div>
                     <div class="mb-1"><span class="fw-medium">Quantidade:</span> ${tarefa.quantidade || '0'}</div>
-                    <div class="mb-1"><span class="fw-medium">Recebimento:</span> ${
-    tarefa.criadoEm?.toDate
-        ? formatarDataParaExibicao(tarefa.criadoEm.toDate())
-        : "Data não disponível"
-}</div>
+                    <div class="mb-1"><span class="fw-medium">Recebimento:</span> ${dataRecebimentoStr}</div>
                     <div class="mb-2">${prazoIcon}<span class="fw-medium">Prazo:</span> ${prazoTexto}</div>
                   </div>
                 </div>
@@ -1338,13 +1357,17 @@ window.editarTarefaModal = async (id) => {
                                 (tarefa.criadoEm?.toDate && tarefa.criadoEm.toDate()) ||
                                 null;
         if (dataRecebimento) {
-            const dataLocal = new Date(dataRecebimento.getTime() - dataRecebimento.getTimezoneOffset() * 60000);
-            document.getElementById("data-modal").value = dataLocal.toISOString().split("T")[0];
+            // Já está em horário local; NÃO subtrair timezoneOffset novamente para evitar -3h
+            const local = dataRecebimento; // Timestamp.toDate() retorna Date no fuso local
+            const yyyy = local.getFullYear();
+            const mm = String(local.getMonth() + 1).padStart(2, '0');
+            const dd = String(local.getDate()).padStart(2, '0');
+            document.getElementById("data-modal").value = `${yyyy}-${mm}-${dd}`;
             const horaEl = document.getElementById('hora-modal');
             if (horaEl) {
-                const hh = String(dataLocal.getHours()).padStart(2, '0');
-                const mm = String(dataLocal.getMinutes()).padStart(2, '0');
-                horaEl.value = `${hh}:${mm}`;
+                const hh = String(local.getHours()).padStart(2, '0');
+                const min = String(local.getMinutes()).padStart(2, '0');
+                horaEl.value = `${hh}:${min}`;
             }
         }
         
@@ -1416,7 +1439,8 @@ window.editarTarefaModal = async (id) => {
                 let recebimentoAtual = (tarefa.dataRecebimento?.toDate && tarefa.dataRecebimento.toDate()) ||
                                        (tarefa.criadoEm?.toDate && tarefa.criadoEm.toDate()) || new Date();
                 if (dataVal) {
-                    const base = new Date(dataVal);
+                    // Mesma correção de fuso: interpretar como local
+                    const base = parseDateInputLocal(dataVal) || new Date();
                     if (horaVal) {
                         const [h, m] = horaVal.split(':').map(Number);
                         base.setHours(h || 0, m || 0, 0, 0);
@@ -1427,15 +1451,17 @@ window.editarTarefaModal = async (id) => {
                 // Determinar prazo do tipo/subtipo atual e recalcular com a data/hora escolhida
                 const prazoInfoAtual = obterPrazoDiasTeste(tipoValue, subTipo);
                 let novaDataPrazo;
+                const deltaEdit = Math.max(prazoInfoAtual.dias - 1, 0);
                 if (prazoInfoAtual.tipo === 'corridos') {
-                    novaDataPrazo = adicionarDiasCorridos(recebimentoAtual, prazoInfoAtual.dias);
+                    novaDataPrazo = adicionarDiasCorridos(recebimentoAtual, deltaEdit);
                 } else {
-                    novaDataPrazo = adicionarDiasUteis(recebimentoAtual, prazoInfoAtual.dias);
+                    novaDataPrazo = adicionarDiasUteis(recebimentoAtual, deltaEdit);
                 }
                 updateData.dataPrazo = Timestamp.fromDate(novaDataPrazo);
                 updateData.diasPrazo = prazoInfoAtual.dias;
                 updateData.tipoPrazo = prazoInfoAtual.tipo;
-                updateData.criadoEm = Timestamp.fromDate(recebimentoAtual);
+                // Não atualizar criadoEm para preservar a hora/data original de criação
+                // Apenas manter/atualizar dataRecebimento (campo editável)
                 updateData.dataRecebimento = Timestamp.fromDate(recebimentoAtual);
                 
                 // Remover campos antigos se existirem
