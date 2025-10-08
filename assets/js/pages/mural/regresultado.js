@@ -1,4 +1,4 @@
-import { mostrarLoading, esconderLoading, mostrarFeedback } from "./mural.js";
+import { mostrarLoading, esconderLoading, mostrarFeedback } from "./ui-utils.js";
 import { 
     doc,
     getDoc,
