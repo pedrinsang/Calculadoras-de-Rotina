@@ -110,11 +110,11 @@ function obterPrazoDiasTeste(tipo, subTipo = null) {
             return { dias: 10, tipo: 'uteis' }; // VACINA - 10 dias úteis
             
         case "ICC":
-            return { dias: 10, tipo: 'uteis' }; // ICC - 10 dias úteis
+            return { dias: 20, tipo: 'corridos' }; // ICC - 20 dias corridos
             
         case "MOLECULAR":
         case "PCR":
-            return { dias: 3, tipo: 'uteis' }; // MOLECULAR - 3 dias úteis
+            return { dias: 5, tipo: 'uteis' }; // MOLECULAR - 5 dias úteis
             
         case "ELISA":
         case "ELISA LEUCOSE":
@@ -122,7 +122,7 @@ function obterPrazoDiasTeste(tipo, subTipo = null) {
             return { dias: 5, tipo: 'uteis' }; // ELISA - 5 dias úteis
             
         case "RAIVA":
-            return { dias: 2, tipo: 'uteis' }; // RAIVA - 2 dias úteis
+            return { dias: 3, tipo: 'uteis' }; // RAIVA - 3 dias úteis
             
         default:
             return { dias: 15, tipo: 'corridos' }; // Padrão - 15 dias corridos
