@@ -26,7 +26,7 @@ async function registrarResultadoSN(id) {
         // Substitua o HTML do modal SN com este layout mais organizado:
 
         modal.innerHTML = `
-            <div class="modal-resultados-content" style="max-width: 5   00px;">
+            <div class="modal-resultados-content" style="max-width: 500px;">
                 <h4 class="text-success mb-2"><i class="bi bi-clipboard-data me-2"></i>Resultados - ${tarefa.tipo}</h4>
                 <div class="small mb-3">
                     <span class="me-3"><strong>ID:</strong> ${tarefa.id}</span>
@@ -136,6 +136,43 @@ async function registrarResultadoSN(id) {
         modal.querySelector("#salvar-resultados").onclick = async () => {
             try {
                 mostrarLoading();
+
+                const quantidadeRecebida = Number(tarefa.quantidade || 0);
+
+                const contarAmostras = (valor) =>
+                    valor
+                        .split(";")
+                        .map((item) => item.trim())
+                        .filter((item) => item.length > 0).length;
+
+                const camposAmostras = [
+                    document.getElementById("negativas").value,
+                    document.getElementById("titulo4").value,
+                    document.getElementById("titulo8").value,
+                    document.getElementById("titulo16").value,
+                    document.getElementById("titulo32").value,
+                    document.getElementById("titulo64").value,
+                    document.getElementById("titulo128").value,
+                    document.getElementById("titulo256").value,
+                    document.getElementById("titulo512").value,
+                    document.getElementById("improprias").value,
+                    document.getElementById("toxicas").value,
+                    document.getElementById("insuficiente").value
+                ];
+
+                const totalAmostrasInformadas = camposAmostras.reduce(
+                    (total, campo) => total + contarAmostras(campo),
+                    0
+                );
+
+                if (totalAmostrasInformadas !== quantidadeRecebida) {
+                    mostrarFeedback(
+                        `Foram recebidas ${quantidadeRecebida} amostra(s) e você informou ${totalAmostrasInformadas}. Preencha todas as amostras separando-as por ponto e vírgula (;).`,
+                        "error"
+                    );
+                    esconderLoading();
+                    return;
+                }
 
                 const resultados = {
                     negativas: document.getElementById("negativas").value,
