@@ -26,15 +26,15 @@ import { app, auth, db } from "../firebase.js";
 
 // app, auth e db são importados do módulo compartilhado
 
-// Configurar persistência com base na preferência armazenada
-(async () => {
+// Sincroniza a persistência salva (manter conectado)
+async function applyStoredPersistence() {
   const manterConectado = localStorage.getItem("manterConectado") === "true";
-  if (manterConectado) {
-    await setPersistence(auth, browserLocalPersistence);
-  } else {
-    await setPersistence(auth, browserSessionPersistence);
+  try {
+    await setPersistence(auth, manterConectado ? browserLocalPersistence : browserSessionPersistence);
+  } catch (error) {
+    console.error("Erro ao aplicar persistência:", error);
   }
-})();
+}
 
 // Elementos da UI
 let alertMessage;
@@ -44,13 +44,16 @@ let forgotPasswordForm;
 let loginButton;
 let cadastroButton;
 let resetPasswordButton;
+let manterCheckbox;
 
 // Inicialização quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
   
   // Inicializar elementos da UI
   initUI();
+  hydrateRememberCheckbox();
+  await applyStoredPersistence();
   
   // Configurar event listeners
   setupEventListeners();
@@ -71,9 +74,17 @@ function initUI() {
   loginButton = document.getElementById("login-button");
   cadastroButton = document.getElementById("cadastro-button");
   resetPasswordButton = document.getElementById("send-reset-button");
+  manterCheckbox = document.getElementById("manter-conectado");
   
   // Configurar toggle de senha
   setupTogglePassword();
+}
+
+// Preenche o checkbox conforme a preferência salva
+function hydrateRememberCheckbox() {
+  if (manterCheckbox) {
+    manterCheckbox.checked = localStorage.getItem("manterConectado") === "true";
+  }
 }
 
 
