@@ -339,6 +339,7 @@ async function adicionarTarefaModal() {
         const proprietarioMunicipioInput = document.getElementById("proprietario-municipio-modal");
         const proprietarioContatoInput = document.getElementById("proprietario-contato-modal");
         const veterinarioNomeInput = document.getElementById("veterinario-nome-modal");
+        const veterinarioCrmvInput = document.getElementById("veterinario-crmv-modal");
         const veterinarioMunicipioInput = document.getElementById("veterinario-municipio-modal");
         const veterinarioContatoInput = document.getElementById("veterinario-contato-modal");
     const observacoesInput = document.getElementById("observacoes-modal");
@@ -408,6 +409,7 @@ async function adicionarTarefaModal() {
             },
             veterinario: {
                 nome: veterinarioNomeInput ? veterinarioNomeInput.value.trim() : "",
+                crmv: veterinarioCrmvInput ? veterinarioCrmvInput.value.trim() : "",
                 municipio: veterinarioMunicipioInput ? veterinarioMunicipioInput.value.trim() : "",
                 contato: veterinarioContatoInput ? veterinarioContatoInput.value.trim() : ""
             },
@@ -1259,6 +1261,7 @@ window.editarTarefaModal = async (id) => {
         
         if (tarefa.veterinario) {
             document.getElementById("veterinario-nome-modal").value = tarefa.veterinario.nome || "";
+            document.getElementById("veterinario-crmv-modal").value = tarefa.veterinario.crmv || "";
             document.getElementById("veterinario-municipio-modal").value = tarefa.veterinario.municipio || "";
             document.getElementById("veterinario-contato-modal").value = tarefa.veterinario.contato || "";
 
@@ -1356,11 +1359,13 @@ window.editarTarefaModal = async (id) => {
                 };
 
                 const veterinarioNome = document.getElementById("veterinario-nome-modal").value.trim();
+                const veterinarioCrmv = document.getElementById("veterinario-crmv-modal").value.trim();
                 const veterinarioMunicipio = document.getElementById("veterinario-municipio-modal").value.trim();
                 const veterinarioContato = document.getElementById("veterinario-contato-modal").value.trim();
                 
                 updateData.veterinario = {
                     nome: veterinarioNome,
+                    crmv: veterinarioCrmv,
                     municipio: veterinarioMunicipio,
                     contato: veterinarioContato
                 };
@@ -1512,6 +1517,12 @@ window.mostrarDetalhes = async (id) => {
                             <div class="col-7 fw-medium">${typeof tarefa.veterinario === 'object'
                                 ? tarefa.veterinario?.nome || 'N/A'
                                 : tarefa.veterinario || 'N/A'}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">CRMV:</div>
+                            <div class="col-7 fw-medium">${typeof tarefa.veterinario === 'object'
+                                ? tarefa.veterinario?.crmv || 'N/A'
+                                : 'N/A'}</div>
                         </div>
                     </div>
                 </div>

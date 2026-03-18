@@ -831,6 +831,12 @@ window.mostrarDetalhes = async (id) => {
                                 ? tarefa.veterinario?.nome || 'N/A'
                                 : tarefa.veterinario || 'N/A'}</div>
                         </div>
+                        <div class="row mb-2">
+                            <div class="col-5 text-muted">CRMV:</div>
+                            <div class="col-7 fw-medium">${typeof tarefa.veterinario === 'object'
+                                ? tarefa.veterinario?.crmv || 'N/A'
+                                : 'N/A'}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="card border-0 mb-3 shadow-sm">

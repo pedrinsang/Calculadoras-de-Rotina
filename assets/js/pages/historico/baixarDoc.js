@@ -100,6 +100,7 @@ export async function gerarDocx(tarefa) {
         
         const veterinario = {
             nome: '',
+            crmv: '',
             municipio: '',
             contato: ''
         };
@@ -118,6 +119,7 @@ export async function gerarDocx(tarefa) {
         if (tarefa.veterinario) {
             if (typeof tarefa.veterinario === 'object') {
                 veterinario.nome = tarefa.veterinario.nome || '';
+                veterinario.crmv = tarefa.veterinario.crmv || '';
                 veterinario.municipio = tarefa.veterinario.municipio || '';
                 veterinario.contato = tarefa.veterinario.contato || '';
             } else if (typeof tarefa.veterinario === 'string') {
@@ -263,6 +265,7 @@ export async function gerarDocx(tarefa) {
         // Preparar as datas
         const dataEntrada = formatarData(tarefa.criadoEm || tarefa.dataRecebimento || tarefa.dataInicio);
         const dataLaudo = formatarData(tarefa.dataConclusao);
+        const sufixoAnoAtual = `/${String(new Date().getFullYear()).slice(-2)}`;
         
         console.log("Data de entrada formatada:", dataEntrada);
         console.log("Data do laudo formatada:", dataLaudo);
@@ -2747,7 +2750,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `Identificação: ${tarefa.id || 'SV /25'}                                      Número de amostras: ${tarefa.quantidade || ''}`,
+                            text: `Identificação: ${tarefa.id || `SV ${sufixoAnoAtual}`}                                      Número de amostras: ${tarefa.quantidade || ''}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2759,7 +2762,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `Data de entrada: ${dataEntrada}                                   Data do laudo: ${dataLaudo}`,
+                            text: `Data de entrada: ${dataEntrada}                                  Data do laudo: ${dataLaudo}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2797,7 +2800,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `Identificação: ${tarefa.id || 'SV /25'}                                   Número de amostras: ${tarefa.quantidade || ''}`,
+                            text: `Identificação: ${tarefa.id || `SV ${sufixoAnoAtual}`}                                   Data de entrada: ${dataEntrada}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2808,7 +2811,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `Data de entrada: ${dataEntrada}                                   Data do laudo: ${dataLaudo}`,
+                            text: `Número de amostras: ${tarefa.quantidade || ''}                                   Data do laudo: ${dataLaudo}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -3473,7 +3476,7 @@ export async function gerarDocx(tarefa) {
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "Nome: " + (veterinario.nome || ''),
+                                            text: "Nome: " + (veterinario.nome || '') + "      CRMV: " + (veterinario.crmv || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
