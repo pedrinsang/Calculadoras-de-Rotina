@@ -25,7 +25,7 @@ import { gerarFormularioCobrancaWord } from "../../utils/formularioCobranca.js";
 
 // Prevenir erro da API do Google
 window.__iframefcb190700 = function() {
-    console.log('Google API callback interceptado');
+    return null;
 };
 
 // Interceptar outros callbacks do Google
@@ -50,7 +50,6 @@ if (typeof window.grecaptcha !== 'undefined') {
 // Interceptar erros globais da API do Google
 window.addEventListener('error', function(e) {
     if (e.filename && e.filename.includes('api.js')) {
-        console.warn('Erro da API do Google interceptado:', e.message);
         e.preventDefault();
         return false;
     }
@@ -59,7 +58,6 @@ window.addEventListener('error', function(e) {
 // Interceptar promises rejeitadas da API do Google
 window.addEventListener('unhandledrejection', function(e) {
     if (e.reason && e.reason.toString().includes('Google')) {
-        console.warn('Promise rejeitada da API do Google interceptada:', e.reason);
         e.preventDefault();
     }
 });
@@ -75,12 +73,10 @@ async function limparServiceWorkers() {
             const registrations = await navigator.serviceWorker.getRegistrations();
             
             for (let registration of registrations) {
-                console.log('🧹 Removendo ServiceWorker:', registration.scope);
                 await registration.unregister();
             }
             
             if (registrations.length > 0) {
-                console.log('✅ ServiceWorkers removidos - recarregando página...');
                 // Aguardar um pouco antes de recarregar
                 setTimeout(() => {
                     window.location.reload();
@@ -90,7 +86,7 @@ async function limparServiceWorkers() {
         }
         return false; // Não houve ServiceWorkers para remover
     } catch (error) {
-        console.warn('⚠️ Erro ao limpar ServiceWorkers:', error);
+        console.warn('Erro ao limpar ServiceWorkers:', error);
         return false;
     }
 }
@@ -145,8 +141,6 @@ async function executarComRetry(operacao, maxTentativas = 3, delay = 1000) {
         try {
             return await operacao();
         } catch (error) {
-            console.warn(`⚠️ Tentativa ${tentativa}/${maxTentativas} falhou:`, error.message);
-            
             if (tentativa === maxTentativas) {
                 throw error;
             }
@@ -168,9 +162,13 @@ let todasTarefas = [];
 const EXCLUSAO_CONFIG = {
     TEMPO_RETENCAO: 365, // dias (1 ano)
     CHAVE_ULTIMA_LIMPEZA: 'historico_ultima_limpeza',
-    INTERVALO_VERIFICACAO: 24 * 60 * 60 * 1000, // 24 horas em ms
+    INTERVALO_VERIFICACAO: 60 * 60 * 1000, // verifica a cada hora
+    INTERVALO_ENTRE_LIMPEZAS: 24 * 60 * 60 * 1000, // executa no máximo uma vez por dia
     BATCH_SIZE: 500 // Máximo de documentos por batch (limite do Firestore)
 };
+
+let limpezaAutomaticaIntervalId = null;
+let limpezaEmAndamento = false;
 
 // Verificar se precisa executar limpeza
 function precisaExecutarLimpeza() {
@@ -178,21 +176,16 @@ function precisaExecutarLimpeza() {
         const ultimaLimpeza = localStorage.getItem(EXCLUSAO_CONFIG.CHAVE_ULTIMA_LIMPEZA);
         
         if (!ultimaLimpeza) {
-            console.log('🧹 Primeira execução - executando limpeza inicial');
             return true;
         }
         
-        const ultimaExecucao = new Date(parseInt(ultimaLimpeza));
-        const agora = new Date();
-        const diferencaHoras = (agora - ultimaExecucao) / (1000 * 60 * 60);
+        const timestampUltimaLimpeza = parseInt(ultimaLimpeza, 10);
+        if (!Number.isFinite(timestampUltimaLimpeza)) return true;
         
-        console.log(`⏰ Última limpeza: ${ultimaExecucao.toLocaleString()}`);
-        console.log(`⏰ Diferença: ${Math.round(diferencaHoras)} horas`);
-        
-        return diferencaHoras >= 24; // Executar a cada 24 horas
+        return Date.now() - timestampUltimaLimpeza >= EXCLUSAO_CONFIG.INTERVALO_ENTRE_LIMPEZAS;
         
     } catch (error) {
-        console.warn('⚠️ Erro ao verificar última limpeza:', error);
+        console.warn('Erro ao verificar última limpeza do histórico:', error);
         return true; // Em caso de erro, executar limpeza
     }
 }
@@ -200,19 +193,20 @@ function precisaExecutarLimpeza() {
 // Registrar execução da limpeza
 function registrarLimpeza() {
     localStorage.setItem(EXCLUSAO_CONFIG.CHAVE_ULTIMA_LIMPEZA, Date.now().toString());
-    console.log('✅ Limpeza registrada:', new Date().toLocaleString());
 }
 
 // Excluir tarefas antigas com melhor performance e proteção
 async function excluirTarefasAntigas() {
+    if (limpezaEmAndamento) return 0;
+    limpezaEmAndamento = true;
+
     return await executarComRetry(async () => {
-        console.log('🧹 Iniciando verificação de tarefas antigas...');
-        
-        // Calcular data limite (1 ano atrás)
+        const user = auth.currentUser;
+        if (!user) throw new Error("Usuário não autenticado para limpeza do histórico");
+
+        // Calcular data limite usando a configuração de retenção
         const dataLimite = new Date();
-        dataLimite.setFullYear(dataLimite.getFullYear() - 1);
-        
-        console.log(`📅 Buscando tarefas anteriores a: ${dataLimite.toLocaleDateString()}`);
+        dataLimite.setDate(dataLimite.getDate() - EXCLUSAO_CONFIG.TEMPO_RETENCAO);
         
         // Buscar tarefas antigas
         const q = query(
@@ -224,13 +218,11 @@ async function excluirTarefasAntigas() {
         const querySnapshot = await getDocs(q);
         
         if (querySnapshot.empty) {
-            console.log('✅ Nenhuma tarefa antiga encontrada');
             registrarLimpeza();
             return 0;
         }
         
         const totalDocumentos = querySnapshot.size;
-        console.log(`📦 ${totalDocumentos} tarefas antigas encontradas`);
         
         // Processar em batches para evitar timeout
         let documentosExcluidos = 0;
@@ -239,8 +231,6 @@ async function excluirTarefasAntigas() {
         for (let i = 0; i < docs.length; i += EXCLUSAO_CONFIG.BATCH_SIZE) {
             const batch = writeBatch(db);
             const batchDocs = docs.slice(i, i + EXCLUSAO_CONFIG.BATCH_SIZE);
-            
-            console.log(`🔥 Processando batch ${Math.floor(i / EXCLUSAO_CONFIG.BATCH_SIZE) + 1}/${Math.ceil(docs.length / EXCLUSAO_CONFIG.BATCH_SIZE)} (${batchDocs.length} documentos)`);
             
             // Adicionar exclusões ao batch
             batchDocs.forEach(docSnapshot => {
@@ -251,8 +241,6 @@ async function excluirTarefasAntigas() {
             await batch.commit();
             documentosExcluidos += batchDocs.length;
             
-            console.log(`✅ Batch executado: ${documentosExcluidos}/${totalDocumentos} documentos excluídos`);
-            
             // Pequena pausa entre batches para não sobrecarregar
             if (i + EXCLUSAO_CONFIG.BATCH_SIZE < docs.length) {
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -260,8 +248,6 @@ async function excluirTarefasAntigas() {
         }
         
         registrarLimpeza();
-        
-        console.log(`🎉 Limpeza concluída: ${documentosExcluidos} tarefas antigas removidas`);
         
         // Mostrar feedback para o usuário se houver documentos excluídos
         if (documentosExcluidos > 0) {
@@ -274,33 +260,27 @@ async function excluirTarefasAntigas() {
         return documentosExcluidos;
         
     }, 3, 2000).catch(error => {
-        console.error("❌ Erro na exclusão automática:", error);
-        
-        // Registrar tentativa mesmo com erro para evitar loops
-        registrarLimpeza();
-        
-        // Não mostrar erro para o usuário (processo em background)
+        console.error("Erro na exclusão automática do histórico:", error);
         return 0;
+    }).finally(() => {
+        limpezaEmAndamento = false;
     });
+}
+
+async function executarLimpezaSeNecessaria() {
+    if (!precisaExecutarLimpeza()) return 0;
+    return excluirTarefasAntigas();
 }
 
 // Configurar exclusão automática periódica
 function configurarLimpezaAutomatica() {
-    // Executar verificação inicial
-    if (precisaExecutarLimpeza()) {
-        console.log('🚀 Executando limpeza inicial...');
-        setTimeout(excluirTarefasAntigas, 2000); // Aguardar 2s após carregamento
+    if (limpezaAutomaticaIntervalId) {
+        clearInterval(limpezaAutomaticaIntervalId);
     }
     
-    // Configurar verificação periódica (a cada hora)
-    setInterval(() => {
-        if (precisaExecutarLimpeza()) {
-            console.log('⏰ Hora da limpeza automática...');
-            excluirTarefasAntigas();
-        }
-    }, 60 * 60 * 1000); // Verificar a cada hora
-    
-    console.log('⚙️ Sistema de limpeza automática configurado');
+    limpezaAutomaticaIntervalId = setInterval(() => {
+        executarLimpezaSeNecessaria();
+    }, EXCLUSAO_CONFIG.INTERVALO_VERIFICACAO);
 }
 
 // ============================================================================
@@ -627,13 +607,6 @@ function renderizarTarefas(tarefas) {
                                 tarefa.tipo.includes("ELISA") ||
                                 tarefa.tipo.includes("PCR");
 
-        console.log("🔍 [historico.js] DEBUG - Botão de resultados:", {
-            id: tarefa.id,
-            tipo: tarefa.tipo,
-            subTipo: tarefa.subTipo,
-            showResultsButton
-        });
-
         // Destacar texto nos principais campos se houver busca ativa
         const id = searchTermo ? destacarTermos(tarefa.id || 'Sem ID', searchTermo) : (tarefa.id || 'Sem ID');
         const tipoFormatado = formatarTipoTeste(tarefa);
@@ -952,8 +925,6 @@ ${tarefa.observacoes}
 // Função para mostrar resultados
 window.mostrarResultados = async (id) => {
     try {
-        console.log("Carregando resultados para tarefa:", id);
-        
         // Buscar tarefa no histórico
         const tarefaDoc = await getDoc(doc(db, "historico", id));
         
@@ -1213,9 +1184,6 @@ function inicializarAplicacao() {
         }
     });
 
-    // CONFIGURAR LIMPEZA AUTOMÁTICA
-    configurarLimpezaAutomatica();
-    
     // Verificação de autenticação e status do usuário
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -1234,6 +1202,9 @@ function inicializarAplicacao() {
                         return;
                     }
                 }
+
+                configurarLimpezaAutomatica();
+                await executarLimpezaSeNecessaria();
                 
                 // Se chegou até aqui, usuário está ativo - carregar histórico
                 await carregarHistorico();
@@ -1252,8 +1223,6 @@ function inicializarAplicacao() {
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
-    
     // Tentar limpar ServiceWorkers primeiro
     const precisaRecarregar = await limparServiceWorkers();
     if (precisaRecarregar) return; // Página será recarregada
