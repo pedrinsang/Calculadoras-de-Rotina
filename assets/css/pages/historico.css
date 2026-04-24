@@ -143,6 +143,19 @@
   margin-top: 0.75rem;
 }
 
+.btn-purple {
+  background-color: #6f42c1;
+  border-color: #6f42c1;
+  color: #fff;
+}
+
+.btn-purple:hover,
+.btn-purple:focus {
+  background-color: #5a35a0;
+  border-color: #5a35a0;
+  color: #fff;
+}
+
 .white-space-pre-line {
   white-space: pre-line;
 }

@@ -18,6 +18,7 @@ import { app, auth, db } from "../../../js/firebase.js";
 
 // Imports locais
 import { registrarResultadoSN, registrarResultadoELISA, registrarResultadoMolecular, registrarResultadoRAIVA, registrarResultadoICC} from "./regresultado.js";
+import { gerarFormularioCobrancaWord } from "../../utils/formularioCobranca.js";
 
 // Firebase centralizado via módulo compartilhado
 
@@ -958,6 +959,8 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li><a class="dropdown-item btn-detalhes" href="#" data-id="${doc.id}">
                       <i class="bi bi-info-circle me-2"></i>Detalhes</a></li>
+                  <li><a class="dropdown-item btn-formulario-cobranca" href="#" data-id="${doc.id}">
+                      <i class="bi bi-receipt me-2"></i>Formulario de cobranca</a></li>
                   <li><a class="dropdown-item btn-editar" href="#" data-id="${doc.id}">
                       <i class="bi bi-pencil-square me-2"></i>Editar</a></li>
                   <li><hr class="dropdown-divider"></li>
@@ -1045,6 +1048,13 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             });
         });
 
+        document.querySelectorAll('.btn-formulario-cobranca').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.gerarFormularioCobrancaMural(btn.dataset.id);
+            });
+        });
+
         // Atualize esta parte na função carregarTarefas
         document.querySelectorAll('.btn-editar').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1076,6 +1086,24 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
 
 // Expor funções no objeto window para acessibilidade
 window.carregarTarefas = carregarTarefas;
+
+window.gerarFormularioCobrancaMural = async (id) => {
+    mostrarLoading();
+    try {
+        const tarefaRef = doc(db, "tarefas", id);
+        const tarefaSnap = await getDoc(tarefaRef);
+
+        if (!tarefaSnap.exists()) throw new Error("Tarefa nao encontrada");
+
+        await gerarFormularioCobrancaWord(tarefaSnap.data());
+        mostrarFeedback("Formulario de cobranca em Word baixado com sucesso!", "success");
+    } catch (error) {
+        console.error("Erro ao gerar formulario de cobranca:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+    } finally {
+        esconderLoading();
+    }
+};
 
 // Atualize a função marcarProgresso
 window.marcarProgresso = async (id) => {

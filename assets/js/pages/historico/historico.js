@@ -21,6 +21,7 @@ import {
 
 // Imports locais
 import { gerarDocx } from './baixarDoc.js';
+import { gerarFormularioCobrancaWord } from "../../utils/formularioCobranca.js";
 
 // Prevenir erro da API do Google
 window.__iframefcb190700 = function() {
@@ -661,9 +662,23 @@ function renderizarTarefas(tarefas) {
                     <div><span class="fw-medium">Proprietário:</span> ${proprietarioDisplay}</div>
                 </div>
                 <div class="d-flex flex-wrap gap-2 mt-2">
-                    <button class="btn btn-info text-white btn-sm" onclick="mostrarDetalhes('${tarefa.docId}')">
-                        <i class="bi bi-info-circle me-1"></i>Detalhes
-                    </button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-purple btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical me-1"></i>Mais
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="event.preventDefault(); mostrarDetalhes('${tarefa.docId}')">
+                                    <i class="bi bi-info-circle me-2"></i>Detalhes
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="event.preventDefault(); gerarFormularioCobrancaHistorico('${tarefa.docId}')">
+                                    <i class="bi bi-receipt me-2"></i>Formulario de cobranca
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                     <button class="btn btn-primary btn-sm" onclick="voltarParaMural('${tarefa.docId}')">
                         <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar
                     </button>
@@ -729,6 +744,24 @@ window.voltarParaMural = async (id) => {
         mostrarFeedback("Tarefa enviada de volta ao mural com sucesso!", "success");
     } catch (error) {
         console.error("Erro ao enviar tarefa para o mural:", error);
+        mostrarFeedback(`Erro: ${error.message}`, "error");
+    }
+};
+
+window.gerarFormularioCobrancaHistorico = async (id) => {
+    try {
+        const tarefaRef = doc(db, "historico", id);
+        const tarefaSnap = await getDoc(tarefaRef);
+
+        if (!tarefaSnap.exists()) {
+            mostrarFeedback("Tarefa nao encontrada", "error");
+            return;
+        }
+
+        await gerarFormularioCobrancaWord(tarefaSnap.data());
+        mostrarFeedback("Formulario de cobranca em Word baixado com sucesso!", "success");
+    } catch (error) {
+        console.error("Erro ao gerar formulario de cobranca:", error);
         mostrarFeedback(`Erro: ${error.message}`, "error");
     }
 };
