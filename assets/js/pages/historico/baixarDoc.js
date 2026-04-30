@@ -1,7 +1,7 @@
-﻿const DEBUG_LOGS = false;
+const DEBUG_LOGS = false;
 const debugLog = (...args) => { if (DEBUG_LOGS) console.log(...args); };
 
-// Troque a funÃ§Ã£o mostrarFeedback por:
+// Troque a função mostrarFeedback por:
 function mostrarFeedback(mensagem, tipo = "success") {
     // Remove feedback anterior, se existir
     document.querySelectorAll('.feedback').forEach(fb => fb.remove());
@@ -39,7 +39,7 @@ async function carregarDocx() {
             if (window.docx) {
                 resolve();
             } else {
-                reject(new Error("Biblioteca docx nÃ£o foi carregada corretamente"));
+                reject(new Error("Biblioteca docx não foi carregada corretamente"));
             }
         };
         
@@ -48,7 +48,7 @@ async function carregarDocx() {
     });
 }
 
-// Primeiro, adicione a funÃ§Ã£o para converter imagens em base64
+// Primeiro, adicione a função para converter imagens em base64
 async function getImageAsBase64(path) {
     try {
         // Fix path construction
@@ -94,7 +94,7 @@ export async function gerarDocx(tarefa) {
         const logoUFSMBase64 = await getImageAsBase64('assets/images/logo-ufsm.png');
         const assinaturaBase64 = await getImageAsBase64('assets/images/Assinatura.png');
 
-        // Lide com diferentes formatos de dados do proprietÃ¡rio e veterinÃ¡rio
+        // Lide com diferentes formatos de dados do proprietário e veterinário
         const proprietario = {
             nome: '',
             municipio: '',
@@ -130,7 +130,7 @@ export async function gerarDocx(tarefa) {
             }
         }
 
-        // Adicione o cabeÃ§alho com os logos no inÃ­cio do array sections
+        // Adicione o cabeçalho com os logos no início do array sections
         const sections = [
             new Table({
                 columnWidths: [3000, 3000, 3000],
@@ -176,7 +176,7 @@ export async function gerarDocx(tarefa) {
                                     new Paragraph({
                                         children: [
                                             new TextRun({
-                                                text: "LaboratÃ³rio de Virologia",
+                                                text: "Laboratório de Virologia",
                                                 size: 24,
                                                 font: "Arial"
                                             })
@@ -232,14 +232,14 @@ export async function gerarDocx(tarefa) {
             }),
         ];
 
-        // Define os textos variÃ¡veis conforme o tipo de teste
+        // Define os textos variáveis conforme o tipo de teste
         let tituloLaudo, testeRealizado, nomeArquivo;
         const isELISA = tarefa.tipo.includes("ELISA");
 
         debugLog("Tipo de teste:", tarefa.tipo); // Debug para verificar o tipo
         debugLog("Dados completos da tarefa:", JSON.stringify(tarefa, null, 2)); // Debug completo
 
-        // FunÃ§Ã£o para formatar datas com mÃºltiplas opÃ§Ãµes de fallback
+        // Função para formatar datas com múltiplas opções de fallback
         function formatarData(data, dataDefault = new Date()) {
             if (!data) return dataDefault.toLocaleDateString('pt-BR');
             
@@ -275,7 +275,7 @@ export async function gerarDocx(tarefa) {
         debugLog("criadoEm original:", tarefa.criadoEm);
         debugLog("dataRecebimento original:", tarefa.dataRecebimento);
 
-        // FunÃ§Ã£o para extrair subtipo da SN
+        // Função para extrair subtipo da SN
         function extrairSubtipoSN() {
             if (!isSN) return "";
             
@@ -305,42 +305,42 @@ export async function gerarDocx(tarefa) {
             case "SN BoHV-1":
             case "IBR":
                 tituloLaudo = "Sorologia BoHV-1 (IBR)";
-                testeRealizado = "Soro-NeutralizaÃ§Ã£o para BoHV-1 (cepa Cooper ~ 100TCID50)";
+                testeRealizado = "Soro-Neutralização para BoHV-1 (cepa Cooper ~ 100TCID50)";
                 nomeArquivo = "IBR";
                 break;
             case "SN BVDV":
             case "SN BVDV-1":
             case "BVDV":
                 tituloLaudo = "Sorologia BVDV";
-                testeRealizado = "Soro-neutralizaÃ§Ã£o para BVDV-1 (cepa Singer ~ 100TCID50)";
+                testeRealizado = "Soro-neutralização para BVDV-1 (cepa Singer ~ 100TCID50)";
                 nomeArquivo = "BVDV";
                 break;
             case "SN HoBi":
             case "SN BVDV-3":
                 tituloLaudo = "Sorologia HoBi";
-                testeRealizado = "Soro-neutralizaÃ§Ã£o para HoBi (cepa D32/00_'HoBi' ~ 100TCID50)";
+                testeRealizado = "Soro-neutralização para HoBi (cepa D32/00_'HoBi' ~ 100TCID50)";
                 nomeArquivo = "HoBi";
                 break;
             case "SN EHV-1":
             case "EHV-1":
                 tituloLaudo = "Sorologia EHV-1";
-                testeRealizado = "Soro-neutralizaÃ§Ã£o para EHV-1 (cepa Army 183 ~ 100TCID50)";
+                testeRealizado = "Soro-neutralização para EHV-1 (cepa Army 183 ~ 100TCID50)";
                 nomeArquivo = "EHV-1";
                 break;
             case "ELISA LEUCOSE":
-                tituloLaudo = "Sorologia VÃ­rus da Leucose Bovina";
-                testeRealizado = "ELISA Anticorpo VÃ­rus da Leucose Bovina (IDEXXÂ®)";
+                tituloLaudo = "Sorologia Vírus da Leucose Bovina";
+                testeRealizado = "ELISA Anticorpo Vírus da Leucose Bovina (IDEXX®)";
                 nomeArquivo = "ELISA_LEUCOSE";
                 break;
             case "ELISA":
                 // Verificar subtipo para ELISA
                 if (tarefa.subTipo === "ELISA LEUCOSE") {
-                    tituloLaudo = "Sorologia VÃ­rus da Leucose Bovina";
-                    testeRealizado = "ELISA Anticorpo VÃ­rus da Leucose Bovina (IDEXXÂ®)";
+                    tituloLaudo = "Sorologia Vírus da Leucose Bovina";
+                    testeRealizado = "ELISA Anticorpo Vírus da Leucose Bovina (IDEXX®)";
                     nomeArquivo = "ELISA_LEUCOSE";
                 } else if (tarefa.subTipo === "ELISA BVDV") {
-                    tituloLaudo = "ELISA VÃ­rus da Diarreia Bovina - BVDV";
-                    testeRealizado = "ELISA para AntÃ­geno contra VÃ­rus da Diarreia Bovina - BVDV (IDEXXÂ®)";
+                    tituloLaudo = "ELISA Vírus da Diarreia Bovina - BVDV";
+                    testeRealizado = "ELISA para Antígeno contra Vírus da Diarreia Bovina - BVDV (IDEXX®)";
                     nomeArquivo = "ELISA_BVDV";
                 } else {
                     tituloLaudo = "Laudo Laboratorial";
@@ -349,72 +349,72 @@ export async function gerarDocx(tarefa) {
                 }
                 break;
             case "ELISA BVDV":
-                tituloLaudo = "ELISA VÃ­rus da Diarreia Bovina - BVDV";
-                testeRealizado = "ELISA para AntÃ­geno contra VÃ­rus da Diarreia Bovina - BVDV";
+                tituloLaudo = "ELISA Vírus da Diarreia Bovina - BVDV";
+                testeRealizado = "ELISA para Antígeno contra Vírus da Diarreia Bovina - BVDV";
                 nomeArquivo = "ELISA_BVDV";
                 break;
             case "PCR":
                 // Check if DNA or RNA was selected
                 if (tarefa.resultados?.acidoNucleico === 'RNA') {
-                    tituloLaudo = "DiagnÃ³stico Molecular (RT-PCR)";
-                    testeRealizado = "RT-PCR - pesquisa de Ã¡cido nuclÃ©ico viral (RNA)";
+                    tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
+                    testeRealizado = "RT-PCR - pesquisa de ácido nucléico viral (RNA)";
                 } else {
-                    tituloLaudo = "DiagnÃ³stico Molecular (PCR)";
-                    testeRealizado = "PCR - pesquisa de Ã¡cido nuclÃ©ico viral (DNA)";
+                    tituloLaudo = "Diagnóstico Molecular (PCR)";
+                    testeRealizado = "PCR - pesquisa de ácido nucléico viral (DNA)";
                 }
                 nomeArquivo = "PCR";
                 break;
             case "MOLECULAR":
-                // Verificar subtipo molecular especÃ­fico
+                // Verificar subtipo molecular específico
                 if (tarefa.subTipo === "Multiplex Encefalites Equina") {
-                    tituloLaudo = "DiagnÃ³stico Molecular (Multiplex RT-PCR e PCR)";
+                    tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
                     testeRealizado = "Multiplex RT-PCR e PCR";
                     nomeArquivo = "MULTIPLEX_ENCEFALITES";
                 } else if (tarefa.subTipo === "Multiplex Crostas Bovina") {
-                    tituloLaudo = "DiagnÃ³stico Molecular (Multiplex RT-PCR e PCR)";
+                    tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
                     testeRealizado = "Multiplex RT-PCR e PCR";
                     nomeArquivo = "MULTIPLEX_CROSTAS_BOV";
                 } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Diarreia Neonatal"))) {
-                    tituloLaudo = "DiagnÃ³stico Molecular (Multiplex RT-PCR e PCR)";
+                    tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
                     testeRealizado = "Multiplex RT-PCR e PCR";
                     nomeArquivo = "MULTIPLEX_DIARREIA_NEONATAL_BOV";
-                } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR DoenÃ§a RespiratÃ³ria Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("DoenÃ§a RespiratÃ³ria"))) {
-                    tituloLaudo = "DiagnÃ³stico Molecular (Multiplex RT-PCR e PCR)";
+                } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR Doença Respiratória Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Doença Respiratória"))) {
+                    tituloLaudo = "Diagnóstico Molecular (Multiplex RT-PCR e PCR)";
                     testeRealizado = "Multiplex RT-PCR e PCR";
-                    nomeArquivo = "MULTIPLEX_DOENÃ‡A_RESP_BOV";
+                    nomeArquivo = "MULTIPLEX_DOENÇA_RESP_BOV";
                 } else if (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino" || tarefa.subTipo === "Duplex Rota e Corona Bovino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Bovino") || tarefa.subTipo.includes("Duplex Rota e Corona Bovino")))) {
-                    tituloLaudo = "DiagnÃ³stico Molecular (Duplex RT-PCR)";
+                    tituloLaudo = "Diagnóstico Molecular (Duplex RT-PCR)";
                     testeRealizado = "Duplex RT-PCR";
                     nomeArquivo = "DUPLEX_RT-PCR_ROTA_CORONA_BOV";
                 } else if (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino" || tarefa.subTipo === "Duplex Rota e Corona Equino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Equino") || tarefa.subTipo.includes("Duplex Rota e Corona Equino")))) {
-                    tituloLaudo = "DiagnÃ³stico Molecular (Duplex RT-PCR)";
+                    tituloLaudo = "Diagnóstico Molecular (Duplex RT-PCR)";
                     testeRealizado = "Duplex RT-PCR";
                     nomeArquivo = "DUPLEX_RT-PCR_ROTA_CORONA_EQ";
                 } else if (tarefa.subTipo && tarefa.subTipo.includes("Multiplex")) {
-                    tituloLaudo = `DiagnÃ³stico Molecular (${tarefa.subTipo})`;
+                    tituloLaudo = `Diagnóstico Molecular (${tarefa.subTipo})`;
                     testeRealizado = tarefa.subTipo;
                     nomeArquivo = "MULTIPLEX";
                 } else if (tarefa.subTipo === "RT-PCR") {
-                    tituloLaudo = "DiagnÃ³stico Molecular (RT-PCR)";
-                    testeRealizado = tarefa.alvo ? `RT-PCR - pesquisa de Ã¡cido nuclÃ©ico viral (RNA)` : "RT-PCR - pesquisa de Ã¡cido nuclÃ©ico viral (RNA)";
+                    tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
+                    testeRealizado = tarefa.alvo ? `RT-PCR - pesquisa de ácido nucléico viral (RNA)` : "RT-PCR - pesquisa de ácido nucléico viral (RNA)";
                     nomeArquivo = "RT-PCR";
                 } else if (tarefa.subTipo === "PCR") {
-                    tituloLaudo = "DiagnÃ³stico Molecular (PCR)";
-                    testeRealizado = tarefa.alvo ? `PCR - pesquisa de Ã¡cido nuclÃ©ico viral (DNA)` : "PCR - pesquisa de Ã¡cido nuclÃ©ico viral (DNA)";
+                    tituloLaudo = "Diagnóstico Molecular (PCR)";
+                    testeRealizado = tarefa.alvo ? `PCR - pesquisa de ácido nucléico viral (DNA)` : "PCR - pesquisa de ácido nucléico viral (DNA)";
                     nomeArquivo = "PCR";
                 } else if (tarefa.resultados?.acidoNucleico === 'RNA') {
-                    tituloLaudo = "DiagnÃ³stico Molecular (RT-PCR)";
-                    testeRealizado = "RT-PCR - pesquisa de Ã¡cido nuclÃ©ico viral (RNA)";
+                    tituloLaudo = "Diagnóstico Molecular (RT-PCR)";
+                    testeRealizado = "RT-PCR - pesquisa de ácido nucléico viral (RNA)";
                     nomeArquivo = "RT-PCR";
                 } else {
-                    tituloLaudo = "DiagnÃ³stico Molecular (PCR)";
-                    testeRealizado = "PCR - pesquisa de Ã¡cido nuclÃ©ico viral (DNA)";
+                    tituloLaudo = "Diagnóstico Molecular (PCR)";
+                    testeRealizado = "PCR - pesquisa de ácido nucléico viral (DNA)";
                     nomeArquivo = "PCR";
                 }
                 break;
             case "RAIVA":
-                tituloLaudo = "DiagnÃ³stico de RAIVA";
-                testeRealizado = "(  ) ImunofluorescÃªncia (  ) RT-PCR";
+                tituloLaudo = "Diagnóstico de RAIVA";
+                testeRealizado = "(  ) Imunofluorescência (  ) RT-PCR";
                 nomeArquivo = "RAIVA";
                 break;
             case "ICC":
@@ -423,14 +423,14 @@ export async function gerarDocx(tarefa) {
                 nomeArquivo = "ICC";
                 break;
             default:
-                // Caso padrÃ£o para tipos SN nÃ£o especÃ­ficos ou outros
+                // Caso padrão para tipos SN não específicos ou outros
                 if (tarefa.tipo.includes("SN")) {
-                    tituloLaudo = "Sorologia - SoroneutralizaÃ§Ã£o";
-                    testeRealizado = "Soro-neutralizaÃ§Ã£o (SN)";
+                    tituloLaudo = "Sorologia - Soroneutralização";
+                    testeRealizado = "Soro-neutralização (SN)";
                     nomeArquivo = "SN";
                 } else {
                     tituloLaudo = "Laudo Laboratorial";
-                    testeRealizado = tarefa.tipo || "Teste nÃ£o especificado";
+                    testeRealizado = tarefa.tipo || "Teste não especificado";
                     nomeArquivo = "LAUDO";
                 }
                 break;
@@ -448,21 +448,21 @@ export async function gerarDocx(tarefa) {
         // Add a new condition for ICC type
         const isICC = tarefa.tipo === "ICC";
 
-        // Add a new condition for SN type - mais flexÃ­vel
+        // Add a new condition for SN type - mais flexível
         const isSN = tarefa.tipo && (tarefa.tipo.includes("SN") || tarefa.tipo.includes("Soro"));
 
         debugLog("isSN detectado:", isSN); // Debug
 
-        // FunÃ§Ã£o para gerar os checkboxes de tipos de SN
+        // Função para gerar os checkboxes de tipos de SN
         function gerarCheckboxesSN(tipoAtual) {
             debugLog("=== DEBUG CHECKBOXES ===");
             debugLog("Gerando checkboxes para tipo:", tipoAtual);
             debugLog("SubTipo da tarefa:", tarefa.subTipo);
             debugLog("Tipo original:", JSON.stringify(tipoAtual));
             
-            // Usar subTipo se disponÃ­vel, senÃ£o usar tipo
+            // Usar subTipo se disponível, senão usar tipo
             const tipoParaVerificar = tarefa.subTipo || tipoAtual;
-            debugLog("Tipo que serÃ¡ verificado:", tipoParaVerificar);
+            debugLog("Tipo que será verificado:", tipoParaVerificar);
             
             const tipos = [
                 { codigo: "BVDV-1", nome: "BVDV-1" },
@@ -476,20 +476,20 @@ export async function gerarDocx(tarefa) {
             tipos.forEach((tipo, index) => {
                 let isSelected = false;
                 
-                // LÃ³gica de detecÃ§Ã£o melhorada e corrigida
+                // Lógica de detecção melhorada e corrigida
                 if (tipoParaVerificar) {
                     const tipoUpper = tipoParaVerificar.toUpperCase();
                     
                     debugLog(`Verificando ${tipo.nome}:`);
                     debugLog(`  tipoUpper: "${tipoUpper}"`);
                     
-                    // LÃ³gica especÃ­fica para cada tipo
+                    // Lógica específica para cada tipo
                     if (tipo.codigo === "BoHV-1") {
                         // Para BoHV-1, verifica IBR ou BoHV-1
                         isSelected = tipoUpper.includes("IBR") || tipoUpper.includes("BOHV-1");
                         debugLog(`  IBR/BoHV-1 check: ${isSelected}`);
                     } else if (tipo.codigo === "BVDV-1") {
-                        // Para BVDV-1, verifica se tem BVDV mas nÃ£o especifica 2 ou 3
+                        // Para BVDV-1, verifica se tem BVDV mas não especifica 2 ou 3
                         isSelected = tipoUpper.includes("BVDV") && !tipoUpper.includes("BVDV-2") && !tipoUpper.includes("BVDV-3");
                         debugLog(`  BVDV-1 check: ${isSelected}`);
                     } else if (tipo.codigo === "BVDV-2") {
@@ -524,9 +524,9 @@ export async function gerarDocx(tarefa) {
 
         // Cria a tabela de resultados baseada no tipo
         let tabelaResultados;
-        let tabelaResultadosEncefalites; // Declarar aqui para que seja acessÃ­vel em todo o escopo
-        let tituloSecao; // Para tÃ­tulos especÃ­ficos dos subtipos MOLECULAR
-        let informacoes; // Para informaÃ§Ãµes especÃ­ficas dos subtipos MOLECULAR
+        let tabelaResultadosEncefalites; // Declarar aqui para que seja acessível em todo o escopo
+        let tituloSecao; // Para títulos específicos dos subtipos MOLECULAR
+        let informacoes; // Para informações específicas dos subtipos MOLECULAR
         
         if (isELISA || isRAIVA || isICC) { // Add ICC here
             // Tabela ELISA, RAIVA e ICC
@@ -538,7 +538,7 @@ export async function gerarDocx(tarefa) {
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({ 
-                                        text: "IdentificaÃ§Ã£o da amostra", 
+                                        text: "Identificação da amostra",
                                         bold: true,
                                         size: 24,
                                         font: "Arial",
@@ -619,13 +619,13 @@ export async function gerarDocx(tarefa) {
                             ]
                         })
                     ),
-                    // Add ObservaÃ§Ãµes row for RAIVA and ICC
+                    // Add Observações row for RAIVA and ICC
                     new TableRow({
                         children: [
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({ 
-                                        text: "ObservaÃ§Ãµes:", 
+                                        text: "Observações:",
                                         bold: true,
                                         size: 24,
                                         font: "Arial"
@@ -649,13 +649,13 @@ export async function gerarDocx(tarefa) {
             tabelaResultados = new Table({
                 columnWidths: [3000, 3000],
                 rows: [
-                    // CabeÃ§alho com descriÃ§Ã£o do teste
+                    // Cabeçalho com descrição do teste
                     new TableRow({
                         children: [
                             new TableCell({
                                 children: [new Paragraph({
                                     children: [new TextRun({
-                                        text: "IdentificaÃ§Ã£o da amostra",
+                                        text: "Identificação da amostra",
                                         bold: true,
                                         size: 24,
                                         font: "Arial",
@@ -760,13 +760,13 @@ export async function gerarDocx(tarefa) {
                             })
                         ]
                     }),
-                    // ObservaÃ§Ãµes
+                    // Observações
                     new TableRow({
                         children: [
                             new TableCell({
                                 children: [new Paragraph({
                                     children: [new TextRun({
-                                        text: "ObservaÃ§Ãµes:",
+                                        text: "Observações:",
                                         bold: true,
                                         size: 24,
                                         font: "Arial"
@@ -786,23 +786,23 @@ export async function gerarDocx(tarefa) {
                 width: { size: 100, type: WidthType.PERCENTAGE }
             });
         } else if (isMOLECULAR) {
-            // Tabela especÃ­fica para DiagnÃ³stico Molecular
+            // Tabela específica para Diagnóstico Molecular
             debugLog("=== DEBUG MOLECULAR ===");
-            debugLog("Ã‰ MOLECULAR:", isMOLECULAR);
+            debugLog("É MOLECULAR:", isMOLECULAR);
             debugLog("SubTipo da tarefa:", tarefa.subTipo);
             debugLog("Tipo da tarefa:", tarefa.tipo);
-            debugLog("ComparaÃ§Ã£o 'Multiplex Encefalites Equina':", tarefa.subTipo === "Multiplex Encefalites Equina");
-            debugLog("ComparaÃ§Ã£o 'Multiplex Crostas Bovina':", tarefa.subTipo === "Multiplex Crostas Bovina");
-            debugLog("ComparaÃ§Ã£o 'Multiplex RT-PCR e PCR Diarreia Neonatal Bovina':", tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina");
-            debugLog("ComparaÃ§Ã£o 'Multiplex Diarreia Neonatal Bovina':", tarefa.subTipo === "Multiplex Diarreia Neonatal Bovina");
-            debugLog("ComparaÃ§Ã£o 'Multiplex RT-PCR e PCR DoenÃ§a RespiratÃ³ria Bovina':", tarefa.subTipo === "Multiplex RT-PCR e PCR DoenÃ§a RespiratÃ³ria Bovina");
-            debugLog("ComparaÃ§Ã£o 'Multiplex DoenÃ§a RespiratÃ³ria Bovina':", tarefa.subTipo === "Multiplex DoenÃ§a RespiratÃ³ria Bovina");
-            debugLog("ComparaÃ§Ã£o 'Duplex RT-PCR Rota e Corona Bovino':", tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino");
-            debugLog("ComparaÃ§Ã£o 'Duplex Rota e Corona Bovino':", tarefa.subTipo === "Duplex Rota e Corona Bovino");
-            debugLog("ComparaÃ§Ã£o 'Duplex RT-PCR Rota e Corona Equino':", tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino");
-            debugLog("ComparaÃ§Ã£o 'Duplex Rota e Corona Equino':", tarefa.subTipo === "Duplex Rota e Corona Equino");
+            debugLog("Comparação 'Multiplex Encefalites Equina':", tarefa.subTipo === "Multiplex Encefalites Equina");
+            debugLog("Comparação 'Multiplex Crostas Bovina':", tarefa.subTipo === "Multiplex Crostas Bovina");
+            debugLog("Comparação 'Multiplex RT-PCR e PCR Diarreia Neonatal Bovina':", tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina");
+            debugLog("Comparação 'Multiplex Diarreia Neonatal Bovina':", tarefa.subTipo === "Multiplex Diarreia Neonatal Bovina");
+            debugLog("Comparação 'Multiplex RT-PCR e PCR Doença Respiratória Bovina':", tarefa.subTipo === "Multiplex RT-PCR e PCR Doença Respiratória Bovina");
+            debugLog("Comparação 'Multiplex Doença Respiratória Bovina':", tarefa.subTipo === "Multiplex Doença Respiratória Bovina");
+            debugLog("Comparação 'Duplex RT-PCR Rota e Corona Bovino':", tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino");
+            debugLog("Comparação 'Duplex Rota e Corona Bovino':", tarefa.subTipo === "Duplex Rota e Corona Bovino");
+            debugLog("Comparação 'Duplex RT-PCR Rota e Corona Equino':", tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino");
+            debugLog("Comparação 'Duplex Rota e Corona Equino':", tarefa.subTipo === "Duplex Rota e Corona Equino");
             debugLog("Inclui 'Diarreia Neonatal':", tarefa.subTipo && tarefa.subTipo.includes("Diarreia Neonatal"));
-            debugLog("Inclui 'DoenÃ§a RespiratÃ³ria':", tarefa.subTipo && tarefa.subTipo.includes("DoenÃ§a RespiratÃ³ria"));
+            debugLog("Inclui 'Doença Respiratória':", tarefa.subTipo && tarefa.subTipo.includes("Doença Respiratória"));
             debugLog("Inclui 'Duplex RT-PCR Rota e Corona':", tarefa.subTipo && tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona"));
             debugLog("Inclui 'Duplex Rota e Corona':", tarefa.subTipo && tarefa.subTipo.includes("Duplex Rota e Corona"));
             debugLog("Nome exato do subTipo recebido:", JSON.stringify(tarefa.subTipo));
@@ -811,17 +811,17 @@ export async function gerarDocx(tarefa) {
             
             if (tarefa.subTipo === "Multiplex Encefalites Equina") {
 
-                // Adicionar tabela de resultados especÃ­fica para Multiplex Encefalites
+                // Adicionar tabela de resultados específica para Multiplex Encefalites
                 tabelaResultadosEncefalites = new Table({
                     columnWidths: [1500, 1000, 1000, 1000, 1000, 1000],
                     rows: [
-                        // CabeÃ§alho da tabela de resultados
+                        // Cabeçalho da tabela de resultados
                         new TableRow({
                             children: [
                                 new TableCell({
                                     children: [new Paragraph({
                                         children: [new TextRun({
-                                            text: "IdentificaÃ§Ã£o da amostra",
+                                            text: "Identificação da amostra",
                                             bold: true,
                                             size: 20,
                                             font: "Arial",
@@ -1065,7 +1065,7 @@ export async function gerarDocx(tarefa) {
                     width: { size: 100, type: WidthType.PERCENTAGE }
                 });
             } else if (tarefa.subTipo === "Multiplex Crostas Bovina") {
-                // Tabela especÃ­fica para Multiplex Crostas Bovina
+                // Tabela específica para Multiplex Crostas Bovina
                 debugLog("=== DETECTOU MULTIPLEX CROSTAS BOVINA ===");
                 debugLog("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
                 debugLog("Amostras:", tarefa.resultados?.amostras);
@@ -1074,13 +1074,13 @@ export async function gerarDocx(tarefa) {
                 tabelaResultados = new Table({
                     columnWidths: [1500, 1000, 1000, 1000, 1000],
                     rows: [
-                        // CabeÃ§alho da tabela de resultados
+                        // Cabeçalho da tabela de resultados
                         new TableRow({
                             children: [
                                 new TableCell({
                                     children: [new Paragraph({
                                         children: [new TextRun({
-                                            text: "IdentificaÃ§Ã£o da amostra",
+                                            text: "Identificação da amostra",
                                             bold: true,
                                             size: 20,
                                             font: "Arial",
@@ -1303,7 +1303,7 @@ export async function gerarDocx(tarefa) {
                     width: { size: 100, type: WidthType.PERCENTAGE }
                 });
             } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Diarreia Neonatal"))) {
-                // Tabela especÃ­fica para Multiplex RT-PCR e PCR Diarreia Neonatal Bovina
+                // Tabela específica para Multiplex RT-PCR e PCR Diarreia Neonatal Bovina
                 debugLog("=== DETECTOU MULTIPLEX DIARREIA NEONATAL BOVINA ===");
                 debugLog("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
                 debugLog("Amostras:", tarefa.resultados?.amostras);
@@ -1312,13 +1312,13 @@ export async function gerarDocx(tarefa) {
                 tabelaResultados = new Table({
                     columnWidths: [1200, 800, 800, 800, 800, 800],
                     rows: [
-                        // CabeÃ§alho da tabela de resultados
+                        // Cabeçalho da tabela de resultados
                         new TableRow({
                             children: [
                                 new TableCell({
                                     children: [new Paragraph({
                                         children: [new TextRun({
-                                            text: "IdentificaÃ§Ã£o da amostra",
+                                            text: "Identificação da amostra",
                                             bold: true,
                                             size: 20,
                                             font: "Arial",
@@ -1577,23 +1577,23 @@ export async function gerarDocx(tarefa) {
                     ],
                     width: { size: 100, type: WidthType.PERCENTAGE }
                 });
-            } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR DoenÃ§a RespiratÃ³ria Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("DoenÃ§a RespiratÃ³ria"))) {
-                // Tabela especÃ­fica para Multiplex RT-PCR e PCR DoenÃ§a RespiratÃ³ria Bovina
-                debugLog("=== DETECTOU MULTIPLEX DOENÃ‡A RESPIRATÃ“RIA BOVINA ===");
+            } else if (tarefa.subTipo === "Multiplex RT-PCR e PCR Doença Respiratória Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Doença Respiratória"))) {
+                // Tabela específica para Multiplex RT-PCR e PCR Doença Respiratória Bovina
+                debugLog("=== DETECTOU MULTIPLEX DOENÇA RESPIRATÓRIA BOVINA ===");
                 debugLog("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
                 debugLog("Amostras:", tarefa.resultados?.amostras);
-                debugLog("=== FIM DEBUG RESPIRATÃ“RIA ===");
+                debugLog("=== FIM DEBUG RESPIRATÓRIA ===");
                 
                 tabelaResultados = new Table({
                     columnWidths: [1200, 800, 800, 800, 800, 800],
                     rows: [
-                        // CabeÃ§alho da tabela de resultados
+                        // Cabeçalho da tabela de resultados
                         new TableRow({
                             children: [
                                 new TableCell({
                                     children: [new Paragraph({
                                         children: [new TextRun({
-                                            text: "IdentificaÃ§Ã£o da amostra",
+                                            text: "Identificação da amostra",
                                             bold: true,
                                             size: 20,
                                             font: "Arial",
@@ -1720,7 +1720,7 @@ export async function gerarDocx(tarefa) {
                         }),
                         // Linhas de dados
                         ...(tarefa.resultados?.amostras || []).map((amostra, index) => {
-                            debugLog(`=== AMOSTRA RESPIRATÃ“RIA ${index + 1} ===`);
+                            debugLog(`=== AMOSTRA RESPIRATÓRIA ${index + 1} ===`);
                             debugLog("Dados completos da amostra:", JSON.stringify(amostra, null, 2));
                             debugLog("TODOS OS CAMPOS DA AMOSTRA:");
                             Object.keys(amostra).forEach(key => {
@@ -1732,7 +1732,7 @@ export async function gerarDocx(tarefa) {
                             debugLog("boHV1:", amostra.boHV1);
                             debugLog("bvdv:", amostra.bvdv);
                             debugLog("bpiv3:", amostra.bpiv3);
-                            debugLog("=== FIM AMOSTRA RESPIRATÃ“RIA ===");
+                            debugLog("=== FIM AMOSTRA RESPIRATÓRIA ===");
                             
                             return new TableRow({
                                 children: [
@@ -1851,7 +1851,7 @@ export async function gerarDocx(tarefa) {
                     width: { size: 100, type: WidthType.PERCENTAGE }
                 });
             } else if (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino" || tarefa.subTipo === "Duplex Rota e Corona Bovino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Bovino") || tarefa.subTipo.includes("Duplex Rota e Corona Bovino")))) {
-                // Tabela especÃ­fica para Duplex RT-PCR Rota e Corona Bovino / Duplex Rota e Corona Bovino
+                // Tabela específica para Duplex RT-PCR Rota e Corona Bovino / Duplex Rota e Corona Bovino
                 debugLog("=== DETECTOU DUPLEX RT-PCR ROTA E CORONA BOVINO ===");
                 debugLog("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
                 debugLog("Amostras:", tarefa.resultados?.amostras);
@@ -1860,13 +1860,13 @@ export async function gerarDocx(tarefa) {
                 tabelaResultados = new Table({
                     columnWidths: [2000, 2000, 2000],
                     rows: [
-                        // CabeÃ§alho da tabela
+                        // Cabeçalho da tabela
                         new TableRow({
                             children: [
                                 new TableCell({
                                     children: [new Paragraph({
                                         children: [new TextRun({
-                                            text: "IdentificaÃ§Ã£o da amostra",
+                                            text: "Identificação da amostra",
                                             bold: true,
                                             size: 20,
                                             font: "Arial",
@@ -2007,7 +2007,7 @@ export async function gerarDocx(tarefa) {
                     width: { size: 100, type: WidthType.PERCENTAGE }
                 });
             } else if (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino" || tarefa.subTipo === "Duplex Rota e Corona Equino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Equino") || tarefa.subTipo.includes("Duplex Rota e Corona Equino")))) {
-                // Tabela especÃ­fica para Duplex RT-PCR Rota e Corona Equino / Duplex Rota e Corona Equino
+                // Tabela específica para Duplex RT-PCR Rota e Corona Equino / Duplex Rota e Corona Equino
                 debugLog("=== DETECTOU DUPLEX RT-PCR ROTA E CORONA EQUINO ===");
                 debugLog("Dados da tarefa.resultados:", JSON.stringify(tarefa.resultados, null, 2));
                 debugLog("Amostras:", tarefa.resultados?.amostras);
@@ -2016,13 +2016,13 @@ export async function gerarDocx(tarefa) {
                 tabelaResultados = new Table({
                     columnWidths: [2000, 2000, 2000],
                     rows: [
-                        // CabeÃ§alho da tabela
+                        // Cabeçalho da tabela
                         new TableRow({
                             children: [
                                 new TableCell({
                                     children: [new Paragraph({
                                         children: [new TextRun({
-                                            text: "IdentificaÃ§Ã£o da amostra",
+                                            text: "Identificação da amostra",
                                             bold: true,
                                             size: 20,
                                             font: "Arial",
@@ -2163,7 +2163,7 @@ export async function gerarDocx(tarefa) {
                     width: { size: 100, type: WidthType.PERCENTAGE }
                 });
             } else {
-                // Para outros subtipos moleculares, usar formato padrÃ£o
+                // Para outros subtipos moleculares, usar formato padrão
                 tabelaResultados = new Table({
                     columnWidths: [3000, 3000],
                     rows: [
@@ -2172,7 +2172,7 @@ export async function gerarDocx(tarefa) {
                                 new TableCell({
                                     children: [new Paragraph({
                                         children: [new TextRun({
-                                            text: "IdentificaÃ§Ã£o da amostra",
+                                            text: "Identificação da amostra",
                                             bold: true,
                                             size: 24,
                                             font: "Arial",
@@ -2236,7 +2236,7 @@ export async function gerarDocx(tarefa) {
             tabelaResultados = new Table({
                 columnWidths: [1500, 1500, 4000],
                 rows: [
-                    // CabeÃ§alho da tabela
+                    // Cabeçalho da tabela
                     new TableRow({
                         children: [
                             new TableCell({
@@ -2265,7 +2265,7 @@ export async function gerarDocx(tarefa) {
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({ 
-                                        text: "IdentificaÃ§Ã£o das amostras", 
+                                        text: "Identificação das amostras",
                                         bold: true,
                                         size: 24,
                                         font: "Arial",
@@ -2324,7 +2324,7 @@ export async function gerarDocx(tarefa) {
                             })
                         ]
                     }),
-                    // Linha de positivas (cabeÃ§alho)
+                    // Linha de positivas (cabeçalho)
                     new TableRow({
                         children: [
                             new TableCell({
@@ -2348,13 +2348,13 @@ export async function gerarDocx(tarefa) {
                         ]
                     }),
                   
-                    // Linhas de tÃ­tulos (4 a â‰¥512)
+                    // Linhas de títulos (4 a ≥512)
                     new TableRow({
                         children: [
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "TÃ­tulo 4",
+                                        text: "Título 4",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2388,7 +2388,7 @@ export async function gerarDocx(tarefa) {
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "TÃ­tulo 8",
+                                        text: "Título 8",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2422,7 +2422,7 @@ export async function gerarDocx(tarefa) {
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "TÃ­tulo 16",
+                                        text: "Título 16",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2456,7 +2456,7 @@ export async function gerarDocx(tarefa) {
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "TÃ­tulo 32",
+                                        text: "Título 32",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2490,7 +2490,7 @@ export async function gerarDocx(tarefa) {
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "TÃ­tulo 64",
+                                        text: "Título 64",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2524,7 +2524,7 @@ export async function gerarDocx(tarefa) {
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "TÃ­tulo 128",
+                                        text: "Título 128",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2558,7 +2558,7 @@ export async function gerarDocx(tarefa) {
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "TÃ­tulo 256",
+                                        text: "Título 256",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2587,13 +2587,13 @@ export async function gerarDocx(tarefa) {
                             })
                         ]
                     }),
-                    // Linha de â‰¥512
+                    // Linha de ≥512
                     new TableRow({
                         children: [
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "â‰¥512",
+                                        text: "≥512",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2622,13 +2622,13 @@ export async function gerarDocx(tarefa) {
                             })
                         ]
                     }),
-                    // Linha de imprÃ³prias
+                    // Linha de impróprias
                     new TableRow({
                         children: [
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "ImprÃ³prias p/ testar",
+                                        text: "Impróprias p/ testar",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2657,13 +2657,13 @@ export async function gerarDocx(tarefa) {
                             })
                         ]
                     }),
-                    // Linha de tÃ³xicas
+                    // Linha de tóxicas
                     new TableRow({
                         children: [
                             new TableCell({
                                 children: [new Paragraph({ 
                                     children: [new TextRun({
-                                        text: "TÃ³xicas",
+                                        text: "Tóxicas",
                                         size: 24,
                                         font: "Arial"
                                     })]
@@ -2747,13 +2747,13 @@ export async function gerarDocx(tarefa) {
                 spacing: { after: 400 }
             }),
             
-            // Para ELISA, usar formato especÃ­fico da imagem
+            // Para ELISA, usar formato específico da imagem
             ...(isELISA ? [
-                // IdentificaÃ§Ã£o e NÃºmero de amostras
+                // Identificação e Número de amostras
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `IdentificaÃ§Ã£o: ${tarefa.id || `SV ${sufixoAnoAtual}`}                                      NÃºmero de amostras: ${tarefa.quantidade || ''}`,
+                            text: `Identificação: ${tarefa.id || `SV ${sufixoAnoAtual}`}                                      Número de amostras: ${tarefa.quantidade || ''}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2799,11 +2799,11 @@ export async function gerarDocx(tarefa) {
                 })
             ] : [
                 // Para outros tipos, usar formato original
-                // IdentificaÃ§Ã£o e datas
+                // Identificação e datas
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `IdentificaÃ§Ã£o: ${tarefa.id || `SV ${sufixoAnoAtual}`}                                   Data de entrada: ${dataEntrada}`,
+                            text: `Identificação: ${tarefa.id || `SV ${sufixoAnoAtual}`}                                   Data de entrada: ${dataEntrada}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2814,7 +2814,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `NÃºmero de amostras: ${tarefa.quantidade || ''}                                   Data do laudo: ${dataLaudo}`,
+                            text: `Número de amostras: ${tarefa.quantidade || ''}                                   Data do laudo: ${dataLaudo}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2827,7 +2827,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `EspÃ©cie: ${tarefa.especie || ''}`,
+                            text: `Espécie: ${tarefa.especie || ''}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2838,7 +2838,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `VÃ­rus: ${tarefa.virus || ''}`,
+                            text: `Vírus: ${tarefa.virus || ''}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2851,7 +2851,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `EspÃ©cie: ${tarefa.especie || ''}`,
+                            text: `Espécie: ${tarefa.especie || ''}`,
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -2873,7 +2873,7 @@ export async function gerarDocx(tarefa) {
             ] : []),
             
             ...(!isPCR && !isELISA ? [
-                // Teste realizado (agora dinÃ¢mico)
+                // Teste realizado (agora dinâmico)
                 new Paragraph({
                     children: [
                         new TextRun({
@@ -2885,8 +2885,8 @@ export async function gerarDocx(tarefa) {
                     ],
                 }),
                 
-                // InformaÃ§Ãµes especÃ­ficas para Multiplex DoenÃ§a RespiratÃ³ria Bovina
-                ...(tarefa.subTipo === "Multiplex RT-PCR e PCR DoenÃ§a RespiratÃ³ria Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("DoenÃ§a RespiratÃ³ria")) ? [
+                // Informações específicas para Multiplex Doença Respiratória Bovina
+                ...(tarefa.subTipo === "Multiplex RT-PCR e PCR Doença Respiratória Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Doença Respiratória")) ? [
                     new Paragraph({
                         text: "",
                     }),
@@ -2903,7 +2903,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "EspÃ©cie: Bovino",
+                                text: "Espécie: Bovino",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -2923,7 +2923,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "CoronavÃ­rus bovino (BCoV);",
+                                text: "Coronavírus bovino (BCoV);",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -2933,7 +2933,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "VÃ­rus RespiratÃ³rio Sincicial Bovino (BRSV);",
+                                text: "Vírus Respiratório Sincicial Bovino (BRSV);",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -2943,7 +2943,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "HerpesvÃ­rus Bovino (BoHV-1/5)",
+                                text: "Herpesvírus Bovino (BoHV-1/5)",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -2953,7 +2953,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "VÃ­rus da Diarreia Viral Bovina (BVDV)",
+                                text: "Vírus da Diarreia Viral Bovina (BVDV)",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -2963,7 +2963,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "VÃ­rus da Parainfluenza Bovina tipo 3 (BPIV-3)",
+                                text: "Vírus da Parainfluenza Bovina tipo 3 (BPIV-3)",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -2973,7 +2973,7 @@ export async function gerarDocx(tarefa) {
                     })
                 ] : []),
                 
-                // InformaÃ§Ãµes especÃ­ficas para Multiplex Encefalites Equina
+                // Informações específicas para Multiplex Encefalites Equina
                 ...(tarefa.subTipo === "Multiplex Encefalites Equina" ? [
                     new Paragraph({
                         text: "",
@@ -2991,7 +2991,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "EspÃ©cie: Equino",
+                                text: "Espécie: Equino",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3011,7 +3011,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "VÃ­rus da Raiva (RaBV);",
+                                text: "Vírus da Raiva (RaBV);",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3021,7 +3021,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "HerpesvÃ­rus Equino tipo 1 (EHV-1);",
+                                text: "Herpesvírus Equino tipo 1 (EHV-1);",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3051,7 +3051,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "VÃ­rus da Encefalite Equina Venezuelana (VEEV)",
+                                text: "Vírus da Encefalite Equina Venezuelana (VEEV)",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3061,7 +3061,7 @@ export async function gerarDocx(tarefa) {
                     })
                 ] : []),
                 
-                // InformaÃ§Ãµes especÃ­ficas para PCR Molecular simples (tipo MOLECULAR + subTipo PCR ou RT-PCR)
+                // Informações específicas para PCR Molecular simples (tipo MOLECULAR + subTipo PCR ou RT-PCR)
                 ...(tarefa.tipo === "MOLECULAR" && (tarefa.subTipo === "PCR" || tarefa.subTipo === "RT-PCR") ? [
                     new Paragraph({
                         children: [
@@ -3076,7 +3076,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: `EspÃ©cie: ${tarefa.especie || ''}`,
+                                text: `Espécie: ${tarefa.especie || ''}`,
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3096,7 +3096,7 @@ export async function gerarDocx(tarefa) {
                     })
                 ] : []),
                 
-                // InformaÃ§Ãµes especÃ­ficas para Duplex RT-PCR Rota e Corona Bovino
+                // Informações específicas para Duplex RT-PCR Rota e Corona Bovino
                 ...(tarefa.tipo === "MOLECULAR" && (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Bovino" || tarefa.subTipo === "Duplex Rota e Corona Bovino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Bovino") || tarefa.subTipo.includes("Duplex Rota e Corona Bovino")))) ? [
                     new Paragraph({
                         children: [
@@ -3111,7 +3111,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "EspÃ©cie: Bovino",
+                                text: "Espécie: Bovino",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3131,7 +3131,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "CoronavÃ­rus Bovino (BCoV);",
+                                text: "Coronavírus Bovino (BCoV);",
                                 size: 22,
                                 font: "Arial"
                             })
@@ -3140,7 +3140,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "RotavÃ­rus Bovino (BRoV)",
+                                text: "Rotavírus Bovino (BRoV)",
                                 size: 22,
                                 font: "Arial"
                             })
@@ -3149,7 +3149,7 @@ export async function gerarDocx(tarefa) {
                     })
                 ] : []),
                 
-                // InformaÃ§Ãµes especÃ­ficas para Duplex RT-PCR Rota e Corona Equino
+                // Informações específicas para Duplex RT-PCR Rota e Corona Equino
                 ...(tarefa.tipo === "MOLECULAR" && (tarefa.subTipo === "Duplex RT-PCR Rota e Corona Equino" || tarefa.subTipo === "Duplex Rota e Corona Equino" || (tarefa.subTipo && (tarefa.subTipo.includes("Duplex RT-PCR Rota e Corona Equino") || tarefa.subTipo.includes("Duplex Rota e Corona Equino")))) ? [
                     new Paragraph({
                         children: [
@@ -3164,7 +3164,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "EspÃ©cie: Equino",
+                                text: "Espécie: Equino",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3184,7 +3184,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "CoronavÃ­rus (CoV);",
+                                text: "Coronavírus (CoV);",
                                 size: 22,
                                 font: "Arial"
                             })
@@ -3193,7 +3193,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "RotavÃ­rus (RoV)",
+                                text: "Rotavírus (RoV)",
                                 size: 22,
                                 font: "Arial"
                             })
@@ -3202,7 +3202,7 @@ export async function gerarDocx(tarefa) {
                     })
                 ] : []),
                 
-                // InformaÃ§Ãµes especÃ­ficas para ICC
+                // Informações específicas para ICC
                 ...(tarefa.tipo === "ICC" ? [
                     new Paragraph({
                         text: "",
@@ -3211,7 +3211,7 @@ export async function gerarDocx(tarefa) {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "Material:                                                   EspÃ©cie:",
+                                text: "Material:                                                   Espécie:",
                                 bold: true,
                                 size: 22,
                                 font: "Arial"
@@ -3252,7 +3252,7 @@ export async function gerarDocx(tarefa) {
                 ] : [])
             ] : []),
 
-            // Para Multiplex Crostas Bovina, adicionar informaÃ§Ãµes especÃ­ficas antes da tabela de resultados
+            // Para Multiplex Crostas Bovina, adicionar informações específicas antes da tabela de resultados
             ...(tarefa.subTipo === "Multiplex Crostas Bovina" ? [
                 // Material
                 new Paragraph({
@@ -3265,11 +3265,11 @@ export async function gerarDocx(tarefa) {
                         })
                     ]
                 }),
-                // EspÃ©cie
+                // Espécie
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "EspÃ©cie: Bovino",
+                            text: "Espécie: Bovino",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -3291,7 +3291,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "VaccÃ­nia (VaCV);",
+                            text: "Vaccínia (VaCV);",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -3321,7 +3321,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "HerpesvÃ­rus Bovino tipo 2 (BoHV-2)",
+                            text: "Herpesvírus Bovino tipo 2 (BoHV-2)",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -3331,7 +3331,7 @@ export async function gerarDocx(tarefa) {
                 })
             ] : []),
 
-            // Para Multiplex RT-PCR e PCR Diarreia Neonatal Bovina, adicionar informaÃ§Ãµes especÃ­ficas antes da tabela de resultados
+            // Para Multiplex RT-PCR e PCR Diarreia Neonatal Bovina, adicionar informações específicas antes da tabela de resultados
             ...(tarefa.subTipo === "Multiplex RT-PCR e PCR Diarreia Neonatal Bovina" || (tarefa.subTipo && tarefa.subTipo.includes("Diarreia Neonatal")) ? [
                 // Material
                 new Paragraph({
@@ -3344,11 +3344,11 @@ export async function gerarDocx(tarefa) {
                         })
                     ]
                 }),
-                // EspÃ©cie
+                // Espécie
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "EspÃ©cie: Bovino",
+                            text: "Espécie: Bovino",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -3390,7 +3390,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "CoronavÃ­rus Bovino (BCoV);",
+                            text: "Coronavírus Bovino (BCoV);",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -3400,7 +3400,7 @@ export async function gerarDocx(tarefa) {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: "RotavÃ­rus Bovino (BRoV)",
+                            text: "Rotavírus Bovino (BRoV)",
                             bold: true,
                             size: 24,
                             font: "Arial"
@@ -3420,7 +3420,7 @@ export async function gerarDocx(tarefa) {
                 })
             ] : []),
 
-            // Tabela de proprietÃ¡rio e veterinÃ¡rio
+            // Tabela de proprietário e veterinário
             new Table({
                 columnWidths: [3000, 3000],
                 rows: [
@@ -3430,7 +3430,7 @@ export async function gerarDocx(tarefa) {
                                 children: [
                                     new Paragraph({
                                         children: [new TextRun({ 
-                                            text: "ProprietÃ¡rio:", 
+                                            text: "Proprietário:",
                                             bold: true,
                                             size: 24,
                                             font: "Arial"
@@ -3446,7 +3446,7 @@ export async function gerarDocx(tarefa) {
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "MunicÃ­pio: " + (proprietario.municipio || ''),
+                                            text: "Município: " + (proprietario.municipio || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
@@ -3470,7 +3470,7 @@ export async function gerarDocx(tarefa) {
                                 children: [
                                     new Paragraph({
                                         children: [new TextRun({ 
-                                            text: "MÃ©dico VeterinÃ¡rio:", 
+                                            text: "Médico Veterinário:",
                                             bold: true,
                                             size: 24,
                                             font: "Arial"
@@ -3486,7 +3486,7 @@ export async function gerarDocx(tarefa) {
                                     }),
                                     new Paragraph({
                                         children: [new TextRun({
-                                            text: "MunicÃ­pio: " + (veterinario.municipio || ''),
+                                            text: "Município: " + (veterinario.municipio || ''),
                                             size: 24,
                                             font: "Arial"
                                         })]
@@ -3512,13 +3512,13 @@ export async function gerarDocx(tarefa) {
                 width: { size: 100, type: WidthType.PERCENTAGE }
             }),
 
-            // TÃ­tulo especÃ­fico para subtipos MOLECULAR (se definido)
+            // Título específico para subtipos MOLECULAR (se definido)
             ...(tituloSecao ? [tituloSecao] : []),
             
-            // InformaÃ§Ãµes especÃ­ficas para subtipos MOLECULAR (se definido)
+            // Informações específicas para subtipos MOLECULAR (se definido)
             ...(informacoes ? [informacoes] : []),
 
-            // EspaÃ§amento antes da tabela de resultados
+            // Espaçamento antes da tabela de resultados
             new Paragraph({
                 text: "",
                 spacing: { after: 100 }
@@ -3529,14 +3529,14 @@ export async function gerarDocx(tarefa) {
 
            
 
-            // Para Multiplex Encefalites, adicionar tambÃ©m a tabela de resultados especÃ­fica
+            // Para Multiplex Encefalites, adicionar também a tabela de resultados específica
             ...(tarefa.subTipo === "Multiplex Encefalites Equina" ? [
-                // EspaÃ§amento entre tabelas
+                // Espaçamento entre tabelas
                 new Paragraph({
                     text: "",
                     spacing: { after: 100 }
                 }),
-                // TÃ­tulo da tabela de resultados
+                // Título da tabela de resultados
                 new Paragraph({
                     children: [new TextRun({
                         text: "Resultado",
@@ -3550,7 +3550,7 @@ export async function gerarDocx(tarefa) {
                 tabelaResultadosEncefalites
             ] : []),
 
-            // EspaÃ§amento antes da tabela de rodapÃ©
+            // Espaçamento antes da tabela de rodapé
             new Paragraph({
                 text: "",
                 spacing: { after: 400 }
@@ -3568,7 +3568,7 @@ export async function gerarDocx(tarefa) {
                                 new TableCell({
                                     children: [new Paragraph({ 
                                         children: [new TextRun({ 
-                                            text: "Amostras negativas sÃ£o aquelas que apresentam tÃ­tulo neutralizante < 4 (na diluiÃ§Ã£o 1:4); amostras positivas sÃ£o aquelas que apresentam tÃ­tulo neutralizante â‰¥ 4.", 
+                                            text: "Amostras negativas são aquelas que apresentam título neutralizante < 4 (na diluição 1:4); amostras positivas são aquelas que apresentam título neutralizante ≥ 4.",
                                             bold: true,
                                             size: 24,
                                             font: "Arial",
@@ -3594,7 +3594,7 @@ export async function gerarDocx(tarefa) {
 
         // Add footer and signature
         sections.push(
-            // Adicionar tabela de contato apÃ³s o espaÃ§amento e antes da assinatura
+            // Adicionar tabela de contato após o espaçamento e antes da assinatura
             new Table({
                 width: { size: 100, type: WidthType.PERCENTAGE },
                 rows: [
@@ -3605,7 +3605,7 @@ export async function gerarDocx(tarefa) {
                                     new Paragraph({
                                         children: [
                                             new TextRun({
-                                                text: "EndereÃ§o:",
+                                                text: "Endereço:",
                                                 size: 16,
                                                 font: "Arial",
                                                 bold: true
@@ -3617,7 +3617,7 @@ export async function gerarDocx(tarefa) {
                                     new Paragraph({
                                         children: [
                                             new TextRun({
-                                                text: "Av. Roraima, 1000 - PrÃ©dio 63 A",
+                                                text: "Av. Roraima, 1000 - Prédio 63 A",
                                                 size: 16,
                                                 font: "Arial"
                                             })
@@ -3785,7 +3785,7 @@ export async function gerarDocx(tarefa) {
             }),
             new Paragraph({
                 children: [new TextRun({
-                    text: "ResponsÃ¡vel tÃ©cnico",
+                    text: "Responsável técnico",
                     size: 17,
                     font: "Arial"
                 })],
@@ -3799,11 +3799,11 @@ export async function gerarDocx(tarefa) {
                     id: "Normal",
                     name: "Normal",
                     run: {
-                        size: 24, // Tamanho padrÃ£o (12pt)
+                        size: 24, // Tamanho padrão (12pt)
                         font: "Arial"
                     },
                     paragraph: {
-                        spacing: { line: 276 } // EspaÃ§amento simples
+                        spacing: { line: 276 } // Espaçamento simples
                     }
                 }]
             },

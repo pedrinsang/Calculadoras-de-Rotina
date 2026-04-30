@@ -1,4 +1,4 @@
-﻿const DEBUG_LOGS = false;
+const DEBUG_LOGS = false;
 const debugLog = (...args) => { if (DEBUG_LOGS) console.log(...args); };
 
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
@@ -8,7 +8,7 @@ import { gerarDocx } from "./baixarDoc.js";
 
 let modalAtual = null;
 
-// FunÃ§Ã£o auxiliar para formatar o tipo completo da tarefa
+// Função auxiliar para formatar o tipo completo da tarefa
 function formatarTipoCompleto(tarefa) {
     if (tarefa.subTipo) {
         return `${tarefa.tipo} - ${tarefa.subTipo}`;
@@ -23,22 +23,22 @@ function formatarTipoCompleto(tarefa) {
 
 window.mostrarResultados = async (id) => {
     try {
-        // Se jÃ¡ existe um modal aberto, fecha ele primeiro
+        // Se já existe um modal aberto, fecha ele primeiro
         if (modalAtual) {
             fecharModalComAnimacao();
             // Remove qualquer event listener existente do ESC
             document.removeEventListener("keydown", handleKeyDown);
-            await new Promise(resolve => setTimeout(resolve, 300)); // Aguarda a animaÃ§Ã£o terminar
+            await new Promise(resolve => setTimeout(resolve, 300)); // Aguarda a animação terminar
         }
 
         const tarefaRef = doc(db, "historico", id);
         const tarefaSnap = await getDoc(tarefaRef);
         
-        if (!tarefaSnap.exists()) throw new Error("Tarefa nÃ£o encontrada no histÃ³rico");
+        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada no histórico");
         
         const tarefa = tarefaSnap.data();
         
-        debugLog("ðŸ” [resultado.js] DEBUG - Dados da tarefa:", {
+        debugLog("🔍 [resultado.js] DEBUG - Dados da tarefa:", {
             id: tarefa.id,
             tipo: tarefa.tipo,
             subTipo: tarefa.subTipo,
@@ -54,31 +54,31 @@ window.mostrarResultados = async (id) => {
         const isRAIVA = tarefa.tipo.includes("RAIVA");
         const isICC = tarefa.tipo.includes("ICC");
         
-        debugLog("ðŸ” [resultado.js] DEBUG - Flags de detecÃ§Ã£o:", {
+        debugLog("🔍 [resultado.js] DEBUG - Flags de detecção:", {
             isSN, isELISA, isPCRSimples, isMolecular, isRAIVA, isICC,
             tipoOriginal: tarefa.tipo
         });
         
         if (!isSN && !isELISA && !isPCRSimples && !isMolecular && !isRAIVA && !isICC) {
-            mostrarFeedback("Este tipo de tarefa nÃ£o possui resultados especÃ­ficos", "warning");
+            mostrarFeedback("Este tipo de tarefa não possui resultados específicos", "warning");
             return;
         }
         
         if (!tarefa.resultados) {
-            debugLog("âŒ [resultado.js] Tarefa sem resultados registrados");
-            mostrarFeedback("Esta tarefa nÃ£o possui resultados registrados", "warning");
+            debugLog("❌ [resultado.js] Tarefa sem resultados registrados");
+            mostrarFeedback("Esta tarefa não possui resultados registrados", "warning");
             return;
         }
         
-        debugLog("âœ… [resultado.js] Tarefa possui resultados:", tarefa.resultados);
+        debugLog("✅ [resultado.js] Tarefa possui resultados:", tarefa.resultados);
 
-        // Cria o modal apenas se nÃ£o houver nenhum aberto
+        // Cria o modal apenas se não houver nenhum aberto
         if (!modalAtual) {
             const modal = document.createElement("div");
             modal.className = "modal-resultados";
             modal.style.opacity = "0";
 
-            // ConteÃºdo base do modal
+            // Conteúdo base do modal
             const modalContent = `
                 <div class="modal-resultados-content">
                     <div class="modal-resultados-header">
@@ -92,7 +92,7 @@ window.mostrarResultados = async (id) => {
                         <div class="modal-resultados-info">
                             <span><i class="bi bi-tag"></i> ID: ${tarefa.id || ''}</span>
                             <span><i class="bi bi-collection"></i> Amostras: ${tarefa.quantidade || '0'}</span>
-                            <span><i class="bi bi-calendar-event"></i> Data de ConclusÃ£o: ${formatarData(tarefa.dataConclusao || tarefa.data)}</span>
+                            <span><i class="bi bi-calendar-event"></i> Data de Conclusão: ${formatarData(tarefa.dataConclusao || tarefa.data)}</span>
                         </div>
                         
                         <button id="baixar-docx" class="btn-download-results">
@@ -138,7 +138,7 @@ window.mostrarResultados = async (id) => {
                 };
             }
             
-            // FunÃ§Ã£o para fechar o modal com animaÃ§Ã£o
+            // Função para fechar o modal com animação
             const fecharModalComAnimacao = () => {
                 if (modalAtual) {
                     const modalContent = modalAtual.querySelector('.modal-resultados-content');
@@ -157,7 +157,7 @@ window.mostrarResultados = async (id) => {
             
             window.fecharModalComAnimacao = fecharModalComAnimacao;
 
-            // FunÃ§Ã£o para lidar com o ESC
+            // Função para lidar com o ESC
             const handleKeyDown = (e) => {
                 if (e.key === "Escape") {
                     fecharModalComAnimacao();
@@ -168,13 +168,13 @@ window.mostrarResultados = async (id) => {
             // Adiciona o listener do ESC
             document.addEventListener("keydown", handleKeyDown);
 
-            // Configura os botÃµes de fechar
+            // Configura os botões de fechar
             modal.querySelector("#fechar-modal-x").onclick = () => {
                 fecharModalComAnimacao();
                 document.removeEventListener("keydown", handleKeyDown);
             };
 
-            // Fecha ao clicar fora do conteÃºdo, mas apenas se o clique for diretamente no fundo
+            // Fecha ao clicar fora do conteúdo, mas apenas se o clique for diretamente no fundo
             modal.onclick = (e) => {
                 if (e.target === modal) {
                     fecharModalComAnimacao();
@@ -188,7 +188,7 @@ window.mostrarResultados = async (id) => {
     }
 };
 
-// FunÃ§Ã£o para gerar o conteÃºdo da tabela de acordo com o tipo
+// Função para gerar o conteúdo da tabela de acordo com o tipo
 function getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAIVA, isICC) {
     if (isSN) {
         return `
@@ -196,7 +196,7 @@ function getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAI
               <thead>
                 <tr>
                   <th>Resultado</th>
-                  <th>IdentificaÃ§Ã£o das amostras</th>
+                  <th>Identificação das amostras</th>
                 </tr>
               </thead>
               <tbody>
@@ -208,43 +208,43 @@ function getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAI
                   <td colspan="2" style="text-align: center; font-weight: bold;">Positivas</td>
                 </tr>
                 <tr>
-                  <td>TÃ­tulo 4</td>
+                  <td>Título 4</td>
                   <td>${tarefa.resultados.titulo4 || '-'}</td>
                 </tr>
                 <tr>
-                  <td>TÃ­tulo 8</td>
+                  <td>Título 8</td>
                   <td>${tarefa.resultados.titulo8 || '-'}</td>
                 </tr>
                 <tr>
-                  <td>TÃ­tulo 16</td>
+                  <td>Título 16</td>
                   <td>${tarefa.resultados.titulo16 || '-'}</td>
                 </tr>
                 <tr>
-                  <td>TÃ­tulo 32</td>
+                  <td>Título 32</td>
                   <td>${tarefa.resultados.titulo32 || '-'}</td>
                 </tr>
                 <tr>
-                  <td>TÃ­tulo 64</td>
+                  <td>Título 64</td>
                   <td>${tarefa.resultados.titulo64 || '-'}</td>
                 </tr>
                 <tr>
-                  <td>TÃ­tulo 128</td>
+                  <td>Título 128</td>
                   <td>${tarefa.resultados.titulo128 || '-'}</td>
                 </tr>
                 <tr>
-                  <td>TÃ­tulo 256</td>
+                  <td>Título 256</td>
                   <td>${tarefa.resultados.titulo256 || '-'}</td>
                 </tr>
                 <tr>
-                  <td>TÃ­tulo â‰¥512</td>
+                  <td>Título ≥512</td>
                   <td>${tarefa.resultados.titulo512 || '-'}</td>
                 </tr>
                 <tr>
-                  <td>ImprÃ³prias para testar</td>
+                  <td>Impróprias para testar</td>
                   <td>${tarefa.resultados.improprias || '-'}</td>
                 </tr>
                 <tr>
-                  <td>TÃ³xicas</td>
+                  <td>Tóxicas</td>
                   <td>${tarefa.resultados.toxicas || '-'}</td>
                 </tr>
                 <tr>
@@ -255,13 +255,13 @@ function getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAI
             </table>
         `;
     } else if (isPCRSimples) {
-        // Para PCR simples - tabela bÃ¡sica sem avisos
-        debugLog("âœ… [resultado.js] Usando PCR simples - sem detecÃ§Ã£o automÃ¡tica");
+        // Para PCR simples - tabela básica sem avisos
+        debugLog("✅ [resultado.js] Usando PCR simples - sem detecção automática");
         return `
             <table class="tabela-resultados tabela-resultados-view compact-table">
                 <thead>
                     <tr>
-                        <th>IdentificaÃ§Ã£o da amostra</th>
+                        <th>Identificação da amostra</th>
                         <th>Resultado</th>
                     </tr>
                 </thead>
@@ -280,8 +280,8 @@ function getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAI
             </table>
         `;
     } else if (isMolecular) {
-        // Para MOLECULAR - detectar tipo especÃ­fico de PCR
-        debugLog("ðŸ”¬ [resultado.js] Usando MOLECULAR - com detecÃ§Ã£o automÃ¡tica");
+        // Para MOLECULAR - detectar tipo específico de PCR
+        debugLog("🔬 [resultado.js] Usando MOLECULAR - com detecção automática");
         const tipoPCR = detectarTipoPCR(tarefa);
         return gerarTabelaPCR(tarefa, tipoPCR);
     } else {
@@ -290,7 +290,7 @@ function getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAI
             <table class="tabela-resultados tabela-resultados-view compact-table">
                 <thead>
                     <tr>
-                        <th>IdentificaÃ§Ã£o da amostra</th>
+                        <th>Identificação da amostra</th>
                         <th>Resultado</th>
                     </tr>
                 </thead>
@@ -307,11 +307,11 @@ function getTableContent(tarefa, isSN, isELISA, isPCRSimples, isMolecular, isRAI
     }
 }
 
-// FunÃ§Ã£o para detectar o tipo especÃ­fico de PCR
+// Função para detectar o tipo específico de PCR
 function detectarTipoPCR(tarefa) {
     const resultados = tarefa.resultados;
     
-    debugLog("ðŸ” [resultado.js] DEBUG PCR - Dados da tarefa:", {
+    debugLog("🔍 [resultado.js] DEBUG PCR - Dados da tarefa:", {
         id: tarefa.id,
         tipo: tarefa.tipo,
         subTipo: tarefa.subTipo,
@@ -321,13 +321,13 @@ function detectarTipoPCR(tarefa) {
     });
     
     if (!resultados.amostras || resultados.amostras.length === 0) {
-        debugLog("âŒ [resultado.js] Sem amostras");
+        debugLog("❌ [resultado.js] Sem amostras");
         return 'simples';
     }
     
     // 1. PRIMEIRA PRIORIDADE: Detectar pelo campo subTipo (MOLECULAR)
     if (tarefa.subTipo) {
-        debugLog("âœ… [resultado.js] Detectado pelo subTipo:", tarefa.subTipo);
+        debugLog("✅ [resultado.js] Detectado pelo subTipo:", tarefa.subTipo);
         const subTipoLower = tarefa.subTipo.toLowerCase();
         
         if (subTipoLower.includes('duplex')) {
@@ -341,7 +341,7 @@ function detectarTipoPCR(tarefa) {
             if (subTipoLower.includes('diarreia')) return 'multiplexDiarreia';
             if (subTipoLower.includes('respirator')) return 'multiplexRespiratoria';
             if (subTipoLower.includes('encefalite')) {
-                debugLog("ðŸŽ¯ [resultado.js] Retornando multiplexEncefalites");
+                debugLog("🎯 [resultado.js] Retornando multiplexEncefalites");
                 return 'multiplexEncefalites';
             }
         }
@@ -349,7 +349,7 @@ function detectarTipoPCR(tarefa) {
     
     // 2. SEGUNDA PRIORIDADE: Detectar pelo campo pcrTipo
     if (tarefa.pcrTipo) {
-        debugLog("âœ… [resultado.js] Detectado pelo pcrTipo:", tarefa.pcrTipo);
+        debugLog("✅ [resultado.js] Detectado pelo pcrTipo:", tarefa.pcrTipo);
         const pcrTipoLower = tarefa.pcrTipo.toLowerCase();
         
         if (pcrTipoLower.includes('duplex')) {
@@ -369,7 +369,7 @@ function detectarTipoPCR(tarefa) {
     // 3. TERCEIRA PRIORIDADE: Detectar pelo complemento
     if (tarefa.complemento) {
         const complementoLower = tarefa.complemento.toLowerCase();
-        debugLog("ðŸ” [resultado.js] Analisando complemento:", complementoLower);
+        debugLog("🔍 [resultado.js] Analisando complemento:", complementoLower);
         
         if (complementoLower.includes('duplex')) {
             if (complementoLower.includes('bovino')) return 'duplexBovino';
@@ -388,39 +388,39 @@ function detectarTipoPCR(tarefa) {
     // 4. QUARTA PRIORIDADE: Detectar pelas propriedades das amostras
     const primeiraAmostra = resultados.amostras[0];
     const propriedades = Object.keys(primeiraAmostra);
-    debugLog("ðŸ” [resultado.js] Propriedades da primeira amostra:", propriedades);
+    debugLog("🔍 [resultado.js] Propriedades da primeira amostra:", propriedades);
     
     // Duplex Bovino
     if (primeiraAmostra.coronavirusBovino !== undefined && primeiraAmostra.rotavirusBovino !== undefined) {
-        debugLog("âœ… [resultado.js] Detectado Duplex Bovino pelas propriedades");
+        debugLog("✅ [resultado.js] Detectado Duplex Bovino pelas propriedades");
         return 'duplexBovino';
     }
     
     // Duplex Equino
     if (primeiraAmostra.coronavirusEquino !== undefined && primeiraAmostra.rotavirusEquino !== undefined) {
-        debugLog("âœ… [resultado.js] Detectado Duplex Equino pelas propriedades");
+        debugLog("✅ [resultado.js] Detectado Duplex Equino pelas propriedades");
         return 'duplexEquino';
     }
     
     // Multiplex Crostas
     if (primeiraAmostra.vaccinia !== undefined || primeiraAmostra.pseudocowpox !== undefined || 
         primeiraAmostra.estomatitePapular !== undefined || primeiraAmostra.herpesvirus !== undefined) {
-        debugLog("âœ… [resultado.js] Detectado Multiplex Crostas pelas propriedades");
+        debugLog("✅ [resultado.js] Detectado Multiplex Crostas pelas propriedades");
         return 'multiplexCrostas';
     }
     
     // Multiplex Diarreia
     if (primeiraAmostra.ecoli !== undefined || primeiraAmostra.salmonella !== undefined || 
         primeiraAmostra.cryptosporidium !== undefined) {
-        debugLog("âœ… [resultado.js] Detectado Multiplex Diarreia pelas propriedades");
+        debugLog("✅ [resultado.js] Detectado Multiplex Diarreia pelas propriedades");
         return 'multiplexDiarreia';
     }
     
-    // Multiplex RespiratÃ³ria
+    // Multiplex Respiratória
     if (primeiraAmostra.brsv !== undefined || primeiraAmostra.bohv !== undefined || 
         primeiraAmostra.bvdv !== undefined || primeiraAmostra.bpiv3 !== undefined || 
         primeiraAmostra.coronavirusBovino !== undefined) {
-        debugLog("âœ… [resultado.js] Detectado Multiplex RespiratÃ³ria pelas propriedades");
+        debugLog("✅ [resultado.js] Detectado Multiplex Respiratória pelas propriedades");
         return 'multiplexRespiratoria';
     }
     
@@ -428,19 +428,19 @@ function detectarTipoPCR(tarefa) {
     if (primeiraAmostra.virusRaiva !== undefined || primeiraAmostra.ehv1 !== undefined || 
         primeiraAmostra.flavivirus !== undefined || primeiraAmostra.alphavirus !== undefined || 
         primeiraAmostra.veev !== undefined) {
-        debugLog("âœ… [resultado.js] Detectado Multiplex Encefalites pelas propriedades");
+        debugLog("✅ [resultado.js] Detectado Multiplex Encefalites pelas propriedades");
         return 'multiplexEncefalites';
     }
     
-    debugLog("âš ï¸ [resultado.js] Usando PCR simples como fallback");
+    debugLog("⚠️ [resultado.js] Usando PCR simples como fallback");
     return 'simples';
 }
 
-// FunÃ§Ã£o para gerar tabela especÃ­fica de PCR baseada no tipo
+// Função para gerar tabela específica de PCR baseada no tipo
 function gerarTabelaPCR(tarefa, tipoPCR) {
     const resultados = tarefa.resultados;
     
-    debugLog("ðŸ“Š [resultado.js] gerarTabelaPCR chamada com tipoPCR:", tipoPCR);
+    debugLog("📊 [resultado.js] gerarTabelaPCR chamada com tipoPCR:", tipoPCR);
     
     switch (tipoPCR) {
         case 'duplexBovino':
@@ -456,10 +456,10 @@ function gerarTabelaPCR(tarefa, tipoPCR) {
         case 'multiplexRespiratoria':
             return gerarTabelaMultiplexRespiratoria(resultados);
         case 'multiplexEncefalites':
-            debugLog("ðŸŽ¯ [resultado.js] Chamando gerarTabelaMultiplexEncefalites");
+            debugLog("🎯 [resultado.js] Chamando gerarTabelaMultiplexEncefalites");
             return gerarTabelaMultiplexEncefalites(resultados);
         default:
-            debugLog("âš ï¸ [resultado.js] Usando PCR simples como fallback para:", tipoPCR);
+            debugLog("⚠️ [resultado.js] Usando PCR simples como fallback para:", tipoPCR);
             return gerarTabelaPCRSimples(tarefa, resultados);
     }
 }
@@ -469,10 +469,10 @@ function gerarTabelaDuplexBovino(resultados) {
     return `
         <div class="row">
             <div class="col-md-6">
-                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>CoronavÃ­rus Bovino</h6>
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Bovino</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -485,10 +485,10 @@ function gerarTabelaDuplexBovino(resultados) {
                 </table>
             </div>
             <div class="col-md-6">
-                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>RotavÃ­rus Bovino</h6>
+                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>Rotavírus Bovino</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -509,10 +509,10 @@ function gerarTabelaDuplexRotaCorona(resultados) {
     return `
         <div class="row">
             <div class="col-md-6">
-                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>CoronavÃ­rus Bovino (BCoV)</h6>
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Bovino (BCoV)</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -525,10 +525,10 @@ function gerarTabelaDuplexRotaCorona(resultados) {
                 </table>
             </div>
             <div class="col-md-6">
-                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>RotavÃ­rus Bovino (BRoV)</h6>
+                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>Rotavírus Bovino (BRoV)</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -546,20 +546,20 @@ function gerarTabelaDuplexRotaCorona(resultados) {
 
 // Duplex Equino
 function gerarTabelaDuplexEquino(resultados) {
-    debugLog("ðŸŽ [gerarTabelaDuplexEquino] Dados recebidos:", JSON.stringify(resultados, null, 2));
+    debugLog("🐎 [gerarTabelaDuplexEquino] Dados recebidos:", JSON.stringify(resultados, null, 2));
     return `
         <div class="row">
             <div class="col-md-6">
-                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>CoronavÃ­rus Equino (CoV)</h6>
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Equino (CoV)</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => {
                             // Buscar o valor de CoV com fallbacks
-                            const covResult = amostra.cov || amostra.CoV || amostra.coronavirusEquino || amostra['coronavÃ­rus equino'] || amostra.cequino || amostra.CEquino || "";
-                            debugLog(`ðŸ¦  [CoV] Amostra ${index + 1}: cov=${amostra.cov}, CoV=${amostra.CoV}, coronavirusEquino=${amostra.coronavirusEquino}, resultado=${covResult}`);
+                            const covResult = amostra.cov || amostra.CoV || amostra.coronavirusEquino || amostra['coronavírus equino'] || amostra.cequino || amostra.CEquino || "";
+                            debugLog(`🦠 [CoV] Amostra ${index + 1}: cov=${amostra.cov}, CoV=${amostra.CoV}, coronavirusEquino=${amostra.coronavirusEquino}, resultado=${covResult}`);
                             return `
                             <tr>
                                 <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
@@ -571,16 +571,16 @@ function gerarTabelaDuplexEquino(resultados) {
                 </table>
             </div>
             <div class="col-md-6">
-                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>RotavÃ­rus Equino (RoV)</h6>
+                <h6 class="text-info mb-3"><i class="bi bi-virus2 me-2"></i>Rotavírus Equino (RoV)</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => {
                             // Buscar o valor de RoV com fallbacks
-                            const rovResult = amostra.rov || amostra.RoV || amostra.rotavirusEquino || amostra['rotavÃ­rus equino'] || amostra.requino || amostra.REquino || "";
-                            debugLog(`ðŸŒ€ [RoV] Amostra ${index + 1}: rov=${amostra.rov}, RoV=${amostra.RoV}, rotavirusEquino=${amostra.rotavirusEquino}, resultado=${rovResult}`);
+                            const rovResult = amostra.rov || amostra.RoV || amostra.rotavirusEquino || amostra['rotavírus equino'] || amostra.requino || amostra.REquino || "";
+                            debugLog(`🌀 [RoV] Amostra ${index + 1}: rov=${amostra.rov}, RoV=${amostra.RoV}, rotavirusEquino=${amostra.rotavirusEquino}, resultado=${rovResult}`);
                             return `
                             <tr>
                                 <td>${amostra.identificacao || `Amostra ${index + 1}`}</td>
@@ -603,7 +603,7 @@ function gerarTabelaMultiplexCrostas(resultados) {
                 <h6 class="text-danger mb-3"><i class="bi bi-virus me-2"></i>Vaccinia</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -618,7 +618,7 @@ function gerarTabelaMultiplexCrostas(resultados) {
                 <h6 class="text-warning mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>Pseudocowpox</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -634,7 +634,7 @@ function gerarTabelaMultiplexCrostas(resultados) {
                 <h6 class="text-success mb-3"><i class="bi bi-virus me-2"></i>Estomatite Papular</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -646,10 +646,10 @@ function gerarTabelaMultiplexCrostas(resultados) {
                     </tbody>
                 </table>
                 
-                <h6 class="text-secondary mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>HerpesvÃ­rus Bovino 2</h6>
+                <h6 class="text-secondary mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>Herpesvírus Bovino 2</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -673,7 +673,7 @@ function gerarTabelaMultiplexDiarreia(resultados) {
                 <h6 class="text-danger mb-3"><i class="bi bi-virus me-2"></i>E. coli</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -688,7 +688,7 @@ function gerarTabelaMultiplexDiarreia(resultados) {
                 <h6 class="text-warning mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>Salmonella</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -703,7 +703,7 @@ function gerarTabelaMultiplexDiarreia(resultados) {
                 <h6 class="text-success mb-3 mt-4"><i class="bi bi-virus me-2"></i>Cryptosporidium</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -716,10 +716,10 @@ function gerarTabelaMultiplexDiarreia(resultados) {
                 </table>
             </div>
             <div class="col-md-6">
-                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>CoronavÃ­rus Bovino</h6>
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Bovino</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -731,10 +731,10 @@ function gerarTabelaMultiplexDiarreia(resultados) {
                     </tbody>
                 </table>
                 
-                <h6 class="text-info mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>RotavÃ­rus Bovino</h6>
+                <h6 class="text-info mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>Rotavírus Bovino</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -754,10 +754,10 @@ function gerarTabelaMultiplexRespiratoria(resultados) {
     return `
         <div class="row">
             <div class="col-md-6">
-                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>CoronavÃ­rus Bovino</h6>
+                <h6 class="text-primary mb-3"><i class="bi bi-virus me-2"></i>Coronavírus Bovino</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -772,7 +772,7 @@ function gerarTabelaMultiplexRespiratoria(resultados) {
                 <h6 class="text-info mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>BRSV</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -787,7 +787,7 @@ function gerarTabelaMultiplexRespiratoria(resultados) {
                 <h6 class="text-success mb-3 mt-4"><i class="bi bi-virus me-2"></i>BoHV-1</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -803,7 +803,7 @@ function gerarTabelaMultiplexRespiratoria(resultados) {
                 <h6 class="text-danger mb-3"><i class="bi bi-virus me-2"></i>BVDV</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -818,7 +818,7 @@ function gerarTabelaMultiplexRespiratoria(resultados) {
                 <h6 class="text-secondary mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>BPIV-3</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -835,15 +835,15 @@ function gerarTabelaMultiplexRespiratoria(resultados) {
 }
 
 function gerarTabelaMultiplexEncefalites(resultados) {
-    debugLog("ðŸŽ¯ [resultado.js] gerarTabelaMultiplexEncefalites executada com resultados:", resultados);
+    debugLog("🎯 [resultado.js] gerarTabelaMultiplexEncefalites executada com resultados:", resultados);
     
     return `
         <div class="row">
             <div class="col-md-6">
-                <h6 class="text-danger mb-3"><i class="bi bi-virus me-2"></i>VÃ­rus da Raiva</h6>
+                <h6 class="text-danger mb-3"><i class="bi bi-virus me-2"></i>Vírus da Raiva</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -858,7 +858,7 @@ function gerarTabelaMultiplexEncefalites(resultados) {
                 <h6 class="text-primary mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>EHV-1</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -870,10 +870,10 @@ function gerarTabelaMultiplexEncefalites(resultados) {
                     </tbody>
                 </table>
                 
-                <h6 class="text-warning mb-3 mt-4"><i class="bi bi-virus me-2"></i>FlavivÃ­rus</h6>
+                <h6 class="text-warning mb-3 mt-4"><i class="bi bi-virus me-2"></i>Flavivírus</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -886,10 +886,10 @@ function gerarTabelaMultiplexEncefalites(resultados) {
                 </table>
             </div>
             <div class="col-md-6">
-                <h6 class="text-success mb-3"><i class="bi bi-virus me-2"></i>AlphavÃ­rus</h6>
+                <h6 class="text-success mb-3"><i class="bi bi-virus me-2"></i>Alphavírus</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -904,7 +904,7 @@ function gerarTabelaMultiplexEncefalites(resultados) {
                 <h6 class="text-secondary mb-3 mt-4"><i class="bi bi-virus2 me-2"></i>VEEV</h6>
                 <table class="tabela-resultados tabela-resultados-view compact-table">
                     <thead>
-                        <tr><th>IdentificaÃ§Ã£o</th><th>Resultado</th></tr>
+                        <tr><th>Identificação</th><th>Resultado</th></tr>
                     </thead>
                     <tbody>
                         ${resultados.amostras.map((amostra, index) => `
@@ -925,7 +925,7 @@ function gerarTabelaPCRSimples(tarefa, resultados) {
     const primeiraAmostra = resultados.amostras && resultados.amostras[0] ? resultados.amostras[0] : {};
     const propriedades = Object.keys(primeiraAmostra);
     
-    // Verificar se Ã© PCR simples molecular legÃ­timo (tipo MOLECULAR + subTipo PCR ou RT-PCR ou Duplex RT-PCR)
+    // Verificar se é PCR simples molecular legítimo (tipo MOLECULAR + subTipo PCR ou RT-PCR ou Duplex RT-PCR)
     const isPCRSimplesLegitimo = tarefa.tipo === "MOLECULAR" && (
         tarefa.subTipo === "PCR" || 
         tarefa.subTipo === "RT-PCR" || 
@@ -939,7 +939,7 @@ function gerarTabelaPCRSimples(tarefa, resultados) {
         ))
     );
     
-    debugLog("ðŸ” [resultado.js] gerarTabelaPCRSimples - isPCRSimplesLegitimo:", isPCRSimplesLegitimo, {
+    debugLog("🔍 [resultado.js] gerarTabelaPCRSimples - isPCRSimplesLegitimo:", isPCRSimplesLegitimo, {
         tipo: tarefa.tipo,
         subTipo: tarefa.subTipo
     });
@@ -947,7 +947,7 @@ function gerarTabelaPCRSimples(tarefa, resultados) {
     return `
         ${!isPCRSimplesLegitimo ? `
             <div class="alert alert-warning mb-3">
-                <strong>PCR nÃ£o identificado automaticamente</strong><br>
+                <strong>PCR não identificado automaticamente</strong><br>
                 <small>Tipo: ${tarefa.pcrTipo || 'N/A'} | Complemento: ${tarefa.complemento || 'N/A'}</small><br>
                 <small>Propriedades encontradas: ${propriedades.join(', ') || 'Nenhuma'}</small>
             </div>
@@ -955,7 +955,7 @@ function gerarTabelaPCRSimples(tarefa, resultados) {
         <table class="tabela-resultados tabela-resultados-view compact-table">
             <thead>
                 <tr>
-                    <th>IdentificaÃ§Ã£o da amostra</th>
+                    <th>Identificação da amostra</th>
                     <th>Resultado</th>
                 </tr>
             </thead>
@@ -975,7 +975,7 @@ function gerarTabelaPCRSimples(tarefa, resultados) {
     `;
 }
 
-// FunÃ§Ãµes auxiliares
+// Funções auxiliares
 function getBadgeClass(resultado) {
     if (!resultado) return 'bg-secondary';
     const res = resultado.toLowerCase();
@@ -989,9 +989,9 @@ function formatarResultado(resultado) {
     return resultado.charAt(0).toUpperCase() + resultado.slice(1);
 }
 
-// FunÃ§Ã£o para adicionar os estilos CSS do modal
+// Função para adicionar os estilos CSS do modal
 function adicionarEstilosModal() {
-    // Verifica se o estilo jÃ¡ existe
+    // Verifica se o estilo já existe
     if (!document.getElementById('modal-resultados-styles')) {
         const style = document.createElement('style');
         style.id = 'modal-resultados-styles';
@@ -1070,7 +1070,7 @@ function adicionarEstilosModal() {
                 flex-wrap: wrap;
                 gap: 10px;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-                margin-bottom: 0; /* Reduzir espaÃ§o inferior */
+                margin-bottom: 0; /* Reduzir espaço inferior */
             }
             
             .modal-resultados-info {
@@ -1125,7 +1125,7 @@ function adicionarEstilosModal() {
                 margin-top: 0.5rem; /* Reduzir margem superior da tabela */
             }
             
-            /* Estilos especÃ­ficos para PCR */
+            /* Estilos específicos para PCR */
             .alert-warning {
                 border-left: 4px solid #ffc107;
                 background-color: #fff3cd;
@@ -1193,39 +1193,39 @@ function adicionarEstilosModal() {
     }
 }
 
-// FunÃ§Ã£o para formatar data com seguranÃ§a
+// Função para formatar data com segurança
 function formatarData(data) {
     if (!data) {
         return "Pendente";
     }
     
     try {
-        // Se Ã© um timestamp do Firestore
+        // Se é um timestamp do Firestore
         if (data && typeof data.toDate === 'function') {
             return new Date(data.toDate()).toLocaleDateString('pt-BR');
         } 
-        // Se Ã© um objeto com seconds (formato alternativo do Firestore)
+        // Se é um objeto com seconds (formato alternativo do Firestore)
         else if (data && data.seconds !== undefined) {
             return new Date(data.seconds * 1000).toLocaleDateString('pt-BR');
         }
-        // Se jÃ¡ Ã© um objeto Date
+        // Se já é um objeto Date
         else if (data instanceof Date) {
             return data.toLocaleDateString('pt-BR');
         }
-        // Se Ã© um timestamp numÃ©rico em milissegundos
+        // Se é um timestamp numérico em milissegundos
         else if (typeof data === 'number') {
             return new Date(data).toLocaleDateString('pt-BR');
         }
-        // Se Ã© uma string ISO ou outra string de data
+        // Se é uma string ISO ou outra string de data
         else if (typeof data === 'string') {
             const parsedDate = new Date(data);
-            // Verifica se a data Ã© vÃ¡lida
+            // Verifica se a data é válida
             if (!isNaN(parsedDate.getTime())) {
                 return parsedDate.toLocaleDateString('pt-BR');
             }
         }
-        // Se chegou aqui, o formato nÃ£o Ã© reconhecido
-        debugLog("Formato de data nÃ£o reconhecido:", data);
+        // Se chegou aqui, o formato não é reconhecido
+        debugLog("Formato de data não reconhecido:", data);
         return "Pendente";
     } catch (e) {
         console.error("Erro ao formatar data:", e, data);
