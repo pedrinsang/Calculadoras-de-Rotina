@@ -5,6 +5,7 @@ import { app, auth, db } from "../../../js/firebase.js";
 // Firebase via módulo compartilhado
 
 document.addEventListener('DOMContentLoaded', function () {
+  atualizarExamesLadopar2026();
   console.log("Página LADOPAR carregada");
   
   // Render otimista similar às outras páginas; onAuthStateChanged fará a validação
@@ -103,6 +104,37 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
+
+const examesPCR2026 = [
+  ['PCR CONVENCIONAL (Reação única)', 'Anaplasma spp.', 'Sangue total, medula óssea, fragmentos de baço ou linfonodos.'],
+  ['PCR CONVENCIONAL (Reação única)', 'Babesia spp.', 'Sangue total, medula óssea, fragmentos de baço ou linfonodos.'],
+  ['PCR CONVENCIONAL (Reação única)', 'Leishmania spp.', 'Aspirado de linfonodo, medula, sangue total, pele e tecidos.'],
+  ['PCR CONVENCIONAL (Reação única)', 'Neospora caninum', 'Fragmentos de tecido fetal, placenta e tecidos do sistema nervoso.'],
+  ['PCR CONVENCIONAL (Reação única)', 'Rickettsia spp.', 'Sangue total, medula óssea, fragmentos de baço ou linfonodos.'],
+  ['PCR CONVENCIONAL (Reação única)', 'Sarcocystis spp. (exceto S. neurona)', 'Líquor, encéfalo, pulmão, coração, diafragma ou tecido muscular.'],
+  ['PCR CONVENCIONAL (Reação única)', 'Toxoplasma gondii', 'Líquido amniótico, líquor, sangue total, placenta, tecido do sistema nervoso ou água (*).'],
+  ['PCR CONVENCIONAL (Reação única)', 'Trypanosoma spp.', 'Sangue total, líquor, encéfalo, coração, baço ou fígado.'],
+  ['PCR CONVENCIONAL (Reação única)', 'Trypanosoma cruzi', 'Sangue total, líquor, encéfalo, coração, baço ou fígado.'],
+  ['PCR CONVENCIONAL (Reação única)', 'Trypanosoma evansi (Caninos e equinos)', 'Sangue total, líquor, encéfalo, coração, baço ou fígado.'],
+  ['PCR SEMI-NESTED / NESTED (Duas reações)', 'Cryptosporidium spp.', 'Fezes congeladas ou fragmento intestinal.'],
+  ['PCR SEMI-NESTED / NESTED (Duas reações)', 'Giardia spp.', 'Fezes congeladas ou fragmento intestinal.'],
+  ['PCR SEMI-NESTED / NESTED (Duas reações)', 'Sarcocystis neurona (MEP – equinos)', 'Líquor, encéfalo, coração, pulmão e tecidos do sistema nervoso.'],
+  ['PCR SEMI-NESTED / NESTED (Duas reações)', 'Trypanosoma vivax (Bovinos)', 'Sangue total, líquor, encéfalo, coração, baço ou fígado.'],
+  ['PCR MULTIPLEX', 'Babesia bovis, Babesia bigemina e Anaplasma marginale (Bovinos)', 'Sangue total e fragmentos de encéfalo.'],
+  ['PCR NESTED (2 reações) + RFLP', 'Neospora caninum, Toxoplasma gondii, Sarcocystis neurona e Sarcocystis spp.', 'Líquor, encéfalo, coração, pulmão, placenta e tecidos fetais.']
+];
+
+function atualizarExamesLadopar2026() {
+  const montar = (name, prefix, itens) => itens.map((item, i) => `<div class="checkbox-item"><input type="checkbox" id="${prefix}-${i}" name="${name}" value="${item}"><label for="${prefix}-${i}">${item}</label></div>`).join('');
+  const copro = document.querySelector('.coproparasitologicos-section .checkbox-grid');
+  if (copro) copro.innerHTML = montar('coproparasitologicos', 'copro-2026', ['OPG','Coprocultura','Baermann (parasitas pulmonares)','Pesquisa de Giardia spp. (Faust - 3 coletas consecutivas em dias alternados)','Centrífugo flutuação (Faust/Willis Mollay)','Pesquisa de Cryptosporidium spp.','Sedimentação (Trematoda e Cestoda)','Pesquisa de Giardia + Endoparasitos']);
+  const direta = document.querySelector('.pesquisa-direta-section .checkbox-grid');
+  if (direta) direta.innerHTML = montar('pesquisa-direta', 'direta-2026', ['Pesquisa de Hemoparasitas (Bovinos)']);
+  const bio = document.querySelector('.biocarrapaticidograma-section .checkbox-grid');
+  if (bio) bio.innerHTML = montar('biocarrapaticidograma', 'bio-2026', ['Aspersin','Carbeson','Carvet','Colosso','Colosso FC30','Couro Limpo','Cyperclor Plus','Cypermeit','Flytion EC50','Ibatox','Nokalt','Potenty','Texvet Max','Triatox','Butox']);
+  const pcr = document.querySelector('.pcr-section');
+  if (pcr) pcr.innerHTML = `<h3 class="section-title">BIOLOGIA MOLECULAR</h3>${examesPCR2026.map(([grupo, agente, material], i) => `<div class="pcr-option"><div class="pcr-type">${grupo}</div><div class="checkbox-item"><input type="checkbox" id="pcr-2026-${i}" name="pcr" value="${agente}"><label for="pcr-2026-${i}"><strong>${agente}</strong><span>${material}</span></label></div></div>`).join('')}<p class="sample-note">Observações: tubo de tampa roxa: sangue total, medula óssea e líquor; microtubo tipo Eppendorf: líquor; saco plástico/frasco estéril: tecidos/fragmentos de órgãos (enviar separadamente, identificando órgão e animal). Enviar sempre refrigerado ou congelado (se for somente PCR). *Amostra de água: consultar o volume. MEP = Mieloencefalite protozoária equina.</p>`;
+}
 
 // Função para salvar a ficha
 async function salvarFicha(fichaData) {
@@ -253,6 +285,14 @@ function collectLadoparFormData() {
 
 // Helper para construir opções de PCR
 function buildPCROptions(data) {
+  const totais = examesPCR2026.reduce((acc, [grupo]) => ({...acc, [grupo]:(acc[grupo] || 0) + 1}), {});
+  const impressos = new Set();
+  return examesPCR2026.map(([grupo, agente, material]) => {
+    const celulaGrupo = impressos.has(grupo) ? '' : `<td class="pcr-group" rowspan="${totais[grupo]}">${grupo.replace(' / ', '<br>').replace(' (', '<br>(')}</td>`;
+    impressos.add(grupo);
+    return `<tr>${celulaGrupo}<td>${getCheckbox(agente, data.pcr)} <em>${agente}</em></td><td>${material}</td></tr>`;
+  }).join('');
+  /* legado anterior a 2026
   return `
     <tr>
       <td>${getCheckbox('Babesia bovis (bovinos)', data.pcr)} Babesia bovis (bovinos)</td>
@@ -305,7 +345,7 @@ function buildPCROptions(data) {
     <tr>
       <td colspan="2">${getCheckbox('Nested-PCR e restrição enzimática para detecção simultânea de Neospora caninum/Toxoplasma gondii e Sarcocystis spp.', data.pcr)} Nested-PCR e restrição enzimática para detecção simultânea de Neospora caninum/Toxoplasma gondii e Sarcocystis spp.</td>
     </tr>
-  `;
+  `; */
 }
 
 // Helper function for checkboxes
@@ -341,41 +381,46 @@ function buildLadoparPrintHTML(data) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LADOPAR - Ficha de Requisição de Testes de Diagnóstico</title>
 <style>
-  html,body{margin:0;padding:0;height:100%;font-family:Arial,sans-serif;font-size:14px;color:#000}
-  .page{width:210mm;height:297mm;margin:0 auto;background:#fff;position:relative;padding:10mm;box-sizing:border-box;page-break-after:always}
+  @page{size:A4 portrait;margin:0}
+  html,body{margin:0;padding:0;font-family:"Times New Roman",serif;font-size:14px;color:#000;background:#ddd}
+  .page{width:210mm;height:297mm;margin:8px auto;background:#fff;position:relative;padding:7mm 6mm;box-sizing:border-box;page-break-after:always;overflow:hidden}
   .page:last-child{page-break-after:auto}
-  table{border-collapse:collapse;width:100%;margin-bottom:8px}
-  td{border:1px solid #000;padding:6px;vertical-align:middle}
+  table{border-collapse:separate;border-spacing:0 2px;width:100%;margin-bottom:2px}
+  td{border:0;padding:2px 4px;vertical-align:middle}
   .no-border{border:none !important}
   
   /* Section headers like in the photo */
-  .header-blue{background:#5B9BD5;color:white;font-weight:700;text-align:center;padding:8px 6px;font-size:14px}
-  .header-cell{background:#ffffff;font-weight:700;padding:6px;border-top:0;font-size:12px}
-  .data-field{color:#000;font-weight:400;min-height:24px;font-size:12px}
+  .header-blue{background:#4472c4;color:#fff;font-weight:700;text-align:center;padding:4px 5px;font-size:14px}
+  .header-cell{background:#fff;font-weight:700;padding:2px 3px;font-size:14px;white-space:nowrap}
+  .data-field{height:19px;padding:1px 5px;border:1px solid #173f85;border-radius:5px;font:14px Arial,sans-serif}
+  .exam-table td{padding:1px 7px;line-height:1.24;font-size:14px}
+  .note{text-align:center;font-size:14px;padding:2px}
+  .pcr-table{border-collapse:collapse;border-spacing:0;margin-top:10mm}
+  .pcr-table td{border:1px solid #000;padding:2px 3px;line-height:1.08;font-size:14px}
+  .pcr-table .header-cell{text-align:center;font:700 14px "Times New Roman",serif}
+  .pcr-table .pcr-group{text-align:center;font-weight:700;width:17%}
 
   .checkbox{text-align:center;width:20px;font-size:16px}
   .center{text-align:center}
   .bold{font-weight:700}
-  .small{font-size:11px}
-  @media print{ .no-print{display:none} body{margin:0} .page{margin:0;padding:8mm} }
+  .small{font-size:14px;line-height:1.15}
+  @media print{.no-print{display:none}body{background:#fff}.page{margin:0;padding:7mm 6mm}}
 </style>
 </head>
 <body>
   <!-- PÁGINA 1 -->
   <div class="page">
     <!-- Cabeçalho com logos reais -->
-    <table style="border:none;margin-bottom:10px;">
+    <table style="border:none;margin-bottom:2px;">
       <tr>
-        <td class="no-border" style="width:160px;padding:0;vertical-align:middle">
-          <img src="${logoLADOPAR}" style="height:150px;width:auto;object-fit:contain;">
+        <td class="no-border" style="width:25%;padding:0;vertical-align:middle">
+          <img src="${logoLADOPAR}" style="height:15mm;width:auto;object-fit:contain;">
         </td>
         <td class="no-border center" style="padding:10px;vertical-align:middle">
-          <div style="font-size:16px;font-weight:bold;margin-bottom:6px;">LADOPAR - LABORATÓRIO DE DOENÇAS PARASITÁRIAS</div>
-          <div style="font-size:12px;margin-bottom:4px;">DEPARTAMENTO DE MEDICINA VETERINÁRIA PREVENTIVA - CCR / UFSM</div>
-          <div style="font-size:14px;font-weight:bold;background:#e6e6e6;padding:6px;border-radius:4px;">FICHA DE REQUISIÇÃO DE TESTES DE DIAGNÓSTICO</div>
+          <div style="font-size:14px;font-weight:bold;background:#ddd;padding:3mm 2mm;white-space:nowrap">FICHA DE REQUISIÇÃO DE TESTES DE DIAGNÓSTICO</div>
         </td>
-        <td class="no-border" style="width:160px;padding:0;text-align:right;vertical-align:middle">
-          <img src="${logoUFSM}" style="height:150px;width:auto;object-fit:contain;">
+        <td class="no-border" style="width:17%;padding:0;text-align:center;vertical-align:middle">
+          <img src="${logoUFSM}" style="height:16mm;width:auto;object-fit:contain;">
         </td>
       </tr>
     </table>
@@ -385,10 +430,8 @@ function buildLadoparPrintHTML(data) {
       <tr>
         <td class="header-cell" style="width:15%;">DATA</td>
         <td class="data-field" style="width:25%;">${escapeHtml(formatDateBR(data['data']) || '')}</td>
-        <td class="header-cell" style="width:15%;">HORA</td>
-        <td class="data-field" style="width:20%;">${escapeHtml(data['hora'] || '')}</td>
         <td class="header-cell" style="width:15%;">LDP</td>
-        <td class="data-field" style="width:10%;">${escapeHtml(data['ldp'] || '')}</td>
+        <td class="data-field" style="width:25%;">${escapeHtml(data['ldp'] || '')}</td>
       </tr>
     </table>
 
@@ -472,7 +515,7 @@ function buildLadoparPrintHTML(data) {
     </table>
 
     <!-- Detecção de Anticorpos - Sorologia -->
-    <table style="margin-bottom:6px;">
+    <table class="exam-table" style="margin-bottom:2px;">
       <tr>
         <td class="header-blue" colspan="4">DETECÇÃO DE ANTICORPOS – SOROLOGIA</td>
       </tr>
@@ -498,23 +541,23 @@ function buildLadoparPrintHTML(data) {
     </table>
 
     <!-- Coproparasitológicos -->
-    <table style="margin-bottom:6px;">
+    <table class="exam-table" style="margin-bottom:2px;">
       <tr>
         <td class="header-blue" colspan="6">COPROPARASITOLÓGICOS</td>
       </tr>
       <tr>
         <td style="width:33%;padding:8px;">
           ${getCheckbox('OPG', data.coproparasitologicos)} OPG<br>
-          ${getCheckbox('Centrífugo flutuação (Faust / Willis Mollay)', data.coproparasitologicos)} Centrífugo flutuação<br>
-          ${getCheckbox('Sedimentação (Tremátoda e Cestoda)', data.coproparasitologicos)} Sedimentação
+          ${getCheckbox('Centrífugo flutuação (Faust/Willis Mollay)', data.coproparasitologicos)} Centrífugo flutuação (Faust/Willis Mollay)<br>
+          ${getCheckbox('Sedimentação (Trematoda e Cestoda)', data.coproparasitologicos)} Sedimentação (Trematoda e Cestoda)<br>
+          ${getCheckbox('Pesquisa de Giardia spp. (Faust - 3 coletas consecutivas em dias alternados)', data.coproparasitologicos)} Pesquisa de Giardia spp. (Faust - 3 coletas consecutivas em dias alternados)
         </td>
         <td style="width:33%;padding:8px;">
           ${getCheckbox('Coprocultura', data.coproparasitologicos)} Coprocultura<br>
           ${getCheckbox('Baermann (parasitas pulmonares)', data.coproparasitologicos)} Baermann<br>
-          ${getCheckbox('Pesquisa de Giardia sp. (3 coletas consecutivas em dias alternados)', data.coproparasitologicos)} Pesquisa de Giardia sp.
+          ${getCheckbox('Pesquisa de Giardia + Endoparasitos', data.coproparasitologicos)} Pesquisa de Giardia + Endoparasitos
         </td>
         <td style="width:34%;padding:8px;">
-          ${getCheckbox('Silvestres e aves', data.coproparasitologicos)} Silvestres e aves<br>
           ${getCheckbox('Pesquisa de Cryptosporidium spp.', data.coproparasitologicos)} Pesquisa de Cryptosporidium spp.
         </td>
       </tr>
@@ -524,13 +567,13 @@ function buildLadoparPrintHTML(data) {
     </table>
 
     <!-- Pesquisa Direta -->
-    <table style="margin-bottom:6px;">
+    <table class="exam-table" style="margin-bottom:2px;">
       <tr>
         <td class="header-blue" colspan="3">PESQUISA DIRETA</td>
       </tr>
       <tr>
         <td style="width:100%;padding:8px;">
-          ${getCheckbox('Pesquisa de Hemoparasitas', data['pesquisa-direta'])} Pesquisa de Hemoparasitas
+          ${getCheckbox('Pesquisa de Hemoparasitas (Bovinos)', data['pesquisa-direta'])} Pesquisa de Hemoparasitas (Bovinos)
         </td>
       </tr>
       <tr>
@@ -539,14 +582,15 @@ function buildLadoparPrintHTML(data) {
     </table>
 
     <!-- Biocarrapaticidograma -->
-    <table style="margin-bottom:6px;">
+    <table class="exam-table" style="margin-bottom:2px;">
       <tr>
         <td class="header-blue" colspan="6">BIOCARRAPATICIDOGRAMA</td>
       </tr>
       <tr>
         <td style="width:16.66%;padding:8px;">
-          ${getCheckbox('Amitraz', data.biocarrapaticidograma)} Aspersin<br>
-          ${getCheckbox('Carbazol', data.biocarrapaticidograma)} Carbeson<br>
+          ${getCheckbox('Aspersin', data.biocarrapaticidograma)} Aspersin<br>
+          ${getCheckbox('Butox', data.biocarrapaticidograma)} Butox<br>
+          ${getCheckbox('Carbeson', data.biocarrapaticidograma)} Carbeson<br>
           ${getCheckbox('Carvet', data.biocarrapaticidograma)} Carvet<br>
           ${getCheckbox('Colosso', data.biocarrapaticidograma)} Colosso
         </td>
@@ -554,24 +598,20 @@ function buildLadoparPrintHTML(data) {
           ${getCheckbox('Colosso FC30', data.biocarrapaticidograma)} Colosso FC30<br>
           ${getCheckbox('Couro Limpo', data.biocarrapaticidograma)} Couro Limpo<br>
           ${getCheckbox('Cyperclor Plus', data.biocarrapaticidograma)} Cyperclor Plus<br>
-          ${getCheckbox('Cypermil', data.biocarrapaticidograma)} Cypermil<br>
+          ${getCheckbox('Cypermeit', data.biocarrapaticidograma)} Cypermeit<br>
           
         </td>
         <td style="width:16.66%;padding:8px;">
-          ${getCheckbox('Ectobat 80', data.biocarrapaticidograma)} Ectobat 80<br>
-          ${getCheckbox('Ectofós', data.biocarrapaticidograma)} Ectofós<br>
-          ${getCheckbox('Flytton EC50', data.biocarrapaticidograma)} Flytton EC50<br>
+          ${getCheckbox('Flytion EC50', data.biocarrapaticidograma)} Flytion EC50<br>
           ${getCheckbox('Ibatox', data.biocarrapaticidograma)} Ibatox<br>
         </td>
         <td style="width:16.66%;padding:8px;">
           ${getCheckbox('Nokalt', data.biocarrapaticidograma)} Nokalt<br>
           ${getCheckbox('Potenty', data.biocarrapaticidograma)} Potenty<br>
-          ${getCheckbox('Supokill 50', data.biocarrapaticidograma)} Supokill 50<br>
-          ${getCheckbox('TexVet Max', data.biocarrapaticidograma)} TexVet Max
+          ${getCheckbox('Texvet Max', data.biocarrapaticidograma)} Texvet Max
         </td>
         <td style="width:16.66%;padding:8px;">
           ${getCheckbox('Triatox', data.biocarrapaticidograma)} Triatox<br>
-          ${getCheckbox('Zion', data.biocarrapaticidograma)} Zion
         </td>
         
       </tr>
@@ -585,41 +625,18 @@ function buildLadoparPrintHTML(data) {
 
   <!-- PÁGINA 2 -->
   <div class="page">
-    <!-- Cabeçalho página 2 -->
-    <table style="border:none;margin-bottom:10px;">
-      <tr>
-        <td class="no-border" style="width:160px;padding:0;">
-          <img src="${logoLADOPAR}" style="height:150px;width:auto;object-fit:contain;">
-        </td>
-        <td class="no-border center" style="padding:8px;">
-          <div style="font-size:14px;font-weight:bold;">FICHA DE REQUISIÇÃO DE TESTES DE DIAGNÓSTICO</div>
-        </td>
-        <td class="no-border" style="width:160px;padding:0;text-align:right;">
-          <img src="${logoUFSM}" style="height:150px;width:auto;object-fit:contain;">
-        </td>
-      </tr>
-    </table>
+    <div class="header-blue" style="margin-bottom:8mm;font-size:14px">BIOLOGIA MOLECULAR</div>
 
     <!-- Biologia Molecular - PCR Completo -->
-    <table style="margin-bottom:8px;">
+    <table class="pcr-table">
       <tr>
-        <td class="header-blue" colspan="2">BIOLOGIA MOLECULAR - PCR</td>
-      </tr>
-      <tr>
-        <td class="header-cell" style="width:30%;">Agente etiológico:</td>
-        <td class="header-cell">Material recomendado: Sangue total (tubo roxo)</td>
+        <td class="header-cell" style="width:22%;">MODALIDADE</td>
+        <td class="header-cell" style="width:31%;">AGENTE ETIOLÓGICO</td>
+        <td class="header-cell">MATERIAL RECOMENDADO</td>
       </tr>
       ${buildPCROptions(data)}
     </table>
-
-    <!-- Assinatura -->
-    <div style="margin-top:40px;">
-      <div style="text-align:center;">
-        <div style="border-top:1px solid #000;width:350px;margin:0 auto;padding-top:8px;font-size:13px;">
-          Assinatura do Médico Veterinário Responsável
-        </div>
-      </div>
-    </div>
+    <p class="small"><strong>Observações:</strong> Tubo tampa roxa: sangue total, medula óssea e líquor; microtubo tipo Eppendorf: líquor; saco plástico/frasco estéril: tecidos/fragmentos de órgãos (enviar separado, identificando órgão e animal). Envio sempre refrigerado ou congelado (se for somente PCR). *Amostra de água: consultar o volume. MEP = Mieloencefalite protozoária equina.</p>
 
     
   <div style="position:fixed;left:8px;top:8px;z-index:9999;" class="no-print">

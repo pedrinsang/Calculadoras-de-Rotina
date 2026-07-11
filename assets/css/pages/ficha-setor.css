@@ -162,6 +162,39 @@ body {
   color: var(--verde-escuro);
 }
 
+.pcr-option { display:grid; grid-template-columns:minmax(150px,.7fr) 2fr; gap:1rem; padding:.8rem 0; border-bottom:1px solid #ddd; }
+.pcr-type { font-size:.82rem; font-weight:700; color:var(--verde-medio); }
+.pcr-option .checkbox-item { align-items:flex-start; }
+.pcr-option label { display:flex; flex-direction:column; gap:.25rem; }
+.pcr-option label span, .sample-note { font-size:.85rem; font-weight:400; color:#555; }
+.sample-note { margin:1rem 0 0; line-height:1.45; }
+
+/* Formulário LADOPAR: edição com a mesma linguagem visual da ficha impressa */
+.ladopar-page { align-items:flex-start; font-family:"Times New Roman",serif; }
+.ladopar-page .ficha-setor-container { max-width:920px; border-radius:0; padding:2rem 2.25rem; }
+.ladopar-page .back-button-container { position:static; display:flex; margin-bottom:1rem; }
+.ladopar-page .back-button { padding:.45rem 1rem; border-radius:12px; font-size:.95rem; }
+.ladopar-form-heading { display:grid; grid-template-columns:180px 1fr 110px; align-items:center; gap:1.25rem; margin-bottom:1rem; }
+.ladopar-page .logo { display:block; height:72px; width:auto; margin:0; }
+.ladopar-page .logo-ufsm-form { position:static; display:block; height:72px; width:auto; margin:0 auto; }
+.ladopar-page .page-title { display:none; }
+.ladopar-page .page-subtitle { display:block; width:100%; margin:0; padding:.8rem .75rem; background:#ddd; color:#000; font-size:14px; font-weight:700; text-align:center; }
+.ladopar-page .ficha-form-container { max-width:none; }
+.ladopar-page .form-header, .ladopar-page .form-section { margin:0 0 .55rem; padding:0; border:0; border-radius:0; background:#fff; }
+.ladopar-page .section-title { margin:0 0 .65rem; padding:.35rem .5rem; border:0; background:#4472c4; color:#fff; text-align:center; font-size:14px; font-weight:700; }
+.ladopar-page .form-row { margin:0 0 .45rem; gap:.65rem; }
+.ladopar-page .form-group { flex-direction:row; align-items:center; gap:.4rem; }
+.ladopar-page .form-group label { margin:0; color:#000; font-size:14px; font-weight:700; white-space:nowrap; }
+.ladopar-page .form-group input, .ladopar-page .form-group select, .ladopar-page .form-group textarea { min-width:0; width:100%; padding:.35rem .5rem; border:1px solid #173f85; border-radius:5px; font:14px Arial,sans-serif; }
+.ladopar-page .checkbox-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.35rem 1rem; padding:0 .75rem .6rem; }
+.ladopar-page .checkbox-item { align-items:flex-start; }
+.ladopar-page .checkbox-item label { color:#000; font-size:14px; line-height:1.25; }
+.ladopar-page .pcr-section { margin-top:1.5rem; }
+.ladopar-page .pcr-option { grid-template-columns:190px 1fr; padding:.45rem; border:1px solid #222; border-bottom:0; }
+.ladopar-page .pcr-option:last-of-type { border-bottom:1px solid #222; }
+.ladopar-page .pcr-type { color:#000; text-align:center; font-size:14px; }
+.ladopar-page .pcr-option label span, .ladopar-page .sample-note { color:#000; font-size:14px; }
+
 .form-actions {
   display: flex;
   justify-content: center;
@@ -307,6 +340,16 @@ body {
 
 /* Responsividade */
 @media (max-width: 768px) {
+  .pcr-option { grid-template-columns:1fr; gap:.35rem; }
+  .ladopar-page .ficha-setor-container { padding:1.25rem .8rem; }
+  .ladopar-form-heading { grid-template-columns:1fr 70px; gap:.6rem; }
+  .ladopar-page .logo { height:60px; }
+  .ladopar-page .logo-ufsm-form { height:58px; }
+  .ladopar-page .page-subtitle { grid-column:1 / -1; grid-row:2; font-size:14px; }
+  .ladopar-page .checkbox-grid { grid-template-columns:1fr; }
+  .ladopar-page .form-group { align-items:stretch; flex-direction:column; gap:.2rem; }
+  .ladopar-page .form-group label { white-space:normal; }
+  .ladopar-page .pcr-option { grid-template-columns:1fr; }
   .form-row {
     flex-direction: column;
     gap: 0.5rem;

@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../../assets/css/pages/ficha-diagnostico.css">
 </head>
 
-<body>
+<body class="ladopar-page">
   <div class="ficha-setor-container">
     <!-- Botão de voltar -->
     <div class="back-button-container">
@@ -21,25 +21,24 @@
       </button>
     </div>
 
-    <img src="../../assets/images/logo-LADOPAR.png" alt="Logo LADOPAR UFSM" class="logo">
+    <div class="ladopar-form-heading">
+      <img src="../../assets/images/logo-LADOPAR.png" alt="Logo LADOPAR UFSM" class="logo">
+      <p class="page-subtitle">Ficha de Requisição de Testes de Diagnóstico</p>
+      <img src="../../assets/images/logo-ufsm.png" alt="Logo UFSM" class="logo-ufsm-form">
+    </div>
 
     <h1 class="page-title">LADOPAR - LABORATÓRIO DE DOENÇAS PARASITÁRIAS</h1>
-    <p class="page-subtitle">Ficha de Requisição de Testes de Diagnóstico</p>
 
     <!-- Formulário da ficha -->
     <div class="ficha-form-container">
       <form id="ficha-form" class="ficha-form">
         
-        <!-- Cabeçalho com Data, Hora e LDP -->
+        <!-- Cabeçalho com Data e LDP -->
         <div class="form-header">
           <div class="form-row">
             <div class="form-group">
               <label for="data">DATA:</label>
               <input type="date" id="data" name="data">
-            </div>
-            <div class="form-group">
-              <label for="hora">HORA:</label>
-              <input type="time" id="hora" name="hora">
             </div>
             <div class="form-group">
               <label for="ldp">LDP:</label>
