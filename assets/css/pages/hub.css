@@ -257,41 +257,37 @@ body {
 
 /* Responsividade - MANTIDA PARA DISPOSITIVOS MÓVEIS */
 @media (max-width: 768px) {
-  /* Esconde o botão de Ficha de Cadastro em dispositivos móveis */
-  .ficha-cadastro-button {
-    display: none !important;
-  }
-  
   .user-actions {
-    gap: 5px !important; 
+    gap: 5px !important;
   }
-  
+
   .hub-container {
     padding: 1.5rem;
     max-width: 450px;
   }
-  
+
   .hub-title {
     font-size: 2rem;
   }
-  
+
   .hub-subtitle {
     font-size: 1rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .hub-grid {
     gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
-  
+
   .main-buttons {
-    gap: 1rem; /* RESTAURADO: volta para gap maior já que só teremos 2 botões */
+    flex-direction: column;
+    gap: 0.75rem;
     margin: 1.25rem 0;
   }
-  
+
   .main-button {
-    padding: 0.75rem 1rem; /* RESTAURADO: padding maior */
+    padding: 0.75rem 1rem;
     font-size: 1rem;
     border-radius: 12px;
   }
