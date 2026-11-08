@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análise / Laudo - Setor de Virologia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/pages/sv-fichas.css">
+</head>
+
+<body class="sv-page">
+  <div class="sv-container">
+    <div class="sv-topo">
+      <a href="sv-fichas.html" class="sv-btn sv-btn-pequeno"><i class="bi bi-arrow-left"></i> Fichas</a>
+      <span class="sv-usuario"></span>
+    </div>
+
+    <div class="sv-cabecalho">
+      <img src="../../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM">
+      <div>
+        <h1>Requisição de Exames / Laudo</h1>
+        <p id="subtitulo">Etapa 2 · Análise e laudo</p>
+      </div>
+    </div>
+
+    <nav class="sv-etapas" aria-label="Etapas">
+      <a href="#" id="link-requisicao">1 · Requisição</a>
+      <span class="ativa">2 · Análise / Laudo</span>
+      <a href="#" id="link-visualizar">3 · Consulta e impressão</a>
+    </nav>
+
+    <form id="form-laudo" novalidate hidden>
+      <section class="sv-secao">
+        <h2>Requisição <span id="status-atual" class="sv-status"></span></h2>
+        <div class="sv-resumo" id="resumo"></div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Resultados por exame</h2>
+        <div id="resultados"></div>
+        <div class="sv-campo" id="campo-aborto-resultado" style="margin-top:.75rem" hidden>
+          <label for="aborto-teste-resultado">Investigação de abortos — Teste/ resultado</label>
+          <textarea id="aborto-teste-resultado" rows="2"></textarea>
+        </div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Resultados vírus-neutralização</h2>
+        <div id="vn"></div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Laudo final</h2>
+        <div class="sv-campo" style="margin-bottom:.75rem">
+          <label for="conclusao">Laudo / conclusão</label>
+          <textarea id="conclusao" rows="5"></textarea>
+        </div>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="data-emissao">Data de emissão</label>
+            <input type="date" id="data-emissao">
+          </div>
+          <div class="sv-campo">
+            <label for="analisado-por">Análise realizada por</label>
+            <input type="text" id="analisado-por">
+          </div>
+        </div>
+        <p class="sv-dica">Responsável técnico: Eduardo Furtado Flores – Médico Veterinário – CRMV-1 3178</p>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Cobrança e Pagamento</h2>
+        <div id="cobranca"></div>
+      </section>
+
+      <div class="sv-acoes">
+        <button type="button" class="sv-btn" id="btn-rascunho"><i class="bi bi-save"></i> Salvar sem emitir</button>
+        <button type="submit" class="sv-btn sv-btn-primario" id="btn-emitir"><i class="bi bi-check2-circle"></i> Emitir laudo</button>
+      </div>
+    </form>
+    <p id="carregando" class="sv-vazio">Carregando ficha…</p>
+  </div>
+
+  <script type="module" src="../../assets/js/pages/ficha/sv-laudo.js"></script>
+</body>
+</html>

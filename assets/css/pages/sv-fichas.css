@@ -1,0 +1,318 @@
+/* Fichas SV (Requisição de Exames / Laudo) — telas das etapas 1, 2 e 3 */
+
+body.sv-page {
+  display: block;
+  align-items: initial;
+  background-color: #c9e6c9;
+  padding: 0.75rem;
+}
+
+.sv-container {
+  background: #fff;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 2rem;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.sv-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.sv-topo .sv-usuario {
+  color: var(--verde-medio);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.sv-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.sv-cabecalho img { height: 72px; width: auto; }
+
+.sv-cabecalho h1 {
+  color: var(--verde-escuro);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.sv-cabecalho p { color: var(--verde-medio); margin: 0.2rem 0 0; }
+
+.sv-etapas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.sv-etapas a, .sv-etapas span {
+  flex: 1 1 160px;
+  text-align: center;
+  padding: 0.55rem 0.75rem;
+  border-radius: 12px;
+  background: var(--verde-bg);
+  color: var(--verde-escuro);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: 1px solid var(--verde-claro);
+}
+
+.sv-etapas .ativa { background: var(--verde-btn); color: #fff; border-color: var(--verde-btn); }
+
+/* Seções */
+.sv-secao {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.sv-secao > h2 {
+  color: var(--verde-escuro);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 2px solid var(--verde-claro);
+}
+
+.sv-linha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.sv-campo { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.sv-campo[hidden], .sv-extra[hidden] { display: none !important; }
+
+.sv-campo label, .sv-rotulo {
+  color: var(--verde-escuro);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sv-campo label small { font-weight: 400; color: #666; }
+
+.sv-campo input, .sv-campo select, .sv-campo textarea,
+.sv-vn-linha input, .sv-vn-linha select, .sv-resultado select, .sv-resultado input,
+.sv-busca input, .sv-busca select {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+  min-width: 0;
+}
+
+.sv-campo input:focus, .sv-campo select:focus, .sv-campo textarea:focus,
+.sv-vn-linha input:focus, .sv-vn-linha select:focus,
+.sv-resultado select:focus, .sv-resultado input:focus,
+.sv-busca input:focus, .sv-busca select:focus {
+  outline: none;
+  border-color: var(--verde-btn);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.sv-campo input[readonly] { background: #eef3ee; font-weight: 700; color: var(--verde-escuro); }
+
+.sv-obrigatorio::after { content: ' *'; color: #c62828; }
+
+.sv-dica { color: #555; font-size: 0.9rem; margin: 0; }
+
+/* Exames solicitados */
+.sv-grupo-exames {
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem 0.8rem;
+  margin: 0 0 0.85rem;
+  background: #fff;
+}
+
+.sv-grupo-exames legend {
+  float: none;
+  width: auto;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0b4f8a;
+  padding: 0 0.35rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.sv-exames-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.4rem 0.75rem;
+}
+
+.sv-exame {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sv-exame label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin: 0; }
+.sv-exame input[type=checkbox] { width: 1.15rem; height: 1.15rem; accent-color: var(--verde-btn); flex: none; }
+.sv-exame.marcado { background: var(--verde-bg); border-color: var(--verde-medio); }
+.sv-exame.marcado .sv-exame-nome { font-weight: 700; text-decoration: underline; color: var(--verde-escuro); }
+.sv-exame-com-outro, .sv-exame-longo { grid-column: 1 / -1; }
+.sv-exame-outro { flex: 1 1 180px; padding: 0.35rem 0.55rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; min-width: 0; }
+
+.sv-extra { margin-top: 0.75rem; }
+.sv-aborto { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.6rem 1rem; }
+
+/* Vírus-neutralização */
+.sv-vn-bloco { background: #fff; border: 1px solid #dcdcdc; border-radius: 10px; padding: 0.75rem; margin-bottom: 0.75rem; }
+.sv-vn-bloco h4 { font-size: 1rem; color: #0b4f8a; margin: 0 0 0.5rem; font-weight: 700; }
+.sv-vn-linha { display: grid; grid-template-columns: 1fr 130px 40px; gap: 0.5rem; margin-bottom: 0.4rem; }
+.sv-btn-icone { border: 1px solid #ddd; background: #fff; border-radius: 8px; color: #c62828; }
+.sv-btn-link { border: 0; background: transparent; color: var(--verde-btn); font-weight: 600; padding: 0.3rem 0; }
+
+/* Sim/Não */
+.sv-simnao { display: flex; gap: 1rem; padding: 0.45rem 0; }
+.sv-simnao label { display: flex; align-items: center; gap: 0.35rem; font-weight: 500; color: #222; cursor: pointer; }
+.sv-simnao input { width: 1.1rem; height: 1.1rem; accent-color: var(--verde-btn); }
+
+/* Resultados (laudo) */
+.sv-resultado {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) 170px 2fr;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+.sv-resultado-nome { font-weight: 700; color: var(--verde-escuro); }
+.sv-resultado-nome > span { text-decoration: underline; }
+.sv-resultado-nome small { display: block; font-weight: 400; text-decoration: none; color: #666; }
+
+/* Resumo da requisição (etapa 2) */
+.sv-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.4rem 1rem; font-size: 0.95rem; }
+.sv-resumo div span { color: #666; display: block; font-size: 0.8rem; }
+
+/* Ações */
+.sv-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  position: sticky;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 0.85rem 0;
+  border-top: 1px solid #e0e0e0;
+  z-index: 5;
+}
+
+.sv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 1px solid var(--verde-btn);
+  background: #fff;
+  color: var(--verde-btn);
+  text-decoration: none;
+  cursor: pointer;
+}
+.sv-btn:hover { background: var(--verde-bg); color: var(--verde-escuro); }
+.sv-btn-primario { background: var(--verde-btn); color: #fff; }
+.sv-btn-primario:hover { background: var(--verde-btn-hover); color: #fff; }
+.sv-btn-azul { background: #0b4f8a; border-color: #0b4f8a; color: #fff; }
+.sv-btn-azul:hover { background: #0d5fa5; color: #fff; }
+.sv-btn-pequeno { padding: 0.4rem 0.7rem; font-size: 0.88rem; border-radius: 10px; }
+.sv-btn[disabled] { opacity: 0.6; cursor: wait; }
+
+/* Busca / lista */
+.sv-busca { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; }
+.sv-busca > div { min-width: 0; }
+.sv-busca label { font-size: 0.8rem; font-weight: 600; color: var(--verde-escuro); display: block; margin-bottom: 0.2rem; }
+
+.sv-lista { display: flex; flex-direction: column; gap: 0.6rem; }
+.sv-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+}
+.sv-card h3 { font-size: 1.05rem; margin: 0; color: var(--verde-escuro); font-weight: 700; }
+.sv-card p { margin: 0.15rem 0 0; font-size: 0.9rem; color: #444; }
+.sv-card-acoes { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
+
+.sv-status { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 999px; margin-left: 0.4rem; vertical-align: middle; }
+.sv-status-aguardando { background: #fff3cd; color: #7a5a00; }
+.sv-status-emitido { background: #d1e7dd; color: #0f5132; }
+
+.sv-vazio { text-align: center; color: #666; padding: 2rem 1rem; }
+
+/* Aviso flutuante */
+.sv-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translate(-50%, 150%);
+  background: #1b5e20;
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transition: transform 0.25s;
+  max-width: calc(100% - 2rem);
+}
+.sv-toast.visivel { transform: translate(-50%, 0); }
+.sv-toast-erro { background: #b71c1c; }
+
+@media (max-width: 768px) {
+  body.sv-page { padding: 0.5rem; }
+  .sv-container { padding: 1rem; border-radius: 16px; }
+  .sv-cabecalho img { height: 52px; }
+  .sv-cabecalho h1 { font-size: 1.2rem; }
+  .sv-secao { padding: 0.9rem; }
+  .sv-busca { grid-template-columns: 1fr 1fr; }
+  .sv-busca > div:first-child { grid-column: 1 / -1; }
+  .sv-resultado { grid-template-columns: 1fr; gap: 0.35rem; }
+  .sv-exames-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.3rem 0.4rem; }
+  .sv-exame { padding: 0.35rem 0.4rem; font-size: 0.92rem; }
+  .sv-vn-linha { grid-template-columns: 1fr 110px 40px; }
+  .sv-card { grid-template-columns: 1fr; }
+  .sv-card-acoes { justify-content: flex-start; }
+  .sv-acoes { justify-content: stretch; }
+  .sv-acoes .sv-btn { flex: 1 1 140px; }
+}
+
+.sv-secao-exames {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--verde-escuro);
+  margin: 1.1rem 0 0.6rem;
+  text-transform: uppercase;
+}

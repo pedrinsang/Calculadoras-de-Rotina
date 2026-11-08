@@ -1,0 +1,126 @@
+/* Ficha "Requisição de Exames / Laudo" — layout fiel à ficha original (Arial, cabeçalhos cinza) */
+
+.sv-visualizar-barra {
+  max-width: 210mm;
+  margin: 0 auto 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+}
+.sv-visualizar-barra .grupo { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.folha {
+  background: #fff;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 12mm 12mm 10mm;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  overflow-x: auto;
+}
+
+.ficha-sv {
+  --mm: 1mm;
+  --pt: 1pt;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: calc(10.5 * var(--pt));
+  color: #000;
+  line-height: 1.3;
+  min-width: calc(170 * var(--mm));
+}
+
+.ficha-sv .exame-marcado { font-weight: bold; text-decoration: underline; }
+
+.ficha-sv .cab {
+  display: grid;
+  grid-template-columns: calc(26 * var(--mm)) 1fr calc(26 * var(--mm));
+  align-items: center;
+  gap: calc(4 * var(--mm));
+  margin-bottom: calc(4 * var(--mm));
+}
+.ficha-sv .cab-logo { width: 100%; height: auto; max-height: calc(26 * var(--mm)); object-fit: contain; }
+.ficha-sv .cab-titulo { text-align: center; }
+.ficha-sv .cab-setor { font-size: calc(18 * var(--pt)); font-weight: bold; }
+.ficha-sv .cab-doc { font-size: calc(14 * var(--pt)); font-weight: bold; }
+
+.ficha-sv .tabela {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: calc(3 * var(--mm));
+}
+.ficha-sv .tabela th, .ficha-sv .tabela td {
+  border: 1px solid #000;
+  padding: calc(1.3 * var(--mm)) calc(2 * var(--mm));
+  vertical-align: top;
+  text-align: left;
+  font-weight: normal;
+}
+.ficha-sv .tabela th { font-weight: bold; }
+.ficha-sv .cinza-escuro { background: #d0cece; }
+.ficha-sv .cinza-medio { background: #e7e6e6; }
+.ficha-sv .cinza-claro { background: #f2f2f2; }
+.ficha-sv .centro { text-align: center !important; }
+.ficha-sv .forte { font-weight: bold; }
+.ficha-sv .rotulo { font-weight: bold; }
+.ficha-sv .texto-longo { white-space: pre-wrap; min-height: calc(12 * var(--mm)); }
+.ficha-sv .itens { line-height: 1.7; }
+.ficha-sv .item-exame { display: inline-block; margin-right: calc(4 * var(--mm)); white-space: nowrap; }
+.ficha-sv .pontilhado { display: inline-block; min-width: calc(25 * var(--mm)); border-bottom: 1px dotted #000; white-space: normal; }
+.ficha-sv small { font-size: calc(8 * var(--pt)); color: #333; }
+
+.ficha-sv .titulo-secao { font-weight: bold; font-size: calc(11 * var(--pt)); margin: calc(4 * var(--mm)) 0 calc(2 * var(--mm)); }
+.ficha-sv .linha-texto { margin: 0 0 calc(3 * var(--mm)); border-bottom: 1px dotted #000; padding-bottom: calc(1 * var(--mm)); }
+
+.ficha-sv .vn-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 0 calc(6 * var(--mm)); }
+.ficha-sv .vn-virus { margin: 0 0 calc(1 * var(--mm)); }
+.ficha-sv .tabela.vn td { height: calc(6 * var(--mm)); }
+
+.ficha-sv .assinatura { text-align: center; margin-top: calc(8 * var(--mm)); }
+.ficha-sv .assinatura img { height: calc(24 * var(--mm)); width: auto; display: block; margin: 0 auto calc(-3 * var(--mm)); }
+.ficha-sv .assinatura-espaco { height: calc(17 * var(--mm)); }
+.ficha-sv .assinatura-linha { display: inline-block; border-top: 1px solid #000; padding-top: calc(1 * var(--mm)); min-width: calc(110 * var(--mm)); }
+
+.ficha-sv .rodape-ficha {
+  margin-top: 6mm;
+  padding-top: 1.5mm;
+  border-top: 1px solid #999;
+  text-align: center;
+  font-size: 8.5pt;
+  color: #333;
+}
+
+/* Durante a geração do PDF o rodapé é desenhado pelo jsPDF em cada página */
+body.gerando-pdf .ficha-sv .rodape-ficha { display: none; }
+body.gerando-pdf .folha { box-shadow: none; padding: 0; max-width: none; }
+/* O html2pdf encaixa a captura na área útil da página com fator ~0,75: reduz as medidas na mesma
+   proporção (o resultado no papel fica do tamanho da impressão normal) e deixa folga para a borda direita */
+body.gerando-pdf .ficha-sv { --mm: 0.75mm; --pt: 0.75pt; min-width: 0; width: 99%; margin: 0 auto; }
+/* html2canvas perde a borda direita com border-collapse: no PDF as células desenham só topo/esquerda */
+body.gerando-pdf .ficha-sv .tabela { border-collapse: separate; border-spacing: 0; border-right: 1px solid #000; border-bottom: 1px solid #000; }
+body.gerando-pdf .ficha-sv .tabela th, body.gerando-pdf .ficha-sv .tabela td { border-right: 0; border-bottom: 0; }
+
+.ficha-sv tr, .ficha-sv .evitar-quebra { page-break-inside: avoid; break-inside: avoid; }
+
+@media (max-width: 768px) {
+  .folha { padding: 4mm; }
+}
+
+@media print {
+  @page { size: A4 portrait; margin: 10mm 10mm 16mm; }
+  body.sv-page { background: #fff !important; padding: 0 !important; }
+  .no-print, .sv-toast { display: none !important; }
+  .sv-container { box-shadow: none !important; padding: 0 !important; max-width: none !important; border-radius: 0 !important; }
+  .folha { box-shadow: none; padding: 0; max-width: none; overflow: visible; }
+  .ficha-sv { min-width: 0; padding-bottom: calc(8 * var(--mm)); }
+  .ficha-sv .cinza-escuro, .ficha-sv .cinza-medio, .ficha-sv .cinza-claro { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Rodapé repetido em todas as páginas impressas */
+  .ficha-sv .rodape-ficha {
+    position: fixed;
+    bottom: -10mm;
+    left: 0;
+    right: 0;
+    margin: 0;
+    background: #fff;
+  }
+}

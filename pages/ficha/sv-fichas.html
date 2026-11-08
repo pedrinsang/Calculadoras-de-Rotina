@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fichas - Setor de Virologia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/pages/sv-fichas.css">
+</head>
+
+<body class="sv-page">
+  <div class="sv-container">
+    <div class="sv-topo">
+      <a href="../ficha-cadastro.html" class="sv-btn sv-btn-pequeno"><i class="bi bi-arrow-left"></i> Voltar</a>
+      <span class="sv-usuario"></span>
+    </div>
+
+    <div class="sv-cabecalho">
+      <img src="../../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM">
+      <div>
+        <h1>Requisição de Exames / Laudo</h1>
+        <p>Setor de Virologia · fichas salvas neste aparelho</p>
+      </div>
+    </div>
+
+    <div class="sv-acoes" style="position:static;border:0;padding-top:0;justify-content:flex-start">
+      <a href="sv-requisicao.html" class="sv-btn sv-btn-primario"><i class="bi bi-plus-lg"></i> Nova requisição</a>
+    </div>
+
+    <section class="sv-secao">
+      <h2>Buscar ficha</h2>
+      <div class="sv-busca">
+        <div>
+          <label for="busca-texto">Protocolo ou proprietário</label>
+          <input type="search" id="busca-texto" placeholder="Ex.: SV 07/26 ou João" autocomplete="off">
+        </div>
+        <div>
+          <label for="busca-de">Entrada de</label>
+          <input type="date" id="busca-de">
+        </div>
+        <div>
+          <label for="busca-ate">até</label>
+          <input type="date" id="busca-ate">
+        </div>
+        <div>
+          <label for="busca-status">Status</label>
+          <select id="busca-status">
+            <option value="">Todos</option>
+            <option>Aguardando análise</option>
+            <option>Laudo emitido</option>
+          </select>
+        </div>
+      </div>
+      <div id="lista" class="sv-lista" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <script type="module" src="../../assets/js/pages/ficha/sv-fichas.js"></script>
+</body>
+</html>
