@@ -184,7 +184,16 @@ body.sv-page {
 /* Vírus-neutralização */
 .sv-vn-bloco { background: #fff; border: 1px solid #dcdcdc; border-radius: 10px; padding: 0.75rem; margin-bottom: 0.75rem; }
 .sv-vn-bloco h4 { font-size: 1rem; color: #0b4f8a; margin: 0 0 0.5rem; font-weight: 700; }
-.sv-vn-linha { display: grid; grid-template-columns: 1fr 130px 40px; gap: 0.5rem; margin-bottom: 0.4rem; }
+.sv-vn-linha { display: grid; grid-template-columns: 1fr 130px 92px 40px; gap: 0.5rem; margin-bottom: 0.4rem; align-items: center; }
+.sv-vn-classe { font-size: 0.8rem; font-weight: 700; text-align: center; border-radius: 999px; padding: 0.2rem 0.4rem; }
+.sv-vn-classe:empty { visibility: hidden; }
+.sv-vn-pos { background: #f8d7da; color: #842029; }
+.sv-vn-neg { background: #d1e7dd; color: #0f5132; }
+.sv-vn-na { background: #e9ecef; color: #495057; }
+.sv-mural-selo { display: inline-block; font-size: 0.72rem; font-weight: 700; color: #0b4f8a; background: #e7f1fb; border-radius: 999px; padding: 0.1rem 0.5rem; margin-left: 0.4rem; vertical-align: middle; }
+.sv-mural-painel { background: #f3f8fd; border: 1px solid #cfe2f3; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.92rem; }
+.sv-mural-painel ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+.sv-mural-painel .sv-mural-aviso { color: #7a5a00; }
 .sv-btn-icone { border: 1px solid #ddd; background: #fff; border-radius: 8px; color: #c62828; }
 .sv-btn-link { border: 0; background: transparent; color: var(--verde-btn); font-weight: 600; padding: 0.3rem 0; }
 
@@ -302,7 +311,9 @@ body.sv-page {
   .sv-resultado { grid-template-columns: 1fr; gap: 0.35rem; }
   .sv-exames-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.3rem 0.4rem; }
   .sv-exame { padding: 0.35rem 0.4rem; font-size: 0.92rem; }
-  .sv-vn-linha { grid-template-columns: 1fr 110px 40px; }
+  .sv-vn-linha { grid-template-columns: 1fr 100px 40px; }
+  .sv-vn-linha .sv-vn-classe { grid-column: 1 / -1; justify-self: start; order: 1; margin-top: -0.2rem; }
+  .sv-vn-linha .sv-vn-classe:empty { display: none; }
   .sv-card { grid-template-columns: 1fr; }
   .sv-card-acoes { justify-content: flex-start; }
   .sv-acoes { justify-content: stretch; }

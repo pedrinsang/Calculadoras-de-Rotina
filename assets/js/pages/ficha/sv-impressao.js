@@ -1,7 +1,7 @@
 // Etapa 3 — monta a ficha completa (requisição + laudo + cobrança) no layout da ficha original
 // "Requisição de Exames / Laudo" e exporta em PDF.
 import {
-    GRUPOS_EXAMES, TITULOS_VN, RESPONSAVEL_TECNICO,
+    GRUPOS_EXAMES, RESPONSAVEL_TECNICO, classificarVN, resumoVN,
     esc, dataBR, moedaBR, examesMarcados, nomeExame, virusVN, separarIdentificacoes
 } from "./sv-comum.js";
 import { STATUS } from "../../utils/svFichasDB.js";
@@ -22,17 +22,31 @@ function campo(rotulo, valor, attrs = '') {
 
 function simNao(v) { return v === true ? 'Sim' : v === false ? 'Não' : '—'; }
 
+// Uma linha por amostra: identificação, título e se é positiva ou negativa.
 function tabelaVN(nomeVirus, linhas) {
-    const porTitulo = {};
-    TITULOS_VN.forEach(t => { porTitulo[t] = []; });
-    (linhas || []).forEach(l => { if (porTitulo[l.titulo]) porTitulo[l.titulo].push(l.amostra || '—'); });
+    const lista = (linhas || []).filter(l => l.amostra || l.titulo);
+    const corpo = lista.length
+        ? lista.map(l => {
+            const c = classificarVN(l.titulo);
+            return `<tr><td>${esc(l.amostra || '—')}</td><td class="centro">${esc(l.titulo || '')}</td>
+                <td class="centro ${c === 'Positiva' ? 'vn-pos' : ''}">${esc(c)}</td></tr>`;
+        }).join('')
+        : Array.from({ length: 6 }, () => '<tr><td>&nbsp;</td><td></td><td></td></tr>').join('');
+    const r = resumoVN(lista);
+    const resumo = lista.length ? `
+        <p class="vn-resumo">
+            <span class="rotulo">Positivas (${r.positivas.length}):</span> ${esc(r.positivas.join(', ') || '—')}<br>
+            <span class="rotulo">Negativas (${r.negativas.length}):</span> ${esc(r.negativas.join(', ') || '—')}
+            ${r.naoAvaliaveis.length ? `<br><span class="rotulo">Não avaliáveis (${r.naoAvaliaveis.length}):</span> ${esc(r.naoAvaliaveis.join(', '))}` : ''}
+        </p>` : '';
     return `
     <div class="vn-bloco evitar-quebra">
         <p class="vn-virus"><span class="rotulo">Vírus:</span> ${esc(nomeVirus)}</p>
         <table class="tabela vn">
-            <tr><th class="cinza" style="width:22%">Título</th><th class="cinza">Amostras (identificação)</th></tr>
-            ${TITULOS_VN.map(t => `<tr><td class="centro">${esc(t)}</td><td>${esc(porTitulo[t].join(', '))}</td></tr>`).join('')}
+            <tr><th class="cinza">Amostra (identificação)</th><th class="cinza" style="width:20%">Título</th><th class="cinza" style="width:26%">Resultado</th></tr>
+            ${corpo}
         </table>
+        ${resumo}
     </div>`;
 }
 
@@ -64,7 +78,17 @@ export function htmlFicha(f) {
     const marcados = examesMarcados(f);
     const resultados = laudo.resultados || {};
     const linhasResultado = marcados.length ? marcados.map(i => {
-        const r = resultados[i.id] || {};
+        let r = resultados[i.id] || {};
+        // Sorologia sem resultado escrito: usa o resumo das amostras da VN
+        if (!r.resultado && i.grupo.id === 'sorologia' && f.vn?.[i.id]?.length) {
+            const s = resumoVN(f.vn[i.id]);
+            if (s.positivas.length || s.negativas.length) {
+                r = {
+                    resultado: s.positivas.length ? 'Positivo' : 'Negativo',
+                    detalhe: r.detalhe || `${s.positivas.length} positiva(s)${s.positivas.length ? ': ' + s.positivas.join(', ') : ''}; ${s.negativas.length} negativa(s)${s.negativas.length ? ': ' + s.negativas.join(', ') : ''}`
+                };
+            }
+        }
         return `<tr><td><span class="exame-marcado">${esc(nomeExame(f, i))}</span><br><small>${esc(i.grupo.titulo)}</small></td>
             <td class="centro">${esc(r.resultado || '')}</td><td>${esc(r.detalhe || '')}</td></tr>`;
     }).join('') : '<tr><td colspan="3" class="centro">Nenhum exame marcado.</td></tr>';

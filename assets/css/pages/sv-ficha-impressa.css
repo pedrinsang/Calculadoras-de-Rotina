@@ -75,6 +75,8 @@
 .ficha-sv .vn-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 0 calc(6 * var(--mm)); }
 .ficha-sv .vn-virus { margin: 0 0 calc(1 * var(--mm)); }
 .ficha-sv .tabela.vn td { height: calc(6 * var(--mm)); }
+.ficha-sv .tabela.vn .vn-pos { font-weight: bold; }
+.ficha-sv .vn-resumo { margin: calc(1 * var(--mm)) 0 calc(3 * var(--mm)); font-size: calc(9 * var(--pt)); }
 
 .ficha-sv .assinatura { text-align: center; margin-top: calc(8 * var(--mm)); }
 .ficha-sv .assinatura img { height: calc(24 * var(--mm)); width: auto; display: block; margin: 0 auto calc(-3 * var(--mm)); }

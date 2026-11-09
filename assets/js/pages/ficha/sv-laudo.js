@@ -5,6 +5,7 @@ import {
     renderVNForm, coletarVNForm, renderCobrancaForm, coletarCobrancaForm
 } from "./sv-comum.js";
 import { obterFicha, atualizarFicha, STATUS } from "../../utils/svFichasDB.js";
+import { observarTarefasDaFicha, resultadosDoMural, descreverTarefa, statusTarefa } from "./sv-mural.js";
 
 const $ = (id) => document.getElementById(id);
 const protocolo = new URLSearchParams(location.search).get('id');
@@ -127,6 +128,58 @@ async function iniciar(usuario) {
 
     $('carregando').hidden = true;
     $('form-laudo').hidden = false;
+
+    // Resultados lançados no Mural entram na ficha em tempo real
+    observarTarefasDaFicha(protocolo, aplicarMural, () => {
+        $('mural-painel').innerHTML = '<span class="sv-mural-aviso">Não foi possível ler as tarefas do Mural agora.</span>';
+    });
+}
+
+// ------------------------------------------------------------------
+// Mural -> laudo
+// ------------------------------------------------------------------
+function aplicarMural(tarefas) {
+    const m = resultadosDoMural(ficha, tarefas);
+    renderPainelMural(tarefas, m);
+
+    // Resultado por exame: o Mural tem prioridade quando já há resultado lançado
+    Object.entries(m.resultados).forEach(([exame, r]) => {
+        const el = document.querySelector(`[data-resultado="${exame}"]`);
+        if (!el) return;
+        const sel = el.querySelector('select');
+        if (r.resultado && [...sel.options].some(o => o.value === r.resultado)) sel.value = r.resultado;
+        if (r.detalhe) el.querySelector('input').value = r.detalhe;
+        const nome = el.querySelector('.sv-resultado-nome span');
+        if (nome && !nome.querySelector('.sv-mural-selo')) nome.insertAdjacentHTML('beforeend', '<span class="sv-mural-selo">do Mural</span>');
+    });
+
+    // VN: amostras e títulos vindos da SN do Mural substituem as do vírus correspondente
+    if (Object.keys(m.vn).length) {
+        const atual = coletarVNForm($('vn'));
+        renderVNForm($('vn'), { ...ficha, vn: { ...atual, ...m.vn } }, ficha.amostras?.identificacao);
+        Object.keys(m.vn).forEach(v => {
+            const h = document.querySelector(`[data-vn="${v}"] h4`);
+            if (h && !h.querySelector('.sv-mural-selo')) h.insertAdjacentHTML('beforeend', '<span class="sv-mural-selo">do Mural</span>');
+        });
+    }
+}
+
+function renderPainelMural(tarefas, m) {
+    const painel = $('mural-painel');
+    if (!tarefas.length) {
+        painel.innerHTML = `<strong>Mural:</strong> nenhuma tarefa ligada a esta ficha.
+            <a href="sv-requisicao.html?id=${encodeURIComponent(protocolo)}">Abra e salve a requisição</a> para criá-las.`;
+        return;
+    }
+    const nomes = Object.fromEntries(examesMarcados(ficha).map(i => [i.id, nomeExame(ficha, i)]));
+    const itens = Object.entries(m.tarefasPorExame).flatMap(([exame, ts]) =>
+        ts.map(t => `<li><strong>${esc(nomes[exame] || t.exameFichaNome || exame)}</strong> — ${esc(descreverTarefa(t))}: ${esc(statusTarefa(t))}</li>`));
+    m.semVinculo.forEach(t => itens.push(`<li class="sv-mural-aviso">${esc(descreverTarefa(t))}: ${esc(statusTarefa(t))} (não ligada a nenhum exame marcado)</li>`));
+    const comResultado = tarefas.filter(t => t.resultados).length;
+    painel.innerHTML = `<strong>Mural:</strong> ${tarefas.length} tarefa${tarefas.length === 1 ? '' : 's'}, ${comResultado} com resultado.
+        Os resultados lançados no Mural preenchem os campos abaixo automaticamente.
+        <ul>${itens.join('')}</ul>
+        <a href="../mural.html">Abrir o Mural</a>`;
 }
 
 $('form-laudo').addEventListener('submit', (e) => { e.preventDefault(); salvar(true); });

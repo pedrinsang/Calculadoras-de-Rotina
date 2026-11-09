@@ -62,9 +62,11 @@ let carregou = false;
 
 async function iniciar() {
     $('lista').innerHTML = '<p class="sv-vazio">Carregando fichas…</p>';
-    const salvo = new URLSearchParams(location.search).get('salvo');
+    const params = new URLSearchParams(location.search);
+    const salvo = params.get('salvo');
     if (salvo) {
-        mostrarAviso(`Ficha ${salvo} salva.`);
+        const mural = Number(params.get('mural') || 0);
+        mostrarAviso(`Ficha ${salvo} salva.` + (mural ? ` ${mural} tarefa${mural === 1 ? '' : 's'} criada${mural === 1 ? '' : 's'} no Mural.` : ''));
         history.replaceState(null, '', location.pathname);
     }
 

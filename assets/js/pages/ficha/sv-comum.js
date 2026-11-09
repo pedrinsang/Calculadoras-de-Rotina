@@ -120,6 +120,29 @@ export const GRUPOS_EXAMES = [
 
 // Títulos da vírus-neutralização
 export const TITULOS_VN = ['<4', '4', '8', '16', '32', '64', '128', '256', '≥512'];
+// Amostras que não puderam ser avaliadas (mesmas categorias do Mural)
+export const CATEGORIAS_VN_NAO_AVALIAVEIS = ['Imprópria', 'Tóxica', 'Insuficiente'];
+
+// Interpretação de cada amostra da VN: "<4" = negativa; título ≥ 4 = positiva.
+export function classificarVN(titulo) {
+    if (!titulo) return '';
+    if (titulo === '<4') return 'Negativa';
+    if (TITULOS_VN.includes(titulo)) return 'Positiva';
+    return 'Não avaliável';
+}
+
+// Resumo de uma lista de linhas da VN: { positivas: [...], negativas: [...], naoAvaliaveis: [...] }
+export function resumoVN(linhas) {
+    const r = { positivas: [], negativas: [], naoAvaliaveis: [] };
+    (linhas || []).forEach(l => {
+        const c = classificarVN(l.titulo);
+        const nome = l.amostra || '—';
+        if (c === 'Positiva') r.positivas.push(nome);
+        else if (c === 'Negativa') r.negativas.push(nome);
+        else if (c) r.naoAvaliaveis.push(`${nome} (${l.titulo.toLowerCase()})`);
+    });
+    return r;
+}
 
 export const OPCOES_RESULTADO = ['', 'Positivo', 'Negativo', 'Inconclusivo', 'Não realizado'];
 
@@ -392,16 +415,39 @@ export function renderVNForm(container, ficha, identificacoesTexto = '') {
         const rem = e.target.closest('[data-vn-rem]');
         if (rem) rem.closest('.sv-vn-linha').remove();
     };
+    // Mostra ao lado de cada amostra se ela é positiva ou negativa
+    container.onchange = (e) => {
+        const sel = e.target.closest('.sv-vn-titulo');
+        if (sel) atualizarClasseVN(sel.closest('.sv-vn-linha'));
+    };
+}
+
+function seloVN(titulo) {
+    const c = classificarVN(titulo);
+    const classe = c === 'Positiva' ? 'sv-vn-pos' : c === 'Negativa' ? 'sv-vn-neg' : c ? 'sv-vn-na' : '';
+    return `<span class="sv-vn-classe ${classe}">${esc(c)}</span>`;
+}
+
+function atualizarClasseVN(linha) {
+    const atual = linha?.querySelector('.sv-vn-classe');
+    if (atual) atual.outerHTML = seloVN(linha.querySelector('.sv-vn-titulo').value);
 }
 
 function linhaVN(l) {
+    const extra = l.titulo && !TITULOS_VN.includes(l.titulo) && !CATEGORIAS_VN_NAO_AVALIAVEIS.includes(l.titulo) ? [l.titulo] : [];
     return `
     <div class="sv-vn-linha">
         <input type="text" class="sv-vn-amostra" placeholder="Amostra / identificação" value="${esc(l.amostra)}" aria-label="Amostra">
         <select class="sv-vn-titulo" aria-label="Título">
             <option value="">Título…</option>
+            <optgroup label="Título">
             ${TITULOS_VN.map(t => `<option value="${esc(t)}" ${l.titulo === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+            </optgroup>
+            <optgroup label="Não avaliável">
+            ${[...CATEGORIAS_VN_NAO_AVALIAVEIS, ...extra].map(t => `<option value="${esc(t)}" ${l.titulo === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+            </optgroup>
         </select>
+        ${seloVN(l.titulo)}
         <button type="button" class="sv-btn-icone" data-vn-rem title="Remover amostra" aria-label="Remover amostra"><i class="bi bi-x-lg"></i></button>
     </div>`;
 }
