@@ -5,10 +5,11 @@
 // - Os resultados lançados no Mural (tarefas e histórico) são lidos em tempo real e convertidos
 //   para o formato da ficha: títulos de VN por amostra e resultado por exame.
 import {
-    collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, Timestamp
+    collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, Timestamp, writeBatch
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { db } from "../../firebase.js";
 import { calcularDataPrazo, parseDateInputLocal } from "../../utils/prazosMural.js";
+import { idDoc } from "../../utils/svFichasDB.js";
 import { examesMarcados, nomeExame, separarIdentificacoes, resumoVN } from "./sv-comum.js";
 
 // ------------------------------------------------------------------
@@ -336,3 +337,25 @@ export function statusTarefa(t) {
     return 'Pendente';
 }
 
+// ------------------------------------------------------------------
+// Exclusão: apaga a ficha e as tarefas dela no Mural, tudo de uma vez (se uma parte falhar,
+// nada é apagado). O Histórico (tarefas já concluídas) é mantido como registro.
+// ------------------------------------------------------------------
+export async function tarefasAtivasDaFicha(protocolo) {
+    const [porFicha, porId] = await Promise.all([
+        buscar('tarefas', 'fichaSV', protocolo),
+        buscar('tarefas', 'id', protocolo)
+    ]);
+    const mapa = new Map();
+    [...porFicha, ...porId].forEach(t => mapa.set(t.docId, t));
+    return [...mapa.values()];
+}
+
+export async function excluirFichaComTarefas(protocolo, tarefas) {
+    const lista = tarefas || await tarefasAtivasDaFicha(protocolo);
+    const batch = writeBatch(db);
+    lista.forEach(t => batch.delete(doc(db, 'tarefas', t.docId)));
+    batch.delete(doc(db, 'fichasSV', idDoc(protocolo)));
+    await batch.commit();
+    return lista.length;
+}

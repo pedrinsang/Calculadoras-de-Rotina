@@ -1,9 +1,11 @@
 // Lista e busca das fichas SV (por protocolo, proprietário ou data de entrada).
-import { exigirLogin, esc, dataBR, mostrarAviso, examesMarcados, proximoProtocolo } from "./sv-comum.js";
+import { exigirLogin, esc, dataBR, mostrarAviso, examesMarcados, proximoProtocolo, usuarioArmazenado } from "./sv-comum.js";
 import { observarFichas, migrarFichasLocais, STATUS } from "../../utils/svFichasDB.js";
+import { tarefasAtivasDaFicha, excluirFichaComTarefas, descreverTarefa, statusTarefa } from "./sv-mural.js";
 
 const $ = (id) => document.getElementById(id);
 let fichas = [];
+let ehAdmin = false;
 
 function normalizar(t) {
     return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -53,6 +55,7 @@ function render() {
                 <a class="sv-btn sv-btn-pequeno" href="sv-requisicao.html?id=${id}" title="Editar requisição"><i class="bi bi-pencil"></i> Requisição</a>
                 <a class="sv-btn sv-btn-pequeno ${emitido ? '' : 'sv-btn-primario'}" href="sv-laudo.html?id=${id}"><i class="bi bi-clipboard2-pulse"></i> ${emitido ? 'Ver laudo' : 'Laudar'}</a>
                 <a class="sv-btn sv-btn-pequeno sv-btn-azul" href="sv-visualizar.html?id=${id}"><i class="bi bi-eye"></i> Visualizar / PDF</a>
+                ${ehAdmin ? `<button type="button" class="sv-btn sv-btn-pequeno sv-btn-perigo" data-excluir="${esc(f.protocolo)}" title="Excluir ficha e tarefas do Mural"><i class="bi bi-trash"></i> Excluir</button>` : ''}
             </div>
         </article>`;
     }).join('');
@@ -60,7 +63,34 @@ function render() {
 
 let carregou = false;
 
+// Exclui a ficha e as tarefas dela no Mural (só admin)
+async function excluir(protocolo, botao) {
+    botao.disabled = true;
+    try {
+        const tarefas = await tarefasAtivasDaFicha(protocolo);
+        const lista = tarefas.length
+            ? '\n\nTambém serão apagadas do Mural:\n' + tarefas.map(t => `• ${descreverTarefa(t)} (${statusTarefa(t)}${t.resultados ? ', COM resultados' : ''})`).join('\n')
+            : '\n\nNão há tarefas desta ficha no Mural.';
+        const ok = confirm(`Excluir a ficha ${protocolo}?${lista}\n\nIsso não pode ser desfeito. (Tarefas já concluídas continuam no Histórico.)`);
+        if (!ok) return;
+        const n = await excluirFichaComTarefas(protocolo, tarefas);
+        mostrarAviso(`Ficha ${protocolo} excluída${n ? ` com ${n} tarefa${n === 1 ? '' : 's'} do Mural` : ''}.`);
+    } catch (err) {
+        console.error('Erro ao excluir ficha:', err);
+        const semPermissao = err?.code === 'permission-denied';
+        mostrarAviso(semPermissao ? 'Sem permissão para excluir: só administradores podem excluir fichas.' : 'Erro ao excluir: ' + (err?.message || err), 'erro');
+    } finally {
+        botao.disabled = false;
+    }
+}
+
+$('lista').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-excluir]');
+    if (btn) excluir(btn.dataset.excluir, btn);
+});
+
 async function iniciar() {
+    ehAdmin = usuarioArmazenado()?.role === 'admin';
     $('lista').innerHTML = '<p class="sv-vazio">Carregando fichas…</p>';
     const params = new URLSearchParams(location.search);
     const salvo = params.get('salvo');

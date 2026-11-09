@@ -15,7 +15,7 @@ export const STATUS = {
 const COLECAO = 'fichasSV';
 
 // "/" não é permitido em IDs de documento: "SV 07/26" -> "SV 07-26"
-function idDoc(protocolo) {
+export function idDoc(protocolo) {
     return String(protocolo).trim().replace(/\//g, '-');
 }
 

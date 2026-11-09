@@ -254,6 +254,8 @@ body.sv-page {
 .sv-btn-azul { background: #0b4f8a; border-color: #0b4f8a; color: #fff; }
 .sv-btn-azul:hover { background: #0d5fa5; color: #fff; }
 .sv-btn-pequeno { padding: 0.4rem 0.7rem; font-size: 0.88rem; border-radius: 10px; }
+.sv-btn-perigo { background: #fff; border-color: #c62828; color: #c62828; }
+.sv-btn-perigo:hover { background: #c62828; color: #fff; }
 .sv-btn[disabled] { opacity: 0.6; cursor: wait; }
 
 /* Busca / lista */
