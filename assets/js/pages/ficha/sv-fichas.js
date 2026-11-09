@@ -1,6 +1,6 @@
 // Lista e busca das fichas SV (por protocolo, proprietário ou data de entrada).
-import { exigirLogin, esc, dataBR, mostrarAviso, examesMarcados } from "./sv-comum.js";
-import { listarFichas, STATUS } from "../../utils/svFichasDB.js";
+import { exigirLogin, esc, dataBR, mostrarAviso, examesMarcados, proximoProtocolo } from "./sv-comum.js";
+import { observarFichas, migrarFichasLocais, STATUS } from "../../utils/svFichasDB.js";
 
 const $ = (id) => document.getElementById(id);
 let fichas = [];
@@ -58,19 +58,39 @@ function render() {
     }).join('');
 }
 
+let carregou = false;
+
 async function iniciar() {
-    try {
-        fichas = await listarFichas();
-    } catch (err) {
-        console.error(err);
-        mostrarAviso('Erro ao abrir o banco local: ' + (err?.message || err), 'erro');
-    }
+    $('lista').innerHTML = '<p class="sv-vazio">Carregando fichas…</p>';
     const salvo = new URLSearchParams(location.search).get('salvo');
     if (salvo) {
         mostrarAviso(`Ficha ${salvo} salva.`);
         history.replaceState(null, '', location.pathname);
     }
-    render();
+
+    // Lista em tempo real: fichas criadas/alteradas por outras pessoas aparecem sozinhas
+    observarFichas(lista => {
+        fichas = lista;
+        carregou = true;
+        render();
+    }, err => {
+        console.error(err);
+        mostrarAviso('Erro ao carregar as fichas: ' + (err?.message || err), 'erro');
+        if (!carregou) $('lista').innerHTML = '<p class="sv-vazio">Não foi possível carregar as fichas. Verifique a conexão e recarregue a página.</p>';
+    });
+
+    // Fichas antigas que ficaram só neste navegador vão para o banco compartilhado
+    try {
+        const { enviadas, renumeradas } = await migrarFichasLocais(proximoProtocolo);
+        if (renumeradas.length) {
+            alert('Algumas fichas salvas só neste aparelho tinham o mesmo protocolo de fichas de outra pessoa e foram renumeradas:\n\n'
+                + renumeradas.map(r => `${r.de} → ${r.para}`).join('\n'));
+        } else if (enviadas) {
+            mostrarAviso(`${enviadas} ficha${enviadas === 1 ? '' : 's'} deste aparelho enviada${enviadas === 1 ? '' : 's'} para o banco compartilhado.`);
+        }
+    } catch (err) {
+        console.error('[SV] Erro na migração das fichas locais:', err);
+    }
 }
 
 ['busca-texto', 'busca-de', 'busca-ate', 'busca-status'].forEach(id => $(id).addEventListener('input', render));

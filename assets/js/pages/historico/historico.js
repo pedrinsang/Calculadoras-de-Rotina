@@ -66,30 +66,7 @@ window.addEventListener('unhandledrejection', function(e) {
 // CORREÇÃO PARA SERVICEWORKER
 // ============================================================================
 
-// Função para limpar ServiceWorkers problemáticos
-async function limparServiceWorkers() {
-    try {
-        if ('serviceWorker' in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            
-            for (let registration of registrations) {
-                await registration.unregister();
-            }
-            
-            if (registrations.length > 0) {
-                // Aguardar um pouco antes de recarregar
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-                return true; // Indica que página será recarregada
-            }
-        }
-        return false; // Não houve ServiceWorkers para remover
-    } catch (error) {
-        console.warn('Erro ao limpar ServiceWorkers:', error);
-        return false;
-    }
-}
+// (O antigo contorno que removia o service worker foi retirado: o SW agora busca tudo da rede primeiro.)
 
 // Configuração do Firebase com configurações otimizadas
 // Config centralizada via módulo compartilhado
@@ -1223,10 +1200,6 @@ function inicializarAplicacao() {
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', async function() {
-    // Tentar limpar ServiceWorkers primeiro
-    const precisaRecarregar = await limparServiceWorkers();
-    if (precisaRecarregar) return; // Página será recarregada
-    
     // Firebase já está inicializado via módulo compartilhado
     // Continuar com a inicialização normal...
     inicializarAplicacao();

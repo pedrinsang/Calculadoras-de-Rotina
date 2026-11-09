@@ -4,7 +4,7 @@ import {
     renderExamesForm, coletarExamesForm, renderVNForm, coletarVNForm,
     renderCobrancaForm, coletarCobrancaForm
 } from "./sv-comum.js";
-import { obterFicha, criarFicha, atualizarFicha, STATUS } from "../../utils/svFichasDB.js";
+import { obterFicha, criarFicha, atualizarFicha, migrarFichasLocais, STATUS } from "../../utils/svFichasDB.js";
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -126,15 +126,20 @@ async function salvar(e) {
                 criadoPor: usuario ? { uid: usuario.uid, nome: usuario.nome } : null,
                 laudo: null
             };
-            try {
-                await criarFicha(novo);
-            } catch (err) {
-                if (err?.name !== 'ConstraintError') throw err;
-                // Protocolo já usado neste meio-tempo: gera o próximo e tenta de novo
-                protocolo = await proximoProtocolo();
-                novo.protocolo = protocolo;
-                novo.identificacao.protocolo = protocolo;
-                await criarFicha(novo);
+            // Se outra pessoa usou o mesmo protocolo neste meio-tempo, gera o próximo e tenta de novo
+            for (let tentativa = 1; ; tentativa++) {
+                try {
+                    await criarFicha(novo);
+                    break;
+                } catch (err) {
+                    if (err?.name !== 'ConstraintError' || tentativa >= 5) throw err;
+                    protocolo = await proximoProtocolo();
+                    novo.protocolo = protocolo;
+                    novo.identificacao.protocolo = protocolo;
+                }
+            }
+            if (protocolo !== $('protocolo').value) {
+                alert(`Atenção: o protocolo ${$('protocolo').value} foi usado por outra pessoa enquanto você preenchia. Esta ficha foi salva como ${protocolo}.`);
             }
             registrarProtocoloUsado(protocolo);
         }
@@ -162,6 +167,7 @@ async function iniciar(u) {
         preencher(fichaAtual);
     } else {
         preencher({});
+        await migrarFichasLocais(proximoProtocolo);
         $('protocolo').value = await proximoProtocolo();
     }
 }

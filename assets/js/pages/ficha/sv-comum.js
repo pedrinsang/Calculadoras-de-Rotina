@@ -241,7 +241,8 @@ export async function sair() {
 
 // ------------------------------------------------------------------
 // Protocolo no padrão do projeto: "SV NN/AA" (o mesmo do mural e da ficha antiga).
-// Próximo número = maior entre fichas locais, tarefas do mural (Firestore) e contador local + 1.
+// Próximo número = maior entre fichas SV (Firestore), tarefas do mural (Firestore) e contador local + 1.
+// A unicidade é garantida na gravação (criarFicha falha se o protocolo já existir).
 // ------------------------------------------------------------------
 const RE_SV = /SV\s*(\d+)\s*\/\s*(\d{2})/i;
 
@@ -273,7 +274,7 @@ export async function proximoProtocolo() {
             const m = String(f.protocolo || '').match(RE_SV);
             if (m && m[2] === sufixo) maior = Math.max(maior, parseInt(m[1], 10) || 0);
         });
-    } catch (err) { console.warn('[SV] Erro ao ler fichas locais:', err); }
+    } catch (err) { console.warn('[SV] Erro ao ler fichas SV:', err); }
     maior = Math.max(maior, await maiorSVMural(sufixo));
     // contador usado pelo mural guarda o "próximo" número
     const contador = parseInt(localStorage.getItem(`svNumber_${ano}`) || '0', 10);

@@ -511,50 +511,8 @@ function setupPWA() {
 }
 
 function setupServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js', { scope: './' })
-        .then(function(registration) {
-          console.log('SW registrado com sucesso:', registration.scope);
-
-          // Se houver um SW em espera, perguntar ao usuário
-          if (registration.waiting) {
-            promptUpdate(registration);
-          }
-
-          // Detecta novas atualizações entrando em waiting
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (!newWorker) return;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // Novo SW instalado e em espera
-                promptUpdate(registration);
-              }
-            });
-          });
-
-          // Quando o SW controlador muda após skipWaiting, recarrega uma vez
-          let refreshing = false;
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (refreshing) return;
-            refreshing = true;
-            window.location.reload();
-          });
-        })
-        .catch(function(error) {
-          console.error('Falha no registro do SW:', error);
-        });
-    });
-  }
-}
-
-function promptUpdate(registration) {
-  const shouldUpdate = confirm('Nova versão disponível. Deseja atualizar agora?');
-  if (shouldUpdate && registration.waiting) {
-    // Pede para ativar imediatamente
-    registration.waiting.postMessage('FORCE_UPDATE');
-  }
+  // O registro do service worker e a atualização automática ficam em
+  // assets/js/utils/atualizacaoApp.js (carregado por firebase.js em todas as páginas).
 }
 
 // Variável para armazenar o evento de instalação

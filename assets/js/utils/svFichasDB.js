@@ -1,76 +1,139 @@
-// Banco local (IndexedDB) das fichas de Requisição de Exames / Laudo do Setor de Virologia.
-// Cada ficha é UM registro, com chave = protocolo (ex.: "SV 07/26"), atualizado nas 3 etapas.
-
-const DB_NAME = 'virologia-ufsm';
-const DB_VERSION = 1;
-const STORE = 'fichasSV';
+// Fichas de Requisição de Exames / Laudo do Setor de Virologia — guardadas no Firestore
+// (coleção "fichasSV"), compartilhadas entre todos os usuários e dispositivos.
+// Cada ficha é UM documento, identificado pelo protocolo (ex.: "SV 07/26"), atualizado nas 3 etapas.
+import {
+    doc, getDoc, getDocs, collection, runTransaction, onSnapshot
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { db } from "../firebase.js";
+import { listarFichasLocais, excluirFichaLocal } from "./svFichasLocal.js";
 
 export const STATUS = {
     AGUARDANDO: 'Aguardando análise',
     LAUDO_EMITIDO: 'Laudo emitido'
 };
 
-let dbPromise = null;
+const COLECAO = 'fichasSV';
 
-function abrirDB() {
-    if (dbPromise) return dbPromise;
-    dbPromise = new Promise((resolve, reject) => {
-        if (!('indexedDB' in window)) {
-            reject(new Error('Este navegador não suporta armazenamento local (IndexedDB).'));
-            return;
-        }
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
-        req.onupgradeneeded = () => {
-            const db = req.result;
-            if (!db.objectStoreNames.contains(STORE)) {
-                const store = db.createObjectStore(STORE, { keyPath: 'protocolo' });
-                store.createIndex('status', 'status', { unique: false });
-                store.createIndex('dataEntrada', 'identificacao.dataEntrada', { unique: false });
-            }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => { dbPromise = null; reject(req.error); };
-    });
-    return dbPromise;
+// "/" não é permitido em IDs de documento: "SV 07/26" -> "SV 07-26"
+function idDoc(protocolo) {
+    return String(protocolo).trim().replace(/\//g, '-');
 }
 
-function executar(modo, fn) {
-    return abrirDB().then(db => new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, modo);
-        const store = tx.objectStore(STORE);
-        let resultado;
-        const req = fn(store);
-        if (req) req.onsuccess = () => { resultado = req.result; };
-        tx.oncomplete = () => resolve(resultado);
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error || new Error('Transação cancelada'));
-    }));
+function refFicha(protocolo) {
+    return doc(db, COLECAO, idDoc(protocolo));
 }
 
-export function obterFicha(protocolo) {
-    return executar('readonly', store => store.get(protocolo));
+// Firestore rejeita campos undefined; JSON remove-os.
+function limpar(obj) {
+    return JSON.parse(JSON.stringify(obj));
 }
 
-export function listarFichas() {
-    return executar('readonly', store => store.getAll()).then(lista => lista || []);
+export class ProtocoloEmUsoError extends Error {
+    constructor(protocolo) {
+        super(`O protocolo ${protocolo} já está em uso.`);
+        this.name = 'ConstraintError';
+        this.protocolo = protocolo;
+    }
 }
 
-// Cria uma ficha nova. Falha se o protocolo já existir (não sobrescreve outra ficha).
-export function criarFicha(ficha) {
+export async function obterFicha(protocolo) {
+    const snap = await getDoc(refFicha(protocolo));
+    return snap.exists() ? snap.data() : undefined;
+}
+
+export async function listarFichas() {
+    const snap = await getDocs(collection(db, COLECAO));
+    return snap.docs.map(d => d.data());
+}
+
+// Chama callback(lista) sempre que qualquer ficha mudar (em qualquer dispositivo).
+// Retorna a função para parar de observar.
+export function observarFichas(callback, onErro) {
+    return onSnapshot(collection(db, COLECAO),
+        snap => callback(snap.docs.map(d => d.data())),
+        err => onErro?.(err));
+}
+
+// Cria uma ficha nova. Falha (ProtocoloEmUsoError) se o protocolo já existir — nunca sobrescreve.
+export async function criarFicha(ficha) {
     const agora = new Date().toISOString();
-    const registro = { ...ficha, criadoEm: agora, atualizadoEm: agora };
-    return executar('readwrite', store => store.add(registro)).then(() => registro);
-}
-
-// Atualiza a MESMA ficha (mesmo protocolo), mesclando os campos alterados.
-export async function atualizarFicha(protocolo, alteracoes) {
-    const atual = await obterFicha(protocolo);
-    if (!atual) throw new Error(`Ficha ${protocolo} não encontrada.`);
-    const registro = { ...atual, ...alteracoes, protocolo, criadoEm: atual.criadoEm, atualizadoEm: new Date().toISOString() };
-    await executar('readwrite', store => store.put(registro));
+    const registro = limpar({ criadoEm: agora, atualizadoEm: agora, ...ficha });
+    const ref = refFicha(ficha.protocolo);
+    await runTransaction(db, async (tx) => {
+        const atual = await tx.get(ref);
+        if (atual.exists()) throw new ProtocoloEmUsoError(ficha.protocolo);
+        tx.set(ref, registro);
+    });
     return registro;
 }
 
-export function excluirFicha(protocolo) {
-    return executar('readwrite', store => store.delete(protocolo));
+// Atualiza a MESMA ficha (mesmo protocolo), substituindo só os campos de primeiro nível alterados.
+export async function atualizarFicha(protocolo, alteracoes) {
+    const ref = refFicha(protocolo);
+    return runTransaction(db, async (tx) => {
+        const snap = await tx.get(ref);
+        if (!snap.exists()) throw new Error(`Ficha ${protocolo} não encontrada.`);
+        const atual = snap.data();
+        const registro = limpar({
+            ...atual, ...alteracoes, protocolo,
+            criadoEm: atual.criadoEm, atualizadoEm: new Date().toISOString()
+        });
+        tx.set(ref, registro);
+        return registro;
+    });
+}
+
+// ------------------------------------------------------------------
+// Migração: fichas que ficaram só no navegador (IndexedDB, versão anterior) vão para o Firestore.
+// Se o protocolo já existe no Firestore com OUTRA ficha, a ficha local recebe um protocolo novo
+// (gerado por `gerarProtocolo`) e guarda o antigo em `protocoloAnterior`.
+// Retorna { enviadas, renumeradas: [{ de, para }] }.
+// ------------------------------------------------------------------
+let migracaoEmAndamento = null;
+
+export function migrarFichasLocais(gerarProtocolo) {
+    if (!migracaoEmAndamento) migracaoEmAndamento = executarMigracao(gerarProtocolo).finally(() => { migracaoEmAndamento = null; });
+    return migracaoEmAndamento;
+}
+
+async function executarMigracao(gerarProtocolo) {
+    const resultado = { enviadas: 0, renumeradas: [] };
+    let locais = [];
+    try { locais = await listarFichasLocais(); }
+    catch (err) { console.warn('[SV] Não foi possível ler fichas locais antigas:', err); return resultado; }
+
+    for (const local of locais) {
+        try {
+            const existente = await obterFicha(local.protocolo);
+            if (existente && existente.criadoEm === local.criadoEm) {
+                // já enviada antes (mesma ficha)
+            } else if (!existente) {
+                await criarFicha(local);
+                resultado.enviadas++;
+            } else {
+                let criada = false;
+                for (let i = 0; i < 5 && !criada; i++) {
+                    const novo = await gerarProtocolo();
+                    try {
+                        await criarFicha({
+                            ...local,
+                            protocolo: novo,
+                            protocoloAnterior: local.protocolo,
+                            identificacao: { ...(local.identificacao || {}), protocolo: novo }
+                        });
+                        criada = true;
+                        resultado.enviadas++;
+                        resultado.renumeradas.push({ de: local.protocolo, para: novo });
+                    } catch (err) {
+                        if (err?.name !== 'ConstraintError') throw err;
+                    }
+                }
+                if (!criada) continue; // mantém no local para tentar depois
+            }
+            await excluirFichaLocal(local.protocolo);
+        } catch (err) {
+            console.error(`[SV] Falha ao migrar a ficha ${local.protocolo}:`, err);
+        }
+    }
+    return resultado;
 }
