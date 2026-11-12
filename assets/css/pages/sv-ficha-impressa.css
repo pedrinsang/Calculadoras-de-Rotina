@@ -78,6 +78,26 @@
 .ficha-sv .tabela.vn .vn-pos { font-weight: bold; }
 .ficha-sv .vn-resumo { margin: calc(1 * var(--mm)) 0 calc(3 * var(--mm)); font-size: calc(9 * var(--pt)); }
 
+/* Resultados (VN + laudo) em destaque: caixa tracejada verde com cantos pretos */
+.ficha-sv .caixa-resultados {
+  position: relative;
+  border: 2px dashed #1f7a55;
+  padding: calc(1 * var(--mm)) calc(4 * var(--mm)) calc(1 * var(--mm));
+  margin: calc(5 * var(--mm)) 0 calc(3 * var(--mm));
+}
+.ficha-sv .caixa-resultados .canto {
+  position: absolute;
+  width: calc(4 * var(--mm));
+  height: calc(4 * var(--mm));
+  border: 0 solid #000;
+}
+.ficha-sv .caixa-resultados .canto-se { top: -2px; left: -2px; border-top-width: 3px; border-left-width: 3px; }
+.ficha-sv .caixa-resultados .canto-sd { top: -2px; right: -2px; border-top-width: 3px; border-right-width: 3px; }
+.ficha-sv .caixa-resultados .canto-ie { bottom: -2px; left: -2px; border-bottom-width: 3px; border-left-width: 3px; }
+.ficha-sv .caixa-resultados .canto-id { bottom: -2px; right: -2px; border-bottom-width: 3px; border-right-width: 3px; }
+.ficha-sv .caixa-resultados .titulo-secao:first-of-type { margin-top: calc(2 * var(--mm)); }
+.ficha-sv .res-pos, .ficha-sv .tabela td.res-pos { font-weight: bold; }
+
 .ficha-sv .assinatura { text-align: center; margin-top: calc(8 * var(--mm)); }
 .ficha-sv .assinatura img { height: calc(24 * var(--mm)); width: auto; display: block; margin: 0 auto calc(-3 * var(--mm)); }
 .ficha-sv .assinatura-espaco { height: calc(17 * var(--mm)); }
@@ -115,7 +135,7 @@ body.gerando-pdf .ficha-sv .tabela th, body.gerando-pdf .ficha-sv .tabela td { b
   .sv-container { box-shadow: none !important; padding: 0 !important; max-width: none !important; border-radius: 0 !important; }
   .folha { box-shadow: none; padding: 0; max-width: none; overflow: visible; }
   .ficha-sv { min-width: 0; padding-bottom: calc(8 * var(--mm)); }
-  .ficha-sv .cinza-escuro, .ficha-sv .cinza-medio, .ficha-sv .cinza-claro { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ficha-sv .cinza-escuro, .ficha-sv .cinza-medio, .ficha-sv .cinza-claro, .ficha-sv .caixa-resultados { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   /* Rodapé repetido em todas as páginas impressas */
   .ficha-sv .rodape-ficha {
     position: fixed;

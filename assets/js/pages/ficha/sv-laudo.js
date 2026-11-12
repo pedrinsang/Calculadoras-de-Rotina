@@ -2,7 +2,8 @@
 // na MESMA ficha (mesmo protocolo); ao emitir, o status vira "Laudo emitido".
 import {
     exigirLogin, esc, dataBR, separarIdentificacoes, hojeISO, mostrarAviso, examesMarcados, nomeExame, OPCOES_RESULTADO,
-    renderVNForm, coletarVNForm, renderCobrancaForm, coletarCobrancaForm
+    renderVNForm, coletarVNForm, renderCobrancaForm, coletarCobrancaForm,
+    amostrasDaVN, gruposPorResultado, resultadoGeral, detalheAutomatico
 } from "./sv-comum.js";
 import { obterFicha, atualizarFicha, STATUS } from "../../utils/svFichasDB.js";
 import { observarTarefasDaFicha, resultadosDoMural, descreverTarefa, statusTarefa } from "./sv-mural.js";
@@ -10,6 +11,8 @@ import { observarTarefasDaFicha, resultadosDoMural, descreverTarefa, statusTaref
 const $ = (id) => document.getElementById(id);
 const protocolo = new URLSearchParams(location.search).get('id');
 let ficha = null;
+// Resultado por amostra/pool de cada exame (vindo do Mural ou salvo na ficha): { exame: [{ nome, resultado }] }
+let amostrasPorExame = {};
 
 function renderResumo(f) {
     const itens = [
@@ -46,9 +49,11 @@ function renderResultados(f) {
                     ${OPCOES_RESULTADO.map(o => `<option value="${esc(o)}" ${r.resultado === o ? 'selected' : ''}>${o ? esc(o) : 'Resultado…'}</option>`).join('')}
                 </select>
                 <input type="text" placeholder="Detalhes / valor / observação" value="${esc(r.detalhe || '')}" aria-label="Detalhes de ${esc(nomeExame(f, i))}">
+                <div class="sv-resultado-amostras" hidden></div>
             </div>`;
         }).join('');
     }
+    amostrasPorExame = Object.fromEntries(Object.entries(res).filter(([, r]) => r.amostras?.length).map(([k, r]) => [k, r.amostras]));
     const temAborto = marcados.some(i => i.grupo.secao);
     $('campo-aborto-resultado').hidden = !temAborto && !f.laudo?.abortoTesteResultado;
     $('aborto-teste-resultado').value = f.laudo?.abortoTesteResultado || '';
@@ -57,9 +62,11 @@ function renderResultados(f) {
 function coletarLaudo() {
     const resultados = {};
     document.querySelectorAll('[data-resultado]').forEach(el => {
+        const amostras = amostrasDoExame(el.dataset.resultado);
         resultados[el.dataset.resultado] = {
             resultado: el.querySelector('select').value,
-            detalhe: el.querySelector('input').value.trim()
+            detalhe: el.querySelector('input').value.trim(),
+            ...(amostras.length ? { amostras } : {})
         };
     });
     return {
@@ -121,6 +128,10 @@ async function iniciar(usuario) {
     renderResultados(ficha);
     renderVNForm($('vn'), ficha, ficha.amostras?.identificacao);
     renderCobrancaForm($('cobranca'), ficha.cobranca || {});
+    atualizarAmostras();
+    // Títulos da VN digitados aqui atualizam o resultado por amostra da sorologia
+    ['input', 'change'].forEach(ev => $('vn').addEventListener(ev, atualizarAmostras));
+    $('vn').addEventListener('click', () => setTimeout(atualizarAmostras));
     $('conclusao').value = ficha.laudo?.conclusao || '';
     $('data-emissao').value = ficha.laudo?.dataEmissao || hojeISO();
     $('analisado-por').value = ficha.laudo?.analisadoPor || usuario?.nome || '';
@@ -136,6 +147,47 @@ async function iniciar(usuario) {
 }
 
 // ------------------------------------------------------------------
+// Resultado por amostra/pool: cada classificação em sua linha, positivos em negrito
+// ------------------------------------------------------------------
+function amostrasDoExame(exame) {
+    const vn = coletarVNForm($('vn'))[exame];
+    if (vn) return amostrasDaVN(vn);
+    return amostrasPorExame[exame] || [];
+}
+
+function atualizarAmostras() {
+    document.querySelectorAll('[data-resultado]').forEach(el => {
+        const grupos = gruposPorResultado(amostrasDoExame(el.dataset.resultado));
+        const alvo = el.querySelector('.sv-resultado-amostras');
+        alvo.innerHTML = grupos.map(g => `
+            <div class="sv-res-grupo ${g.resultado === 'Positivo' ? 'sv-res-pos' : g.resultado === 'Negativo' ? 'sv-res-neg' : ''}">
+                <span>${esc(g.resultado)} (${g.amostras.length})</span> ${esc(g.amostras.join(', '))}
+            </div>`).join('');
+        alvo.hidden = !grupos.length;
+    });
+}
+
+// Texto do laudo final montado a partir dos resultados (o responsável revisa antes de emitir)
+function textoConclusao() {
+    return [...document.querySelectorAll('[data-resultado]')].map(el => {
+        const nome = el.querySelector('.sv-resultado-nome > span').firstChild.textContent.trim();
+        const grupos = gruposPorResultado(amostrasDoExame(el.dataset.resultado));
+        if (grupos.length) return `${nome}: ${grupos.map(g => `${g.resultado} – ${g.amostras.join(', ')}`).join('; ')}.`;
+        const r = el.querySelector('select').value;
+        const d = el.querySelector('input').value.trim();
+        return r ? `${nome}: ${r}${d ? ` (${d})` : ''}.` : '';
+    }).filter(Boolean).join('\n');
+}
+
+$('btn-conclusao').addEventListener('click', () => {
+    const texto = textoConclusao();
+    if (!texto) { mostrarAviso('Ainda não há resultados para montar o laudo.', 'erro'); return; }
+    const atual = $('conclusao').value.trim();
+    if (atual && atual !== texto && !confirm('Substituir o texto atual do laudo final pelos resultados?')) return;
+    $('conclusao').value = texto;
+});
+
+// ------------------------------------------------------------------
 // Mural -> laudo
 // ------------------------------------------------------------------
 function aplicarMural(tarefas) {
@@ -147,8 +199,16 @@ function aplicarMural(tarefas) {
         const el = document.querySelector(`[data-resultado="${exame}"]`);
         if (!el) return;
         const sel = el.querySelector('select');
-        if (r.resultado && [...sel.options].some(o => o.value === r.resultado)) sel.value = r.resultado;
-        if (r.detalhe) el.querySelector('input').value = r.detalhe;
+        const input = el.querySelector('input');
+        if (r.amostras?.length) {
+            // Por amostra: o resultado geral só é preenchido quando todas concordam (misto fica em branco)
+            amostrasPorExame[exame] = r.amostras;
+            sel.value = resultadoGeral(r.amostras);
+            if (detalheAutomatico(input.value)) input.value = '';
+        } else {
+            if (r.resultado && [...sel.options].some(o => o.value === r.resultado)) sel.value = r.resultado;
+            if (r.detalhe) input.value = r.detalhe;
+        }
         const nome = el.querySelector('.sv-resultado-nome span');
         if (nome && !nome.querySelector('.sv-mural-selo')) nome.insertAdjacentHTML('beforeend', '<span class="sv-mural-selo">do Mural</span>');
     });
@@ -162,6 +222,7 @@ function aplicarMural(tarefas) {
             if (h && !h.querySelector('.sv-mural-selo')) h.insertAdjacentHTML('beforeend', '<span class="sv-mural-selo">do Mural</span>');
         });
     }
+    atualizarAmostras();
 }
 
 function renderPainelMural(tarefas, m) {

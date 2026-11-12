@@ -2,7 +2,8 @@
 // "Requisição de Exames / Laudo" e exporta em PDF.
 import {
     GRUPOS_EXAMES, RESPONSAVEL_TECNICO, classificarVN, resumoVN,
-    esc, dataBR, moedaBR, examesMarcados, nomeExame, virusVN, separarIdentificacoes
+    esc, dataBR, moedaBR, examesMarcados, nomeExame, virusVN, separarIdentificacoes,
+    amostrasDaVN, gruposPorResultado, detalheAutomatico
 } from "./sv-comum.js";
 import { STATUS } from "../../utils/svFichasDB.js";
 
@@ -28,14 +29,15 @@ function tabelaVN(nomeVirus, linhas) {
     const corpo = lista.length
         ? lista.map(l => {
             const c = classificarVN(l.titulo);
-            return `<tr><td>${esc(l.amostra || '—')}</td><td class="centro">${esc(l.titulo || '')}</td>
-                <td class="centro ${c === 'Positiva' ? 'vn-pos' : ''}">${esc(c)}</td></tr>`;
+            const pos = c === 'Positiva' ? 'vn-pos' : '';
+            return `<tr><td class="${pos}">${esc(l.amostra || '—')}</td><td class="centro ${pos}">${esc(l.titulo || '')}</td>
+                <td class="centro ${pos}">${esc(c)}</td></tr>`;
         }).join('')
         : Array.from({ length: 6 }, () => '<tr><td>&nbsp;</td><td></td><td></td></tr>').join('');
     const r = resumoVN(lista);
     const resumo = lista.length ? `
         <p class="vn-resumo">
-            <span class="rotulo">Positivas (${r.positivas.length}):</span> ${esc(r.positivas.join(', ') || '—')}<br>
+            <span class="rotulo">Positivas (${r.positivas.length}):</span> <strong>${esc(r.positivas.join(', ') || '—')}</strong><br>
             <span class="rotulo">Negativas (${r.negativas.length}):</span> ${esc(r.negativas.join(', ') || '—')}
             ${r.naoAvaliaveis.length ? `<br><span class="rotulo">Não avaliáveis (${r.naoAvaliaveis.length}):</span> ${esc(r.naoAvaliaveis.join(', '))}` : ''}
         </p>` : '';
@@ -48,6 +50,27 @@ function tabelaVN(nomeVirus, linhas) {
         </table>
         ${resumo}
     </div>`;
+}
+
+function classeRes(r) { return r === 'Positivo' ? 'res-pos' : ''; }
+
+// Linhas de um exame no quadro do laudo. Com resultado por amostra/pool, cada classificação
+// fica na sua própria linha (Positivo: Pool 3 / Negativo: Pool 1, Pool 2) — nunca misturadas.
+function linhasLaudo(f, item, r) {
+    const nome = `<span class="exame-marcado">${esc(nomeExame(f, item))}</span><br><small>${esc(item.grupo.titulo)}</small>`;
+    const vn = item.grupo.id === 'sorologia' ? amostrasDaVN(f.vn?.[item.id]) : [];
+    const amostras = vn.length ? vn : (r.amostras || []);
+    if (!amostras.length) {
+        return `<tr><td>${nome}</td><td class="centro ${classeRes(r.resultado)}">${esc(r.resultado || '')}</td><td>${esc(r.detalhe || '')}</td></tr>`;
+    }
+    const grupos = gruposPorResultado(amostras);
+    const obs = r.detalhe && !detalheAutomatico(r.detalhe) ? r.detalhe : '';
+    const total = grupos.length + (obs ? 1 : 0);
+    const linhas = grupos.map((g, n) => `<tr>${n === 0 ? `<td rowspan="${total}">${nome}</td>` : ''}
+            <td class="centro ${classeRes(g.resultado)}">${esc(g.resultado)}</td>
+            <td class="${classeRes(g.resultado)}">${esc(g.amostras.join(', '))}</td></tr>`);
+    if (obs) linhas.push(`<tr><td colspan="2"><span class="rotulo">Obs.:</span> ${esc(obs)}</td></tr>`);
+    return linhas.join('');
 }
 
 export function htmlFicha(f) {
@@ -77,21 +100,9 @@ export function htmlFicha(f) {
 
     const marcados = examesMarcados(f);
     const resultados = laudo.resultados || {};
-    const linhasResultado = marcados.length ? marcados.map(i => {
-        let r = resultados[i.id] || {};
-        // Sorologia sem resultado escrito: usa o resumo das amostras da VN
-        if (!r.resultado && i.grupo.id === 'sorologia' && f.vn?.[i.id]?.length) {
-            const s = resumoVN(f.vn[i.id]);
-            if (s.positivas.length || s.negativas.length) {
-                r = {
-                    resultado: s.positivas.length ? 'Positivo' : 'Negativo',
-                    detalhe: r.detalhe || `${s.positivas.length} positiva(s)${s.positivas.length ? ': ' + s.positivas.join(', ') : ''}; ${s.negativas.length} negativa(s)${s.negativas.length ? ': ' + s.negativas.join(', ') : ''}`
-                };
-            }
-        }
-        return `<tr><td><span class="exame-marcado">${esc(nomeExame(f, i))}</span><br><small>${esc(i.grupo.titulo)}</small></td>
-            <td class="centro">${esc(r.resultado || '')}</td><td>${esc(r.detalhe || '')}</td></tr>`;
-    }).join('') : '<tr><td colspan="3" class="centro">Nenhum exame marcado.</td></tr>';
+    const linhasResultado = marcados.length
+        ? marcados.map(i => linhasLaudo(f, i, resultados[i.id] || {})).join('')
+        : '<tr><td colspan="3" class="centro">Nenhum exame marcado.</td></tr>';
 
     return `
 <article class="ficha-sv">
@@ -142,19 +153,6 @@ export function htmlFicha(f) {
     <p class="linha-texto"><span class="rotulo">Teste/ resultado:</span> ${esc(laudo.abortoTesteResultado || '')}</p>
     </div>
 
-    <p class="titulo-secao">Resultados vírus-neutralização</p>
-    <div class="vn-grade">${blocosVN}</div>
-
-    <p class="titulo-secao">Laudo</p>
-    <table class="tabela">
-        <tr><th class="cinza-claro" style="width:46%">Exame</th><th class="cinza-claro" style="width:16%">Resultado</th><th class="cinza-claro">Observação</th></tr>
-        ${linhasResultado}
-        <tr><td colspan="3" class="texto-longo"><span class="rotulo">Laudo final:</span> ${esc(laudo.conclusao || '')}</td></tr>
-        <tr><td colspan="3"><span class="rotulo">Status:</span> ${esc(f.status || '')}
-            ${laudo.dataEmissao ? ` &nbsp; <span class="rotulo">Emitido em:</span> ${esc(dataBR(laudo.dataEmissao))}` : ''}
-            ${laudo.analisadoPor ? ` &nbsp; <span class="rotulo">Análise:</span> ${esc(laudo.analisadoPor)}` : ''}</td></tr>
-    </table>
-
     <table class="tabela evitar-quebra">
         <tr><th colspan="2" class="cinza-escuro">Cobrança e Pagamento</th></tr>
         <tr><td><span class="rotulo">Cobrança realizada?</span> ${simNao(c.realizada)}${c.realizada && c.dataCobranca ? ` &nbsp; <span class="rotulo">Data da cobrança:</span> ${esc(dataBR(c.dataCobranca))}` : ''}</td>
@@ -162,6 +160,22 @@ export function htmlFicha(f) {
         <tr><td><span class="rotulo">Valor cobrado:</span> ${esc(moedaBR(c.valor))}</td><td><span class="rotulo">Forma de pagamento:</span> ${esc(c.formaPagamento || '')}</td></tr>
         <tr><td colspan="2"><span class="rotulo">Observações sobre a cobrança:</span> ${esc(c.observacoes || '')}</td></tr>
     </table>
+
+    <section class="caixa-resultados">
+        <span class="canto canto-se"></span><span class="canto canto-sd"></span><span class="canto canto-ie"></span><span class="canto canto-id"></span>
+        <p class="titulo-secao">Resultados vírus-neutralização</p>
+        <div class="vn-grade">${blocosVN}</div>
+
+        <p class="titulo-secao">Laudo</p>
+        <table class="tabela">
+            <tr><th class="cinza-claro" style="width:46%">Exame</th><th class="cinza-claro" style="width:16%">Resultado</th><th class="cinza-claro">Observação</th></tr>
+            ${linhasResultado}
+            <tr><td colspan="3" class="texto-longo"><span class="rotulo">Laudo final:</span> ${esc(laudo.conclusao || '')}</td></tr>
+            <tr><td colspan="3"><span class="rotulo">Status:</span> ${esc(f.status || '')}
+                ${laudo.dataEmissao ? ` &nbsp; <span class="rotulo">Emitido em:</span> ${esc(dataBR(laudo.dataEmissao))}` : ''}
+                ${laudo.analisadoPor ? ` &nbsp; <span class="rotulo">Análise:</span> ${esc(laudo.analisadoPor)}` : ''}</td></tr>
+        </table>
+    </section>
 
     <div class="assinatura evitar-quebra">
         ${emitido ? `<img src="${IMG}Assinatura.png" alt="Assinatura">` : '<div class="assinatura-espaco"></div>'}

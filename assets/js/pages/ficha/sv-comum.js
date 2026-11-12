@@ -144,7 +144,63 @@ export function resumoVN(linhas) {
     return r;
 }
 
-export const OPCOES_RESULTADO = ['', 'Positivo', 'Negativo', 'Inconclusivo', 'Não realizado'];
+// ------------------------------------------------------------------
+// Resultado por amostra/pool: cada amostra mantém a sua classificação (nada de "Positivo" geral
+// quando há amostras negativas). Formato: [{ nome, resultado }]
+// ------------------------------------------------------------------
+export function classeResultado(valor) {
+    const s = String(valor || '').trim().toLowerCase();
+    if (!s) return '';
+    if (/n[ãa]o\s*reagente|negativ/.test(s)) return 'Negativo';
+    if (/positiv|reagente/.test(s)) return 'Positivo';
+    if (/inconclusiv/.test(s)) return 'Inconclusivo';
+    if (/n[ãa]o\s*realizad/.test(s)) return 'Não realizado';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// Linhas da VN -> amostras (título <4 = Negativo, ≥4 = Positivo, demais = Não avaliável)
+export function amostrasDaVN(linhas) {
+    return (linhas || []).filter(l => l.amostra || l.titulo).map(l => {
+        const c = classificarVN(l.titulo);
+        return {
+            nome: l.amostra || '—',
+            resultado: c === 'Positiva' ? 'Positivo' : c === 'Negativa' ? 'Negativo' : c ? `Não avaliável (${String(l.titulo).toLowerCase()})` : ''
+        };
+    }).filter(a => a.resultado);
+}
+
+const ORDEM_RESULTADO = ['Positivo', 'Negativo', 'Inconclusivo'];
+
+// Agrupa as amostras pelo resultado, positivos primeiro: [{ resultado, amostras: [nomes] }]
+export function gruposPorResultado(amostras) {
+    const grupos = new Map();
+    (amostras || []).forEach(a => {
+        const r = classeResultado(a.resultado) || '—';
+        if (!grupos.has(r)) grupos.set(r, []);
+        grupos.get(r).push(a.nome);
+    });
+    const pos = (r) => { const i = ORDEM_RESULTADO.indexOf(r); return i === -1 ? ORDEM_RESULTADO.length : i; };
+    return [...grupos.entries()]
+        .map(([resultado, nomes]) => ({ resultado, amostras: nomes }))
+        .sort((a, b) => pos(a.resultado) - pos(b.resultado));
+}
+
+// Resultado único do exame só quando todas as amostras concordam; misto -> ''
+export function resultadoGeral(amostras) {
+    const grupos = gruposPorResultado(amostras);
+    return grupos.length === 1 && OPCOES_RESULTADO.includes(grupos[0].resultado) ? grupos[0].resultado : '';
+}
+
+// Texto que versões anteriores geravam sozinhas a partir do Mural ("Pool 1: Negativo; Pool 2: Positivo"
+// ou "6 positiva(s): ...; 1 negativa(s): ..."). Quando há resultado por amostra ele é substituído.
+export function detalheAutomatico(texto) {
+    const s = String(texto || '').trim();
+    if (!s) return false;
+    if (/^\d+ positiva\(s\)/i.test(s)) return true;
+    return s.split(';').every(p => /^[^:]+:\s.*(positiv|negativ|reagente|inconclusiv)/i.test(p.trim()));
+}
+
+export const OPCOES_RESULTADO =['', 'Positivo', 'Negativo', 'Inconclusivo', 'Não realizado'];
 
 export const FORMAS_PAGAMENTO = ['', 'Dinheiro', 'PIX', 'Transferência', 'Boleto', 'Cartão', 'Empenho/Nota de empenho', 'Outra'];
 

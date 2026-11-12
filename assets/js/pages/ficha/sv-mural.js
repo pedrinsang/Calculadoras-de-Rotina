@@ -10,7 +10,7 @@ import {
 import { db } from "../../firebase.js";
 import { calcularDataPrazo, parseDateInputLocal } from "../../utils/prazosMural.js";
 import { idDoc } from "../../utils/svFichasDB.js";
-import { examesMarcados, nomeExame, separarIdentificacoes, resumoVN } from "./sv-comum.js";
+import { examesMarcados, nomeExame, separarIdentificacoes, amostrasDaVN, classeResultado, resultadoGeral } from "./sv-comum.js";
 
 // ------------------------------------------------------------------
 // Exame da ficha -> tarefa do Mural
@@ -212,11 +212,6 @@ function separarLista(texto) {
     return String(texto || '').split(/[;\n]/).map(s => s.trim()).filter(Boolean);
 }
 
-function capitalizar(v) {
-    const s = String(v || '').trim();
-    return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
-}
-
 function linhasVNdoSN(resultados) {
     const linhas = [];
     CAMPOS_SN.forEach(([campo, titulo]) => {
@@ -235,20 +230,14 @@ function ordenarPelaFicha(ficha, linhas) {
         .map(x => x.l);
 }
 
-function resumoAmostras(amostras) {
-    const valores = [];
-    const partes = (amostras || []).map((a, i) => {
+// Amostras/pools do Mural -> [{ nome, resultado }], uma entrada por amostra (e por alvo, nos painéis)
+function amostrasDoMural(amostras) {
+    return (amostras || []).flatMap((a, i) => {
         const nome = a.identificacao || `Amostra ${a.id || i + 1}`;
         const campos = Object.entries(a).filter(([k, v]) => !['id', 'identificacao'].includes(k) && v !== '' && v != null);
-        campos.forEach(([, v]) => valores.push(String(v).toLowerCase()));
-        if (campos.length === 1 && campos[0][0] === 'resultado') return `${nome}: ${capitalizar(campos[0][1])}`;
-        return `${nome}: ${campos.map(([k, v]) => `${ROTULOS_ALVO[k] || k} ${String(v).toLowerCase()}`).join(', ')}`;
-    });
-    let resultado = '';
-    if (valores.some(v => v.includes('positiv') || (v.includes('reagente') && !v.includes('não')))) resultado = 'Positivo';
-    else if (valores.length && valores.every(v => v.includes('negativ') || v.includes('não reagente'))) resultado = 'Negativo';
-    else if (valores.some(v => v.includes('inconclusiv'))) resultado = 'Inconclusivo';
-    return { resultado, detalhe: partes.join('; ') };
+        if (campos.length === 1 && campos[0][0] === 'resultado') return [{ nome, resultado: classeResultado(campos[0][1]) }];
+        return campos.map(([k, v]) => ({ nome: `${nome} – ${ROTULOS_ALVO[k] || k}`, resultado: classeResultado(v) }));
+    }).filter(a => a.resultado);
 }
 
 // Converte as tarefas do Mural em { vn, resultados, tarefasPorExame, semVinculo }
@@ -266,19 +255,11 @@ export function resultadosDoMural(ficha, tarefas) {
         if (tipo.startsWith('SN')) {
             const linhas = linhasVNdoSN(t.resultados);
             vn[exame] = ordenarPelaFicha(ficha, [...(vn[exame] || []), ...linhas]);
-            const r = resumoVN(vn[exame]);
-            resultados[exame] = {
-                resultado: r.positivas.length ? 'Positivo' : r.negativas.length ? 'Negativo' : '',
-                detalhe: `${r.positivas.length} positiva(s)${r.positivas.length ? ': ' + r.positivas.join(', ') : ''}; ` +
-                    `${r.negativas.length} negativa(s)${r.negativas.length ? ': ' + r.negativas.join(', ') : ''}` +
-                    (r.naoAvaliaveis.length ? `; não avaliáveis: ${r.naoAvaliaveis.join(', ')}` : '')
-            };
+            const amostras = amostrasDaVN(vn[exame]);
+            resultados[exame] = { resultado: resultadoGeral(amostras), detalhe: '', amostras };
         } else if (Array.isArray(t.resultados.amostras)) {
-            const r = resumoAmostras(t.resultados.amostras);
-            const anterior = resultados[exame];
-            resultados[exame] = anterior
-                ? { resultado: anterior.resultado === 'Positivo' || r.resultado === 'Positivo' ? 'Positivo' : (r.resultado || anterior.resultado), detalhe: `${anterior.detalhe}; ${r.detalhe}` }
-                : r;
+            const amostras = [...(resultados[exame]?.amostras || []), ...amostrasDoMural(t.resultados.amostras)];
+            resultados[exame] = { resultado: resultadoGeral(amostras), detalhe: '', amostras };
         }
     }
     return { vn, resultados, tarefasPorExame, semVinculo };

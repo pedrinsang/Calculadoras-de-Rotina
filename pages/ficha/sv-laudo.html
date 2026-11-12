@@ -39,6 +39,11 @@
       </section>
 
       <section class="sv-secao">
+        <h2>Cobrança e Pagamento</h2>
+        <div id="cobranca"></div>
+      </section>
+
+      <section class="sv-secao">
         <h2>Resultados por exame</h2>
         <div id="mural-painel" class="sv-mural-painel">Buscando tarefas no Mural…</div>
         <div id="resultados"></div>
@@ -57,7 +62,10 @@
       <section class="sv-secao">
         <h2>Laudo final</h2>
         <div class="sv-campo" style="margin-bottom:.75rem">
-          <label for="conclusao">Laudo / conclusão</label>
+          <div class="sv-rotulo-acao">
+            <label for="conclusao">Laudo / conclusão</label>
+            <button type="button" class="sv-btn-link" id="btn-conclusao"><i class="bi bi-magic"></i> Preencher com os resultados</button>
+          </div>
           <textarea id="conclusao" rows="5"></textarea>
         </div>
         <div class="sv-linha">
@@ -71,11 +79,6 @@
           </div>
         </div>
         <p class="sv-dica">Responsável técnico: Eduardo Furtado Flores – Médico Veterinário – CRMV-1 3178</p>
-      </section>
-
-      <section class="sv-secao">
-        <h2>Cobrança e Pagamento</h2>
-        <div id="cobranca"></div>
       </section>
 
       <div class="sv-acoes">

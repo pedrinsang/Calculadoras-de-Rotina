@@ -211,6 +211,16 @@ body.sv-page {
   padding: 0.5rem 0;
   border-bottom: 1px solid #e6e6e6;
 }
+/* Resultado por amostra/pool (cada classificação separada; positivos em negrito) */
+.sv-resultado-amostras { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 0.3rem; border: 2px dashed #1f7a55; border-radius: 8px; padding: 0.45rem 0.7rem; background: #fafdfb; }
+.sv-resultado-amostras[hidden] { display: none; }
+.sv-res-grupo { font-size: 0.95rem; color: #333; }
+.sv-res-grupo > span { display: inline-block; min-width: 7.5rem; font-weight: 600; }
+.sv-res-pos { font-weight: 700; color: #b71c1c; }
+.sv-res-pos > span { font-weight: 800; }
+.sv-res-neg > span { color: #2e7d32; }
+.sv-rotulo-acao { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+
 .sv-resultado-nome { font-weight: 700; color: var(--verde-escuro); }
 .sv-resultado-nome > span { text-decoration: underline; }
 .sv-resultado-nome small { display: block; font-weight: 400; text-decoration: none; color: #666; }
