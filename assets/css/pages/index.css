@@ -1,104 +1,262 @@
-/* Estilos específicos para a página de login/cadastro */
+/* ==========================================================
+   Login, cadastro e recuperação de senha
+   ========================================================== */
 
-body {
+body.auth {
   min-height: 100vh;
-  height: 100vh;
-  width: 100vw;
-  background: linear-gradient(135deg, var(--verde-bg) 0%, var(--verde-claro) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden; /* Impede qualquer scroll */
+  min-height: 100dvh;
   margin: 0;
-  padding: 0;
-}
-
-.container.py-4 {
-  height: 100vh;
+  padding: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 !important;
+  background-color: var(--mint);
+  background-image: radial-gradient(rgba(35, 119, 74, 0.09) 1.2px, transparent 1.3px);
+  background-size: 22px 22px;
 }
 
-.card {
-  border-radius: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(60,60,60,0.13);
-  max-width: 430px;
+.auth-shell {
   width: 100%;
-  padding: 0;
-  margin: 0 auto;
+  max-width: 940px;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: reveal-up 0.7s var(--ease-out) both;
+}
+
+/* ---------- Painel verde com a placa ---------- */
+.auth-aside {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 2.5rem;
+  color: #e7f3eb;
+  background:
+    radial-gradient(120% 80% at 0% 0%, #2c8a57 0%, transparent 60%),
+    linear-gradient(160deg, var(--primary-deep), #0d3a20);
+}
+
+.auth-aside-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9fd0b0;
+}
+
+.auth-aside-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.3rem;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: #fff;
+  max-width: 12ch;
+}
+
+.auth-plate {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 7px;
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transform: rotate(-3deg);
+}
+
+.auth-plate span {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.auth-plate span::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--amber);
+  opacity: var(--fill, 0.2);
+  transform: scale(0);
+  animation: pipeta-auth 0.5s var(--ease-spring) forwards;
+  animation-delay: calc(var(--d, 0ms) + 500ms);
+}
+
+@keyframes pipeta-auth {
+  to { transform: scale(1); }
+}
+
+.auth-aside-foot {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #9fd0b0;
+}
+
+/* ---------- Formulário ---------- */
+.auth-card.card {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 2.5rem 2.5rem 2rem;
+  max-width: none;
+  margin: 0;
 }
 
 .logo {
-  max-width: 200px;
-  margin-bottom: 0.7rem;
+  max-width: 120px;
+  margin: 0 0 1.5rem;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
+}
+
+/* Trocar de formulário (login ↔ cadastro ↔ senha) anima a entrada */
+.auth-card form {
+  animation: reveal-up 0.45s var(--ease-out) both;
+}
+
+.auth-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0 0 0.3rem;
+}
+
+.auth-sub {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem;
 }
 
 .form-label {
-  color: var(--verde-escuro);
+  color: var(--ink);
   font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.form-control {
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: #fbfdfb;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.form-control:hover {
+  border-color: #b9d3c1;
 }
 
 .form-control:focus {
-  border-color: var(--verde-medio);
-  box-shadow: 0 0 0 0.2rem #a5d6a7;
-}
-
-.btn-success, .btn-success:focus {
-  background-color: var(--verde-btn);
-  border-color: var(--verde-btn);
-  font-weight: 600;
-  border-radius: 2rem;
-  transition: background 0.2s;
-}
-
-.btn-success:hover {
-  background-color: var(--verde-btn-hover);
-  border-color: var(--verde-btn-hover);
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(35, 119, 74, 0.14);
 }
 
 .form-check-input:checked {
-  background-color: var(--verde-btn);
-  border-color: var(--verde-btn);
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 4px rgba(35, 119, 74, 0.14);
+  border-color: var(--primary);
+}
+
+.btn-success,
+.btn-success:focus {
+  height: 50px;
+  background-color: var(--primary);
+  border-color: var(--primary);
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 12px;
+  transition: background-color 0.2s, transform 0.15s var(--ease-out), box-shadow 0.2s;
+}
+
+.btn-success:hover {
+  background-color: var(--primary-deep);
+  border-color: var(--primary-deep);
+  box-shadow: 0 8px 18px -8px rgba(20, 83, 45, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-success:active {
+  transform: scale(0.98);
+}
+
+.link-success {
+  color: var(--primary) !important;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link-success:hover {
+  color: var(--primary-deep) !important;
+  text-decoration: underline;
+}
+
+.switch-form {
+  font-size: 0.93rem;
+  color: var(--ink-soft);
+  margin-top: 0.75rem;
 }
 
 .toggle-password {
   position: absolute;
-  right: 1.2rem;
-  top: 70%;
-  transform: translateY(-50%);
-  height: 38px;
-  display: flex;
-  align-items: center;  
-  justify-content: center;
-  cursor: pointer;
-  color: #64748b;
-  user-select: none;
-  font-size: 1.3rem;
-  z-index: 2;
-  background: transparent;
+  right: 0.35rem;
+  bottom: 4px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
   border: none;
-  padding: 0;
-  width: 38px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 1.15rem;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.toggle-password:hover {
+  color: var(--primary);
+  background: var(--primary-tint);
+}
+
+/* Com validação, a mensagem de erro aparece abaixo e empurra o olho; mantém alinhado ao campo */
+.position-relative:has(.is-invalid) .toggle-password {
+  bottom: calc(4px + 1.5rem);
 }
 
 .position-relative .form-control {
-  padding-right: 2.5rem;
+  padding-right: 3rem;
 }
 
 .alert {
-  font-size: 0.95rem;
-  text-align: center;
+  font-size: 0.93rem;
+  border-radius: 12px;
+  text-align: left;
+  animation: reveal-up 0.35s var(--ease-out) both;
 }
 
 .creditos {
-  color: #a1a1a1;
-  font-size: 0.8rem;
-  margin-top: 18px;
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  margin-top: 1.75rem;
   text-align: center;
 }
 
@@ -108,32 +266,57 @@ body {
   right: 20px;
   z-index: 999;
   display: none;
+  height: auto;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  box-shadow: var(--shadow-lg);
 }
 
 /* Instruções de instalação para iOS */
 #iosInstallInstructions {
-  display: none; 
-  position: fixed; 
-  bottom: 20px; 
-  right: 20px; 
-  background: #1b5e20; 
-  color: white; 
-  padding: 12px 15px; 
-  border-radius: 8px; 
-  z-index: 999; 
-  max-width: 220px; 
-  font-size: 14px; 
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--primary-deep);
+  color: white;
+  padding: 12px 15px;
+  border-radius: 14px;
+  z-index: 999;
+  max-width: 240px;
+  font-size: 14px;
+  box-shadow: var(--shadow-lg);
 }
 
-/* Responsividade */
-@media (max-width: 600px) {
-  .card {
-    max-width: 98vw;
-    border-radius: 1.2rem;
+/* ---------- Telas menores: só o formulário ---------- */
+@media (max-width: 820px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    border-radius: 24px;
   }
-  
+
+  .auth-aside {
+    display: none;
+  }
+
+  .auth-card.card {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+
   .logo {
-    max-width: 130px;
+    margin: 0 auto 1.25rem;
+    max-width: 110px;
+  }
+
+  .auth-title,
+  .auth-sub {
+    text-align: center;
+  }
+}
+
+@media (max-width: 420px) {
+  body.auth {
+    padding: 0.75rem;
   }
 }

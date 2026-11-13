@@ -1,219 +1,950 @@
-/* Estilos específicos para a página de Mural */
+/* ==========================================================
+   Mural de tarefas
+   ========================================================== */
 
-/* Container Principal */
+/* Cores por tipo de teste (usadas na etiqueta do cartão e nos filtros) */
+.tipo-sn        { --tipo-bg: #dcebe1; --tipo-fg: #14532d; --tipo-dot: #23774a; }
+.tipo-vacina    { --tipo-bg: #d9edef; --tipo-fg: #125c64; --tipo-dot: #1d8a95; }
+.tipo-elisa     { --tipo-bg: #fbefd2; --tipo-fg: #7d5200; --tipo-dot: #e3a21a; }
+.tipo-molecular { --tipo-bg: #e2e4f6; --tipo-fg: #363b8c; --tipo-dot: #5b62c9; }
+.tipo-icc       { --tipo-bg: #f5e0e6; --tipo-fg: #852c47; --tipo-dot: #c04a6f; }
+.tipo-raiva     { --tipo-bg: #f6e1d9; --tipo-fg: #8a3216; --tipo-dot: #c75a32; }
+
+/* ---------- Cabeçalho do mural ---------- */
 .mural-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(27,94,32,0.10);
-  padding: 1.5rem 1.25rem;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  height: calc(100vh - 3rem);
+  --gutter: 1rem;
+}
+
+@media (min-width: 900px) {
+  .mural-card {
+    --gutter: 2rem;
+  }
+}
+
+.mural-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mural-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-height: 28px;
+}
+
+.resumo-item {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.resumo-item strong {
+  color: var(--ink);
+}
+
+.resumo-andamento {
+  color: #1f5a99;
+  background: #e2ecf8;
+  border-color: transparent;
+}
+
+.resumo-vencidas {
+  color: #a3301e;
+  background: #fbe4df;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.btn-nova {
+  height: 50px;
+  padding: 0 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  white-space: nowrap;
+  box-shadow: 0 10px 22px -10px rgba(20, 83, 45, 0.7);
+  transition: background-color 0.2s, transform 0.2s var(--ease-out), box-shadow 0.2s;
+}
+
+.btn-nova i {
+  font-size: 1.15rem;
+  transition: transform 0.4s var(--ease-spring);
+}
+
+.btn-nova:hover {
+  background: var(--primary-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px -10px rgba(20, 83, 45, 0.8);
+}
+
+.btn-nova:hover i {
+  transform: rotate(90deg);
+}
+
+.btn-nova:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Filtros ---------- */
+/* Filtros grudam embaixo da barra superior ao rolar */
+.mural-filtros {
+  position: sticky;
+  top: calc(var(--app-bar-h) + var(--safe-top));
+  z-index: 1010;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 calc(var(--gutter) * -1) 0.75rem;
+  padding: 0.6rem var(--gutter);
+  background: rgba(237, 244, 239, 0.9);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.chips {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px;
+  margin: -2px;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s var(--ease-out);
+}
+
+.chip:hover {
+  border-color: #b9d3c1;
+  color: var(--ink);
+}
+
+.chip:active {
+  transform: scale(0.95);
+}
+
+.chip.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tipo-dot);
+}
+
+.ordem {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 38px;
+  padding: 0 0.4rem 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.ordem-select {
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--ink);
+  padding-right: 0.3rem;
+  cursor: pointer;
+}
+
+.ordem-select:focus {
+  outline: none;
+}
+
+.ordem:focus-within {
+  outline: 3px solid var(--amber);
+  outline-offset: 2px;
+}
+
+/* Sem espaço para tudo numa linha: chips em cima, busca e ordem embaixo */
+@media (max-width: 1080px) {
+  .mural-filtros {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .filtros-direita .busca {
+    flex: 1;
+    width: auto;
+  }
+}
+
+/* ---------- Busca ---------- */
+.filtros-direita {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.busca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 38px;
+  width: 250px;
+  padding: 0 0.85rem;
+  margin: 0;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-faint);
+  transition: border-color 0.2s, box-shadow 0.2s, width 0.3s var(--ease-out);
+}
+
+.busca input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none;
+}
+
+.busca:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(35, 119, 74, 0.14);
+  color: var(--primary);
+}
+
+/* ---------- Seções por teste ---------- */
+.mural-list {
   display: flex;
   flex-direction: column;
+  gap: 1.1rem;
 }
 
-.mural-title {
-  color: #1b5e20;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 1rem;
-  letter-spacing: 1px;
+.grupo {
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  animation: reveal-up 0.5s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+  transition: box-shadow 0.3s var(--ease-out);
 }
 
-.mural-section {
-  margin-bottom: 1rem;
+.grupo:hover {
+  box-shadow: var(--shadow);
 }
 
-.mural-list {
-  flex: 1;
-  overflow-y: auto;
-  margin-bottom: 0.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(46, 125, 50, 0.3) transparent;
+.grupo[hidden] {
+  display: none;
 }
 
-/* Esconde a barra de rolagem em navegadores WebKit */
-.mural-list::-webkit-scrollbar {
-  width: 5px;
+/* Cabeçalho com a cor do teste esmaecendo para a direita */
+.grupo-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem 0.9rem 0.9rem;
+  border: none;
+  background: linear-gradient(100deg, var(--tipo-bg) 0%, rgba(255, 255, 255, 0) 62%);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 19px 19px 0 0;
 }
 
-.mural-list::-webkit-scrollbar-track {
+.grupo.is-recolhido:not(.is-buscando) .grupo-head {
+  border-radius: 19px;
+}
+
+.grupo-sigla {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--tipo-dot);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12), 0 6px 14px -8px var(--tipo-dot);
+  transition: transform 0.45s var(--ease-spring);
+}
+
+.grupo-head:hover .grupo-sigla {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+.grupo-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.grupo-nome {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.grupo-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.4rem;
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+}
+
+.grupo-resumo b     { font-weight: 700; color: var(--ink); }
+.grupo-resumo .r-sep { color: var(--ink-faint); }
+.grupo-resumo .r-venc { color: #b3311c; font-weight: 700; white-space: nowrap; }
+.grupo-resumo .r-urg  { color: #8a5a00; font-weight: 600; white-space: nowrap; }
+.grupo-resumo .r-and  { color: #1f5a99; font-weight: 600; white-space: nowrap; }
+
+/* Um poço por tarefa: verde = no prazo, âmbar = vencendo, vermelho = vencida, anel azul = em andamento */
+.grupo-pocos {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  max-width: 330px;
+  padding-left: 1rem;
+}
+
+.poco {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #e6efe9;
+  box-shadow: inset 0 1px 2px rgba(15, 36, 25, 0.15);
+  position: relative;
+}
+
+.poco::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: #6fbf8e;
+  transform: scale(0);
+  animation: pipeta-poco 0.45s var(--ease-spring) forwards;
+  animation-delay: calc(var(--d, 0ms) + 350ms);
+}
+
+.poco--urg::after  { background: var(--amber); }
+.poco--venc::after { background: var(--danger); }
+
+.poco--and {
+  box-shadow: 0 0 0 2px #2f74c0;
+}
+
+@keyframes pipeta-poco {
+  to { transform: scale(1); }
+}
+
+.pocos-mais {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+
+.grupo-chevron {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line);
+  transition: transform 0.35s var(--ease-out), background-color 0.2s;
+}
+
+.grupo-head:hover .grupo-chevron {
+  background: #fff;
+}
+
+.grupo.is-recolhido .grupo-chevron {
+  transform: rotate(-90deg);
+}
+
+/* Lista que abre e fecha com animação (grid 0fr ↔ 1fr) */
+.grupo-lista {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.4s var(--ease-out);
+}
+
+.grupo-itens {
+  min-height: 0;
+}
+
+.grupo.is-recolhido:not(.is-buscando) .grupo-lista {
+  grid-template-rows: 0fr;
+}
+
+/* Corta o conteúdo só enquanto está fechado ou animando (aberto, o menu "⋯" precisa vazar) */
+.grupo.is-recolhido:not(.is-buscando) .grupo-itens,
+.grupo.is-animando .grupo-itens {
+  overflow: hidden;
+}
+
+/* Linha/seção com o menu "⋯" aberto fica por cima das vizinhas */
+.grupo:has(.dropdown-menu.show),
+.tarefa-row:has(.dropdown-menu.show) {
+  position: relative;
+  z-index: 5;
+}
+
+/* ---------- Linha de tarefa ---------- */
+.tarefa-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) 210px 140px auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1.1rem 0.8rem 1.1rem;
+  border-top: 1px solid var(--line);
+  transition: background-color 0.2s;
+  animation: reveal-up 0.4s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 35ms + 120ms);
+}
+
+.tarefa-row[hidden] {
+  display: none;
+}
+
+.tarefa-row.em-progresso {
+  background: #f6f9fe;
+}
+
+.tarefa-row:hover {
+  background: #f3f8f5;
+}
+
+.tarefa-row:last-child {
+  border-radius: 0 0 20px 20px;
+}
+
+/* Faixa à esquerda: amarela se urgente, vermelha se vencida */
+.tarefa-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
   background: transparent;
 }
 
-.mural-list::-webkit-scrollbar-thumb {
-  background-color: rgba(46, 125, 50, 0.3);
-  border-radius: 20px;
+.tarefa-row.tarefa-urgente::before { background: var(--amber); }
+.tarefa-row.tarefa-vencida::before { background: var(--danger); }
+
+/* Bolinha de status: vazia = pendente, azul pulsando = em andamento */
+.row-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #c3d3c8;
+  transition: border-color 0.3s, background-color 0.3s;
 }
 
-/* Botões específicos */
-.mural-btn {
-  background: #2e7d32;
+.tarefa-row.em-progresso .row-status {
+  border-color: #2f74c0;
+  background: #2f74c0;
+  animation: pulse 1.6s ease-out infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(47, 116, 192, 0.5); }
+  100% { box-shadow: 0 0 0 7px rgba(47, 116, 192, 0); }
+}
+
+.row-id {
+  min-width: 0;
+}
+
+.tarefa-id {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.st-andamento {
+  display: none;
+  align-items: center;
+  height: 22px;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background: #e2ecf8;
+  color: #1f5a99;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.st-andamento .pulse {
+  display: none;
+}
+
+.tarefa-row.em-progresso .st-andamento {
+  display: inline-flex;
+  animation: reveal-up 0.3s var(--ease-out);
+}
+
+.tarefa-detalhe {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-meta {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 0.75rem;
+}
+
+.row-meta span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.row-meta small,
+.prazo small {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.row-meta b {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prazo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  color: var(--ink);
+  background: var(--mint);
+}
+
+.prazo > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.prazo strong {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.prazo small {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.prazo i            { font-size: 1rem; }
+.prazo--ok i        { color: var(--primary); }
+.prazo--urgente     { background: #fdf3dc; color: #7d5200; }
+.prazo--urgente i   { color: var(--amber); }
+.prazo--vencido     { background: #fbe4df; color: #8f2a19; }
+.prazo--vencido i   { color: var(--danger); }
+.prazo--urgente small,
+.prazo--vencido small { color: inherit; opacity: 0.75; }
+
+/* ---------- Ações da linha ---------- */
+.tarefa-acoes.btn-group {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.tarefa-acoes > .btn {
+  height: 34px;
+  margin: 0 !important;
+  padding: 0 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  border-radius: 9px !important;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.15s var(--ease-out);
+}
+
+.tarefa-acoes > .btn:hover {
+  border-color: #b9d3c1;
+  background: var(--mint);
+}
+
+.tarefa-acoes > .btn:active {
+  transform: scale(0.94);
+}
+
+.tarefa-acoes > .btn:disabled {
+  opacity: 0.6;
+}
+
+.tarefa-acoes > .btn i {
+  font-size: 0.95rem;
+}
+
+.btn-progresso > span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.btn-progresso .lbl-pausar { display: none; }
+.tarefa-row.em-progresso .btn-progresso .lbl-iniciar { display: none; }
+.tarefa-row.em-progresso .btn-progresso .lbl-pausar { display: inline-flex; }
+
+.tarefa-acoes > .btn-progresso { min-width: 84px; }
+
+.tarefa-acoes > .btn-progresso:hover {
+  color: #1f5a99;
+  background: #e2ecf8;
+  border-color: transparent;
+}
+
+.tarefa-acoes > .btn-resultados:hover {
+  color: #7d5200;
+  background: #fbefd2;
+  border-color: transparent;
+}
+
+.tarefa-acoes > .btn-concluir {
+  background: var(--primary);
+  border-color: var(--primary);
   color: #fff;
-  border-radius: 20px;
-  padding: 0.5rem 1.5rem;
-  font-weight: 500;
-  border: none;
-  transition: background 0.2s;
 }
 
-.mural-btn:hover, .mural-btn:focus {
-  background: #388e3c;
+.tarefa-acoes > .btn-concluir:hover {
+  background: var(--primary-deep);
+  border-color: var(--primary-deep);
+  color: #fff;
+}
+
+.tarefa-acoes > .btn-mais {
+  width: 34px;
+  padding: 0;
+}
+
+.tarefa-acoes > .btn-mais::after {
+  display: none;
+}
+
+.tarefa-acoes .dropdown-menu {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.tarefa-acoes .dropdown-item {
+  border-radius: 9px;
+  padding: 0.5rem 0.75rem;
+}
+
+.tarefa-acoes .dropdown-item:active {
+  background: var(--primary);
+}
+
+/* ---------- Carregando ---------- */
+.grupo-skeleton {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.grupo-skeleton span {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #edf3ef 0%, #f8fbf9 50%, #edf3ef 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+
+.grupo-skeleton .sk-head { width: 220px; height: 30px; }
+.grupo-skeleton .sk-row  { width: 100%; height: 40px; }
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ---------- Telas médias: linha em duas faixas ---------- */
+@media (max-width: 1100px) {
+  .tarefa-row {
+    grid-template-columns: 14px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "st id   prazo"
+      ".  meta acoes";
+    row-gap: 0.6rem;
+  }
+
+  .row-status   { grid-area: st; }
+  .row-id       { grid-area: id; }
+  .row-meta     { grid-area: meta; display: flex; gap: 1.5rem; }
+  .row-prazo    { grid-area: prazo; justify-self: end; }
+  .tarefa-acoes { grid-area: acoes; }
+
+  .row-meta span {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+}
+
+/* ---------- Vazio / erro ---------- */
+.mural-vazio {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  border: 1.5px dashed #c3d8ca;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  animation: reveal-up 0.5s var(--ease-out) both;
+}
+
+.mural-vazio-icone {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  background: var(--primary-tint);
+  color: var(--primary-deep);
+  margin-bottom: 1rem;
+}
+
+.mural-vazio strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--ink);
+}
+
+.mural-vazio p {
+  margin: 0.35rem 0 0;
+  color: var(--ink-soft);
+  max-width: 40ch;
+}
+
+/* ---------- Modais (nova tarefa, detalhes, resultados) ---------- */
+.mural-page .modal-content {
+  border: none;
+  border-radius: 22px;
+  box-shadow: 0 30px 60px -20px rgba(15, 36, 25, 0.45);
+}
+
+.mural-page .modal-header {
+  border-bottom: 1px solid var(--line);
+  padding: 1.1rem 1.5rem;
+  background: transparent !important;
+}
+
+.mural-page .modal-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ink) !important;
+}
+
+.mural-page .modal-title i {
+  color: var(--primary);
+}
+
+.mural-page .modal-body {
+  padding: 1.5rem;
+}
+
+.mural-page .modal-footer {
+  border-top: 1px solid var(--line);
+  padding: 0.9rem 1.5rem;
+  gap: 0.5rem;
+}
+
+.mural-page .modal.fade .modal-dialog {
+  transform: translateY(18px) scale(0.98);
+  transition: transform 0.35s var(--ease-out);
+}
+
+.mural-page .modal.show .modal-dialog {
+  transform: none;
+}
+
+.mural-page .form-control,
+.mural-page .form-select {
+  border-radius: 11px;
+  border: 1.5px solid var(--line);
+  min-height: 44px;
+}
+
+.mural-page .form-control:focus,
+.mural-page .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(35, 119, 74, 0.14);
+}
+
+.mural-page h5.mural-form-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.mural-page .text-success {
+  color: var(--primary) !important;
+}
+
+/* Botões usados nos modais e nos scripts de resultado */
+.mural-btn,
+.mural-btn-outline {
+  height: 44px;
+  padding: 0 1.3rem;
+  border-radius: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: background-color 0.2s, color 0.2s, transform 0.15s var(--ease-out);
+}
+
+.mural-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+}
+
+.mural-btn:hover,
+.mural-btn:focus {
+  background: var(--primary-deep);
   color: #fff;
 }
 
 .mural-btn-outline {
-  background: #fff;
-  color: #2e7d32;
-  border: 2px solid #2e7d32;
-  border-radius: 20px;
-  padding: 0.5rem 1.5rem;
-  font-weight: 500;
-  transition: all 0.2s;
+  background: var(--paper);
+  color: var(--ink-soft);
+  border: 1.5px solid var(--line);
 }
 
-.mural-btn-outline:hover, .mural-btn-outline:focus {
-  background: #2e7d32;
-  color: #fff;
+.mural-btn-outline:hover,
+.mural-btn-outline:focus {
+  border-color: var(--ink-faint);
+  color: var(--ink);
 }
 
-/* Formulário específico */
+.mural-btn:active,
+.mural-btn-outline:active {
+  transform: scale(0.97);
+}
+
 .mural-form-label {
-  color: #1b5e20;
-  font-weight: 500;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-/* Itens do Mural - FUNDO BRANCO PADRÃO */
-.mural-item {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(27,94,32,0.06);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-left: 6px solid #a5d6a7;
-  position: relative;
-  overflow: hidden;
-}
-
-.mural-item.em-progresso {
-  border-left: 6px solid #1e88e5;
-  background: #ffffff;
-}
-
-.mural-item.concluido {
-  border-left: 6px solid #43a047;
-  background: #ffffff;
-}
-
-/* Estilo para tarefas vencidas - FUNDO BRANCO */
-.card.tarefa-vencida {
-  background-color: #ffffff !important;
-  border-left: 6px solid #d32f2f !important;
-  border-radius: 0.375rem;
-}
-
-.card.tarefa-vencida .card-body {
-  background-color: transparent;
-}
-
-/* Estilo para tarefas próximas do prazo (2 dias ou menos) - FUNDO BRANCO */
-.card.tarefa-urgente {
-  background-color: #ffffff !important;
-  border-left: 6px solid #ffc107 !important;
-  border-radius: 0.375rem;
-}
-
-.card.tarefa-urgente .card-body {
-  background-color: transparent;
-}
-
-/* Quando a tarefa está em progresso - FUNDO BRANCO */
-.card.em-progresso {
-  background-color: #ffffff !important;
-  border-left: 6px solid #1e88e5 !important;
-  border-radius: 0.375rem;
-}
-
-/* =======================================
-   ESTILO DOS BOTÕES NOS CARDS - REVISADO
-   ======================================= */
-
-/* Container de botões - 80% do card */
-.card .btn-group {
-  display: flex;
-  width: 80%;
-  margin: 0.75rem auto 0;
-  justify-content: center;
-  gap: 2px;
-}
-
-/* Estilo para os botões padrão */
-.card .btn {
-  flex: 1;
-  padding: 0.35rem 0.1rem;
-  font-size: 0.8rem;
-  height: 36px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border-radius: 0;
-  text-align: center;
-}
-
-/* Bordas arredondadas apenas nas pontas */
-.card .btn:first-child {
-  border-top-left-radius: 0.25rem;
-  border-bottom-left-radius: 0.25rem;
-}
-
-.card .btn:last-child {
-  border-top-right-radius: 0.25rem;
-  border-bottom-right-radius: 0.25rem;
-}
-
-/* Estilo para o botão roxo */
-.btn-purple {
-  background-color: #6f42c1;
-  color: white;
-}
-
-.btn-purple:hover, .btn-purple:focus {
-  background-color: #5e35b1;
-  color: white;
-}
-
-/* Botão de progresso com texto alternativo quando ativo */
-.card .btn-progresso {
-  position: relative;
-}
-
-.card .btn-progresso.active .btn-text-original {
-  opacity: 0;
-}
-
-.card .btn-progresso.active::after {
-  content: "Andamento";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 18px;
-}
-
-/* Modal de Resultados */
+/* Modal de resultados montado pelo regresultado.js */
 .modal-resultados {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  inset: 0;
+  background-color: rgba(15, 36, 25, 0.45);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -222,301 +953,204 @@
 
 .modal-resultados-content {
   background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border-radius: 22px;
+  box-shadow: 0 30px 60px -20px rgba(15, 36, 25, 0.45);
   padding: 2rem;
   position: relative;
   width: 90%;
   max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
+  animation: reveal-up 0.35s var(--ease-out) both;
 }
 
-/* Tabelas */
 .tabela-resultados {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin: 1.5rem 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.tabela-resultados th, .tabela-resultados td {
-  padding: 10px;
-  border: 1px solid #e0e0e0;
+.tabela-resultados th,
+.tabela-resultados td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .tabela-resultados th {
-  background-color: #e8f5e9;
-  color: #1b5e20;
+  background-color: var(--mint);
+  color: var(--primary-deep);
   font-weight: 600;
 }
 
-.tabela-resultados tr:nth-child(even) {
-  background-color: #f9f9f9;
+.tabela-resultados tr:last-child td {
+  border-bottom: none;
 }
 
-/* =======================================
-   BOTÕES DE NAVEGAÇÃO SUPERIORES - SIMÉTRICOS
-   ======================================= */
-
-/* Container dos botões superiores - layout equilibrado */
-.d-flex.justify-content-between.align-items-center.mb-4 {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-  margin-bottom: 1.5rem !important;
-  align-items: stretch !important;
-  width: 100% !important;
-}
-
-/* Container para botões secundários alinhados horizontalmente */
-.btn-secondary-container {
-  display: flex !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-  width: 100% !important;
-}
-
-/* Botão principal sempre no topo */
-#adicionar-tarefa {
-  width: 100% !important;
-  order: -1 !important;
-  margin-bottom: 10px !important;
-  height: 52px !important;
-  background: linear-gradient(45deg, #2e7d32, #388e3c) !important;
-  color: white !important;
-  border-radius: 12px !important;
-  font-size: 1rem !important;
-  font-weight: 600 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: none !important;
-  box-shadow: 0 2px 8px rgba(46,125,50,0.2) !important;
-}
-
-/* Botões secundários com largura igual */
-#voltar-hub, 
-#historico-button {
-  /* Dimensões mais definidas */
-  flex: 1 !important;
-  height: 46px !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  
-  /* Estilo visual mais definido */
-  background-color: #ffffff !important;
-  color: #2e7d32 !important;
-  border: 2px solid #2e7d32 !important;
-  border-radius: 12px !important;
-  
-  /* Tipografia melhorada */
-  font-size: 0.95rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.3px !important;
-  
-  /* Layout interno refinado */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 1rem !important;
-  
-  /* Efeitos visuais */
-  box-shadow: 0 3px 5px rgba(0,0,0,0.1) !important;
-  transition: all 0.2s ease-in-out !important;
-  text-decoration: none !important;
-  cursor: pointer !important;
-}
-
-/* Estados de hover mais expressivos */
-#voltar-hub:hover, 
-#historico-button:hover {
-  background-color: #2e7d32 !important;
-  color: white !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 4px 8px rgba(46,125,50,0.25) !important;
-}
-
-/* Estados de clique */
-#voltar-hub:active, 
-#historico-button:active {
-  transform: translateY(0) !important;
-  box-shadow: 0 2px 3px rgba(46,125,50,0.15) !important;
-}
-
-/* Alinhamento de ícones */
-#voltar-hub i, 
-#historico-button i {
-  margin-right: 8px !important;
-  font-size: 1.1rem !important;
-}
-
-/* Ajuste extra para o container que mantém os botões alinhados */
-.btn-secondary-container {
-  display: flex !important;
-  justify-content: space-between !important;
-  gap: 16px !important; /* Espaçamento aumentado entre os botões */
-  width: 100% !important;
-  margin-top: 5px !important;
-}
-
-/* Ajuste mobile */
-@media (max-width: 767.98px) {
-  #voltar-hub, #historico-button {
-    height: 44px !important;
-    font-size: 0.85rem !important;
-  }
-}
-
-/* Ajustes responsivos - mantendo simetria */
-@media (max-width: 767.98px) {
-  .d-flex.justify-content-between.align-items-center.mb-4 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: 10px;
+/* ---------- Telas menores ---------- */
+@media (max-width: 760px) {
+  .mural-card {
+    padding-bottom: 6rem;
   }
 
-  #adicionar-tarefa {
-    grid-column: 1 / 3;
-    grid-row: 1;
-    margin-bottom: 10px;
-    height: 52px;
+  /* No celular, "Nova tarefa" vira um botão flutuante acima das abas */
+  .btn-nova {
+    position: fixed;
+    right: 1rem;
+    bottom: calc(var(--tab-bar-h) + var(--safe-bottom) + 1rem);
+    z-index: 1025;
+    width: 58px;
+    height: 58px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 20px;
+    box-shadow: 0 16px 30px -10px rgba(20, 83, 45, 0.75);
+    animation: fab-entra 0.5s var(--ease-spring) 0.3s both;
   }
 
-  #voltar-hub, 
-  #historico-button {
+  .btn-nova span {
+    display: none;
+  }
+
+  .btn-nova i {
+    font-size: 1.6rem;
+  }
+
+  @keyframes fab-entra {
+    from { transform: scale(0) rotate(-90deg); }
+  }
+
+  .mural-filtros {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .chips {
+    margin: 0 calc(var(--gutter) * -1);
+    padding: 2px var(--gutter);
+  }
+
+  .ordem {
+    align-self: flex-start;
+  }
+
+  .filtros-direita {
+    width: 100%;
+  }
+
+  .busca {
+    flex: 1;
+    width: auto;
+  }
+
+  /* Cabeçalho: sigla + nome + seta em cima, poços na linha de baixo */
+  .grupo-head {
+    flex-wrap: wrap;
+    gap: 0.6rem 0.75rem;
+    padding: 0.8rem 0.85rem;
+  }
+
+  .grupo-sigla {
+    width: 44px;
     height: 44px;
-    font-size: 0.85rem;
+    border-radius: 13px;
+    font-size: 0.66rem;
+    letter-spacing: 0;
   }
 
-  #voltar-hub {
-    grid-column: 1;
-    grid-row: 2;
+  .grupo-titulo {
+    flex: 1;
   }
 
-  #historico-button {
-    grid-column: 2;
-    grid-row: 2;
-  }
-}
-
-@media (max-width: 480px) {
-  .d-flex.justify-content-between.align-items-center.mb-4 {
-    gap: 8px;
+  .grupo-nome {
+    font-size: 1.12rem;
   }
 
-  #voltar-hub, 
-  #adicionar-tarefa,
-  #historico-button {
-    height: 44px;
-    font-size: 0.85rem;
-    padding: 0.4rem 0.5rem;
-    border-radius: 8px;
+  .grupo-pocos {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    padding-left: calc(44px + 0.75rem);
+    justify-content: flex-start;
+    gap: 5px;
   }
 
-  #adicionar-tarefa {
-    height: 50px;
-    font-size: 0.95rem;
+  .poco {
+    width: 13px;
+    height: 13px;
   }
 
-  #voltar-hub i, 
-  #adicionar-tarefa i, 
-  #historico-button i {
-    margin-right: 5px;
+  /* No celular: ID e prazo em cima, dados no meio, ações embaixo */
+  .tarefa-row {
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "st    id    prazo"
+      ".     meta  meta"
+      "acoes acoes acoes";
+    column-gap: 0.7rem;
+    padding: 0.85rem 0.9rem;
   }
-}
 
-/* Media Queries - Versão simplificada e otimizada */
-@media (min-width: 1400px) {
-  .mural-card {
-    max-width: 1320px;
-    padding: 2rem;
+  .row-meta {
+    flex-wrap: wrap;
+    gap: 0.2rem 1.25rem;
   }
-  
-  .mural-title {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .mural-item {
-    padding: 1.2rem;
-    margin-bottom: 1.2rem;
-  }
-}
 
-/* Tablets e celulares */
-@media (max-width: 991.98px) {
-  .mural-card {
-    padding: 1.25rem 1rem;
+  .row-meta span {
+    min-width: auto;
   }
-  
-  .card .btn-group {
-    width: 90%; /* Aumenta largura em telas menores */
-  }
-  
-  .card .btn {
-    font-size: 0.75rem;
-    padding: 0.3rem 0.1rem;
-  }
-}
 
-/* Smartphones */
-@media (max-width: 767.98px) {
-  body {
-    padding: 0.5rem;
+  .row-meta b {
+    overflow: visible;
   }
-  
-  .mural-card {
-    padding: 1rem 0.75rem;
-    height: calc(100vh - 1rem);
-  }
-  
-  .mural-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
-  }
-  
-  .mural-item {
-    padding: 0.8rem;
-    margin-bottom: 0.8rem;
-  }
-  
-  .card .btn-group {
-    width: 100%; /* Largura total em celulares */
-  }
-  
-  .card .btn {
-    font-size: 0.7rem;
-    height: 34px;
-    padding: 0.25rem 0.05rem;
-  }
-  
-  /* Texto abreviado em telas pequenas */
-  .card .btn-progresso.active::after {
-    content: "Prog.";
-  }
-}
 
-/* Smartphones pequenos */
-@media (max-width: 480px) {
-  .mural-card {
-    padding: 0.75rem 0.5rem;
+  .tarefa-acoes.btn-group {
+    justify-content: stretch;
+    gap: 0.3rem;
   }
-  
-  .card .btn {
-    font-size: 0.65rem;
-    height: 32px;
+
+  .tarefa-acoes > .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 38px;
+    padding: 0 0.45rem;
   }
-  
-  /* Layout adaptativo para botões em telas muito pequenas */
-  @media (max-width: 360px) {
-    .card .btn-group {
-      flex-wrap: wrap;
-      gap: 3px;
-    }
-    
-    .card .btn {
-      flex: 0 0 calc(50% - 3px); /* 2 botões por linha */
-      border-radius: 0.25rem;
-    }
+
+  .tarefa-acoes > .btn-progresso {
+    min-width: 0;
+  }
+
+  .filtros-direita {
+    min-width: 0;
+  }
+
+  .busca {
+    min-width: 0;
+  }
+
+  .ordem-select {
+    max-width: 112px;
+    text-overflow: ellipsis;
+  }
+
+  .tarefa-acoes > .btn-mais {
+    flex: 0 0 38px;
+  }
+
+  .prazo {
+    padding: 0.3rem 0.55rem;
+  }
+
+  .prazo small {
+    display: none;
+  }
+
+  .mural-page .modal-body {
+    padding: 1.1rem;
   }
 }

@@ -2,7 +2,8 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#edf4ef">
   <title>Calculadora de Soroneutralização</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -10,10 +11,17 @@
   <link rel="stylesheet" href="../assets/css/pages/calculadoras.css"> 
   <link rel="stylesheet" href="../assets/css//pages/soroneutralizacao.css">
 
-<body>
-  <div class="calculadora-card container">
+<body class="app" data-tab="inicio">
+  <header class="app-bar">
+    <div class="app-bar-start"><a class="icon-btn" href="hub.html" aria-label="Voltar"><i class="bi bi-chevron-left"></i></a></div>
+    <span class="app-bar-title">Soroneutralização</span>
+    <div class="app-bar-end"></div>
+  </header>
+  <div class="app-content calculadora-card container">
+    <h1 class="large-title reveal">Soroneutralização</h1>
+    <p class="page-sub reveal" style="--i:1">Montagem de placas e diluições.</p>
     <!-- Adicione a classe "top-buttons-container" ao div que contém os botões -->
-    <div class="top-buttons-container">
+    <div class="app-hide top-buttons-container">
       <button id="voltar-hub" class="btn btn-outline-success btn-top-nav">
         <i class="bi bi-house-door"></i> Voltar ao Hub
       </button>
@@ -21,13 +29,9 @@
         <i class="bi bi-clipboard"></i> Acessar Mural
       </button>
     </div>
-    
-    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
-         alt="Logo Setor de Virologia UFSM" 
-         class="logo img-fluid">
          
     
-   <h2 class="calculadora-title mb-4"><i class="bi bi-calculator me-2"></i>Calculadora de Soroneutralização</h2>
+   <h2 class="app-hide calculadora-title mb-4"><i class="bi bi-calculator me-2"></i>Calculadora de Soroneutralização</h2>
 
     <form id="calculadora-form">
       <div class="mb-3">
@@ -306,5 +310,6 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/pages/calculadoras/soroneutralizacao.js"></script>
-  </body>
+    <script src="../assets/js/utils/app-shell.js" defer></script>
+</body>
 </html>

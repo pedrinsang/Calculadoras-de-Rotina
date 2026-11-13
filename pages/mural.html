@@ -2,136 +2,80 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Mural de Tarefas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#edf4ef">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="../manifest.json">
+  <title>Mural de tarefas | Setor de Virologia</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/pages/mural.css">
   <link rel="stylesheet" href="../assets/css/pages/pcr-menu.css">
 </head>
-<body>
-  <div class="container mural-card shadow">
-    <h1 class="mural-title mb-3"><i class="bi bi-clipboard2-check"></i> Mural de Tarefas</h1>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <!-- Botão principal no topo -->
-      <button id="adicionar-tarefa" class="btn">
-        <i class="bi bi-plus-circle"></i> Nova Tarefa
+<body class="app mural-page" data-tab="mural">
+  <!-- Barra superior do app -->
+  <header class="app-bar">
+    <div class="app-bar-start"></div>
+    <span class="app-bar-title">Mural</span>
+    <div class="app-bar-end">
+      <button id="historico-button" class="icon-btn" type="button" title="Histórico de tarefas concluídas" aria-label="Histórico">
+        <i class="bi bi-clock-history"></i>
       </button>
-      
-      <!-- Container para botões secundários -->
-      <div class="btn-secondary-container">
-        <button id="voltar-hub" class="btn">
-          <i class="bi bi-house"></i> Voltar ao Hub
-        </button>
-        <button id="historico-button" class="btn">
-          <i class="bi bi-clock-history"></i> Histórico
-        </button>
-      </div>
     </div>
-    <div class="row mural-section">
-      <div class="col-md-6 mb-2">
-        <label class="mural-form-label me-2" for="filtro-tipo"><i class="bi bi-funnel"></i> Filtrar por tipo:</label>
-        <select id="filtro-tipo" class="form-select d-inline-block w-auto">
-          <option value="Todos">Todos</option>
-          <option value="SN">SN</option>
-          <option value="VACINA">VACINA</option>
-          <option value="ELISA">ELISA</option>
-          <option value="MOLECULAR">MOLECULAR</option>
-          <option value="ICC">ICC</option>
-          <option value="RAIVA">RAIVA</option>
-        </select>
+  </header>
+
+  <div class="app-content mural-card">
+    <!-- Título, resumo e ação principal -->
+    <div class="mural-head">
+      <div>
+        <h1 class="large-title reveal" style="--i:0">Mural</h1>
+        <div id="mural-resumo" class="mural-resumo reveal" style="--i:1" aria-live="polite"></div>
       </div>
-      <div class="col-md-6 mb-2">
-        <label class="mural-form-label me-2" for="filtro-ordem"><i class="bi bi-sort-down"></i> Ordenar por:</label>
-        <select id="filtro-ordem" class="form-select d-inline-block w-auto">
-          <option value="recentes">Mais recentes</option>
-          <option value="antigas">Mais antigas</option>
-        </select>
-      </div>
+      <button id="adicionar-tarefa" class="btn-nova" type="button" aria-label="Nova tarefa">
+        <i class="bi bi-plus-lg"></i><span>Nova tarefa</span>
+      </button>
     </div>
-    <form id="mural-form" class="mural-section" style="display:none;">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label for="id" class="mural-form-label">Identificação:</label>
-          <input type="text" id="id" name="id" class="form-control" required>
-        </div>
-        <div class="col-md-4">
-          <label for="tipo" class="mural-form-label">Teste:</label>
-          <select id="tipo" name="tipo" class="form-select" required>
-            <option value="SN">SN</option>
-            <option value="VACINA">VACINA</option>
-            <option value="ELISA">ELISA</option>
-            <option value="MOLECULAR">MOLECULAR</option>
-            <option value="ICC">ICC</option>
-            <option value="RAIVA">RAIVA</option>
+
+    <!-- Filtros: os botões alteram os selects, que o mural.js já escuta -->
+    <div class="mural-filtros">
+      <div class="chips" role="group" aria-label="Filtrar por teste">
+        <button type="button" class="chip is-active" data-tipo="Todos">Todos</button>
+        <button type="button" class="chip" data-tipo="SN"><span class="chip-dot tipo-sn"></span>SN</button>
+        <button type="button" class="chip" data-tipo="VACINA"><span class="chip-dot tipo-vacina"></span>Vacina</button>
+        <button type="button" class="chip" data-tipo="ELISA"><span class="chip-dot tipo-elisa"></span>ELISA</button>
+        <button type="button" class="chip" data-tipo="MOLECULAR"><span class="chip-dot tipo-molecular"></span>Molecular</button>
+        <button type="button" class="chip" data-tipo="ICC"><span class="chip-dot tipo-icc"></span>ICC</button>
+        <button type="button" class="chip" data-tipo="RAIVA"><span class="chip-dot tipo-raiva"></span>Raiva</button>
+      </div>
+      <div class="filtros-direita">
+        <label class="busca">
+          <i class="bi bi-search"></i>
+          <span class="visually-hidden">Buscar tarefa</span>
+          <input type="search" id="mural-busca" placeholder="Buscar ID ou nome" autocomplete="off"
+                 oninput="window.aplicarBusca && window.aplicarBusca()">
+        </label>
+        <label class="ordem">
+          <i class="bi bi-arrow-down-up"></i>
+          <span class="visually-hidden">Ordenar por</span>
+          <select id="filtro-ordem" class="ordem-select">
+            <option value="prazo">Por prazo</option>
+            <option value="recentes">Recentes</option>
+            <option value="antigas">Antigas</option>
           </select>
-        </div>
-        <div class="col-md-4">
-          <label for="quantidade" class="mural-form-label">Quantidade:</label>
-          <input type="number" id="quantidade" name="quantidade" class="form-control" min="1" required>
-        </div>
-        <div class="col-md-4" id="gramatura-container" style="display:none;">
-          <label for="gramatura" class="mural-form-label">Gramatura (Vacina):</label>
-          <input type="number" id="gramatura" name="gramatura" class="form-control" step="0.01">
-        </div>
-        <div class="col-12">
-          <h5 class="mural-form-label mt-3">Proprietário</h5>
-          <div class="row g-2">
-            <div class="col-md-4">
-              <label for="proprietario-nome" class="form-label">Nome:</label>
-              <input type="text" id="proprietario-nome" list="proprietarios-list" class="form-control">
-              <datalist id="proprietarios-list"></datalist>
-            </div>
-            <div class="col-md-4">
-              <label for="proprietario-municipio" class="form-label">Município:</label>
-              <input type="text" id="proprietario-municipio" class="form-control">
-            </div>
-            <div class="col-md-4">
-              <label for="proprietario-contato" class="form-label">Contato:</label>
-              <input type="text" id="proprietario-contato" class="form-control">
-            </div>
-          </div>
-        </div>
-        <div class="col-12">
-          <h5 class="mural-form-label mt-3">Médico Veterinário</h5>
-          <div class="row g-2">
-            <div class="col-md-4">
-              <label for="veterinario-nome" class="form-label">Nome:</label>
-              <input type="text" id="veterinario-nome" class="form-control">
-            </div>
-            <div class="col-md-4">
-              <label for="veterinario-crmv" class="form-label">CRMV:</label>
-              <input type="text" id="veterinario-crmv" class="form-control" placeholder="Ex.: 12345/RS">
-            </div>
-            <div class="col-md-4">
-              <label for="veterinario-municipio" class="form-label">Município:</label>
-              <input type="text" id="veterinario-municipio" class="form-control">
-            </div>
-            <div class="col-md-4">
-              <label for="veterinario-contato" class="form-label">Contato:</label>
-              <input type="text" id="veterinario-contato" class="form-control">
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <label for="data" class="mural-form-label">Data de Recebimento:</label>
-          <input type="date" id="data" name="data" class="form-control" required>
-        </div>
-        <div class="col-md-4">
-          <label for="hora" class="mural-form-label">Hora de Recebimento:</label>
-          <input type="time" id="hora" name="hora" class="form-control" required>
-        </div>
-        <div class="col-12">
-          <label for="observacoes" class="mural-form-label">Observações:</label>
-          <textarea id="observacoes" name="observacoes" rows="2" class="form-control"></textarea>
-        </div>
-        <div class="col-12 d-flex gap-2 mt-2">
-          <button type="submit" class="mural-btn flex-grow-1"><i class="bi bi-save"></i> Salvar</button>
-          <button type="button" id="cancelar-tarefa" class="mural-btn-outline flex-grow-1"><i class="bi bi-x-circle"></i> Cancelar</button>
-        </div>
+        </label>
       </div>
-    </form>
+      <select id="filtro-tipo" class="visually-hidden" tabindex="-1" aria-hidden="true">
+        <option value="Todos">Todos</option>
+        <option value="SN">SN</option>
+        <option value="VACINA">VACINA</option>
+        <option value="ELISA">ELISA</option>
+        <option value="MOLECULAR">MOLECULAR</option>
+        <option value="ICC">ICC</option>
+        <option value="RAIVA">RAIVA</option>
+      </select>
+    </div>
+
     <div id="mural-list" class="mural-list"></div>
     <div id="feedback" class="mural-feedback"></div>
     <!-- Modal de resultados (mantém funcionalidade) -->
@@ -295,8 +239,20 @@
       </div>
     </div>
   </div>
+  <script src="../assets/js/utils/app-shell.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../assets/js/pages/mural/mural.js"></script>
   <script type="module" src="../assets/js/pages/mural/regresultado.js"></script>
+  <script>
+    // Chips de filtro: marcam o escolhido e repassam para o select escondido
+    document.querySelectorAll('.chips .chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.chips .chip').forEach(function (c) { c.classList.toggle('is-active', c === chip); });
+        var sel = document.getElementById('filtro-tipo');
+        sel.value = chip.dataset.tipo;
+        sel.dispatchEvent(new Event('change'));
+      });
+    });
+  </script>
 </body>
 </html>

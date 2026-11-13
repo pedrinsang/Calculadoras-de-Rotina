@@ -164,11 +164,11 @@ function setupTogglePassword() {
     toggle.addEventListener('click', function() {
       const targetId = this.getAttribute('data-target');
       const input = document.getElementById(targetId);
-      if (input.type === 'password') {
-        input.type = 'text';
-      } else {
-        input.type = 'password';
-      }
+      const mostrar = input.type === 'password';
+      input.type = mostrar ? 'text' : 'password';
+      const icone = this.querySelector('i');
+      if (icone) icone.className = mostrar ? 'bi bi-eye-slash' : 'bi bi-eye';
+      this.setAttribute('aria-label', mostrar ? 'Ocultar' : 'Mostrar');
     });
   });
 }
@@ -582,10 +582,8 @@ function handleIOSInstall() {
 
 function fixLayoutForMobile() {
   // Força o recálculo do layout para garantir centralização no PWA/mobile
+  // Só força o reflow; esconder o body aqui reiniciaria as animações de entrada
   setTimeout(() => {
-    document.body.style.display = 'none';
-    // Força reflow
     void document.body.offsetHeight;
-    document.body.style.display = 'flex';
   }, 50);
 }

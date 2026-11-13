@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#edf4ef">
   <title>Configurações da Conta | Setor de Virologia</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -11,11 +12,18 @@
   <link rel="stylesheet" href="../assets/css/pages/conta.css">
 </head>
 
-<body>
-  <div class="container conta-card shadow">
-    <h1 class="conta-title mb-3"><i class="bi bi-person-gear"></i> Configurações da Conta</h1>
+<body class="app" data-tab="conta">
+  <header class="app-bar">
+    <div class="app-bar-start"></div>
+    <span class="app-bar-title">Conta</span>
+    <div class="app-bar-end"></div>
+  </header>
+  <div class="app-content container conta-card shadow">
+    <h1 class="large-title reveal">Conta</h1>
+    <p class="page-sub reveal" style="--i:1">Seus dados, senha e acesso.</p>
+    <h1 class="app-hide conta-title mb-3"><i class="bi bi-person-gear"></i> Configurações da Conta</h1>
     
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="app-hide d-flex justify-content-between align-items-center mb-4">
       <!-- Container para botões de navegação -->
       <div class="btn-secondary-container">
         <button id="voltar-hub" class="btn">
@@ -67,9 +75,17 @@
       </button>
     </div>
     
+    <!-- Sessão -->
+    <div class="conta-item">
+      <h2 class="section-title"><i class="bi bi-box-arrow-right"></i> Sessão</h2>
+      <button id="logout-button" class="conta-btn">
+        <i class="bi bi-box-arrow-right"></i> Sair da conta
+      </button>
+    </div>
+
     <!-- Zona de Perigo -->
     <div class="conta-item danger-item">
-      <h2 class="section-title text-danger"><i class="bi bi-exclamation-triangle"></i> Exlcuir Conta</h2>
+      <h2 class="section-title text-danger"><i class="bi bi-exclamation-triangle"></i> Excluir conta</h2>
       
       <p>Esta ação excluirá permanentemente sua conta e todos os dados associados. Esta ação não pode ser desfeita.</p>
       
@@ -145,5 +161,6 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../assets/js/pages/conta.js"></script>
+  <script src="../assets/js/utils/app-shell.js" defer></script>
 </body>
 </html>

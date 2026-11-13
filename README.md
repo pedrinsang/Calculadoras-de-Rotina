@@ -181,7 +181,6 @@ Calculadoras-de-Rotina/
 │   │       ├── soroneutralizacao.css
 │   │       └── vacinas.css
 │   ├── js/                   # Arquivos JavaScript
-│   │   ├── main.js           # Script principal (inicialização do Firebase)
 │   │   └── pages/            # Scripts específicos para cada página e funcionalidade
 │   │       ├── conta.js
 │   │       ├── hub.js

@@ -3,71 +3,111 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hub de Calculadoras</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#edf4ef">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="../manifest.json">
+  <title>Início | Setor de Virologia</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/pages/hub.css">
 </head>
 
-<body>
-  <!-- Estrutura do HTML do hub -->
-  <div class="hub-container">
-    <img src="../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM" class="logo">
-
-    <h1 class="hub-title">Hub de Calculadoras</h1>
-    <p class="hub-subtitle">Setor de Virologia</p>
-
-    <!-- Botões principais -->
-    <div class="main-buttons">
-      <a href="protocolos.html" class="main-button" id="protocolos-button">
-        <i class="bi bi-journal-text"></i> Protocolos
-      </a>
-      <a href="ficha-cadastro.html" class="main-button ficha-cadastro-button">
-        <i class="bi bi-person-plus"></i> Ficha de Cadastro
-      </a>
-      <a href="mural.html" class="main-button">
-        <i class="bi bi-clipboard-data"></i> Mural
-      </a>
+<body class="app hub" data-tab="inicio">
+  <!-- Barra superior do app -->
+  <header class="app-bar">
+    <div class="app-bar-start">
+      <img src="../assets/images/logo-sv.png" alt="Setor de Virologia" class="app-bar-logo">
     </div>
-
-    <!-- Links de calculadoras em coluna (um abaixo do outro) -->
-    <div class="calculadoras-links">
-      <a href="soroneutralizacao.html" class="calculadora-link">
-        <i class="bi bi-calculator"></i> Soroneutralização
-      </a>
-      <a href="vacinas.html" class="calculadora-link">
-        <i class="bi bi-calculator"></i> Vacinas
-      </a>
-      <a href="elisa.html" class="calculadora-link">
-        <i class="bi bi-calculator"></i> ELISA
-      </a>
+    <span class="app-bar-title">Início</span>
+    <div class="app-bar-end user-actions">
+      <button id="admin-button" class="icon-btn" style="display: none;" title="Painel administrativo" aria-label="Painel administrativo">
+        <i class="bi bi-shield-check"></i>
+      </button>
+      <button id="logout-button" class="icon-btn" title="Sair da conta" aria-label="Sair da conta">
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
     </div>
+  </header>
 
-    <!-- Informação do usuário simples -->
-    <div class="user-info">
-      <div class="user-name"></div>
-      <div class="user-actions">
-        <!-- Botão Admin (só aparece para admins) -->
-        <button id="admin-button" class="admin-btn" style="display: none;" title="Painel Administrativo">
-          <i class="bi bi-shield-check"></i> Admin
-        </button>
-        
-        <!-- Botão de configurações existente -->
-        <a href="conta.html" class="gear-button" title="Configurações da conta">
-          <i class="bi bi-gear"></i>
-        </a>
-        
-        <!-- Botão de logout existente -->
-        <button id="logout-button" class="logout-button">
-          <i class="bi bi-box-arrow-right"></i> Sair
-        </button>
+  <main class="app-content">
+    <!-- Cartão de boas-vindas com a placa de 96 poços -->
+    <section class="hero-card reveal" style="--i:0">
+      <div class="hero-text">
+        <p class="hero-eyebrow"><span id="hub-greeting">Olá</span> · Setor de Virologia</p>
+        <h1 class="large-title"><span class="user-first-name"></span><span class="hero-pergunta">o que vamos fazer hoje?</span></h1>
+        <p class="hero-user"><i class="bi bi-person-circle"></i> <span class="user-name"></span></p>
       </div>
-    </div>
-  </div>
+      <!-- Resumo do Mural: preenchido pelo hub.js -->
+      <a href="mural.html" class="today" id="hoje-mural" aria-label="Abrir o Mural de tarefas">
+        <span class="today-head">
+          <span>Hoje no Mural</span>
+          <span class="today-total" id="hoje-total">carregando…</span>
+        </span>
+        <span class="today-stats">
+          <span class="stat stat--venc"><b id="hoje-vencidas">–</b><small>vencidas</small></span>
+          <span class="stat stat--urg"><b id="hoje-vencendo">–</b><small>vencendo</small></span>
+          <span class="stat stat--and"><b id="hoje-andamento">–</b><small>em andamento</small></span>
+        </span>
+        <span class="today-proxima" id="hoje-proxima"></span>
+      </a>
+    </section>
 
-  <!-- Bootstrap JS Bundle com Popper -->
+    <!-- Calculadoras: blocos grandes, como ícones de app -->
+    <section class="hub-section">
+      <h2 class="section-label reveal" style="--i:1">Calculadoras</h2>
+      <div class="tile-grid">
+        <a href="soroneutralizacao.html" class="tile tile--sn reveal" style="--i:2">
+          <span class="tile-icon"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+          <span class="tile-title">Soroneutralização</span>
+          <span class="tile-desc">Placas e diluições</span>
+        </a>
+        <a href="vacinas.html" class="tile tile--vacina reveal" style="--i:3">
+          <span class="tile-icon"><i class="bi bi-eyedropper"></i></span>
+          <span class="tile-title">Vacinas</span>
+          <span class="tile-desc">Bovina e canina</span>
+        </a>
+        <a href="elisa.html" class="tile tile--elisa reveal" style="--i:4">
+          <span class="tile-icon"><i class="bi bi-droplet-half"></i></span>
+          <span class="tile-title">ELISA</span>
+          <span class="tile-desc">Cálculos da placa</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Rotina: lista agrupada, estilo ajustes do celular -->
+    <section class="hub-section">
+      <h2 class="section-label reveal" style="--i:5">Rotina</h2>
+      <div class="list-group-app reveal" style="--i:6">
+        <a href="mural.html" class="list-row">
+          <span class="list-icon list-icon--mural"><i class="bi bi-kanban-fill"></i></span>
+          <span class="list-text"><strong>Mural de tarefas</strong><small>Amostras em andamento e prazos</small></span>
+          <i class="bi bi-chevron-right list-chevron"></i>
+        </a>
+        <a href="ficha-cadastro.html" class="list-row ficha-cadastro-button">
+          <span class="list-icon list-icon--ficha"><i class="bi bi-clipboard-plus-fill"></i></span>
+          <span class="list-text"><strong>Ficha de cadastro</strong><small>Entrada de amostras por setor</small></span>
+          <i class="bi bi-chevron-right list-chevron"></i>
+        </a>
+        <a href="protocolos.html" class="list-row" id="protocolos-button">
+          <span class="list-icon list-icon--protocolo"><i class="bi bi-journal-bookmark-fill"></i></span>
+          <span class="list-text"><strong>Protocolos</strong><small>Procedimentos do setor, passo a passo</small></span>
+          <i class="bi bi-chevron-right list-chevron"></i>
+        </a>
+        <a href="historico.html" class="list-row">
+          <span class="list-icon list-icon--historico"><i class="bi bi-clock-history"></i></span>
+          <span class="list-text"><strong>Histórico</strong><small>Tarefas concluídas</small></span>
+          <i class="bi bi-chevron-right list-chevron"></i>
+        </a>
+      </div>
+    </section>
+
+    <footer class="hub-footer">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</footer>
+  </main>
+
+  <script src="../assets/js/utils/app-shell.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../assets/js/pages/hub.js"></script>
 </body>

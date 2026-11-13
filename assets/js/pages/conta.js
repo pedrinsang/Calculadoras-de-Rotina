@@ -273,3 +273,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+
+// Sair da conta (a aba Conta substitui o antigo botão "Sair" do Hub)
+document.getElementById('logout-button')?.addEventListener('click', async () => {
+  try {
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('manterConectado');
+    sessionStorage.removeItem('usuario');
+    await signOut(auth);
+    window.location.href = "../index.html?logout=true";
+  } catch (error) {
+    alert("Erro ao sair: " + error.message);
+  }
+});

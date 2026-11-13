@@ -168,25 +168,3 @@ async function fazerLogout() {
         window.location.href = "../index.html";
     }
 }
-
-// Utility function para mostrar alerts customizados
-function mostrarAlert(titulo, mensagem, tipo = 'info') {
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
-    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    
-    alert.innerHTML = `
-        <strong>${titulo}</strong><br>
-        ${mensagem}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    document.body.appendChild(alert);
-    
-    // Auto remover após 5 segundos
-    setTimeout(() => {
-        if (alert.parentNode) {
-            alert.remove();
-        }
-    }, 5000);
-}

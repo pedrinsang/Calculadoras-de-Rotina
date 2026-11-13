@@ -23,9 +23,7 @@ import { gerarFormularioCobrancaWord } from "../../utils/formularioCobranca.js";
 // Firebase centralizado via módulo compartilhado
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
-    // Pré-preencher identificação com próximo SV no formulário inline (se existir)
-    try { generateSVNumberForField('id'); } catch (e) { console.warn('[SV] Autofill inline indisponível:', e); }
+    console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares, com auxílio do DeepSeek Chat.");
 });
 
 // Verificação de usuário ativo/inativo no início
@@ -53,21 +51,14 @@ onAuthStateChanged(auth, async (user) => {
 import { mostrarLoading, esconderLoading, mostrarFeedback } from './ui-utils.js';
 import { adicionarDiasUteis, adicionarDiasCorridos, parseDateInputLocal, obterPrazoDiasTeste } from '../../utils/prazosMural.js';
 
-// Funções auxiliares para datas
-function normalizarDataParaUTC(dataString) {
-    const dataLocal = new Date(dataString);
-    return new Date(Date.UTC(
-        dataLocal.getFullYear(),
-        dataLocal.getMonth(),
-        dataLocal.getDate()
-    ));
-}
-
 // Prazos (dias úteis/corridos por tipo de teste) ficam em utils/prazosMural.js,
 // compartilhados com a ficha SV.
 
 // Função para atualizar prazos de tarefas existentes (executar uma vez)
+let prazosJaConferidos = false;
 async function atualizarPrazosExistentes() {
+    if (prazosJaConferidos) return;
+    prazosJaConferidos = true;
     try {
         // Buscar todas as tarefas para verificar se possuem prazo
         const q = query(collection(db, "tarefas"));
@@ -707,16 +698,155 @@ function configurarMenuELISA() {
 }
 
 // Função para carregar tarefas
-async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
+// Seções do mural, na ordem em que aparecem na tela
+const CATEGORIAS_MURAL = {
+    sn:        { sigla: 'SN',    nome: 'Soroneutralização' },
+    elisa:     { sigla: 'ELISA', nome: 'ELISA' },
+    molecular: { sigla: 'PCR',   nome: 'Molecular' },
+    vacina:    { sigla: 'VAC',   nome: 'Vacinas' },
+    icc:       { sigla: 'ICC',   nome: 'ICC' },
+    raiva:     { sigla: 'RAI',   nome: 'Raiva' }
+};
+
+// Junta nomes antigos ("SN IBR", "ELISA BVDV", "PCR") na seção certa
+function categoriaDaTarefa(tipo) {
+    const t = String(tipo || '').toUpperCase();
+    if (t.startsWith('SN')) return 'sn';
+    if (t.startsWith('ELISA')) return 'elisa';
+    if (t === 'MOLECULAR' || t === 'PCR') return 'molecular';
+    return t.toLowerCase() || 'outros';
+}
+
+// Seções recolhidas ficam salvas neste aparelho
+const CHAVE_RECOLHIDAS = 'mural-secoes-recolhidas';
+function secoesRecolhidas() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_RECOLHIDAS) || '[]'); } catch { return []; }
+}
+
+function alternarSecao(secao) {
+    const cat = secao.dataset.categoria;
+    const recolher = !secao.classList.contains('is-recolhido');
+    secao.classList.add('is-animando');
+    secao.classList.toggle('is-recolhido', recolher);
+    setTimeout(() => secao.classList.remove('is-animando'), 420);
+    const head = secao.querySelector('.grupo-head');
+    head.setAttribute('aria-expanded', String(!recolher));
+    const nome = head.querySelector('.grupo-nome')?.textContent || '';
+    head.title = `${recolher ? 'Mostrar' : 'Recolher'} ${nome}`;
+    try {
+        const lista = new Set(secoesRecolhidas());
+        recolher ? lista.add(cat) : lista.delete(cat);
+        localStorage.setItem(CHAVE_RECOLHIDAS, JSON.stringify([...lista]));
+    } catch { /* sem armazenamento: só não lembra */ }
+}
+
+// Cabeçalho da seção: um "poço" por tarefa (cor = prazo, anel azul = em andamento)
+// e o resumo em texto. Tudo calculado a partir das linhas visíveis.
+function atualizarCabecalho(secao) {
+    if (!secao) return;
+    const linhas = [...secao.querySelectorAll('.tarefa-row')].filter(l => !l.hidden);
+    const conta = cls => linhas.filter(l => l.classList.contains(cls)).length;
+    const venc = conta('tarefa-vencida');
+    const urg = conta('tarefa-urgente');
+    const and = conta('em-progresso');
+    const n = linhas.length;
+
+    const resumo = secao.querySelector('.grupo-resumo');
+    if (resumo) {
+        resumo.innerHTML = [
+            `<b>${n} ${n === 1 ? 'tarefa' : 'tarefas'}</b>`,
+            venc ? `<span class="r-venc">${venc} ${venc === 1 ? 'vencida' : 'vencidas'}</span>` : '',
+            urg ? `<span class="r-urg">${urg} vencendo</span>` : '',
+            and ? `<span class="r-and">${and} em andamento</span>` : ''
+        ].filter(Boolean).join('<span class="r-sep">·</span>');
+    }
+
+    const pocos = secao.querySelector('.grupo-pocos');
+    if (pocos) {
+        const MAX = 24;
+        pocos.innerHTML = linhas.slice(0, MAX).map((l, i) => {
+            const estado = l.classList.contains('tarefa-vencida') ? 'venc'
+                : l.classList.contains('tarefa-urgente') ? 'urg' : 'ok';
+            const anel = l.classList.contains('em-progresso') ? ' poco--and' : '';
+            const id = l.querySelector('.tarefa-id')?.firstChild?.textContent?.trim() || '';
+            return `<i class="poco poco--${estado}${anel}" style="--d:${i * 35}ms" title="${id}"></i>`;
+        }).join('') + (n > MAX ? `<span class="pocos-mais">+${n - MAX}</span>` : '');
+    }
+}
+
+// Busca por ID, proprietário, subtipo, município...: esconde o que não bate
+function aplicarBusca() {
+    const campo = document.getElementById('mural-busca');
+    const termo = (campo?.value || '').trim().toLowerCase();
+    const muralList = document.getElementById('mural-list');
+    if (!muralList) return;
+    let visiveis = 0;
+    muralList.querySelectorAll('.grupo').forEach(secao => {
+        let naSecao = 0;
+        secao.querySelectorAll('.tarefa-row').forEach(linha => {
+            const bate = !termo || (linha.dataset.busca || '').includes(termo);
+            linha.hidden = !bate;
+            if (bate) naSecao++;
+        });
+        secao.hidden = naSecao === 0;
+        // Buscando, abre as seções recolhidas que têm resultado
+        secao.classList.toggle('is-buscando', !!termo);
+        atualizarCabecalho(secao);
+        visiveis += naSecao;
+    });
+    let aviso = muralList.querySelector('.busca-vazia');
+    if (termo && visiveis === 0 && muralList.querySelector('.grupo')) {
+        if (!aviso) {
+            aviso = document.createElement('div');
+            aviso.className = 'busca-vazia';
+            muralList.appendChild(aviso);
+        }
+        aviso.innerHTML = estadoVazio('bi-search', `Nada encontrado para “${campo.value.trim()}”`, 'Confira o ID ou tente o nome do proprietário.');
+    } else if (aviso) {
+        aviso.remove();
+    }
+}
+window.aplicarBusca = aplicarBusca;
+
+// Mensagem para lista vazia, sem conexão ou erro
+function estadoVazio(icone, titulo, texto) {
+    return `
+      <div class="mural-vazio">
+        <span class="mural-vazio-icone"><i class="bi ${icone}"></i></span>
+        <strong>${titulo}</strong>
+        <p>${texto}</p>
+      </div>`;
+}
+
+// Resumo no topo ("8 tarefas · 2 em andamento · 1 vencida"), contado a partir dos cartões na tela
+function atualizarResumo(carregando) {
+    const el = document.getElementById('mural-resumo');
+    if (!el) return;
+    if (carregando === null) {
+        el.innerHTML = '<span class="resumo-item">Carregando tarefas…</span>';
+        return;
+    }
+    const total = document.querySelectorAll('#mural-list .tarefa-row').length;
+    const andamento = document.querySelectorAll('#mural-list .tarefa-row.em-progresso').length;
+    const vencidas = document.querySelectorAll('#mural-list .tarefa-row.tarefa-vencida').length;
+    const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+    el.innerHTML = `
+      <span class="resumo-item"><strong>${plural(total, 'tarefa', 'tarefas')}</strong></span>
+      ${andamento ? `<span class="resumo-item resumo-andamento">${andamento} em andamento</span>` : ''}
+      ${vencidas ? `<span class="resumo-item resumo-vencidas">${plural(vencidas, 'vencida', 'vencidas')}</span>` : ''}`;
+}
+window.atualizarResumo = atualizarResumo;
+
+// Sem argumentos, usa os filtros que estão na tela (assim concluir/excluir não perde o filtro)
+async function carregarTarefas(
+    filtro = document.getElementById("filtro-tipo")?.value || "Todos",
+    ordem = document.getElementById("filtro-ordem")?.value || "prazo"
+) {
     mostrarLoading();
     try {
-        // Atualizar prazos de tarefas existentes silenciosamente
-        try {
-            await atualizarPrazosExistentes();
-        } catch (error) {
-            console.warn("Aviso ao atualizar prazos:", error);
-        }
-        
+        // Completa prazos de tarefas antigas (só na primeira carga da página)
+        await atualizarPrazosExistentes();
+
         const muralList = document.getElementById("mural-list");
         if (!muralList) {
             console.error("Elemento mural-list não encontrado");
@@ -724,7 +854,13 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             return;
         }
 
-        muralList.innerHTML = "<p>Carregando tarefas...</p>";
+        // Esqueleto de cartões enquanto carrega
+        muralList.innerHTML = `
+            <div class="grupo-skeleton" aria-hidden="true">
+              <span class="sk-head"></span>
+              ${'<span class="sk-row"></span>'.repeat(4)}
+            </div>`;
+        atualizarResumo(null);
 
         const user = auth.currentUser;
         if (!user) {
@@ -735,7 +871,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
 
         // Verificar conexão com a internet
         if (!navigator.onLine) {
-            muralList.innerHTML = '<p class="text-danger">Sem conexão com a internet. Verifique sua conexão e tente novamente.</p>';
+            muralList.innerHTML = estadoVazio('bi-wifi-off', 'Sem conexão com a internet', 'Verifique a conexão e recarregue a página.');
             esconderLoading();
             return;
         }
@@ -776,21 +912,31 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
 
         const querySnapshot = await getDocs(q);
 
+        const vazioHtml = estadoVazio(
+            'bi-clipboard2-check',
+            filtro === 'Todos' ? 'Nenhuma tarefa no mural' : `Nenhuma tarefa de ${filtro}`,
+            'Quando chegar uma amostra, toque em “Nova tarefa” para registrar.'
+        );
+
         if (querySnapshot.empty) {
-            muralList.innerHTML = "<p>Nenhuma tarefa encontrada.</p>";
+            muralList.innerHTML = vazioHtml;
+            atualizarResumo({ total: 0, vencidas: 0, andamento: 0 });
             esconderLoading();
             return;
         }
 
         muralList.innerHTML = "";
+        const resumo = { total: 0, vencidas: 0, andamento: 0 };
+        const porCategoria = {}; // categoria -> [{ el, prazo, ordem, vencida }]
+        let ordemChegada = 0;
         querySnapshot.forEach((doc) => {
             const tarefa = doc.data();
-            
+
             // Aplicar filtro manual para SN, ELISA e MOLECULAR que incluem dados antigos
             let incluirTarefa = true;
             if (filtro === "SN") {
-                incluirTarefa = tarefa.tipo === "SN" || 
-                              tarefa.tipo === "SN IBR" || 
+                incluirTarefa = tarefa.tipo === "SN" ||
+                              tarefa.tipo === "SN IBR" ||
                               tarefa.tipo === "SN BVDV-1" ||
                               tarefa.tipo === "SN BVDV-2" ||
                               tarefa.tipo === "SN HoBi" ||
@@ -805,21 +951,21 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             } else if (filtro !== "Todos") {
                 incluirTarefa = tarefa.tipo === filtro;
             }
-            
+
             if (!incluirTarefa) {
                 return; // Pula esta tarefa
             }
-            
+
             // Calcular informações de prazo
             const infoPrazo = calcularPrazoTarefa(tarefa);
-            
+
             const dataRecebimentoStr = tarefa.dataRecebimento?.toDate
                 ? formatarDataParaExibicao(tarefa.dataRecebimento.toDate())
                 : (tarefa.criadoEm?.toDate ? formatarDataParaExibicao(tarefa.criadoEm.toDate()) : "Data não disponível");
 
             const statusClass = tarefa.status === 'em-progresso' ? 'em-progresso' : '';
             const concluidoClass = tarefa.status === 'concluido' ? 'concluido' : statusClass;
-            
+
             // Adicionar classes de prazo se não estiver concluída
             let prazoClass = '';
             if (tarefa.status !== 'concluido') {
@@ -829,16 +975,16 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                     prazoClass = 'tarefa-urgente';
                 }
             }
-            
+
             const combinedClass = `${concluidoClass} ${prazoClass}`.trim();
 
-            const showResultsButton = (tarefa.tipo === "SN" && tarefa.subTipo) || 
+            const showResultsButton = (tarefa.tipo === "SN" && tarefa.subTipo) ||
                                     (tarefa.tipo === "ELISA" && tarefa.subTipo) ||
                                     (tarefa.tipo === "MOLECULAR" && tarefa.subTipo) ||
                                     tarefa.tipo === "RAIVA" ||
                                     tarefa.tipo === "ICC" ||
                                     // Compatibilidade com dados antigos
-                                    tarefa.tipo === "SN IBR" || 
+                                    tarefa.tipo === "SN IBR" ||
                                     tarefa.tipo === "SN BVDV-1" ||
                                     tarefa.tipo === "SN BVDV-2" ||
                                     tarefa.tipo === "SN HoBi" ||
@@ -847,50 +993,42 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                                     tarefa.tipo === "ELISA BVDV" ||
                                     tarefa.tipo === "PCR";
 
-            const amostraItem = document.createElement("div");
-            amostraItem.className = `card mb-4 shadow-sm ${combinedClass}`;
-            
-            // Formatar informações do prazo para exibição
-            let prazoTexto = '';
-            let prazoIcon = '';
+            resumo.total++;
+            if (prazoClass === 'tarefa-vencida') resumo.vencidas++;
+            if (tarefa.status === 'em-progresso') resumo.andamento++;
+
+            // Prazo curto e direto: "2 dias úteis · até 14/11" / "Vencido · era 10/11"
+            const dataPrazoStr = infoPrazo.dataPrazo.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            const diasText = infoPrazo.tipoPrazo === 'corridos'
+                ? (infoPrazo.diasRestantes === 1 ? 'dia corrido' : 'dias corridos')
+                : (infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis');
+            let prazoHtml;
             if (infoPrazo.vencido) {
-                prazoTexto = `<span class="text-danger fw-bold">VENCIDO</span> (Prazo: ${infoPrazo.dataPrazo.toLocaleDateString('pt-BR')})`;
-                prazoIcon = '<i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>';
+                prazoHtml = `<span class="prazo prazo--vencido"><i class="bi bi-exclamation-octagon-fill"></i><span><strong>Vencido</strong><small>era ${dataPrazoStr}</small></span></span>`;
             } else if (infoPrazo.diasRestantes <= 2) {
-                // Quando faltam 2 dias ou menos - texto amarelo
-                const diasText = infoPrazo.tipoPrazo === 'corridos' 
-                    ? (infoPrazo.diasRestantes === 1 ? 'dia corrido' : 'dias corridos')
-                    : (infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis');
-                prazoTexto = `<span class="text-warning fw-bold">Vence em ${infoPrazo.diasRestantes} ${diasText}</span> (${infoPrazo.dataPrazo.toLocaleDateString('pt-BR')})`;
-                prazoIcon = '<i class="bi bi-clock-fill text-warning me-1"></i>';
+                prazoHtml = `<span class="prazo prazo--urgente"><i class="bi bi-hourglass-split"></i><span><strong>${infoPrazo.diasRestantes} ${diasText}</strong><small>até ${dataPrazoStr}</small></span></span>`;
             } else {
-                // Prazo normal - texto verde
-                const diasText = infoPrazo.tipoPrazo === 'corridos' 
-                    ? (infoPrazo.diasRestantes === 1 ? 'dia corrido' : 'dias corridos')
-                    : (infoPrazo.diasRestantes === 1 ? 'dia útil' : 'dias úteis');
-                prazoTexto = `<span class="text-success">Vence em ${infoPrazo.diasRestantes} ${diasText}</span> (${infoPrazo.dataPrazo.toLocaleDateString('pt-BR')})`;
-                prazoIcon = '<i class="bi bi-clock text-success me-1"></i>';
+                prazoHtml = `<span class="prazo prazo--ok"><i class="bi bi-calendar-check"></i><span><strong>${infoPrazo.diasRestantes} ${diasText}</strong><small>até ${dataPrazoStr}</small></span></span>`;
             }
-            
-            // Mantenha a estrutura original de botões
+
             const botoesHtml = `
-              <div class="btn-group">
-                <button class="btn btn-sm btn-primary btn-progresso" data-id="${doc.id}">
-                  <i class="bi bi-arrow-clockwise me-1"></i><span class="btn-text-original">Progresso</span>
+              <div class="btn-group tarefa-acoes">
+                <button class="btn btn-progresso" data-id="${doc.id}" title="Marcar como em andamento ou pendente">
+                  <span class="lbl-iniciar"><i class="bi bi-play-fill"></i><span class="lbl">Iniciar</span></span>
+                  <span class="lbl-pausar"><i class="bi bi-pause-fill"></i><span class="lbl">Pausar</span></span>
                 </button>
-                
-                <button class="btn btn-sm btn-success btn-concluir" data-id="${doc.id}">
-                  <i class="bi bi-check2-all me-1"></i>Concluir
-                </button>
-                
-                ${showResultsButton ? `<button class="btn btn-sm btn-warning text-white btn-resultados" data-id="${doc.id}">
-                  <i class="bi bi-clipboard-data me-1"></i>Resultado
+
+                ${showResultsButton ? `<button class="btn btn-resultados" data-id="${doc.id}" title="Registrar resultado">
+                  <i class="bi bi-clipboard-data"></i><span class="lbl">Resultado</span>
                 </button>` : ''}
-                
-                <!-- Dropdown "Mais" sem estilos inline -->
-                <button type="button" class="btn btn-sm btn-purple dropdown-toggle" 
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-three-dots-vertical"></i> <span class="d-none d-sm-inline">Mais</span>
+
+                <button class="btn btn-concluir" data-id="${doc.id}" title="Concluir e mover para o histórico">
+                  <i class="bi bi-check2"></i><span class="lbl">Concluir</span>
+                </button>
+
+                <button type="button" class="btn btn-mais dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mais ações" title="Mais ações">
+                  <i class="bi bi-three-dots"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li><a class="dropdown-item btn-detalhes" href="#" data-id="${doc.id}">
@@ -914,26 +1052,89 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                 tipoDisplay = "SN BVDV-1";
             }
 
-            // E use assim na construção do item
-            amostraItem.innerHTML = `
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center flex-wrap">
-                  <div class="mb-2">
-                    <h5 class="card-title mb-1 text-success fw-bold">${tarefa.id}</h5>
-                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}${tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? ` - ${tarefa.alvo}` : ''}</div>
-                    <div class="mb-1"><span class="fw-medium">Quantidade:</span> ${tarefa.quantidade || '0'}</div>
-                    <div class="mb-1"><span class="fw-medium">Recebimento:</span> ${dataRecebimentoStr}</div>
-                    <div class="mb-2">${prazoIcon}<span class="fw-medium">Prazo:</span> ${prazoTexto}</div>
-                  </div>
-                </div>
-                
-                <!-- Botões no formato original -->
-                ${botoesHtml}
+            const categoria = categoriaDaTarefa(tarefa.tipo);
+            const proprietario = typeof tarefa.proprietario === 'object'
+                ? (tarefa.proprietario?.nome || '')
+                : (tarefa.proprietario || '');
+            // Subtipo (ex.: "SN BVDV-1"); para dados antigos, o próprio tipo quando ele já é específico
+            const tiposGenericos = ['SN', 'ELISA', 'MOLECULAR', 'PCR', 'VACINA', 'ICC', 'RAIVA'];
+            const detalhes = [
+                tarefa.subTipo || (tipoDisplay && !tiposGenericos.includes(tipoDisplay) ? tipoDisplay : ''),
+                tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? tarefa.alvo : '',
+                proprietario
+            ].filter(Boolean).join(' · ');
+
+            const linha = document.createElement("article");
+            linha.className = `tarefa-row ${combinedClass}`;
+            // Texto usado pela busca (ID, tipo, proprietário, município, material, sigla)
+            linha.dataset.busca = [
+                tarefa.id, tipoDisplay, tarefa.subTipo, tarefa.alvo, proprietario,
+                tarefa.proprietario?.municipio, tarefa.materialRecebido, tarefa.siglaResponsavel
+            ].filter(Boolean).join(' ').toLowerCase();
+
+            linha.innerHTML = `
+              <span class="row-status" aria-hidden="true"></span>
+              <div class="row-id">
+                <h3 class="tarefa-id">${tarefa.id}<span class="st-andamento"><span class="pulse"></span>Em andamento</span></h3>
+                <p class="tarefa-detalhe">${detalhes || '&nbsp;'}</p>
               </div>
+              <div class="row-meta">
+                <span><small>Amostras</small><b>${tarefa.quantidade || '0'}</b></span>
+                <span><small>Recebido</small><b>${dataRecebimentoStr}</b></span>
+              </div>
+              <div class="row-prazo">${prazoHtml}</div>
+              ${botoesHtml}
             `;
 
-            muralList.appendChild(amostraItem);
+            (porCategoria[categoria] = porCategoria[categoria] || []).push({
+                el: linha,
+                prazo: infoPrazo.dataPrazo.getTime(),
+                ordem: ordemChegada++,
+                vencida: prazoClass === 'tarefa-vencida'
+            });
         });
+
+        // Uma seção por teste, sempre na mesma ordem, para cada um achar a sua
+        const ordemCategorias = Object.keys(CATEGORIAS_MURAL)
+            .concat(Object.keys(porCategoria).filter(c => !CATEGORIAS_MURAL[c]));
+        let indiceSecao = 0;
+        ordemCategorias.forEach(cat => {
+            const itens = porCategoria[cat];
+            if (!itens || !itens.length) return;
+            if (ordem === 'prazo') itens.sort((a, b) => a.prazo - b.prazo || a.ordem - b.ordem);
+
+            const info = CATEGORIAS_MURAL[cat] || { nome: cat.toUpperCase(), sigla: cat.toUpperCase() };
+            const recolhida = secoesRecolhidas().includes(cat);
+
+            const secao = document.createElement('section');
+            secao.className = `grupo tipo-${cat}${recolhida ? ' is-recolhido' : ''}`;
+            secao.dataset.categoria = cat;
+            secao.style.setProperty('--i', indiceSecao++);
+            secao.innerHTML = `
+              <button type="button" class="grupo-head" aria-expanded="${!recolhida}" title="${recolhida ? 'Mostrar' : 'Recolher'} ${info.nome}">
+                <span class="grupo-sigla">${info.sigla}</span>
+                <span class="grupo-titulo">
+                  <span class="grupo-nome">${info.nome}</span>
+                  <span class="grupo-resumo"></span>
+                </span>
+                <span class="grupo-pocos" aria-hidden="true"></span>
+                <i class="bi bi-chevron-down grupo-chevron"></i>
+              </button>
+              <div class="grupo-lista"><div class="grupo-itens"></div></div>
+            `;
+            const lista = secao.querySelector('.grupo-itens');
+            itens.forEach((item, idx) => {
+                item.el.style.setProperty('--i', Math.min(idx, 10));
+                lista.appendChild(item.el);
+            });
+            atualizarCabecalho(secao);
+            secao.querySelector('.grupo-head').addEventListener('click', () => alternarSecao(secao));
+            muralList.appendChild(secao);
+        });
+
+        if (resumo.total === 0) muralList.innerHTML = vazioHtml;
+        atualizarResumo(resumo);
+        aplicarBusca();
 
         // Adiciona event listeners para os botões
         document.querySelectorAll('.btn-progresso').forEach(btn => {
@@ -1012,10 +1213,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
         console.error("Erro ao carregar tarefas:", error);
         const muralList = document.getElementById("mural-list");
         if (muralList) {
-            muralList.innerHTML = `
-                <p class="text-danger">Erro ao carregar tarefas: ${error.message}</p>
-                <p>Verifique o console para mais detalhes.</p>
-            `;
+            muralList.innerHTML = estadoVazio('bi-exclamation-triangle', 'Não foi possível carregar as tarefas', `${error.message}. Recarregue a página para tentar de novo.`);
         }
     } finally {
         esconderLoading();
@@ -1066,13 +1264,15 @@ window.marcarProgresso = async (id) => {
         const novoStatus = tarefa.status === 'em-progresso' ? 'pendente' : 'em-progresso';
         
         // Atualiza o card imediatamente na UI
-        const cardElement = document.querySelector(`[data-id="${id}"]`).closest('.card');
+        const cardElement = document.querySelector(`[data-id="${id}"]`)?.closest('.tarefa-row');
         if (cardElement) {
             if (novoStatus === 'em-progresso') {
                 cardElement.classList.add('em-progresso');
             } else {
                 cardElement.classList.remove('em-progresso');
             }
+            atualizarResumo();
+            atualizarCabecalho(cardElement.closest('.grupo'));
         }
         
         // Salva no Firestore

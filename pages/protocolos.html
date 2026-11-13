@@ -2,7 +2,8 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#edf4ef">
   <title>Hub de Protocolos</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -11,11 +12,18 @@
 
 </head>
 
-<body>
-  <div class="container protocolo-card shadow">
-    <h1 class="protocolo-title mb-3"><i class="bi bi-journal-text me-2"></i>Hub de Protocolos</h1>
+<body class="app" data-tab="protocolos">
+  <header class="app-bar">
+    <div class="app-bar-start"></div>
+    <span class="app-bar-title">Protocolos</span>
+    <div class="app-bar-end"></div>
+  </header>
+  <div class="app-content container protocolo-card shadow">
+    <h1 class="large-title reveal">Protocolos</h1>
+    <p class="page-sub reveal" style="--i:1">Procedimentos do setor, passo a passo.</p>
+    <h1 class="app-hide protocolo-title mb-3"><i class="bi bi-journal-text me-2"></i>Hub de Protocolos</h1>
     
-    <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
+    <div class="app-hide d-flex justify-content-between align-items-center mb-3 gap-2">
       <button id="hub-button" class="protocolo-btn-outline">
         <i class="bi bi-house me-1"></i> Voltar ao Hub
       </button>
@@ -59,5 +67,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/pages/protocolos.js"></script>
+  <script src="../assets/js/utils/app-shell.js" defer></script>
 </body>
 </html>

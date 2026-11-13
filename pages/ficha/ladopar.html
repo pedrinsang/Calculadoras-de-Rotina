@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#edf4ef">
   <title>LADOPAR - Ficha de Encaminhamento de Amostras</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -12,10 +13,17 @@
   <link rel="stylesheet" href="../../assets/css/pages/ficha-diagnostico.css">
 </head>
 
-<body class="ladopar-page">
-  <div class="ficha-setor-container">
+<body class="app ladopar-page" data-tab="fichas">
+  <header class="app-bar">
+    <div class="app-bar-start"><a class="icon-btn" href="../ficha-cadastro.html" aria-label="Voltar"><i class="bi bi-chevron-left"></i></a></div>
+    <span class="app-bar-title">LADOPAR</span>
+    <div class="app-bar-end"></div>
+  </header>
+  <div class="app-content ficha-setor-container">
+    <h1 class="large-title reveal">LADOPAR</h1>
+    <p class="page-sub reveal" style="--i:1">Laboratório de Doenças Parasitárias · requisição de testes de diagnóstico.</p>
     <!-- Botão de voltar -->
-    <div class="back-button-container">
+    <div class="app-hide back-button-container">
       <button onclick="window.location.href='../ficha-cadastro.html'" class="back-button">
         <i class="bi bi-arrow-left"></i> Voltar
       </button>
@@ -27,7 +35,7 @@
       <img src="../../assets/images/logo-ufsm.png" alt="Logo UFSM" class="logo-ufsm-form">
     </div>
 
-    <h1 class="page-title">LADOPAR - LABORATÓRIO DE DOENÇAS PARASITÁRIAS</h1>
+    <h1 class="app-hide page-title">LADOPAR - LABORATÓRIO DE DOENÇAS PARASITÁRIAS</h1>
 
     <!-- Formulário da ficha -->
     <div class="ficha-form-container">
@@ -517,5 +525,6 @@
   <!-- Bootstrap JS Bundle com Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../../assets/js/pages/ficha/ladopar.js"></script>
+  <script src="../../assets/js/utils/app-shell.js" defer></script>
 </body>
 </html>

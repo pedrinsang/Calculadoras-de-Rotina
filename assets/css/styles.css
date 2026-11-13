@@ -1,12 +1,48 @@
-/* Variáveis globais */
+/* Fontes: Bricolage Grotesque (títulos), Figtree (texto), IBM Plex Mono (rótulos e números) */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+/* ==========================================================
+   Tokens de design — use estes em vez de cores fixas
+   ========================================================== */
 :root {
-  --verde-escuro: #1b5e20;
-  --verde-medio: #388e3c;
-  --verde-claro: #a5d6a7;
-  --verde-bg: #e8f5e9;
-  --verde-hover: #43a047;
-  --verde-btn: #2e7d32;
-  --verde-btn-hover: #388e3c;
+  /* Cores */
+  --ink: #0f2419;            /* texto principal */
+  --ink-soft: #4b6155;       /* texto secundário */
+  --ink-faint: #8a9c91;      /* legendas */
+  --primary: #23774a;        /* verde do setor */
+  --primary-deep: #14532d;   /* títulos, hover */
+  --primary-tint: #dcebe1;   /* fundos de ícones */
+  --mint: #edf4ef;           /* fundo das páginas */
+  --paper: #ffffff;          /* cartões */
+  --line: #d6e3da;           /* bordas */
+  --amber: #e3a21a;          /* destaque (cor do ELISA após a solução de parada) */
+  --danger: #c2412d;
+
+  /* Tipografia */
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', sans-serif;
+  --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Consolas', monospace;
+
+  /* Forma e profundidade */
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 1px 2px rgba(15, 36, 25, 0.06);
+  --shadow: 0 1px 2px rgba(15, 36, 25, 0.05), 0 8px 24px -8px rgba(15, 36, 25, 0.14);
+  --shadow-lg: 0 2px 4px rgba(15, 36, 25, 0.05), 0 22px 44px -16px rgba(20, 83, 45, 0.28);
+
+  /* Movimento */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Nomes antigos, mantidos para as páginas que ainda usam */
+  --verde-escuro: var(--primary-deep);
+  --verde-medio: var(--primary);
+  --verde-claro: #a9d3b5;
+  --verde-bg: var(--mint);
+  --verde-hover: #2c8a57;
+  --verde-btn: var(--primary);
+  --verde-btn-hover: var(--primary-deep);
 }
 
 /* Reset básico */
@@ -23,9 +59,43 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
   padding: 1.5rem;
   overflow-x: hidden;
+}
+
+h1, h2, h3, .title {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Foco visível para quem navega pelo teclado */
+:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 2px;
+}
+
+/* Entrada em sequência: adicione .reveal e defina --i (0, 1, 2…) */
+.reveal {
+  animation: reveal-up 0.6s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 80ms);
+}
+
+/* Usa "translate" (e não "transform") para não brigar com efeitos de hover */
+@keyframes reveal-up {
+  from { opacity: 0; translate: 0 14px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+/* Respeita quem pediu menos movimento no sistema */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Container padrão */
@@ -321,5 +391,644 @@ body {
   
   .btn {
     padding: 0.5rem 1rem;
+  }
+}
+/* ==========================================================
+   Casca de aplicativo (PWA): use <body class="app" data-tab="...">
+   ========================================================== */
+:root {
+  --app-bar-h: 56px;
+  --tab-bar-h: 64px;
+  --rail-w: 88px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Transição suave entre telas (navegadores que suportam) */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: tela-sai 0.18s ease-in both;
+}
+
+::view-transition-new(root) {
+  animation: tela-entra 0.32s var(--ease-out) both;
+}
+
+@keyframes tela-sai   { to   { opacity: 0; transform: translateY(-6px); } }
+@keyframes tela-entra { from { opacity: 0; transform: translateY(10px); } }
+
+body.app {
+  display: block;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0 0 calc(var(--tab-bar-h) + var(--safe-bottom));
+  background: var(--mint);
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.app a,
+body.app button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body.app button,
+body.app .tab,
+body.app .app-bar {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- Barra superior ---------- */
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  height: calc(var(--app-bar-h) + var(--safe-top));
+  padding: var(--safe-top) 0.5rem 0;
+  display: grid;
+  grid-template-columns: minmax(48px, 1fr) auto minmax(48px, 1fr);
+  align-items: center;
+  background: rgba(237, 244, 239, 0.82);
+  -webkit-backdrop-filter: saturate(1.6) blur(16px);
+  backdrop-filter: saturate(1.6) blur(16px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s, background-color 0.25s;
+  view-transition-name: app-bar;
+}
+
+.app-bar.is-scrolled {
+  border-bottom-color: var(--line);
+}
+
+.app-bar-start,
+.app-bar-end {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.app-bar-end {
+  justify-content: flex-end;
+}
+
+.app-bar-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s, transform 0.25s var(--ease-out);
+  white-space: nowrap;
+}
+
+.app-bar.show-title .app-bar-title {
+  opacity: 1;
+  transform: none;
+}
+
+/* Botão redondo de ícone (voltar, histórico, sair...) */
+.icon-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  align-items: center;      /* também centraliza quando o JS troca para display:flex */
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.3rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.15s var(--ease-out);
+}
+
+.icon-btn:hover {
+  background: rgba(15, 36, 25, 0.06);
+  color: var(--ink);
+}
+
+.icon-btn:active {
+  transform: scale(0.9);
+  background: rgba(15, 36, 25, 0.1);
+}
+
+/* Título grande da tela (some para a barra ao rolar) */
+.large-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.1rem;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  color: var(--ink);
+  margin: 0.25rem 0 0.35rem;
+}
+
+.app-content {
+  padding: 0 1rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---------- Barra de abas ---------- */
+.tab-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  height: calc(var(--tab-bar-h) + var(--safe-bottom));
+  padding: 0 0.25rem var(--safe-bottom);
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px);
+  backdrop-filter: saturate(1.6) blur(18px);
+  border-top: 1px solid var(--line);
+  view-transition-name: tab-bar;
+}
+
+.tab-bar-logo {
+  display: none;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--ink-faint);
+  font-size: 0.68rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.tab-icone {
+  width: 56px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 1.25rem;
+  transition: background-color 0.25s, transform 0.2s var(--ease-spring);
+}
+
+.tab:hover {
+  color: var(--ink-soft);
+}
+
+.tab:active .tab-icone {
+  transform: scale(0.88);
+}
+
+.tab.is-active {
+  color: var(--primary-deep);
+}
+
+.tab.is-active .tab-icone {
+  background: var(--primary-tint);
+  animation: tab-pop 0.4s var(--ease-spring);
+}
+
+@keyframes tab-pop {
+  from { transform: scaleX(0.6); }
+  to   { transform: none; }
+}
+
+/* ---------- Telas largas: abas viram uma barra lateral ---------- */
+@media (min-width: 900px) {
+  body.app {
+    padding: 0 0 0 var(--rail-w);
+  }
+
+  .tab-bar {
+    top: 0;
+    right: auto;
+    width: var(--rail-w);
+    height: auto;
+    padding: 1rem 0;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    border-top: none;
+    border-right: 1px solid var(--line);
+  }
+
+  .tab-bar-logo {
+    display: grid;
+    place-items: center;
+    height: 56px;
+    margin-bottom: 0.75rem;
+  }
+
+  .tab-bar-logo img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  .tab {
+    flex: none;
+    height: 64px;
+    font-size: 0.72rem;
+  }
+
+  .app-bar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .app-content {
+    padding: 0 2rem 3rem;
+  }
+
+  .large-title {
+    font-size: 2.6rem;
+  }
+}
+
+/* ---------- Modais viram "folhas" que sobem de baixo no celular ---------- */
+@media (max-width: 575.98px) {
+  body.app .modal-dialog {
+    margin: 0;
+    min-height: 100%;
+    display: flex;
+    align-items: flex-end;
+    max-width: none;
+  }
+
+  body.app .modal-content {
+    border-radius: 24px 24px 0 0 !important;
+    max-height: 92vh;
+    padding-bottom: var(--safe-bottom);
+  }
+
+  body.app .modal-content::before {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 5px;
+    margin: 8px auto 0;
+    border-radius: 3px;
+    background: var(--line);
+  }
+
+  body.app .modal-body {
+    overflow-y: auto;
+  }
+
+  body.app .modal.fade .modal-dialog {
+    transform: translateY(100%) !important;
+    transition: transform 0.35s var(--ease-out) !important;
+  }
+
+  body.app .modal.show .modal-dialog {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================
+   Telas antigas dentro da casca de app
+   (o conteúdo principal recebe .app-content; .app-hide esconde
+   botões de navegação antigos sem quebrar os scripts que os usam)
+   ========================================================== */
+body.app .app-hide {
+  display: none !important;
+}
+
+body.app .app-content {
+  width: 100%;
+  max-width: 1100px;
+  height: auto;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none !important;
+  overflow: visible;
+  display: block;
+}
+
+@media (min-width: 900px) {
+  body.app .app-content {
+    padding: 0 2rem 3rem;
+  }
+}
+
+.page-sub {
+  margin: 0 0 1.25rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+/* Superfície branca padrão (blocos, cartões, acordeões) */
+body.app .app-surface,
+body.app .accordion-item,
+body.app .conta-item,
+body.app .resultado-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: none;
+}
+
+body.app .accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+body.app .accordion-item {
+  overflow: hidden;
+}
+
+body.app .accordion-item:first-of-type .accordion-button,
+body.app .accordion-item:last-of-type .accordion-button.collapsed {
+  border-radius: 20px;
+}
+
+body.app .accordion-button {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 1rem 1.1rem;
+}
+
+body.app .accordion-button:not(.collapsed) {
+  background: var(--mint);
+  color: var(--primary-deep);
+  box-shadow: none;
+}
+
+body.app .accordion-button:focus {
+  box-shadow: 0 0 0 3px rgba(227, 162, 26, 0.5);
+}
+
+/* Formulários */
+body.app .form-label,
+body.app label {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+body.app .form-control,
+body.app .form-select {
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background-color: #fbfdfb;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+body.app textarea.form-control {
+  min-height: 90px;
+}
+
+body.app .form-control:focus,
+body.app .form-select:focus {
+  border-color: var(--primary);
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(35, 119, 74, 0.14);
+}
+
+body.app .form-control[readonly] {
+  background-color: var(--mint);
+  color: var(--ink-soft);
+}
+
+body.app .form-check-input:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Botões */
+body.app .btn {
+  border-radius: 12px;
+  font-weight: 600;
+  min-height: 44px;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.15s var(--ease-out);
+}
+
+body.app .btn:active {
+  transform: scale(0.97);
+}
+
+body.app .btn-success {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+body.app .btn-success:hover {
+  background: var(--primary-deep);
+  border-color: var(--primary-deep);
+}
+
+body.app .btn-outline-success {
+  color: var(--primary-deep);
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+}
+
+body.app .btn-outline-success:hover {
+  color: var(--primary-deep);
+  border-color: var(--primary);
+  background: var(--mint);
+}
+
+/* Modais */
+body.app .modal-content {
+  border: none;
+  border-radius: 22px;
+  box-shadow: 0 30px 60px -20px rgba(15, 36, 25, 0.45);
+}
+
+body.app .modal-header {
+  border-bottom: 1px solid var(--line);
+}
+
+body.app .modal-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ink) !important;
+}
+
+body.app .modal-footer {
+  border-top: 1px solid var(--line);
+}
+
+/* Tabelas */
+body.app .table {
+  --bs-table-bg: transparent;
+}
+
+body.app .table thead th {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-bottom-color: var(--line);
+}
+
+/* Lista agrupada estilo ajustes (usada nas Fichas e em outras telas) */
+.list-group-app {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  color: var(--ink);
+  text-decoration: none;
+  position: relative;
+  transition: background-color 0.15s;
+}
+
+.list-row + .list-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(1rem + 44px + 0.85rem);
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+.list-row:hover {
+  background: #f5f9f6;
+  color: var(--ink);
+}
+
+.list-row:active {
+  background: #e9f2ec;
+}
+
+.list-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #fff;
+  font-size: 1.2rem;
+  overflow: hidden;
+}
+
+.list-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+  padding: 5px;
+}
+
+.list-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.list-text strong {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.list-text small {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.list-chevron {
+  color: var(--ink-faint);
+  transition: transform 0.2s var(--ease-out);
+}
+
+.list-row:hover .list-chevron {
+  transform: translateX(3px);
+}
+
+.list-section-label {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 1.5rem 0 0.7rem 0.25rem;
+}
+
+/* Títulos das telas sempre alinhados à esquerda, mesmo onde o CSS antigo centralizava */
+body.app .app-content > .large-title,
+body.app .app-content > .page-sub {
+  text-align: left;
+}
+
+/* Páginas cujo CSS antigo pinta o body (ex.: .sv-page, .ladopar-page): o app vence */
+html body.app {
+  background: var(--mint);
+  padding: 0 0 calc(var(--tab-bar-h) + var(--safe-bottom));
+}
+
+/* Na tela, fonte do app; na impressão cada ficha mantém a sua */
+@media screen {
+  html body.app {
+    font-family: var(--font-body);
+  }
+}
+
+@media print {
+  .app-bar,
+  .tab-bar {
+    display: none !important;
+  }
+
+  html body.app {
+    padding: 0 !important;
+    background: #fff !important;
+  }
+}
+
+@media (min-width: 900px) {
+  html body.app {
+    padding: 0 0 0 var(--rail-w);
+  }
+}
+
+body.app .page-sub {
+  font-family: var(--font-body);
+}
+
+/* Barras fixas no rodapé de telas antigas ficam acima das abas no celular */
+@media (max-width: 899.98px) {
+  body.app .sv-acoes {
+    bottom: calc(var(--tab-bar-h) + var(--safe-bottom));
+  }
+
+  body.app .sv-toast,
+  body.app .toastify-container {
+    bottom: calc(var(--tab-bar-h) + var(--safe-bottom) + 1rem);
   }
 }

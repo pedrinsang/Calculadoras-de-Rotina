@@ -18,14 +18,23 @@
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/pages/index.css">
 </head>
-<body>
-  
-    <div class="card mx-auto p-4">
+<body class="auth">
+  <div class="auth-shell">
+    <!-- Painel de identidade (aparece só em telas largas) -->
+    <aside class="auth-aside" aria-hidden="true">
+      <p class="auth-aside-eyebrow">Setor de Virologia · UFSM</p>
+      <p class="auth-aside-title">A rotina do laboratório, num lugar só.</p>
+      <div class="auth-plate" id="auth-plate"></div>
+      <p class="auth-aside-foot">Protocolos · Fichas · Soroneutralização · Vacinas · ELISA</p>
+    </aside>
+
+    <div class="card auth-card">
       <img src="./assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM" class="logo img-fluid">
       <div id="alert-message" class="alert d-none"></div>
       <!-- Login Form -->
       <form id="login-form" autocomplete="on">
-        <h2 class="text-center mb-4" style="color:var(--verde-escuro);font-weight:700;font-size:1.2rem;">Login</h2>
+        <h2 class="auth-title">Entrar</h2>
+        <p class="auth-sub">Use o email e a senha da sua conta do setor.</p>
         <div class="mb-3">
           <label for="login-email" class="form-label">Email:</label>
           <input type="email" class="form-control" id="login-email" placeholder="seu@email.com" required>
@@ -34,11 +43,11 @@
         <div class="mb-2 position-relative">
           <label for="login-senha" class="form-label">Senha:</label>
           <input type="password" class="form-control" id="login-senha" placeholder="••••••••" required>
-          <button type="button" class="toggle-password" tabindex="-1" data-target="login-senha" aria-label="Mostrar senha">👁️</button>
+          <button type="button" class="toggle-password" tabindex="-1" data-target="login-senha" aria-label="Mostrar senha"><i class="bi bi-eye"></i></button>
           <div class="invalid-feedback">A senha deve ter pelo menos 6 caracteres</div>
         </div>
         <div class="d-flex justify-content-end mb-2">
-          <a href="#" id="show-forgot-password" class="link-success link-underline-opacity-0" style="font-size:0.97rem;">Esqueceu sua senha?</a>
+          <a href="#" id="show-forgot-password" class="link-success link-underline-opacity-0" >Esqueceu sua senha?</a>
         </div>
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" id="manter-conectado">
@@ -57,7 +66,8 @@
       </form>
       <!-- Cadastro Form -->
       <form id="cadastro-form" style="display:none;">
-        <h2 class="text-center mb-4" style="color:var(--verde-escuro);font-weight:700;">Cadastro</h2>
+        <h2 class="auth-title">Criar conta</h2>
+        <p class="auth-sub">Preencha seus dados e o código secreto do setor.</p>
         <div class="mb-3">
           <label for="cadastro-nome" class="form-label">Nome Completo:</label>
           <input type="text" class="form-control" id="cadastro-nome" placeholder="Seu nome completo" required>
@@ -76,13 +86,13 @@
         <div class="mb-3 position-relative">
           <label for="cadastro-senha" class="form-label">Senha (min. 6 caracteres):</label>
           <input type="password" class="form-control" id="cadastro-senha" placeholder="••••••••" required>
-          <button type="button" class="toggle-password" tabindex="-1" data-target="cadastro-senha">👁️</button>
+          <button type="button" class="toggle-password" tabindex="-1" data-target="cadastro-senha" aria-label="Mostrar senha"><i class="bi bi-eye"></i></button>
           <div class="invalid-feedback">A senha deve ter pelo menos 6 caracteres</div>
         </div>
         <div class="mb-3 position-relative">
           <label for="cadastro-codigo" class="form-label">Código Secreto:</label>
           <input type="password" class="form-control" id="cadastro-codigo" placeholder="Digite o código" required>
-          <button type="button" class="toggle-password" tabindex="-1" data-target="cadastro-codigo">👁️</button>
+          <button type="button" class="toggle-password" tabindex="-1" data-target="cadastro-codigo" aria-label="Mostrar código"><i class="bi bi-eye"></i></button>
           <div class="invalid-feedback">Código secreto inválido</div>
         </div>
         <button type="button" class="btn btn-success w-100 mb-2" id="cadastro-button">
@@ -95,7 +105,8 @@
       </form>
       <!-- Recuperação de Senha -->
       <form id="forgot-password-form" style="display:none;">
-        <h2 class="text-center mb-4" style="color:var(--verde-escuro);font-weight:700;">Recuperar Senha</h2>
+        <h2 class="auth-title">Recuperar senha</h2>
+        <p class="auth-sub">Enviaremos um link para criar uma nova senha.</p>
         <div class="mb-3">
           <label for="forgot-email" class="form-label">Email:</label>
           <input type="email" class="form-control" id="forgot-email" placeholder="seu@email.com" required>
@@ -109,6 +120,7 @@
         </div>
       </form>
     </div>
+  </div>
   <button id="installBtn" class="btn btn-success position-fixed">
     📲 Instalar App
   </button>
@@ -121,6 +133,26 @@
     </div>
   </div>
   
+  <!-- Placa decorativa do painel lateral -->
+  <script>
+    (function () {
+      var el = document.getElementById('auth-plate');
+      if (!el) return;
+      var f = document.createDocumentFragment();
+      for (var r = 0; r < 8; r++) {
+        var t = [10, 7, 12, 5, 9, 11, 3, 8][r];
+        for (var c = 0; c < 12; c++) {
+          var w = document.createElement('span');
+          var forca = Math.max(0, 1 - c / t);
+          w.style.setProperty('--fill', (0.1 + forca * 0.9).toFixed(2));
+          w.style.setProperty('--d', (c * 55 + r * 18) + 'ms');
+          f.appendChild(w);
+        }
+      }
+      el.appendChild(f);
+    })();
+  </script>
+
   <!-- Scripts -->
   <script src="assets/js/pages/index.js" type="module"></script>
 </body>
