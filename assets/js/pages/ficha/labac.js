@@ -1,6 +1,7 @@
 import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { getDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { app, auth, db } from "../../../js/firebase.js";
+import { gerarFormularioCobrancaFicha } from "../../utils/formularioCobranca.js";
 
 // Firebase via módulo compartilhado
 
@@ -119,6 +120,27 @@ document.addEventListener('DOMContentLoaded', function () {
       } catch (err) {
         console.error('Erro ao gerar preview LABAC:', err);
         alert('Erro ao gerar preview. Veja console para detalhes.');
+      }
+    });
+  }
+
+  // Ligar botão de formulário de cobrança
+  const cobrancaBtn = document.getElementById('formularioCobrancaLabac');
+  if (cobrancaBtn) {
+    cobrancaBtn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      const originalHtml = cobrancaBtn.innerHTML;
+      try {
+        cobrancaBtn.disabled = true;
+        cobrancaBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Gerando...';
+        const fichaData = collectLabacFormData();
+        await gerarFormularioCobrancaFicha('labac', fichaData);
+      } catch (err) {
+        console.error('Erro ao gerar formulário de cobrança LABAC:', err);
+        alert('Erro ao gerar formulário de cobrança: ' + err.message);
+      } finally {
+        cobrancaBtn.disabled = false;
+        cobrancaBtn.innerHTML = originalHtml;
       }
     });
   }
