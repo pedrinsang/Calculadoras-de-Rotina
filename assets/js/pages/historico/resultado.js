@@ -5,6 +5,7 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-
 import { db } from "../../firebase.js";
 import { mostrarFeedback } from "./historico.js";
 import { gerarDocx } from "./baixarDoc.js";
+import { paraExibir } from "../../utils/escapar.js";
 
 let modalAtual = null;
 
@@ -36,7 +37,9 @@ window.mostrarResultados = async (id) => {
         
         if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada no histórico");
         
-        const tarefa = tarefaSnap.data();
+        // Original vai para o Word; a cópia escapada monta a tela
+        const tarefaOriginal = tarefaSnap.data();
+        const tarefa = paraExibir(tarefaOriginal);
         
         debugLog("🔍 [resultado.js] DEBUG - Dados da tarefa:", {
             id: tarefa.id,
@@ -134,7 +137,7 @@ window.mostrarResultados = async (id) => {
             const btnBaixar = modal.querySelector("#baixar-docx");
             if (btnBaixar) {
                 btnBaixar.onclick = () => {
-                    gerarDocx(tarefa);
+                    gerarDocx(tarefaOriginal);
                 };
             }
             

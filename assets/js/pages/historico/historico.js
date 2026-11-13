@@ -20,6 +20,7 @@ import {
 
 // Imports locais
 import { gerarDocx } from './baixarDoc.js';
+import { paraExibir } from '../../utils/escapar.js';
 import { gerarFormularioCobrancaWord } from "../../utils/formularioCobranca.js";
 
 // Prevenir erro da API do Google
@@ -269,7 +270,8 @@ async function carregarHistorico() {
             // Armazena todas as tarefas para busca local
             todasTarefas = [];
             querySnapshot.forEach((doc) => {
-                const tarefa = doc.data();
+                // Cópia com textos escapados (a lista só é usada para exibir e buscar)
+                const tarefa = paraExibir(doc.data());
                 tarefa.docId = doc.id;
                 todasTarefas.push(tarefa);
             });
@@ -584,7 +586,7 @@ window.mostrarDetalhes = async (id) => {
             return;
         }
 
-        const tarefa = tarefaSnap.data();
+        const tarefa = paraExibir(tarefaSnap.data()); // só para exibir no modal
 
         // Use criadoEm como data de recebimento
         const dataRecebimento = tarefa.criadoEm?.toDate

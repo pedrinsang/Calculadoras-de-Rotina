@@ -1,6 +1,7 @@
 import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { getDoc, doc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { calcularDataPrazo, obterPrazoDiasTeste } from "../utils/prazosMural.js";
+import { escaparHTML } from "../utils/escapar.js";
 import { app, auth, db } from "../firebase.js";
 
 // Firebase já inicializado via módulo compartilhado
@@ -131,9 +132,9 @@ async function carregarResumoMural() {
     const dia = dt => dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     if (prox) {
       if (maisAtrasada) {
-        prox.innerHTML = `<i class="bi bi-exclamation-octagon"></i><span>Mais atrasada: <strong>${maisAtrasada.id}</strong> · venceu ${dia(maisAtrasada.dataPrazo)}</span><i class="bi bi-arrow-right"></i>`;
+        prox.innerHTML = `<i class="bi bi-exclamation-octagon"></i><span>Mais atrasada: <strong>${escaparHTML(maisAtrasada.id)}</strong> · venceu ${dia(maisAtrasada.dataPrazo)}</span><i class="bi bi-arrow-right"></i>`;
       } else if (proxima) {
-        prox.innerHTML = `<i class="bi bi-calendar-check"></i><span>Próximo prazo: <strong>${proxima.id}</strong> · ${dia(proxima.dataPrazo)}</span><i class="bi bi-arrow-right"></i>`;
+        prox.innerHTML = `<i class="bi bi-calendar-check"></i><span>Próximo prazo: <strong>${escaparHTML(proxima.id)}</strong> · ${dia(proxima.dataPrazo)}</span><i class="bi bi-arrow-right"></i>`;
       } else {
         prox.innerHTML = `<i class="bi bi-check2-circle"></i><span>Tudo em dia por aqui</span><i class="bi bi-arrow-right"></i>`;
       }

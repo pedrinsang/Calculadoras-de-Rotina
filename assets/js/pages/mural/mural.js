@@ -49,6 +49,7 @@ onAuthStateChanged(auth, async (user) => {
 
 // Import functions from shared ui utils to avoid circular imports
 import { mostrarLoading, esconderLoading, mostrarFeedback } from './ui-utils.js';
+import { escaparHTML, paraExibir } from '../../utils/escapar.js';
 import { adicionarDiasUteis, adicionarDiasCorridos, parseDateInputLocal, obterPrazoDiasTeste } from '../../utils/prazosMural.js';
 
 // Prazos (dias úteis/corridos por tipo de teste) ficam em utils/prazosMural.js,
@@ -769,7 +770,7 @@ function atualizarCabecalho(secao) {
                 : l.classList.contains('tarefa-urgente') ? 'urg' : 'ok';
             const anel = l.classList.contains('em-progresso') ? ' poco--and' : '';
             const id = l.querySelector('.tarefa-id')?.firstChild?.textContent?.trim() || '';
-            return `<i class="poco poco--${estado}${anel}" style="--d:${i * 35}ms" title="${id}"></i>`;
+            return `<i class="poco poco--${estado}${anel}" style="--d:${i * 35}ms" title="${escaparHTML(id)}"></i>`;
         }).join('') + (n > MAX ? `<span class="pocos-mais">+${n - MAX}</span>` : '');
     }
 }
@@ -838,11 +839,18 @@ function atualizarResumo(carregando) {
 window.atualizarResumo = atualizarResumo;
 
 // Sem argumentos, usa os filtros que estão na tela (assim concluir/excluir não perde o filtro)
+// Última leitura da coleção "tarefas" (mais recentes primeiro). Trocar filtro ou ordem
+// só refaz a tela com ela; o Firestore é lido de novo ao abrir a página e depois de
+// criar, editar, concluir ou excluir (essas ações chamam carregarTarefas() sem opções).
+let ultimaLeitura = null;
+
 async function carregarTarefas(
     filtro = document.getElementById("filtro-tipo")?.value || "Todos",
-    ordem = document.getElementById("filtro-ordem")?.value || "prazo"
+    ordem = document.getElementById("filtro-ordem")?.value || "prazo",
+    { usarCache = false } = {}
 ) {
-    mostrarLoading();
+    const doCache = usarCache && ultimaLeitura !== null;
+    if (!doCache) mostrarLoading();
     try {
         // Completa prazos de tarefas antigas (só na primeira carga da página)
         await atualizarPrazosExistentes();
@@ -854,8 +862,8 @@ async function carregarTarefas(
             return;
         }
 
-        // Esqueleto de cartões enquanto carrega
-        muralList.innerHTML = `
+        // Esqueleto de cartões enquanto carrega (não precisa quando vem da memória)
+        if (!doCache) muralList.innerHTML = `
             <div class="grupo-skeleton" aria-hidden="true">
               <span class="sk-head"></span>
               ${'<span class="sk-row"></span>'.repeat(4)}
@@ -876,41 +884,12 @@ async function carregarTarefas(
             return;
         }
 
-        // Lógica de filtro atualizada para nova estrutura
-        let q;
-        if (filtro === "Todos") {
-            q = query(
-                collection(db, "tarefas"),
-                orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
-            );
-        } else if (filtro === "SN") {
-            // Para SN, incluímos tanto os novos (tipo="SN") quanto os antigos (tipo específico de SN)
-            q = query(
-                collection(db, "tarefas"),
-                orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
-            );
-        } else if (filtro === "ELISA") {
-            // Para ELISA, incluímos tanto os novos (tipo="ELISA") quanto os antigos (tipo específico de ELISA)
-            q = query(
-                collection(db, "tarefas"),
-                orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
-            );
-        } else if (filtro === "MOLECULAR") {
-            // Para MOLECULAR, incluímos tanto os novos (tipo="MOLECULAR") quanto os antigos (tipo="PCR")
-            q = query(
-                collection(db, "tarefas"),
-                orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
-            );
-        } else {
-            // Para outros tipos, filtramos normalmente
-            q = query(
-                collection(db, "tarefas"),
-                where("tipo", "==", filtro),
-                orderBy("criadoEm", ordem === "recentes" ? "desc" : "asc")
-            );
+        // Uma leitura de todas as tarefas; o filtro por teste é feito abaixo, na tela
+        if (!doCache) {
+            const snap = await getDocs(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")));
+            ultimaLeitura = snap.docs;
         }
-
-        const querySnapshot = await getDocs(q);
+        const listaDocs = ordem === "recentes" ? ultimaLeitura : [...ultimaLeitura].reverse();
 
         const vazioHtml = estadoVazio(
             'bi-clipboard2-check',
@@ -918,7 +897,7 @@ async function carregarTarefas(
             'Quando chegar uma amostra, toque em “Nova tarefa” para registrar.'
         );
 
-        if (querySnapshot.empty) {
+        if (!listaDocs.length) {
             muralList.innerHTML = vazioHtml;
             atualizarResumo({ total: 0, vencidas: 0, andamento: 0 });
             esconderLoading();
@@ -929,8 +908,9 @@ async function carregarTarefas(
         const resumo = { total: 0, vencidas: 0, andamento: 0 };
         const porCategoria = {}; // categoria -> [{ el, prazo, ordem, vencida }]
         let ordemChegada = 0;
-        querySnapshot.forEach((doc) => {
-            const tarefa = doc.data();
+        listaDocs.forEach((doc) => {
+            // Cópia com textos escapados: só para montar a tela
+            const tarefa = paraExibir(doc.data());
 
             // Aplicar filtro manual para SN, ELISA e MOLECULAR que incluem dados antigos
             let incluirTarefa = true;
@@ -1280,6 +1260,7 @@ window.marcarProgresso = async (id) => {
             status: novoStatus,
             atualizadoEm: Timestamp.now()
         });
+        ultimaLeitura = null; // a próxima troca de filtro relê, já com o status novo
         
         mostrarFeedback(`Tarefa atualizada com sucesso!`, "success");
     } catch (error) {
@@ -1575,7 +1556,7 @@ window.mostrarDetalhes = async (id) => {
 
         if (!docSnap.exists()) throw new Error("Tarefa não encontrada");
         
-        const tarefa = docSnap.data();
+        const tarefa = paraExibir(docSnap.data()); // só para exibir no modal
         let siglaUsuario = "N/A";
         if (tarefa.siglaResponsavel && tarefa.siglaResponsavel !== "N/A") {
             siglaUsuario = tarefa.siglaResponsavel;
@@ -1585,7 +1566,7 @@ window.mostrarDetalhes = async (id) => {
                 const userRef = doc(db, "usuarios", tarefa.criadoPor);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
-                    siglaUsuario = userSnap.data().sigla || "N/A";
+                    siglaUsuario = escaparHTML(userSnap.data().sigla || "N/A");
                 }
             } catch (e) {
                 // Se der erro, mantém "N/A"
@@ -1880,7 +1861,7 @@ document.addEventListener("DOMContentLoaded", () => {
             filtroTipoSelect.addEventListener('change', function() {
                 const filtroTipo = this.value;
                 const filtroOrdem = document.getElementById("filtro-ordem").value;
-                carregarTarefas(filtroTipo, filtroOrdem);
+                carregarTarefas(filtroTipo, filtroOrdem, { usarCache: true });
             });
         }
 
@@ -1888,7 +1869,7 @@ document.addEventListener("DOMContentLoaded", () => {
             filtroOrdemSelect.addEventListener('change', function() {
                 const filtroTipo = document.getElementById("filtro-tipo").value;
                 const filtroOrdem = this.value;
-                carregarTarefas(filtroTipo, filtroOrdem);
+                carregarTarefas(filtroTipo, filtroOrdem, { usarCache: true });
             });
         }
         
