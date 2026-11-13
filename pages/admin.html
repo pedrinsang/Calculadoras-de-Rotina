@@ -50,6 +50,11 @@
                     <i class="bi bi-gear me-1"></i>Configurações
                 </button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#arquivo-historico">
+                    <i class="bi bi-archive me-1"></i>Arquivo anual
+                </button>
+            </li>
             <!-- Nova aba para Migração de Usuários -->
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#migracao-usuarios">
@@ -84,6 +89,15 @@
                             <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Arquivo anual do Histórico -->
+            <div class="tab-pane fade" id="arquivo-historico">
+                <div class="config-section">
+                    <h4><i class="bi bi-archive me-2"></i>Arquivo anual do Histórico</h4>
+                    <p class="text-muted">Uma vez por ano, baixe em Excel as tarefas concluídas do ano mais antigo e retire-as do app.</p>
+                    <div id="arquivo-historico-conteudo"></div>
                 </div>
             </div>
 

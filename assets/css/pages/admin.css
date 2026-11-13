@@ -815,3 +815,45 @@
 /* ============================================================================
    FIM DO ARQUIVO - ADMIN.CSS
    ============================================================================ */
+
+/* Arquivo anual do Histórico */
+.arquivo-status {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  margin-bottom: 1rem;
+}
+
+.arquivo-status > i {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.arquivo-status p {
+  margin: 0.2rem 0 0;
+  font-size: 0.92rem;
+}
+
+.arquivo-ok       { background: #e8f3ec; color: #14532d; }
+.arquivo-pendente { background: #fdf3dc; color: #6b4700; }
+
+.arquivo-passos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-left: 1.3rem;
+  margin: 0;
+}
+
+.arquivo-passos li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.arquivo-passos small {
+  color: #5b6b62;
+}

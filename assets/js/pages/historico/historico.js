@@ -12,7 +12,6 @@ import {
     doc,
     getDoc,
     addDoc,
-    writeBatch,
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { 
     getAuth,
@@ -101,134 +100,9 @@ async function executarComRetry(operacao, maxTentativas = 3, delay = 1000) {
 // Variável para armazenar todas as tarefas
 let todasTarefas = [];
 
-// ============================================================================
-// SISTEMA DE EXCLUSÃO AUTOMÁTICA
-// ============================================================================
-
-// Configurações da exclusão automática
-const EXCLUSAO_CONFIG = {
-    TEMPO_RETENCAO: 365, // dias (1 ano)
-    CHAVE_ULTIMA_LIMPEZA: 'historico_ultima_limpeza',
-    INTERVALO_VERIFICACAO: 60 * 60 * 1000, // verifica a cada hora
-    INTERVALO_ENTRE_LIMPEZAS: 24 * 60 * 60 * 1000, // executa no máximo uma vez por dia
-    BATCH_SIZE: 500 // Máximo de documentos por batch (limite do Firestore)
-};
-
-let limpezaAutomaticaIntervalId = null;
-let limpezaEmAndamento = false;
-
-// Verificar se precisa executar limpeza
-function precisaExecutarLimpeza() {
-    try {
-        const ultimaLimpeza = localStorage.getItem(EXCLUSAO_CONFIG.CHAVE_ULTIMA_LIMPEZA);
-        
-        if (!ultimaLimpeza) {
-            return true;
-        }
-        
-        const timestampUltimaLimpeza = parseInt(ultimaLimpeza, 10);
-        if (!Number.isFinite(timestampUltimaLimpeza)) return true;
-        
-        return Date.now() - timestampUltimaLimpeza >= EXCLUSAO_CONFIG.INTERVALO_ENTRE_LIMPEZAS;
-        
-    } catch (error) {
-        console.warn('Erro ao verificar última limpeza do histórico:', error);
-        return true; // Em caso de erro, executar limpeza
-    }
-}
-
-// Registrar execução da limpeza
-function registrarLimpeza() {
-    localStorage.setItem(EXCLUSAO_CONFIG.CHAVE_ULTIMA_LIMPEZA, Date.now().toString());
-}
-
-// Excluir tarefas antigas com melhor performance e proteção
-async function excluirTarefasAntigas() {
-    if (limpezaEmAndamento) return 0;
-    limpezaEmAndamento = true;
-
-    return await executarComRetry(async () => {
-        const user = auth.currentUser;
-        if (!user) throw new Error("Usuário não autenticado para limpeza do histórico");
-
-        // Calcular data limite usando a configuração de retenção
-        const dataLimite = new Date();
-        dataLimite.setDate(dataLimite.getDate() - EXCLUSAO_CONFIG.TEMPO_RETENCAO);
-        
-        // Buscar tarefas antigas
-        const q = query(
-            collection(db, "historico"),
-            where("dataConclusao", "<", Timestamp.fromDate(dataLimite)),
-            orderBy("dataConclusao", "asc")
-        );
-
-        const querySnapshot = await getDocs(q);
-        
-        if (querySnapshot.empty) {
-            registrarLimpeza();
-            return 0;
-        }
-        
-        const totalDocumentos = querySnapshot.size;
-        
-        // Processar em batches para evitar timeout
-        let documentosExcluidos = 0;
-        const docs = querySnapshot.docs;
-        
-        for (let i = 0; i < docs.length; i += EXCLUSAO_CONFIG.BATCH_SIZE) {
-            const batch = writeBatch(db);
-            const batchDocs = docs.slice(i, i + EXCLUSAO_CONFIG.BATCH_SIZE);
-            
-            // Adicionar exclusões ao batch
-            batchDocs.forEach(docSnapshot => {
-                batch.delete(docSnapshot.ref);
-            });
-            
-            // Executar batch
-            await batch.commit();
-            documentosExcluidos += batchDocs.length;
-            
-            // Pequena pausa entre batches para não sobrecarregar
-            if (i + EXCLUSAO_CONFIG.BATCH_SIZE < docs.length) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-        }
-        
-        registrarLimpeza();
-        
-        // Mostrar feedback para o usuário se houver documentos excluídos
-        if (documentosExcluidos > 0) {
-            mostrarFeedback(
-                `Limpeza automática: ${documentosExcluidos} tarefa${documentosExcluidos > 1 ? 's' : ''} antiga${documentosExcluidos > 1 ? 's' : ''} removida${documentosExcluidos > 1 ? 's' : ''} do sistema`,
-                "info"
-            );
-        }
-        
-        return documentosExcluidos;
-        
-    }, 3, 2000).catch(error => {
-        console.error("Erro na exclusão automática do histórico:", error);
-        return 0;
-    }).finally(() => {
-        limpezaEmAndamento = false;
-    });
-}
-
-async function executarLimpezaSeNecessaria() {
-    if (!precisaExecutarLimpeza()) return 0;
-    return excluirTarefasAntigas();
-}
-
-// Configurar exclusão automática periódica
-function configurarLimpezaAutomatica() {
-    if (limpezaAutomaticaIntervalId) {
-        clearInterval(limpezaAutomaticaIntervalId);
-    }
-    
-    limpezaAutomaticaIntervalId = setInterval(() => {
-        executarLimpezaSeNecessaria();
-    }, EXCLUSAO_CONFIG.INTERVALO_VERIFICACAO);
-}
+// A antiga exclusão automática (registros com mais de 1 ano, apagados pelo navegador de
+// qualquer usuário) foi substituída pelo "Arquivo anual" no painel de Administração:
+// o admin baixa o Excel do ano mais antigo e só então exclui (utils/arquivoHistorico.js).
 
 // ============================================================================
 // FUNÇÕES PRINCIPAIS
@@ -935,9 +809,6 @@ function inicializarAplicacao() {
                     }
                 }
 
-                configurarLimpezaAutomatica();
-                await executarLimpezaSeNecessaria();
-                
                 // Se chegou até aqui, usuário está ativo - carregar histórico
                 await carregarHistorico();
             });

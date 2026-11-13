@@ -22,6 +22,7 @@ import {
     orderBy
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { app, auth, db } from "../firebase.js";
+import { iniciarArquivoHistorico } from "../utils/arquivoHistorico.js";
 
 // Firebase centralizado
 
@@ -94,7 +95,8 @@ async function inicializarPainelAdmin() {
         await Promise.all([
             carregarUsuariosPendentes(),
             carregarUsuariosAtivos(),
-            carregarConfiguracoes()
+            carregarConfiguracoes(),
+            iniciarArquivoHistorico(document.getElementById('arquivo-historico-conteudo'))
         ]);
         console.log("✅ Painel administrativo carregado com sucesso");
     } catch (error) {
