@@ -81,20 +81,20 @@
 /* Resultados (VN + laudo) em destaque: caixa tracejada verde com cantos pretos */
 .ficha-sv .caixa-resultados {
   position: relative;
-  border: 2px dashed #1f7a55;
+  border: 4px dashed #1f7a55;
   padding: calc(1 * var(--mm)) calc(4 * var(--mm)) calc(1 * var(--mm));
   margin: calc(5 * var(--mm)) 0 calc(3 * var(--mm));
 }
 .ficha-sv .caixa-resultados .canto {
   position: absolute;
-  width: calc(4 * var(--mm));
-  height: calc(4 * var(--mm));
+  width: calc(5 * var(--mm));
+  height: calc(5 * var(--mm));
   border: 0 solid #000;
 }
-.ficha-sv .caixa-resultados .canto-se { top: -2px; left: -2px; border-top-width: 3px; border-left-width: 3px; }
-.ficha-sv .caixa-resultados .canto-sd { top: -2px; right: -2px; border-top-width: 3px; border-right-width: 3px; }
-.ficha-sv .caixa-resultados .canto-ie { bottom: -2px; left: -2px; border-bottom-width: 3px; border-left-width: 3px; }
-.ficha-sv .caixa-resultados .canto-id { bottom: -2px; right: -2px; border-bottom-width: 3px; border-right-width: 3px; }
+.ficha-sv .caixa-resultados .canto-se { top: -4px; left: -4px; border-top-width: 6px; border-left-width: 6px; }
+.ficha-sv .caixa-resultados .canto-sd { top: -4px; right: -4px; border-top-width: 6px; border-right-width: 6px; }
+.ficha-sv .caixa-resultados .canto-ie { bottom: -4px; left: -4px; border-bottom-width: 6px; border-left-width: 6px; }
+.ficha-sv .caixa-resultados .canto-id { bottom: -4px; right: -4px; border-bottom-width: 6px; border-right-width: 6px; }
 .ficha-sv .caixa-resultados .titulo-secao:first-of-type { margin-top: calc(2 * var(--mm)); }
 .ficha-sv .res-pos, .ficha-sv .tabela td.res-pos { font-weight: bold; }
 
