@@ -1,127 +1,131 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="pragma" content="no-cache">
   <meta http-equiv="expires" content="0">
   <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#1b5e20">
+  <meta name="theme-color" content="#0f3d24">
   <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="icon" href="./icons/favicon.ico" type="image/x-icon">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login e Cadastro | Setor de Virologia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Entrar | Virologia UFSM</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/tema.css">
   <link rel="stylesheet" href="assets/css/pages/index.css">
 </head>
-<body>
-  
-    <div class="card mx-auto p-4">
-      <img src="./assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM" class="logo img-fluid">
-      <div id="alert-message" class="alert d-none"></div>
-      <!-- Login Form -->
-      <form id="login-form" autocomplete="on">
-        <h2 class="text-center mb-4" style="color:var(--verde-escuro);font-weight:700;font-size:1.2rem;">Login</h2>
-        <div class="mb-3">
-          <label for="login-email" class="form-label">Email:</label>
-          <input type="email" class="form-control" id="login-email" placeholder="seu@email.com" required>
-          <div class="invalid-feedback">Por favor, insira um email válido</div>
+<body class="vu-app vu-entrar-pagina">
+  <div class="vu-aurora" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+  <main class="vu-pc-entrar-cartao">
+    <header>
+      <img src="./assets/images/logo-sv.png" alt="Logo do Setor de Virologia UFSM">
+      <h1>Virologia UFSM</h1>
+      <p>Entre com sua conta do setor</p>
+    </header>
+
+    <div id="alert-message" class="alert d-none" role="alert"></div>
+
+    <!-- Entrar -->
+    <form id="login-form" autocomplete="on">
+      <div class="vu-campo">
+        <label for="login-email">Email</label>
+        <input type="email" class="form-control" id="login-email" placeholder="seu@email.com" autocomplete="email" required>
+        <div class="invalid-feedback">Digite um email válido, por exemplo nome@ufsm.br</div>
+      </div>
+      <div class="vu-campo">
+        <label for="login-senha">Senha</label>
+        <div class="vu-senha">
+          <input type="password" class="form-control" id="login-senha" autocomplete="current-password" required>
+          <button type="button" class="toggle-password vu-btn vu-btn-fantasma" data-target="login-senha">Mostrar</button>
+          <div class="invalid-feedback">A senha tem pelo menos 6 caracteres</div>
         </div>
-        <div class="mb-2 position-relative">
-          <label for="login-senha" class="form-label">Senha:</label>
-          <input type="password" class="form-control" id="login-senha" placeholder="••••••••" required>
-          <button type="button" class="toggle-password" tabindex="-1" data-target="login-senha" aria-label="Mostrar senha">👁️</button>
-          <div class="invalid-feedback">A senha deve ter pelo menos 6 caracteres</div>
+      </div>
+      <label class="vu-interruptor">
+        <input type="checkbox" id="manter-conectado">
+        <span class="vu-interruptor-trilho"></span>
+        <span>Continuar conectado</span>
+      </label>
+      <button type="button" class="vu-btn vu-btn-principal vu-btn-grande vu-btn-largo" id="login-button">
+        <span id="login-button-text">Entrar</span>
+      </button>
+      <a href="#" id="show-forgot-password" class="vu-link">Esqueci minha senha</a>
+      <div class="vu-separador">ou</div>
+      <a href="#" id="show-cadastro" class="vu-btn vu-btn-largo"><i class="bi bi-person-plus vu-ico"></i> Criar conta</a>
+    </form>
+
+    <!-- Criar conta -->
+    <form id="cadastro-form" style="display:none;">
+      <h2>Criar conta</h2>
+      <div class="vu-campo">
+        <label for="cadastro-nome">Nome completo</label>
+        <input type="text" class="form-control" id="cadastro-nome" autocomplete="name" required>
+        <div class="invalid-feedback">Escreva seu nome completo</div>
+      </div>
+      <div class="vu-campo">
+        <label for="cadastro-sigla">Sigla</label>
+        <p class="vu-dica">3 letras. Aparece nas suas tarefas do Mural.</p>
+        <input type="text" class="form-control" id="cadastro-sigla" placeholder="ABC" maxlength="3" required style="font-family:var(--font-numeros);text-transform:uppercase">
+        <div class="invalid-feedback">Use exatamente 3 letras</div>
+      </div>
+      <div class="vu-campo">
+        <label for="cadastro-email">Email</label>
+        <input type="email" class="form-control" id="cadastro-email" placeholder="seu@email.com" autocomplete="email" required>
+        <div class="invalid-feedback">Digite um email válido, por exemplo nome@ufsm.br</div>
+      </div>
+      <div class="vu-campo">
+        <label for="cadastro-senha">Senha</label>
+        <div class="vu-senha">
+          <input type="password" class="form-control" id="cadastro-senha" placeholder="Mínimo de 6 caracteres" autocomplete="new-password" required>
+          <button type="button" class="toggle-password vu-btn vu-btn-fantasma" data-target="cadastro-senha">Mostrar</button>
+          <div class="invalid-feedback">Use pelo menos 6 caracteres</div>
         </div>
-        <div class="d-flex justify-content-end mb-2">
-          <a href="#" id="show-forgot-password" class="link-success link-underline-opacity-0" style="font-size:0.97rem;">Esqueceu sua senha?</a>
+      </div>
+      <div class="vu-campo">
+        <label for="cadastro-codigo">Código secreto</label>
+        <p class="vu-dica">Peça ao responsável do setor.</p>
+        <div class="vu-senha">
+          <input type="password" class="form-control" id="cadastro-codigo" required>
+          <button type="button" class="toggle-password vu-btn vu-btn-fantasma" data-target="cadastro-codigo">Mostrar</button>
+          <div class="invalid-feedback">Código incorreto. Confira com o responsável.</div>
         </div>
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" id="manter-conectado">
-          <label class="form-check-label" for="manter-conectado">Permanecer conectado</label>
-        </div>
-        <button type="button" class="btn btn-success w-100 mb-2" id="login-button">
-          <span id="login-button-text">Entrar</span>
-        </button>
-        <div class="text-center switch-form mb-2">
-          <span>Não tem uma conta? </span>
-          <a href="#" id="show-cadastro" class="link-success fw-bold">Cadastre-se</a>
-        </div>
-        <div class="creditos">
-          Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares.
-        </div>
-      </form>
-      <!-- Cadastro Form -->
-      <form id="cadastro-form" style="display:none;">
-        <h2 class="text-center mb-4" style="color:var(--verde-escuro);font-weight:700;">Cadastro</h2>
-        <div class="mb-3">
-          <label for="cadastro-nome" class="form-label">Nome Completo:</label>
-          <input type="text" class="form-control" id="cadastro-nome" placeholder="Seu nome completo" required>
-          <div class="invalid-feedback">Por favor, insira seu nome completo</div>
-        </div>
-        <div class="mb-3">
-          <label for="cadastro-sigla" class="form-label">Sigla (3 letras):</label>
-          <input type="text" class="form-control" id="cadastro-sigla" placeholder="ABC" maxlength="3" required>
-          <div class="invalid-feedback">Por favor, insira 3 letras</div>
-        </div>
-        <div class="mb-3">
-          <label for="cadastro-email" class="form-label">Email:</label>
-          <input type="email" class="form-control" id="cadastro-email" placeholder="seu@email.com" required>
-          <div class="invalid-feedback">Por favor, insira um email válido</div>
-        </div>
-        <div class="mb-3 position-relative">
-          <label for="cadastro-senha" class="form-label">Senha (min. 6 caracteres):</label>
-          <input type="password" class="form-control" id="cadastro-senha" placeholder="••••••••" required>
-          <button type="button" class="toggle-password" tabindex="-1" data-target="cadastro-senha">👁️</button>
-          <div class="invalid-feedback">A senha deve ter pelo menos 6 caracteres</div>
-        </div>
-        <div class="mb-3 position-relative">
-          <label for="cadastro-codigo" class="form-label">Código Secreto:</label>
-          <input type="password" class="form-control" id="cadastro-codigo" placeholder="Digite o código" required>
-          <button type="button" class="toggle-password" tabindex="-1" data-target="cadastro-codigo">👁️</button>
-          <div class="invalid-feedback">Código secreto inválido</div>
-        </div>
-        <button type="button" class="btn btn-success w-100 mb-2" id="cadastro-button">
-          <span id="cadastro-button-text">Cadastrar</span>
-        </button>
-        <div class="text-center switch-form mb-2">
-          <span>Já tem uma conta? </span>
-          <a href="#" id="show-login" class="link-success fw-bold">Faça login</a>
-        </div>
-      </form>
-      <!-- Recuperação de Senha -->
-      <form id="forgot-password-form" style="display:none;">
-        <h2 class="text-center mb-4" style="color:var(--verde-escuro);font-weight:700;">Recuperar Senha</h2>
-        <div class="mb-3">
-          <label for="forgot-email" class="form-label">Email:</label>
-          <input type="email" class="form-control" id="forgot-email" placeholder="seu@email.com" required>
-          <div class="invalid-feedback">Por favor, insira um email válido</div>
-        </div>
-        <button type="button" class="btn btn-success w-100 mb-2" id="send-reset-button">
-          <span id="send-reset-button-text">Enviar Link de Recuperação</span>
-        </button>
-        <div class="text-center switch-form mb-2">
-          <a href="#" id="show-login-from-forgot" class="link-success fw-bold">Voltar para o login</a>
-        </div>
-      </form>
-    </div>
-  <button id="installBtn" class="btn btn-success position-fixed">
-    📲 Instalar App
+      </div>
+      <button type="button" class="vu-btn vu-btn-principal vu-btn-grande vu-btn-largo" id="cadastro-button">
+        <span id="cadastro-button-text">Cadastrar</span>
+      </button>
+      <a href="#" id="show-login" class="vu-link">Já tenho conta: entrar</a>
+    </form>
+
+    <!-- Recuperar senha -->
+    <form id="forgot-password-form" style="display:none;">
+      <h2>Recuperar senha</h2>
+      <p class="vu-dica" style="text-align:center">Enviaremos um link para você criar uma senha nova.</p>
+      <div class="vu-campo">
+        <label for="forgot-email">Email</label>
+        <input type="email" class="form-control" id="forgot-email" placeholder="seu@email.com" autocomplete="email" required>
+        <div class="invalid-feedback">Digite um email válido, por exemplo nome@ufsm.br</div>
+      </div>
+      <button type="button" class="vu-btn vu-btn-principal vu-btn-grande vu-btn-largo" id="send-reset-button">
+        <span id="send-reset-button-text">Enviar Link de Recuperação</span>
+      </button>
+      <a href="#" id="show-login-from-forgot" class="vu-link">Voltar para entrar</a>
+    </form>
+  </main>
+
+  <p class="vu-creditos">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</p>
+
+  <button id="installBtn" class="vu-btn vu-btn-lima">
+    <i class="bi bi-download vu-ico"></i> Instalar o app
   </button>
   <div id="iosInstallInstructions">
-    <div class="d-flex align-items-center gap-2">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0;">
-        <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.35C15.11 18.56 15.08 18.78 15.08 19C15.08 20.61 16.39 21.92 18 21.92C19.61 21.92 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="white"/>
-      </svg>
-      <div>Toque no <strong>menu Compartilhar</strong> e selecione <strong>"Adicionar à Tela de Início"</strong></div>
-    </div>
+    <i class="bi bi-box-arrow-up vu-ico"></i>
+    <div>Toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de Início</strong></div>
   </div>
-  
-  <!-- Scripts -->
+
   <script src="assets/js/pages/index.js" type="module"></script>
 </body>
 </html>

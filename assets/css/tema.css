@@ -1,0 +1,559 @@
+/* Tema Virologia UFSM — gerado do design system (tokens do tema claro + componentes vu-*).
+   Carregue só em páginas já redesenhadas: ele define o body. */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Atkinson+Hyperlegible+Mono:wght@400;700&display=swap');
+
+:root {
+  --fundo: #f3f6ee;
+  --cartao: #ffffff;
+  --cartao-suave: #eaf0e3;
+  --linha: #dde5d4;
+  --linha-forte: #7d8c76;
+  --tinta: #13241a;
+  --tinta-suave: #4d5e52;
+  --floresta: #0f3d24;
+  --floresta-alta: #1a5c38;
+  --sobre-floresta: #eef7e8;
+  --sobre-floresta-suave: #a9c9b2;
+  --lima: #b5e04a;
+  --sobre-lima: #13241a;
+  --verde: #2e7d32;
+  --sobre-verde: #ffffff;
+  --verde-escuro: #1f5d2b;
+  --verde-claro: #dcefd0;
+  --azul: #1a5fb8;
+  --azul-claro: #e3eefc;
+  --petroleo: #0b6b74;
+  --petroleo-claro: #dcf1f2;
+  --roxo: #6d4bd1;
+  --roxo-claro: #ece6fb;
+  --ambar: #b86e00;
+  --ambar-texto: #8a5200;
+  --ambar-claro: #fdf0d9;
+  --vermelho: #b02e1c;
+  --vermelho-claro: #fde6e1;
+  --foco: #9a5c00;
+  --sombra-cartao: 0 1px 2px rgba(19, 36, 26, 0.06), 0 6px 20px -8px rgba(19, 36, 26, 0.14);
+  --sombra-elevada: 0 2px 4px rgba(19, 36, 26, 0.06), 0 22px 44px -16px rgba(15, 61, 36, 0.38);
+  --esp-1: 4px;
+  --esp-2: 8px;
+  --esp-3: 12px;
+  --esp-4: 16px;
+  --esp-5: 24px;
+  --esp-6: 32px;
+  --esp-7: 48px;
+  --raio-pequeno: 10px;
+  --raio-medio: 16px;
+  --raio-grande: 24px;
+  --raio-xl: 32px;
+  --raio-pilula: 999px;
+  --alvo-toque: 52px;
+  --botao-grande: 64px;
+  --barra-abas: 72px;
+  --icone: 24px;
+  --icone-atalho: 56px;
+  --dur-rapida: 140ms;
+  --dur-media: 280ms;
+  --dur-lenta: 520ms;
+  --dur-contagem: 900ms;
+  --curva-saida: cubic-bezier(0.22, 1, 0.36, 1);
+  --curva-mola: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-titulo: Lexend, "Segoe UI", system-ui, sans-serif;
+  --font-texto: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-numeros: "Atkinson Hyperlegible Mono", ui-monospace, Consolas, monospace;
+}
+
+
+/* Virologia UFSM v2 — componentes. Cores, raios, tempos e curvas vêm sempre dos tokens. */
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: var(--font-texto); font-size: 17px; line-height: 26px; background: var(--fundo); color: var(--tinta); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--font-titulo); }
+.vu-demo { padding: var(--esp-5); display: flex; flex-wrap: wrap; gap: var(--esp-3); align-items: center; }
+.vu-demo-col { padding: var(--esp-5); display: flex; flex-direction: column; gap: var(--esp-4); max-width: 560px; }
+.vu-ico { width: var(--icone); height: var(--icone); flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.vu-sobrelinha { margin: 0; font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+:focus-visible { outline: 3px solid var(--foco); outline-offset: 3px; }
+
+/* Entrada em sequência: .vu-entra com --i = 0, 1, 2… */
+.vu-entra { animation: vu-sobe var(--dur-lenta) var(--curva-saida) both; animation-delay: calc(var(--i, 0) * 70ms); }
+@keyframes vu-sobe { from { opacity: 0; translate: 0 18px; } }
+@keyframes vu-gira { to { rotate: 360deg; } }
+@keyframes vu-pulo { 40% { scale: 1.07; } }
+
+/* ---------- Botão ---------- */
+.vu-btn { position: relative; overflow: hidden; font: inherit; font-weight: 700; min-height: var(--alvo-toque); padding: 0 var(--esp-5); display: inline-flex; align-items: center; justify-content: center; gap: var(--esp-2); border-radius: var(--raio-medio); border: 2px solid var(--linha-forte); background: var(--cartao); color: var(--tinta); cursor: pointer; text-decoration: none; transition: background-color var(--dur-media), border-color var(--dur-media), color var(--dur-media), transform var(--dur-rapida) var(--curva-saida), box-shadow var(--dur-media); }
+.vu-btn:hover { border-color: var(--tinta); }
+.vu-btn:active { transform: scale(0.96); }
+.vu-btn-principal { background: var(--verde); border-color: var(--verde); color: var(--sobre-verde); box-shadow: var(--sombra-cartao); }
+.vu-btn-principal:hover { border-color: var(--verde); box-shadow: var(--sombra-elevada); transform: translateY(-2px); }
+.vu-btn-principal:active { transform: scale(0.96); }
+.vu-btn-lima { background: var(--lima); border-color: var(--lima); color: var(--sobre-lima); }
+.vu-btn-lima:hover { border-color: var(--sobre-lima); }
+.vu-btn-perigo { color: var(--vermelho); border-color: var(--vermelho); }
+.vu-btn-perigo:hover { background: var(--vermelho-claro); border-color: var(--vermelho); }
+.vu-btn-fantasma { border-color: transparent; background: transparent; color: var(--verde-escuro); }
+.vu-btn-fantasma:hover { background: var(--cartao-suave); border-color: transparent; }
+.vu-btn-grande { min-height: var(--botao-grande); font-size: 19px; padding: 0 var(--esp-6); border-radius: var(--raio-grande); }
+.vu-btn-largo { width: 100%; }
+/* Brilho que atravessa o botão principal ao passar o mouse */
+.vu-btn-principal::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%); translate: -110% 0; transition: translate 0.7s var(--curva-saida); }
+.vu-btn-principal:hover::after { translate: 110% 0; }
+.vu-btn[aria-busy="true"] { pointer-events: none; }
+.vu-btn[aria-busy="true"] .vu-ico { display: none; }
+.vu-btn[aria-busy="true"]::before { content: ""; width: 20px; height: 20px; border-radius: 50%; border: 3px solid currentColor; border-right-color: transparent; animation: vu-gira 0.8s linear infinite; }
+.vu-btn-ok { animation: vu-pulo var(--dur-lenta) var(--curva-mola); }
+
+/* ---------- Barra do topo ---------- */
+.vu-topo { display: flex; align-items: center; gap: var(--esp-3); padding: var(--esp-3) var(--esp-4); }
+.vu-voltar { font: inherit; font-weight: 700; min-height: 48px; padding: 0 var(--esp-4) 0 var(--esp-2); display: inline-flex; align-items: center; gap: var(--esp-1); border: 0; border-radius: var(--raio-pilula); background: var(--cartao); color: var(--tinta); box-shadow: var(--sombra-cartao); cursor: pointer; text-decoration: none; transition: transform var(--dur-rapida) var(--curva-saida), box-shadow var(--dur-media); }
+.vu-voltar .vu-ico { transition: translate var(--dur-media) var(--curva-saida); }
+.vu-voltar:hover { box-shadow: var(--sombra-elevada); }
+.vu-voltar:hover .vu-ico { translate: -3px 0; }
+.vu-voltar:active { transform: scale(0.95); }
+.vu-topo-meio { flex: 1; }
+.vu-avatar { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--lima); color: var(--sobre-lima); font-family: var(--font-titulo); font-weight: 700; font-size: 17px; border: 3px solid var(--cartao); box-shadow: var(--sombra-cartao); }
+.vu-titulo-tela { margin: var(--esp-2) var(--esp-4) var(--esp-1); font-size: 30px; line-height: 36px; font-weight: 700; letter-spacing: -0.015em; }
+.vu-sub-tela { margin: 0 var(--esp-4) var(--esp-5); color: var(--tinta-suave); }
+
+/* ---------- Barra de abas ---------- */
+.vu-abas { position: relative; display: flex; height: var(--barra-abas); padding: 8px; gap: 4px; border-radius: var(--raio-xl); background: var(--cartao); box-shadow: var(--sombra-elevada); border: 1px solid var(--linha); }
+.vu-abas-marca { position: absolute; top: 8px; bottom: 8px; left: 8px; width: calc((100% - 16px - 12px) / 4); border-radius: var(--raio-grande); background: var(--floresta-alta); transition: translate var(--dur-media) var(--curva-mola); translate: calc(var(--ativa, 0) * (100% + 4px)) 0; }
+.vu-aba { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 0; border-radius: var(--raio-grande); background: transparent; color: var(--tinta-suave); font: inherit; font-size: 15px; line-height: 18px; font-weight: 700; cursor: pointer; text-decoration: none; transition: color var(--dur-media); }
+.vu-aba .vu-ico { transition: translate var(--dur-media) var(--curva-mola); }
+.vu-aba:hover { color: var(--tinta); }
+.vu-aba[aria-current="page"] { color: var(--sobre-floresta); }
+.vu-aba[aria-current="page"] .vu-ico { color: var(--lima); translate: 0 -2px; }
+
+/* ---------- Saudação (topo do Início) ---------- */
+.vu-ola { display: flex; align-items: center; gap: var(--esp-3); }
+.vu-ola img { width: 44px; height: 44px; padding: 4px; object-fit: contain; border-radius: var(--raio-medio); background: var(--sobre-floresta); }
+.vu-ola-texto { flex: 1; min-width: 0; }
+.vu-ola-texto h1 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 600; }
+.vu-ola-texto h1 b { color: var(--verde-escuro); font-weight: 600; }
+.vu-ola-texto p { margin: 0; font-size: 15px; line-height: 20px; color: var(--tinta-suave); }
+
+/* ---------- Painel Hoje (compacto) ---------- */
+.vu-hoje { position: relative; overflow: hidden; display: grid; gap: var(--esp-3); padding: var(--esp-4); border-radius: var(--raio-grande); color: var(--sobre-floresta); background: radial-gradient(120% 140% at 100% 0%, var(--floresta-alta) 0%, var(--floresta) 60%); box-shadow: var(--sombra-elevada); isolation: isolate; }
+.vu-hoje-pocos { position: absolute; z-index: -1; right: -20px; top: -24px; width: 150px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; opacity: 0.5; rotate: -8deg; }
+.vu-hoje-pocos i { aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--floresta-alta); }
+.vu-hoje-pocos i.on { background: var(--lima); border-color: var(--lima); animation: vu-poco 3.2s ease-in-out infinite; animation-delay: calc(var(--d, 0) * 260ms); }
+@keyframes vu-poco { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.vu-hoje-topo { display: flex; align-items: baseline; justify-content: space-between; gap: var(--esp-2); }
+.vu-hoje .vu-sobrelinha { color: var(--lima); }
+.vu-hoje-topo a { padding: 4px 14px; border-radius: var(--raio-pilula); background: var(--floresta-alta); color: var(--sobre-floresta); font-size: 15px; font-weight: 700; text-decoration: none; transition: background-color var(--dur-media), color var(--dur-media); }
+.vu-hoje-topo a:hover { background: var(--lima); color: var(--sobre-lima); }
+.vu-hoje-numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--esp-2); }
+.vu-hoje-num { padding: var(--esp-2) var(--esp-3); border-radius: var(--raio-medio); background: var(--floresta-alta); }
+.vu-hoje-num strong { display: flex; align-items: center; gap: 6px; font-family: var(--font-numeros); font-size: 26px; line-height: 32px; }
+.vu-hoje-num > span { display: block; font-size: 14px; line-height: 18px; color: var(--sobre-floresta-suave); }
+.vu-hoje-num i { width: 10px; height: 10px; flex: none; border-radius: 50%; }
+.vu-hoje-proxima { display: flex; align-items: center; gap: var(--esp-2); min-height: 48px; padding: 0 var(--esp-3); border-radius: var(--raio-medio); background: var(--lima); color: var(--sobre-lima); font-weight: 700; font-size: 16px; text-decoration: none; transition: transform var(--dur-media) var(--curva-saida); }
+.vu-hoje-proxima span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vu-hoje-proxima:hover { transform: translateY(-2px); }
+.vu-hoje-proxima .vu-ico { width: 20px; height: 20px; }
+.vu-hoje-proxima .vu-ico:last-child { transition: translate var(--dur-media) var(--curva-saida); }
+.vu-hoje-proxima:hover .vu-ico:last-child { translate: 4px 0; }
+
+/* ---------- Seções do Início ---------- */
+.vu-secao { display: grid; gap: var(--esp-2); }
+.vu-secao > .vu-sobrelinha { padding: 0 var(--esp-1); color: var(--tinta-suave); }
+
+/* ---------- Lista de funções ---------- */
+.vu-lista { display: grid; border-radius: var(--raio-grande); background: var(--cartao); border: 1px solid var(--linha); box-shadow: var(--sombra-cartao); overflow: hidden; }
+.vu-item { --cor: var(--verde); --cor-fundo: var(--verde-claro); position: relative; display: flex; align-items: center; gap: var(--esp-3); min-height: 64px; padding: var(--esp-2) var(--esp-4) var(--esp-2) var(--esp-3); color: var(--tinta); text-decoration: none; transition: background-color var(--dur-media); }
+.vu-item + .vu-item::before { content: ""; position: absolute; top: 0; left: 64px; right: 0; height: 1px; background: var(--linha); }
+.vu-item:hover { background: var(--cartao-suave); }
+.vu-item:active { background: var(--linha); }
+.vu-item-icone { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 12px; background: var(--cor-fundo, var(--verde-claro)); color: var(--cor, var(--verde)); transition: rotate var(--dur-lenta) var(--curva-mola), background-color var(--dur-media), color var(--dur-media); }
+.vu-item-icone .vu-ico { width: 22px; height: 22px; }
+.vu-item:hover .vu-item-icone { rotate: -8deg; background: var(--cor); color: var(--cartao); }
+.vu-item-texto { flex: 1; min-width: 0; }
+.vu-item-nome { display: block; font-weight: 700; line-height: 22px; }
+.vu-item-desc { display: block; font-size: 15px; line-height: 20px; color: var(--tinta-suave); }
+.vu-item-fim { display: flex; align-items: center; gap: var(--esp-2); color: var(--tinta-suave); }
+.vu-item-fim .vu-ico { width: 20px; height: 20px; transition: translate var(--dur-media) var(--curva-saida); }
+.vu-item:hover .vu-item-fim .vu-ico { translate: 3px 0; color: var(--tinta); }
+.vu-contagem { min-width: 28px; height: 28px; padding: 0 var(--esp-2); display: inline-grid; place-items: center; border-radius: var(--raio-pilula); background: var(--cor); color: var(--cartao); font-family: var(--font-numeros); font-size: 15px; font-weight: 700; }
+.vu-etiqueta { height: 26px; padding: 0 var(--esp-2); display: inline-grid; place-items: center; border-radius: var(--raio-pilula); background: var(--cor-fundo); color: var(--cor); font-size: 13px; font-weight: 700; }
+
+/* Cor de cada área: vale para .vu-item e .vu-calc */
+.cor-azul { --cor: var(--azul); --cor-fundo: var(--azul-claro); }
+.cor-petroleo { --cor: var(--petroleo); --cor-fundo: var(--petroleo-claro); }
+.cor-roxo { --cor: var(--roxo); --cor-fundo: var(--roxo-claro); }
+.cor-ambar { --cor: var(--ambar); --cor-fundo: var(--ambar-claro); }
+.cor-cinza { --cor: var(--tinta-suave); --cor-fundo: var(--cartao-suave); }
+
+/* ---------- Calculadoras (blocos pequenos) ---------- */
+.vu-calcs { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--esp-2); }
+.vu-calc { --cor: var(--verde); --cor-fundo: var(--verde-claro); display: flex; flex-direction: column; align-items: flex-start; gap: var(--esp-2); min-height: 100px; padding: var(--esp-3); border-radius: var(--raio-grande); background: var(--cartao); border: 1px solid var(--linha); box-shadow: var(--sombra-cartao); color: var(--tinta); text-decoration: none; transition: transform var(--dur-media) var(--curva-saida), box-shadow var(--dur-media); }
+.vu-calc:hover { transform: translateY(-3px); box-shadow: var(--sombra-elevada); }
+.vu-calc:active { transform: scale(0.96); transition-duration: var(--dur-rapida); }
+.vu-calc .vu-item-icone { width: 40px; height: 40px; }
+.vu-calc:hover .vu-item-icone { rotate: -8deg; background: var(--cor); color: var(--cartao); }
+.vu-calc-nome { margin-top: auto; font-size: 15px; line-height: 19px; font-weight: 700; -webkit-hyphens: manual; hyphens: manual; }
+
+/* ---------- Campo ---------- */
+.vu-campo { display: flex; flex-direction: column; gap: var(--esp-2); }
+.vu-campo label { font-weight: 700; }
+.vu-dica { margin: 0; font-size: 15px; line-height: 22px; color: var(--tinta-suave); }
+.vu-entrada { position: relative; display: flex; align-items: center; }
+.vu-entrada input, .vu-entrada select { flex: 1; width: 100%; font: inherit; min-height: var(--alvo-toque); padding: 0 var(--esp-4); border-radius: var(--raio-medio); border: 2px solid var(--linha-forte); background: var(--cartao); color: var(--tinta); transition: border-color var(--dur-media), box-shadow var(--dur-media); }
+.vu-entrada input:hover { border-color: var(--tinta); }
+.vu-entrada input:focus { outline: none; border-color: var(--verde); box-shadow: 0 0 0 5px var(--verde-claro); }
+.vu-entrada .vu-unidade { position: absolute; right: var(--esp-4); color: var(--tinta-suave); font-family: var(--font-numeros); pointer-events: none; }
+.vu-entrada .vu-ok { position: absolute; right: var(--esp-4); color: var(--verde); animation: vu-pulo var(--dur-lenta) var(--curva-mola); }
+.vu-campo.tem-erro input { border-color: var(--vermelho); animation: vu-treme 0.4s var(--curva-saida); }
+.vu-erro { display: flex; align-items: center; gap: var(--esp-2); margin: 0; padding: var(--esp-2) var(--esp-3); border-radius: var(--raio-pequeno); background: var(--vermelho-claro); color: var(--vermelho); font-size: 15px; line-height: 22px; font-weight: 700; }
+.vu-erro .vu-ico { width: 20px; height: 20px; }
+@keyframes vu-treme { 20%, 60% { translate: -6px 0; } 40%, 80% { translate: 6px 0; } }
+
+/* ---------- Contador (+ / −) ---------- */
+.vu-contador { display: flex; align-items: center; gap: var(--esp-2); padding: 6px; border-radius: var(--raio-grande); background: var(--cartao); border: 2px solid var(--linha-forte); width: max-content; }
+.vu-contador button { width: var(--alvo-toque); height: var(--alvo-toque); display: grid; place-items: center; border: 0; border-radius: var(--raio-medio); background: var(--cartao-suave); color: var(--tinta); cursor: pointer; transition: background-color var(--dur-media), transform var(--dur-rapida) var(--curva-saida); }
+.vu-contador button:hover { background: var(--verde-claro); color: var(--verde-escuro); }
+.vu-contador button:active { transform: scale(0.88); }
+.vu-contador output { min-width: 88px; text-align: center; font-family: var(--font-numeros); font-size: 34px; line-height: 38px; font-weight: 700; }
+.vu-contador output.mudou { animation: vu-pulo var(--dur-media) var(--curva-mola); }
+
+/* ---------- Filtros ---------- */
+.vu-filtros { position: relative; display: inline-flex; max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 6px; gap: 2px; border-radius: var(--raio-pilula); background: var(--cartao-suave); }
+.vu-filtros-marca { position: absolute; top: 6px; bottom: 6px; left: 6px; border-radius: var(--raio-pilula); background: var(--cartao); box-shadow: var(--sombra-cartao); transition: translate var(--dur-media) var(--curva-mola), width var(--dur-media) var(--curva-mola); }
+.vu-filtro { position: relative; z-index: 1; flex: none; min-height: 48px; padding: 0 14px; display: inline-flex; align-items: center; gap: var(--esp-2); border: 0; border-radius: var(--raio-pilula); background: transparent; color: var(--tinta-suave); font: inherit; font-weight: 700; cursor: pointer; transition: color var(--dur-media); }
+.vu-filtro[aria-pressed="true"] { color: var(--tinta); }
+.vu-filtro small { min-width: 26px; height: 26px; padding: 0 6px; display: inline-grid; place-items: center; border-radius: var(--raio-pilula); background: var(--linha); font-family: var(--font-numeros); font-size: 14px; }
+.vu-filtro[aria-pressed="true"] small { background: var(--floresta); color: var(--sobre-floresta); }
+
+/* ---------- Resultado ---------- */
+.vu-resultado { position: relative; overflow: hidden; padding: var(--esp-5); border-radius: var(--raio-xl); color: var(--sobre-floresta); background: radial-gradient(100% 140% at 0% 0%, var(--floresta-alta), var(--floresta) 60%); box-shadow: var(--sombra-elevada); animation: vu-sobe var(--dur-lenta) var(--curva-saida); isolation: isolate; }
+.vu-resultado::after { content: ""; position: absolute; z-index: -1; right: -60px; top: -60px; width: 200px; height: 200px; border-radius: 50%; border: 28px solid var(--floresta-alta); }
+.vu-resultado .vu-sobrelinha { color: var(--lima); }
+.vu-resultado-valor { display: block; margin: var(--esp-2) 0; font-family: var(--font-numeros); font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -0.02em; }
+.vu-resultado-texto { margin: 0 0 var(--esp-4); font-size: 19px; line-height: 28px; color: var(--sobre-floresta-suave); }
+.vu-resultado-texto b { color: var(--lima); }
+.vu-resultado-linhas { margin: 0 0 var(--esp-4); padding: 0; list-style: none; display: grid; gap: 2px; border-radius: var(--raio-grande); overflow: hidden; }
+.vu-resultado-linhas li { display: flex; justify-content: space-between; gap: var(--esp-3); padding: var(--esp-3) var(--esp-4); background: var(--floresta-alta); }
+.vu-resultado-linhas code { font-family: var(--font-numeros); font-size: 17px; font-weight: 700; color: var(--sobre-floresta); }
+.vu-resultado-acoes { display: flex; flex-wrap: wrap; gap: var(--esp-3); }
+
+/* ---------- Etapas ---------- */
+.vu-etapas { display: grid; gap: var(--esp-3); }
+.vu-etapas-barra { height: 10px; border-radius: var(--raio-pilula); background: var(--cartao-suave); overflow: hidden; }
+.vu-etapas-barra i { display: block; height: 100%; width: var(--feito, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--verde), var(--lima)); transition: width var(--dur-lenta) var(--curva-saida); }
+.vu-etapas ol { list-style: none; margin: 0; padding: 0; display: flex; justify-content: space-between; gap: var(--esp-2); counter-reset: etapa; }
+.vu-etapas li { display: flex; align-items: center; gap: var(--esp-2); font-weight: 700; color: var(--tinta-suave); counter-increment: etapa; }
+.vu-etapas li::before { content: counter(etapa); width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--cartao-suave); color: var(--tinta); font-family: var(--font-numeros); font-size: 15px; transition: background-color var(--dur-media), color var(--dur-media); }
+.vu-etapas li.feita { color: var(--verde-escuro); }
+.vu-etapas li.feita::before { content: "✓"; background: var(--verde); color: var(--sobre-verde); }
+.vu-etapas li[aria-current="step"] { color: var(--tinta); }
+.vu-etapas li[aria-current="step"]::before { background: var(--floresta); color: var(--lima); box-shadow: 0 0 0 5px var(--verde-claro); }
+
+/* ---------- Selo de status ---------- */
+.vu-selo { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 var(--esp-3); border-radius: var(--raio-pilula); font-size: 15px; font-weight: 700; white-space: nowrap; background: var(--cartao-suave); color: var(--tinta-suave); }
+.vu-selo .vu-ico { width: 18px; height: 18px; }
+.vu-selo-andamento { background: var(--azul-claro); color: var(--azul); }
+.vu-ponto { width: 10px; height: 10px; border-radius: 50%; background: currentColor; animation: vu-pulsa 1.6s ease-out infinite; }
+.vu-selo-feito { background: var(--verde-claro); color: var(--verde-escuro); }
+.vu-selo-atencao { background: var(--ambar-claro); color: var(--ambar-texto); }
+.vu-selo-vencida { background: var(--vermelho-claro); color: var(--vermelho); }
+@keyframes vu-pulsa { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 8px transparent; } }
+
+/* ---------- Tarefa do Mural ---------- */
+.vu-tarefa { display: grid; grid-template-columns: auto 1fr; gap: var(--esp-3) var(--esp-4); padding: var(--esp-4) var(--esp-5) var(--esp-4) var(--esp-4); border-radius: var(--raio-grande); background: var(--cartao); border: 1px solid var(--linha); box-shadow: var(--sombra-cartao); transition: box-shadow var(--dur-media), opacity var(--dur-lenta), transform var(--dur-lenta) var(--curva-saida); }
+.vu-tarefa:hover { box-shadow: var(--sombra-elevada); }
+.vu-tarefa-icone { width: 52px; height: 52px; display: grid; place-items: center; border-radius: var(--raio-medio); background: var(--azul-claro); color: var(--azul); }
+.vu-tarefa-corpo { min-width: 0; display: grid; gap: var(--esp-2); }
+.vu-tarefa-nome { margin: 0; font-size: 19px; line-height: 24px; font-weight: 600; }
+.vu-tarefa-info { margin: 0; font-size: 15px; line-height: 22px; color: var(--tinta-suave); }
+.vu-tarefa-info code { font-family: var(--font-numeros); font-size: 15px; color: var(--tinta); }
+.vu-tarefa-selos { display: flex; flex-wrap: wrap; gap: var(--esp-2); }
+.vu-tarefa-pocos { display: flex; flex-wrap: wrap; gap: 5px; }
+.vu-tarefa-pocos i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--linha-forte); }
+.vu-tarefa-pocos i.on { background: var(--verde); border-color: var(--verde); }
+.vu-tarefa-acoes { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--esp-3); }
+.vu-tarefa.saindo { opacity: 0; transform: translateX(32px) scale(0.98); }
+
+/* ---------- Aviso ---------- */
+.vu-avisos { display: flex; flex-direction: column; gap: var(--esp-3); max-width: 440px; }
+.vu-aviso { position: relative; overflow: hidden; display: flex; gap: var(--esp-3); align-items: center; padding: var(--esp-3) var(--esp-4) var(--esp-3) var(--esp-3); border-radius: var(--raio-grande); background: var(--cartao); border: 1px solid var(--linha); box-shadow: var(--sombra-elevada); animation: vu-chega var(--dur-lenta) var(--curva-mola) both; animation-delay: calc(var(--i, 0) * 110ms); }
+.vu-aviso-icone { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: var(--raio-medio); }
+.vu-aviso-titulo { margin: 0; font-weight: 700; }
+.vu-aviso-texto { margin: 0; font-size: 15px; line-height: 22px; color: var(--tinta-suave); }
+.vu-aviso-tempo { position: absolute; left: 0; bottom: 0; height: 4px; width: 100%; background: currentColor; transform-origin: left; animation: vu-tempo 4s linear both; }
+.vu-aviso-ok { color: var(--verde); } .vu-aviso-ok .vu-aviso-icone { background: var(--verde-claro); color: var(--verde-escuro); }
+.vu-aviso-erro { color: var(--vermelho); } .vu-aviso-erro .vu-aviso-icone { background: var(--vermelho-claro); color: var(--vermelho); }
+.vu-aviso-info { color: var(--azul); } .vu-aviso-info .vu-aviso-icone { background: var(--azul-claro); color: var(--azul); }
+.vu-aviso .vu-aviso-titulo { color: var(--tinta); }
+@keyframes vu-chega { from { opacity: 0; translate: 0 -20px; scale: 0.95; } }
+@keyframes vu-tempo { to { transform: scaleX(0); } }
+
+/* ---------- Carregando: microplaca enchendo ---------- */
+.vu-carregando { display: flex; flex-direction: column; align-items: center; gap: var(--esp-4); padding: var(--esp-5); text-align: center; color: var(--tinta-suave); }
+.vu-placa { display: grid; grid-template-columns: repeat(6, 18px); gap: 8px; padding: var(--esp-3); border-radius: var(--raio-medio); background: var(--cartao); border: 1px solid var(--linha); box-shadow: var(--sombra-cartao); }
+.vu-placa i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--linha-forte); animation: vu-enche 2.4s var(--curva-saida) infinite; animation-delay: calc(var(--d) * 80ms); }
+@keyframes vu-enche { 0%, 15% { background: transparent; border-color: var(--linha-forte); } 35%, 75% { background: var(--verde); border-color: var(--verde); } 100% { background: transparent; border-color: var(--linha-forte); } }
+.vu-esqueleto { height: 18px; border-radius: var(--raio-pequeno); background: linear-gradient(90deg, var(--cartao-suave) 25%, var(--linha) 50%, var(--cartao-suave) 75%); background-size: 200% 100%; animation: vu-brilho 1.4s linear infinite; }
+@keyframes vu-brilho { to { background-position: -200% 0; } }
+
+/* ---------- Vazio ---------- */
+.vu-vazio { display: flex; flex-direction: column; align-items: center; gap: var(--esp-2); padding: var(--esp-7) var(--esp-5); text-align: center; border-radius: var(--raio-xl); border: 2px dashed var(--linha); }
+.vu-vazio-icone { width: 88px; height: 88px; margin-bottom: var(--esp-2); display: grid; place-items: center; border-radius: 50%; background: var(--verde-claro); color: var(--verde-escuro); animation: vu-flutua 3s ease-in-out infinite; }
+.vu-vazio-icone .vu-ico { width: 40px; height: 40px; }
+.vu-vazio h3 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 600; }
+.vu-vazio p { margin: 0 0 var(--esp-3); max-width: 34ch; color: var(--tinta-suave); }
+@keyframes vu-flutua { 50% { translate: 0 -8px; } }
+
+/* ---------- Folha ---------- */
+.vu-folha { max-width: 440px; padding: var(--esp-5); border-radius: var(--raio-xl); background: var(--cartao); box-shadow: var(--sombra-elevada); animation: vu-sobe var(--dur-lenta) var(--curva-saida); }
+.vu-folha::before { content: ""; display: block; width: 48px; height: 5px; margin: calc(var(--esp-2) * -1) auto var(--esp-4); border-radius: 3px; background: var(--linha); }
+.vu-folha-icone { width: 64px; height: 64px; margin-bottom: var(--esp-3); display: grid; place-items: center; border-radius: var(--raio-grande); background: var(--vermelho-claro); color: var(--vermelho); }
+.vu-folha-icone .vu-ico { width: 30px; height: 30px; }
+.vu-folha h3 { margin: 0 0 var(--esp-2); font-size: 22px; line-height: 28px; font-weight: 600; }
+.vu-folha p { margin: 0 0 var(--esp-5); color: var(--tinta-suave); }
+.vu-folha-acoes { display: flex; flex-direction: column; gap: var(--esp-3); }
+
+/* ---------- Busca ---------- */
+.vu-busca { position: relative; display: flex; align-items: center; }
+.vu-busca .vu-ico { position: absolute; left: var(--esp-4); color: var(--tinta-suave); pointer-events: none; }
+.vu-busca input { flex: 1; width: 100%; font: inherit; min-height: var(--alvo-toque); padding: 0 var(--esp-4) 0 48px; border-radius: var(--raio-pilula); border: 2px solid var(--linha-forte); background: var(--cartao); color: var(--tinta); transition: border-color var(--dur-media), box-shadow var(--dur-media); }
+.vu-busca input::placeholder { color: var(--tinta-suave); }
+.vu-busca input:focus { outline: none; border-color: var(--verde); box-shadow: 0 0 0 5px var(--verde-claro); }
+
+/* ---------- Opções (escolher tocando) ---------- */
+.vu-opcoes { display: flex; flex-wrap: wrap; gap: var(--esp-2); }
+.vu-opcoes--rolar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--esp-4) * -1); padding: 2px var(--esp-4); }
+.vu-opcao { flex: none; min-height: 48px; padding: 0 var(--esp-4); display: inline-flex; align-items: center; gap: 6px; border-radius: var(--raio-pilula); border: 2px solid var(--linha-forte); background: var(--cartao); color: var(--tinta); font: inherit; font-weight: 700; cursor: pointer; transition: background-color var(--dur-media), border-color var(--dur-media), color var(--dur-media), transform var(--dur-rapida) var(--curva-saida); }
+.vu-opcao:hover { border-color: var(--tinta); }
+.vu-opcao:active { transform: scale(0.95); }
+.vu-opcao .vu-ico { width: 18px; height: 18px; display: none; }
+.vu-opcao[aria-pressed="true"] { background: var(--floresta); border-color: var(--floresta); color: var(--sobre-floresta); }
+.vu-opcao[aria-pressed="true"] .vu-ico { display: block; color: var(--lima); animation: vu-pulo var(--dur-media) var(--curva-mola); }
+
+.vu-opcoes--iguais { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+.vu-opcoes--iguais .vu-opcao { justify-content: center; padding: 0 var(--esp-2); }
+
+/* Caixa de marcar grande (exames, passo a passo) */
+.vu-marcar { display: flex; align-items: center; gap: var(--esp-3); min-height: 56px; padding: var(--esp-2) var(--esp-4); border-radius: var(--raio-medio); border: 2px solid var(--linha); background: var(--cartao); cursor: pointer; transition: background-color var(--dur-media), border-color var(--dur-media); }
+.vu-marcar input { position: absolute; opacity: 0; pointer-events: none; }
+.vu-marcar-caixa { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 8px; border: 2px solid var(--linha-forte); background: var(--cartao); color: transparent; transition: background-color var(--dur-media), border-color var(--dur-media), color var(--dur-media); }
+.vu-marcar-caixa .vu-ico { width: 18px; height: 18px; stroke-width: 3; }
+.vu-marcar-texto { flex: 1; min-width: 0; }
+.vu-marcar-texto small { display: block; font-size: 15px; line-height: 20px; color: var(--tinta-suave); }
+.vu-marcar:hover { border-color: var(--linha-forte); }
+.vu-marcar:has(input:checked) { border-color: var(--verde); background: var(--verde-claro); }
+.vu-marcar:has(input:checked) .vu-marcar-caixa { background: var(--verde); border-color: var(--verde); color: var(--sobre-verde); }
+.vu-marcar:has(input:checked) .vu-marcar-caixa .vu-ico { animation: vu-pulo var(--dur-media) var(--curva-mola); }
+.vu-marcar:has(input:focus-visible) { outline: 3px solid var(--foco); outline-offset: 3px; }
+.vu-passos .vu-marcar:has(input:checked) .vu-marcar-texto { color: var(--verde-escuro); }
+.vu-passos .vu-marcar:has(input:checked) .vu-marcar-texto b { text-decoration: line-through; text-decoration-thickness: 2px; }
+
+/* ---------- Interruptor ---------- */
+.vu-interruptor { display: flex; align-items: center; gap: var(--esp-3); min-height: var(--alvo-toque); cursor: pointer; }
+.vu-interruptor input { position: absolute; opacity: 0; pointer-events: none; }
+.vu-interruptor-trilho { position: relative; width: 52px; height: 32px; flex: none; border-radius: var(--raio-pilula); background: var(--linha-forte); transition: background-color var(--dur-media); }
+.vu-interruptor-trilho::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: var(--cartao); box-shadow: var(--sombra-cartao); transition: translate var(--dur-media) var(--curva-mola); }
+.vu-interruptor input:checked + .vu-interruptor-trilho { background: var(--verde); }
+.vu-interruptor input:checked + .vu-interruptor-trilho::after { translate: 20px 0; }
+.vu-interruptor input:focus-visible + .vu-interruptor-trilho { outline: 3px solid var(--foco); outline-offset: 3px; }
+.vu-interruptor span:last-child { flex: 1; font-weight: 700; }
+
+/* ---------- Bloco de formulário ---------- */
+.vu-bloco { display: grid; gap: var(--esp-4); padding: var(--esp-4); border-radius: var(--raio-grande); background: var(--cartao); border: 1px solid var(--linha); box-shadow: var(--sombra-cartao); }
+.vu-bloco-titulo { display: flex; align-items: center; gap: var(--esp-2); margin: 0; font-size: 19px; line-height: 24px; font-weight: 600; }
+.vu-bloco-titulo .vu-item-icone { width: 36px; height: 36px; border-radius: 10px; }
+.vu-bloco-titulo .vu-item-icone .vu-ico { width: 20px; height: 20px; }
+.vu-dupla { display: grid; grid-template-columns: 1fr 1fr; gap: var(--esp-3); }
+
+/* Barra de ação presa embaixo (formulários longos) */
+.vu-acao-fixa { position: sticky; bottom: 0; z-index: 2; margin: 0 calc(var(--esp-4) * -1); padding: var(--esp-3) var(--esp-4); background: linear-gradient(to top, var(--fundo) 70%, transparent); }
+
+/* ---------- Item com logo, avatar ou ações ---------- */
+.vu-item-logo { width: 52px; height: 52px; flex: none; padding: 6px; border-radius: var(--raio-medio); background: var(--sobre-floresta); object-fit: contain; }
+.vu-item .vu-avatar { width: 44px; height: 44px; font-size: 15px; border-width: 0; box-shadow: none; }
+.vu-item--estatico { cursor: default; }
+.vu-item--estatico:hover { background: transparent; }
+.vu-mini-acoes { display: flex; gap: var(--esp-2); }
+.vu-btn-icone { width: var(--alvo-toque); padding: 0; }
+.vu-btn-icone.vu-btn-principal { box-shadow: none; }
+
+/* ---------- Perfil (Conta) ---------- */
+.vu-perfil { display: grid; justify-items: center; gap: var(--esp-1); padding: var(--esp-5) var(--esp-4); border-radius: var(--raio-grande); text-align: center; color: var(--sobre-floresta); background: radial-gradient(120% 140% at 100% 0%, var(--floresta-alta) 0%, var(--floresta) 60%); }
+.vu-perfil .vu-avatar { width: 80px; height: 80px; font-size: 28px; border-color: var(--floresta-alta); margin-bottom: var(--esp-2); }
+.vu-perfil h2 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 600; }
+.vu-perfil p { margin: 0; font-size: 15px; line-height: 20px; color: var(--sobre-floresta-suave); }
+
+/* ---------- Entrar ---------- */
+.vu-link { justify-self: center; min-height: 44px; display: inline-flex; align-items: center; color: var(--verde-escuro); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.vu-separador { display: flex; align-items: center; gap: var(--esp-3); color: var(--tinta-suave); font-size: 15px; }
+.vu-separador::before, .vu-separador::after { content: ""; flex: 1; height: 1px; background: var(--linha); }
+
+/* Botões e controles nunca passam da largura de quem os contém */
+.vu-btn, .vu-opcao, .vu-contador, .vu-filtros { max-width: 100%; }
+.vu-btn { text-align: center; }
+.vu-opcoes--iguais .vu-opcao { min-width: 0; gap: 4px; }
+
+/* ==========================================================
+   Computador (900px ou mais)
+   ========================================================== */
+.vu-pc { width: 1280px; height: 800px; flex: none; display: grid; grid-template-columns: 256px minmax(0, 1fr); overflow: hidden; border-radius: var(--raio-grande); background: var(--fundo); border: 1px solid var(--linha); box-shadow: var(--sombra-elevada); }
+
+/* ---------- Barra lateral ---------- */
+.vu-lateral { display: flex; flex-direction: column; gap: 2px; padding: var(--esp-4) var(--esp-3); background: var(--cartao); border-right: 1px solid var(--linha); overflow: auto; scrollbar-width: none; }
+.vu-lateral-marca { display: flex; align-items: center; gap: var(--esp-3); padding: var(--esp-1) var(--esp-2) var(--esp-4); }
+.vu-lateral-marca img { width: 44px; height: 44px; padding: 4px; border-radius: var(--raio-medio); background: var(--sobre-floresta); object-fit: contain; }
+.vu-lateral-marca b { display: block; font-family: var(--font-titulo); font-size: 17px; line-height: 22px; font-weight: 600; }
+.vu-lateral-marca small { display: block; font-size: 14px; line-height: 18px; color: var(--tinta-suave); }
+.vu-lateral .vu-sobrelinha { margin: var(--esp-4) var(--esp-3) var(--esp-1); color: var(--tinta-suave); }
+.vu-nav { position: relative; display: flex; align-items: center; gap: var(--esp-3); min-height: 48px; padding: 0 var(--esp-3); border-radius: var(--raio-medio); color: var(--tinta); font-weight: 700; text-decoration: none; transition: background-color var(--dur-media), color var(--dur-media); }
+.vu-nav .vu-ico { width: 22px; height: 22px; color: var(--tinta-suave); transition: color var(--dur-media), translate var(--dur-media) var(--curva-mola); }
+.vu-nav:hover { background: var(--cartao-suave); }
+.vu-nav:hover .vu-ico { translate: 2px 0; color: var(--tinta); }
+.vu-nav[aria-current="page"] { background: var(--floresta-alta); color: var(--sobre-floresta); }
+.vu-nav[aria-current="page"] .vu-ico { color: var(--lima); }
+.vu-nav .vu-contagem { margin-left: auto; --cor: var(--azul); }
+.vu-nav[aria-current="page"] .vu-contagem { background: var(--lima); color: var(--sobre-lima); }
+.vu-lateral-pe { margin-top: auto; display: flex; align-items: center; gap: var(--esp-3); padding: var(--esp-3); border-radius: var(--raio-medio); background: var(--cartao-suave); }
+.vu-lateral-pe .vu-avatar { width: 40px; height: 40px; font-size: 15px; border-width: 0; box-shadow: none; }
+.vu-lateral-pe div { flex: 1; min-width: 0; }
+.vu-lateral-pe b { display: block; font-size: 16px; line-height: 20px; }
+.vu-lateral-pe a { font-size: 14px; color: var(--verde-escuro); font-weight: 700; }
+.vu-lateral-pe .vu-btn { min-height: 44px; width: 44px; padding: 0; border-color: transparent; background: transparent; color: var(--tinta-suave); }
+.vu-lateral-pe .vu-btn:hover { color: var(--vermelho); background: var(--vermelho-claro); }
+
+/* ---------- Área principal ---------- */
+.vu-pc-main { overflow: auto; padding: var(--esp-5) var(--esp-6) var(--esp-6); display: grid; grid-auto-rows: max-content; gap: var(--esp-5); scrollbar-width: thin; }
+.vu-pc-topo { display: flex; align-items: center; gap: var(--esp-4); }
+.vu-pc-topo > div:first-child { flex: 1; min-width: 0; }
+.vu-pc-topo h1 { margin: 0; font-size: 30px; line-height: 36px; font-weight: 700; letter-spacing: -0.015em; }
+.vu-pc-topo p { margin: 2px 0 0; color: var(--tinta-suave); }
+.vu-pc-topo .vu-busca { width: 340px; }
+.vu-trilha { display: flex; align-items: center; gap: var(--esp-1); margin: 0 0 var(--esp-1); font-size: 15px; color: var(--tinta-suave); }
+.vu-trilha a { color: var(--verde-escuro); font-weight: 700; text-decoration: none; }
+.vu-trilha a:hover { text-decoration: underline; }
+.vu-trilha .vu-ico { width: 16px; height: 16px; }
+.vu-colunas { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: var(--esp-5); align-items: start; }
+.vu-colunas--meio { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.vu-fixo { position: sticky; top: 0; display: grid; gap: var(--esp-4); }
+.vu-grade-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--esp-3) var(--esp-4); }
+.vu-barra-ferramentas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-3); }
+.vu-barra-ferramentas .vu-busca { flex: 1; min-width: 260px; }
+
+/* Painel Hoje mais largo no computador */
+.vu-pc .vu-hoje { padding: var(--esp-5); }
+.vu-pc .vu-hoje-num strong { font-size: 34px; line-height: 38px; }
+.vu-pc .vu-hoje-pocos { width: 220px; }
+
+/* ---------- Quadro do Mural (colunas) ---------- */
+.vu-quadro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--esp-4); align-items: start; }
+.vu-coluna { display: grid; gap: var(--esp-3); padding: var(--esp-3); border-radius: var(--raio-grande); background: var(--cartao-suave); }
+.vu-coluna-topo { display: flex; align-items: center; gap: var(--esp-2); padding: var(--esp-1) var(--esp-2); font-family: var(--font-titulo); font-weight: 600; font-size: 17px; }
+.vu-coluna-topo i { width: 10px; height: 10px; border-radius: 50%; }
+.vu-coluna-topo span { margin-left: auto; min-width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--raio-pilula); background: var(--cartao); font-family: var(--font-numeros); font-size: 15px; }
+.vu-coluna .vu-tarefa { grid-template-columns: 1fr; padding: var(--esp-4); }
+.vu-coluna .vu-tarefa-icone { display: none; }
+.vu-coluna .vu-tarefa-acoes .vu-btn { flex: 1; }
+
+/* ---------- Tabela ---------- */
+.vu-tabela-caixa { border-radius: var(--raio-grande); background: var(--cartao); border: 1px solid var(--linha); box-shadow: var(--sombra-cartao); overflow: hidden; }
+.vu-tabela { width: 100%; border-collapse: collapse; }
+.vu-tabela th { padding: var(--esp-3) var(--esp-4); text-align: left; font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta-suave); background: var(--cartao-suave); }
+.vu-tabela td { padding: var(--esp-3) var(--esp-4); border-top: 1px solid var(--linha); vertical-align: middle; }
+.vu-tabela tbody tr { transition: background-color var(--dur-media); }
+.vu-tabela tbody tr:hover { background: var(--cartao-suave); }
+.vu-tabela code { font-family: var(--font-numeros); font-size: 16px; }
+.vu-tabela .vu-teste { display: inline-flex; align-items: center; gap: var(--esp-2); font-weight: 700; }
+.vu-tabela .vu-teste .vu-item-icone { width: 32px; height: 32px; border-radius: 10px; }
+.vu-tabela .vu-teste .vu-item-icone .vu-ico { width: 18px; height: 18px; }
+.vu-tabela .vu-btn { min-height: 44px; padding: 0 var(--esp-3); }
+.vu-tabela td:last-child { text-align: right; }
+
+/* ---------- Microplaca (peça visual) ---------- */
+.vu-placa-obj { --poco: 22px; display: grid; grid-template-columns: repeat(12, var(--poco)); gap: calc(var(--poco) * 0.45); padding: calc(var(--poco) * 0.9); border-radius: var(--raio-xl); background: var(--floresta-alta); box-shadow: inset 0 0 0 2px var(--floresta), var(--sombra-elevada); }
+.vu-placa-obj i { width: var(--poco); height: var(--poco); border-radius: 50%; background: var(--floresta); box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.35); position: relative; }
+.vu-placa-obj i::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--lima); opacity: var(--o, 0); scale: 1; animation: vu-encher 0.7s var(--curva-saida) both; animation-delay: calc(var(--c) * 70ms + var(--r) * 30ms + 200ms); }
+@keyframes vu-encher { from { opacity: 0; scale: 0.2; } }
+.vu-placa-rotulos { display: flex; justify-content: space-between; margin-top: var(--esp-2); font-family: var(--font-numeros); font-size: 13px; color: var(--sobre-floresta-suave); }
+
+/* ---------- Entrar no celular ---------- */
+.vu-entrar-topo { position: relative; overflow: hidden; display: grid; justify-items: start; gap: var(--esp-1); padding: var(--esp-5) var(--esp-5) 150px; margin: calc(var(--esp-4) * -1) calc(var(--esp-4) * -1) -56px; color: var(--sobre-floresta); background: radial-gradient(120% 120% at 100% 0%, var(--floresta-alta) 0%, var(--floresta) 60%); isolation: isolate; }
+.vu-entrar-topo .vu-placa-obj { --poco: 16px; position: absolute; z-index: -1; right: -90px; bottom: -84px; rotate: -10deg; opacity: 0.9; }
+.vu-entrar-topo img { width: 56px; height: 56px; padding: 5px; margin-bottom: var(--esp-3); border-radius: var(--raio-medio); background: var(--sobre-floresta); object-fit: contain; }
+.vu-entrar-topo h1 { margin: 0; font-size: 30px; line-height: 36px; font-weight: 700; letter-spacing: -0.015em; }
+.vu-entrar-topo p { margin: 0; color: var(--sobre-floresta-suave); }
+.vu-entrar-cartao { position: relative; display: grid; gap: var(--esp-4); padding: var(--esp-5) var(--esp-4); border-radius: var(--raio-xl); background: var(--cartao); box-shadow: var(--sombra-elevada); }
+.vu-entrar-cartao h2 { margin: 0; font-size: 24px; line-height: 30px; font-weight: 700; }
+.vu-ajuda { margin: 0; text-align: center; font-size: 15px; line-height: 22px; color: var(--tinta-suave); }
+
+.vu-pc-entrar { width: 1280px; height: 800px; flex: none; display: grid; grid-template-columns: 1.1fr 1fr; overflow: hidden; border-radius: var(--raio-grande); border: 1px solid var(--linha); box-shadow: var(--sombra-elevada); background: var(--fundo); }
+/* ---------- Entrar no computador: aurora + cartão central ---------- */
+.vu-pc-entrar { position: relative; display: grid; grid-template-columns: 1fr; place-items: center; isolation: isolate; background: var(--floresta); }
+.vu-aurora { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.vu-aurora i { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.85; animation: vu-aurora 22s ease-in-out infinite alternate; }
+.vu-aurora i:nth-child(1) { width: 620px; height: 620px; left: -120px; top: -160px; background: var(--floresta-alta); }
+.vu-aurora i:nth-child(2) { width: 520px; height: 520px; right: -100px; top: 80px; background: var(--verde); opacity: 0.6; animation-duration: 26s; animation-delay: -8s; }
+.vu-aurora i:nth-child(3) { width: 360px; height: 360px; left: 38%; bottom: -160px; background: var(--lima); opacity: 0.35; animation-duration: 18s; animation-delay: -4s; }
+.vu-aurora i:nth-child(4) { width: 280px; height: 280px; left: 12%; bottom: 60px; background: var(--lima); opacity: 0.18; animation-duration: 30s; }
+@keyframes vu-aurora { 0% { translate: 0 0; scale: 1; } 50% { translate: 80px 40px; scale: 1.15; } 100% { translate: -60px 70px; scale: 0.95; } }
+.vu-pc-entrar-cartao { width: 420px; display: grid; gap: var(--esp-4); padding: var(--esp-6); border-radius: var(--raio-xl); background: var(--cartao); box-shadow: var(--sombra-elevada); animation: vu-cartao-entra 0.8s var(--curva-saida) 0.15s both; }
+@keyframes vu-cartao-entra { from { opacity: 0; translate: 0 24px; scale: 0.97; } }
+.vu-pc-entrar-cartao header { display: grid; justify-items: center; gap: var(--esp-2); margin-bottom: var(--esp-2); text-align: center; }
+.vu-pc-entrar-cartao header img { width: 64px; height: 64px; padding: 6px; border-radius: var(--raio-grande); background: var(--sobre-floresta); object-fit: contain; animation: vu-pulo 0.9s var(--curva-mola) 0.5s both; }
+.vu-pc-entrar-cartao header h1 { margin: 0; font-size: 26px; line-height: 32px; font-weight: 700; letter-spacing: -0.015em; }
+.vu-pc-entrar-cartao header p { margin: 0; font-size: 15px; color: var(--tinta-suave); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* ==========================================================
+   Páginas reais do app
+   ========================================================== */
+
+/* Ícones do Bootstrap Icons no lugar dos SVG das prévias */
+i.vu-ico { font-size: 21px; line-height: 1; display: inline-grid; place-items: center; }
+.vu-item-icone i.vu-ico { font-size: 20px; }
+.vu-hoje-proxima i.vu-ico { font-size: 18px; }
+a { color: var(--verde-escuro); }
+
+/* ---------- Casca: lateral no computador, abas no celular ---------- */
+body.vu-app { min-height: 100vh; min-height: 100dvh; }
+.vu-casca { min-height: 100vh; min-height: 100dvh; }
+.vu-casca-main { width: 100%; max-width: 1180px; margin: 0 auto; padding: var(--esp-4) var(--esp-4) 120px; display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: max-content; gap: var(--esp-5); }
+.vu-abas-fixa { position: fixed; z-index: 1000; left: var(--esp-3); right: var(--esp-3); bottom: calc(var(--esp-3) + env(safe-area-inset-bottom, 0px)); max-width: 520px; margin: 0 auto; }
+.vu-so-pc { display: none !important; }
+@media (min-width: 900px) {
+  .vu-casca { display: grid; grid-template-columns: 256px minmax(0, 1fr); }
+  .vu-casca > .vu-lateral { position: sticky; top: 0; height: 100vh; height: 100dvh; }
+  .vu-casca-main { padding: var(--esp-5) var(--esp-6) var(--esp-6); }
+  .vu-abas-fixa, .vu-so-celular { display: none !important; }
+  .vu-so-pc { display: revert !important; }
+}
+@media (max-width: 899.98px) {
+  .vu-casca > .vu-lateral { display: none; }
+  .vu-colunas, .vu-colunas--meio { grid-template-columns: minmax(0, 1fr); }
+}
+.vu-lateral-pe .vu-btn { font-size: 20px; }
+
+/* ---------- Entrar em página cheia ---------- */
+body.vu-entrar-pagina { position: relative; display: grid; place-items: center; gap: var(--esp-4); padding: var(--esp-5) var(--esp-4); background: var(--floresta); isolation: isolate; overflow-x: hidden; }
+.vu-entrar-pagina .vu-aurora { position: fixed; }
+.vu-entrar-pagina .vu-pc-entrar-cartao { width: 100%; max-width: 420px; }
+@media (max-width: 480px) { .vu-entrar-pagina .vu-pc-entrar-cartao { padding: var(--esp-5) var(--esp-4); } }
+.vu-pc-entrar-cartao form { display: grid; gap: var(--esp-4); }
+.vu-pc-entrar-cartao form h2 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 600; text-align: center; }
+.vu-pc-entrar-cartao .alert { margin: 0; border-radius: var(--raio-medio); font-weight: 700; font-size: 15px; text-align: center; }
+.vu-creditos { margin: 0; font-size: 13px; color: var(--sobre-floresta-suave); text-align: center; }
+
+/* ---------- Campos do Bootstrap no visual novo ---------- */
+.vu-campo .form-control { font: inherit; min-height: var(--alvo-toque); padding: 0 var(--esp-4); border-radius: var(--raio-medio); border: 2px solid var(--linha-forte); background-color: var(--cartao); color: var(--tinta); box-shadow: none; transition: border-color var(--dur-media), box-shadow var(--dur-media); }
+.vu-campo .form-control:hover { border-color: var(--tinta); }
+.vu-campo .form-control:focus { border-color: var(--verde); box-shadow: 0 0 0 5px var(--verde-claro); }
+.vu-campo .form-control.is-invalid { border-color: var(--vermelho); background-image: none; padding-right: var(--esp-4); animation: vu-treme 0.4s var(--curva-saida); }
+.vu-campo .invalid-feedback { margin: 0; font-size: 15px; font-weight: 700; color: var(--vermelho); }
+.vu-senha { position: relative; }
+.vu-senha .form-control, .vu-senha .form-control.is-invalid { width: 100%; padding-right: 108px; }
+.vu-senha .toggle-password { position: absolute; top: 4px; right: 4px; min-height: 44px; padding: 0 var(--esp-3); }
+
+/* Painel e itens podem encolher no celular (sem estourar a largura) */
+.vu-hoje > *, .vu-hoje-num { min-width: 0; }
+.vu-hoje-numeros { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+a.vu-avatar { text-decoration: none; }

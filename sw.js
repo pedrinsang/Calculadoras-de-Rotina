@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cache-v1.2.3'; // atualize quando mudar assets
+const CACHE_NAME = 'cache-v1.3.0'; // atualize quando mudar assets
 const OFFLINE_PAGE = './pages/offline.html';
 // Use caminhos relativos ao escopo para funcionar em subpaths
 const ASSETS = [
@@ -9,6 +9,8 @@ const ASSETS = [
   './pages/vacinas.html',
   './pages/elisa.html',
   './pages/protocolos.html',
+  './assets/css/tema.css',
+  './assets/js/utils/ui.js',
   './icons/icon-72x72.png',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',

@@ -155,7 +155,7 @@ function showForm(formId) {
   loginForm.style.display = "none";
   cadastroForm.style.display = "none";
   forgotPasswordForm.style.display = "none";
-  document.getElementById(formId).style.display = "block";
+  document.getElementById(formId).style.display = "grid";
   alertMessage.style.display = 'none';
 }
 
@@ -164,11 +164,10 @@ function setupTogglePassword() {
     toggle.addEventListener('click', function() {
       const targetId = this.getAttribute('data-target');
       const input = document.getElementById(targetId);
-      if (input.type === 'password') {
-        input.type = 'text';
-      } else {
-        input.type = 'password';
-      }
+      const mostrar = input.type === 'password';
+      input.type = mostrar ? 'text' : 'password';
+      this.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+      this.setAttribute('aria-pressed', String(mostrar));
     });
   });
 }
@@ -565,7 +564,7 @@ function setupInstallPrompt() {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installButton.style.display = 'block';
+    installButton.style.display = 'inline-flex';
   });
 
   installButton.addEventListener('click', async () => {
@@ -623,11 +622,5 @@ function handleIOSInstall() {
 }
 
 function fixLayoutForMobile() {
-  // Força o recálculo do layout para garantir centralização no PWA/mobile
-  setTimeout(() => {
-    document.body.style.display = 'none';
-    // Força reflow
-    void document.body.offsetHeight;
-    document.body.style.display = 'flex';
-  }, 50);
+  // O layout novo (grid) já centraliza sozinho; nada a forçar.
 }
