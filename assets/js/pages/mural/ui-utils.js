@@ -1,5 +1,16 @@
 // Utilitários de UI compartilhados (loading, feedback)
+// Usam os componentes do sistema (Carregando e Aviso, em assets/js/utils/ui.js).
+// Se o ui.js não estiver na página, caem na versão antiga abaixo.
+const ui = () => window.VirologiaUFSM;
+const titulosAviso = { success: 'Pronto', error: 'Algo deu errado', warning: 'Atenção', info: 'Informação' };
+const tiposAviso = { success: 'ok', error: 'erro', warning: 'atencao', info: 'info' };
+
 export function mostrarLoading() {
+    if (ui()?.carregando) { ui().carregando(true); return; }
+    mostrarLoadingAntigo();
+}
+
+function mostrarLoadingAntigo() {
     const loading = document.getElementById("loading");
     if (loading) {
         loading.style.display = "flex";
@@ -33,6 +44,7 @@ export function mostrarLoading() {
 }
 
 export function esconderLoading() {
+    if (ui()?.carregando) ui().carregando(false);
     const loadings = document.querySelectorAll('#loading');
     loadings.forEach(loading => {
         loading.remove(); // REMOVE completamente em vez de esconder
@@ -40,6 +52,16 @@ export function esconderLoading() {
 }
 
 export function mostrarFeedback(mensagem, tipo = "success") {
+    if (ui()?.aviso) {
+        // A mensagem pode trazer HTML simples; o aviso mostra só o texto
+        const div = document.createElement('div');
+        div.innerHTML = String(mensagem ?? '');
+        const texto = div.textContent.trim();
+        // Mensagem curta vira o próprio título ("Tarefa concluída com sucesso!"); longa ganha um título geral
+        if (texto.length <= 60) ui().aviso({ tipo: tiposAviso[tipo] || 'info', titulo: texto });
+        else ui().aviso({ tipo: tiposAviso[tipo] || 'info', titulo: titulosAviso[tipo] || 'Aviso', texto });
+        return;
+    }
     // Verificar se container de notificações existe, senão criar
     let container = document.querySelector('.toastify-container');
     if (!container) {

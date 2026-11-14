@@ -14,43 +14,58 @@
 </head>
 <body>
   <div class="container mural-card shadow">
-    <h1 class="mural-title mb-3"><i class="bi bi-clipboard2-check"></i> Mural de Tarefas</h1>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <!-- Botão principal no topo -->
-      <button id="adicionar-tarefa" class="btn">
-        <i class="bi bi-plus-circle"></i> Nova Tarefa
-      </button>
-      
-      <!-- Container para botões secundários -->
-      <div class="btn-secondary-container">
-        <button id="voltar-hub" class="btn">
-          <i class="bi bi-house"></i> Voltar ao Hub
-        </button>
-        <button id="historico-button" class="btn">
+    <header class="vu-pagina-topo">
+      <div>
+        <h1 class="mural-title">Mural</h1>
+        <p id="mural-resumo">Tarefas do setor</p>
+      </div>
+      <div class="vu-acoes-topo">
+        <button id="historico-button" class="vu-btn">
           <i class="bi bi-clock-history"></i> Histórico
         </button>
+        <button id="adicionar-tarefa" class="vu-btn vu-btn-principal">
+          <i class="bi bi-plus-lg"></i> Nova tarefa
+        </button>
+        <!-- Mantido escondido: o script ainda procura por ele -->
+        <button id="voltar-hub" class="vu-oculto" type="button">Início</button>
       </div>
-    </div>
-    <div class="row mural-section">
-      <div class="col-md-6 mb-2">
-        <label class="mural-form-label me-2" for="filtro-tipo"><i class="bi bi-funnel"></i> Filtrar por tipo:</label>
-        <select id="filtro-tipo" class="form-select d-inline-block w-auto">
-          <option value="Todos">Todos</option>
-          <option value="SN">SN</option>
-          <option value="VACINA">VACINA</option>
-          <option value="ELISA">ELISA</option>
-          <option value="MOLECULAR">MOLECULAR</option>
-          <option value="ICC">ICC</option>
-          <option value="RAIVA">RAIVA</option>
-        </select>
+    </header>
+
+    <!-- Filtros: as pílulas controlam os selects escondidos (o script ouve o "change" deles) -->
+    <div class="vu-barra-filtros">
+      <div class="vu-barra-filtros-linha">
+        <div class="vu-busca">
+          <i class="bi bi-search vu-ico"></i>
+          <input type="search" id="mural-busca" placeholder="Protocolo, teste ou proprietário" aria-label="Buscar no Mural">
+        </div>
+        <div class="vu-filtros" data-espelho="filtro-ordem" role="group" aria-label="Ordem">
+          <span class="vu-filtros-marca"></span>
+          <button type="button" class="vu-filtro" data-valor="recentes">Recentes</button>
+          <button type="button" class="vu-filtro" data-valor="antigas">Antigas</button>
+        </div>
       </div>
-      <div class="col-md-6 mb-2">
-        <label class="mural-form-label me-2" for="filtro-ordem"><i class="bi bi-sort-down"></i> Ordenar por:</label>
-        <select id="filtro-ordem" class="form-select d-inline-block w-auto">
-          <option value="recentes">Mais recentes</option>
-          <option value="antigas">Mais antigas</option>
-        </select>
+      <div class="vu-opcoes vu-opcoes--rolar" data-espelho="filtro-tipo" role="group" aria-label="Filtrar por teste">
+        <button type="button" class="vu-opcao" data-valor="Todos"><i class="bi bi-check2"></i>Todos</button>
+        <button type="button" class="vu-opcao" data-valor="SN"><i class="bi bi-check2"></i>SN</button>
+        <button type="button" class="vu-opcao" data-valor="VACINA"><i class="bi bi-check2"></i>Vacina</button>
+        <button type="button" class="vu-opcao" data-valor="ELISA"><i class="bi bi-check2"></i>ELISA</button>
+        <button type="button" class="vu-opcao" data-valor="MOLECULAR"><i class="bi bi-check2"></i>Molecular</button>
+        <button type="button" class="vu-opcao" data-valor="ICC"><i class="bi bi-check2"></i>ICC</button>
+        <button type="button" class="vu-opcao" data-valor="RAIVA"><i class="bi bi-check2"></i>Raiva</button>
       </div>
+      <select id="filtro-tipo" class="vu-oculto" aria-hidden="true" tabindex="-1">
+        <option value="Todos">Todos</option>
+        <option value="SN">SN</option>
+        <option value="VACINA">VACINA</option>
+        <option value="ELISA">ELISA</option>
+        <option value="MOLECULAR">MOLECULAR</option>
+        <option value="ICC">ICC</option>
+        <option value="RAIVA">RAIVA</option>
+      </select>
+      <select id="filtro-ordem" class="vu-oculto" aria-hidden="true" tabindex="-1">
+        <option value="recentes">Mais recentes</option>
+        <option value="antigas">Mais antigas</option>
+      </select>
     </div>
     <form id="mural-form" class="mural-section" style="display:none;">
       <div class="row g-3">
@@ -155,7 +170,7 @@
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title text-success" id="tarefaModalLabel"><i class="bi bi-plus-circle"></i> Nova Tarefa</h5>
+            <h5 class="modal-title" id="tarefaModalLabel">Nova tarefa</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
           </div>
           <div class="modal-body">
@@ -165,9 +180,17 @@
                   <label for="id-modal" class="mural-form-label">Identificação:</label>
                   <input type="text" id="id-modal" name="id" class="form-control" required>
                 </div>
-                <div class="col-md-4">
-                  <label for="tipo-modal" class="mural-form-label">Teste:</label>
-                  <select id="tipo-modal" name="tipo" class="form-select" required>
+                <div class="col-12 col-md-8">
+                  <label for="tipo-modal" class="mural-form-label">Teste</label>
+                  <div class="vu-opcoes" data-espelho="tipo-modal" role="group" aria-label="Teste">
+                    <button type="button" class="vu-opcao" data-valor="SN"><i class="bi bi-check2"></i>SN</button>
+                    <button type="button" class="vu-opcao" data-valor="VACINA"><i class="bi bi-check2"></i>Vacina</button>
+                    <button type="button" class="vu-opcao" data-valor="ELISA"><i class="bi bi-check2"></i>ELISA</button>
+                    <button type="button" class="vu-opcao" data-valor="MOLECULAR"><i class="bi bi-check2"></i>Molecular</button>
+                    <button type="button" class="vu-opcao" data-valor="ICC"><i class="bi bi-check2"></i>ICC</button>
+                    <button type="button" class="vu-opcao" data-valor="RAIVA"><i class="bi bi-check2"></i>Raiva</button>
+                  </div>
+                  <select id="tipo-modal" name="tipo" class="form-select vu-oculto" required tabindex="-1" aria-hidden="true">
                     <option value="SN">SN</option>
                     <option value="VACINA">VACINA</option>
                     <option value="ELISA">ELISA</option>
@@ -224,8 +247,12 @@
                   <small class="form-text text-muted">Especifique o vírus, bactéria ou patógeno a ser detectado</small>
                 </div>
                 <div class="col-md-4">
-                  <label for="quantidade-modal" class="mural-form-label">Quantidade:</label>
-                  <input type="number" id="quantidade-modal" name="quantidade" class="form-control" min="1" required>
+                  <label for="quantidade-modal" class="mural-form-label">Quantidade de amostras</label>
+                  <div class="vu-contador" data-min="1" data-max="999">
+                    <button type="button" aria-label="Diminuir"><i class="bi bi-dash-lg"></i></button>
+                    <input type="number" id="quantidade-modal" name="quantidade" min="1" required inputmode="numeric" placeholder="0">
+                    <button type="button" data-mais aria-label="Aumentar"><i class="bi bi-plus-lg"></i></button>
+                  </div>
                 </div>
                 <div class="col-md-4" id="gramatura-container-modal" style="display:none;">
                   <label for="gramatura-modal" class="mural-form-label">Gramatura (Vacina):</label>
@@ -298,6 +325,13 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/utils/ui.js"></script>
+  <script>
+    // Ao abrir "Nova tarefa" ou "Editar", as pílulas mostram o teste escolhido
+    document.getElementById("tarefa-modal").addEventListener("shown.bs.modal", function () {
+      if (window.VirologiaUFSM) VirologiaUFSM.sincronizarEspelhos(this);
+    });
+  </script>
   <script type="module" src="../assets/js/utils/casca.js"></script>
   <script type="module" src="../assets/js/pages/mural/mural.js"></script>
   <script type="module" src="../assets/js/pages/mural/regresultado.js"></script>

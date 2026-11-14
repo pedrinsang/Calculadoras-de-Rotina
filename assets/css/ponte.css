@@ -598,3 +598,19 @@ body.vu-antiga .resultado-card [class*="item"] { background: var(--floresta-alta
 /* Unidade ao lado do campo (g, mL, amostras) grudada nele, no visual do sistema */
 body.vu-antiga .input-group > .form-control:not(:last-child) { border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; }
 body.vu-antiga .input-group-text { min-height: 48px; border: 2px solid var(--linha-forte); border-left: 0; border-radius: 0 var(--raio-medio) var(--raio-medio) 0 !important; background: var(--cartao-suave); color: var(--tinta-suave); font-family: var(--font-numeros); font-size: 15px; }
+
+/* Mural: mais largo, para o quadro de 3 colunas */
+body.vu-antiga:has(.mural-card) .vu-casca-main { max-width: 1480px; }
+body.vu-antiga .vu-casca-main > .container.mural-card { max-width: 1440px !important; }
+
+/* Tarefa saindo ao concluir, chegando ao mudar de coluna */
+body.vu-antiga .mural-list .card.saindo { opacity: 0; transform: translateX(32px) scale(0.98); transition: opacity var(--dur-lenta), transform var(--dur-lenta) var(--curva-saida); }
+body.vu-antiga .mural-list .card.vu-chegou { animation: vu-sobe var(--dur-lenta) var(--curva-mola); }
+body.vu-antiga .vu-tarefa-feita { box-shadow: none !important; background: var(--cartao) !important; }
+body.vu-antiga .vu-quadro .vu-coluna { background: var(--cartao-suave); }
+body.vu-antiga .vu-quadro .card { margin-bottom: 0 !important; }
+
+/* Botões do topo do Mural lado a lado, no tamanho natural */
+body.vu-antiga .vu-acoes-topo #adicionar-tarefa, body.vu-antiga .vu-acoes-topo #historico-button { width: auto !important; height: auto !important; min-height: 52px; margin: 0 !important; flex: none; padding: 0 var(--esp-5); }
+body.vu-antiga .vu-acoes-topo { flex-wrap: nowrap; }
+@media (max-width: 575.98px) { body.vu-antiga .vu-acoes-topo { width: 100%; } body.vu-antiga .vu-acoes-topo > .vu-btn { flex: 1 !important; padding: 0 var(--esp-2); white-space: nowrap; font-size: 16px; } }

@@ -557,3 +557,65 @@ body.vu-entrar-pagina { position: relative; display: grid; place-items: center; 
 .vu-hoje > *, .vu-hoje-num { min-width: 0; }
 .vu-hoje-numeros { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 a.vu-avatar { text-decoration: none; }
+
+/* ==========================================================
+   Peças que abrem por cima da tela (ui.js)
+   ========================================================== */
+
+/* Folha de confirmação */
+.vu-folha-fundo { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: var(--esp-4); background: rgba(15, 61, 36, 0.55); animation: vu-aparece var(--dur-media) var(--curva-saida); }
+.vu-folha-fundo .vu-folha { width: 100%; max-width: 440px; }
+.vu-folha-fundo.saindo { opacity: 0; transition: opacity 0.2s; }
+.vu-folha-icone--ok { background: var(--verde-claro) !important; color: var(--verde-escuro) !important; }
+.vu-folha-icone .bi { font-size: 28px; }
+@keyframes vu-aparece { from { opacity: 0; } }
+@media (max-width: 575.98px) {
+  .vu-folha-fundo { place-items: end center; padding: 0; }
+  .vu-folha-fundo .vu-folha { max-width: none; border-radius: var(--raio-xl) var(--raio-xl) 0 0; padding-bottom: calc(var(--esp-5) + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Avisos no topo */
+.vu-avisos-tela { position: fixed; z-index: 2100; top: calc(var(--esp-4) + env(safe-area-inset-top, 0px)); right: var(--esp-4); width: min(400px, calc(100vw - 2 * var(--esp-4))); display: grid; gap: var(--esp-2); pointer-events: none; }
+.vu-avisos-tela .vu-aviso { pointer-events: auto; padding-right: var(--esp-6); }
+.vu-avisos-tela .vu-aviso.saindo { opacity: 0; translate: 0 -12px; transition: opacity 0.25s, translate 0.25s; }
+.vu-aviso-atencao { color: var(--ambar); }
+.vu-aviso-atencao .vu-aviso-icone { background: var(--ambar-claro); color: var(--ambar-texto); }
+.vu-aviso-icone .bi { font-size: 20px; }
+.vu-aviso-fechar { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--tinta-suave); cursor: pointer; }
+.vu-aviso-fechar:hover { background: var(--cartao-suave); color: var(--tinta); }
+
+/* Carregando: microplaca por cima da tela */
+.vu-carregando-tela { position: fixed; inset: 0; z-index: 1900; display: grid; place-items: center; background: rgba(243, 246, 238, 0.72); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: vu-aparece var(--dur-media) var(--curva-saida); }
+.vu-carregando-tela .vu-carregando { color: var(--tinta); font-weight: 700; }
+
+/* Contador com campo de digitar dentro */
+.vu-contador input { width: 96px; min-height: 0; border: 0 !important; background: transparent !important; box-shadow: none !important; text-align: center; font-family: var(--font-numeros); font-size: 30px; font-weight: 700; color: var(--tinta); -moz-appearance: textfield; padding: 0 !important; }
+.vu-contador input::-webkit-outer-spin-button, .vu-contador input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.vu-contador input:focus { outline: none; }
+.vu-contador:focus-within { border-color: var(--verde); box-shadow: 0 0 0 5px var(--verde-claro); }
+.vu-contador input.mudou { animation: vu-pulo var(--dur-media) var(--curva-mola); }
+.vu-contador button .bi { font-size: 22px; }
+
+/* ==========================================================
+   Mural
+   ========================================================== */
+.vu-pagina-topo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-3) var(--esp-4); }
+.vu-pagina-topo > div:first-child { flex: 1; min-width: 200px; }
+.vu-pagina-topo h1 { margin: 0 !important; }
+.vu-pagina-topo p { margin: 2px 0 0; color: var(--tinta-suave); }
+.vu-pagina-topo .vu-acoes-topo { display: flex; flex-wrap: wrap; gap: var(--esp-2); }
+.vu-barra-filtros { display: grid; gap: var(--esp-3); margin: var(--esp-4) 0; }
+.vu-barra-filtros-linha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-3); }
+.vu-barra-filtros-linha .vu-busca { flex: 1; min-width: 220px; }
+.vu-quadro .vu-coluna { align-content: start; }
+.vu-coluna-lista { display: grid; gap: var(--esp-3); }
+.vu-coluna-vazia { margin: 0; padding: var(--esp-4); border: 2px dashed var(--linha); border-radius: var(--raio-grande); text-align: center; color: var(--tinta-suave); font-size: 15px; }
+@media (max-width: 1279.98px) { .vu-quadro { grid-template-columns: minmax(0, 1fr); } }
+@media (min-width: 1280px) {
+  .vu-quadro .card .vu-tarefa-acoes { display: grid !important; grid-template-columns: 1fr 1fr; }
+  .vu-quadro .card .vu-tarefa-acoes .btn, .vu-quadro .card .vu-tarefa-acoes .btn-group { width: 100%; }
+}
+
+/* Só a pílula escolhida mostra o ✓ (vale para ícones do Bootstrap Icons também) */
+.vu-opcao > .bi { display: none; }
+.vu-opcao[aria-pressed="true"] > .bi { display: block; color: var(--lima); animation: vu-pulo var(--dur-media) var(--curva-mola); }

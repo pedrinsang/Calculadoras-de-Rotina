@@ -771,7 +771,116 @@ function configurarMenuELISA() {
 }
 
 // Função para carregar tarefas
-async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
+// ============================================================================
+// QUADRO DO MURAL (identidade visual): vazio, contagens, busca, concluídas
+// ============================================================================
+
+function textoSeguro(t) {
+    return String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Estado vazio no padrão do sistema
+function vazioMural(icone, titulo, texto) {
+    return `<div class="vu-vazio">
+        <span class="vu-vazio-icone"><i class="bi ${icone}" style="font-size:40px"></i></span>
+        <h3>${textoSeguro(titulo)}</h3>
+        <p>${textoSeguro(texto)}</p>
+    </div>`;
+}
+
+// "12 tarefas no setor · 3 vencendo"
+function atualizarResumoMural(total, vencendo = 0) {
+    const el = document.getElementById('mural-resumo');
+    if (!el) return;
+    const parte1 = total === 0 ? 'Nenhuma tarefa no setor' : `${total} tarefa${total === 1 ? '' : 's'} no setor`;
+    el.textContent = vencendo ? `${parte1} · ${vencendo} vencendo ou vencida${vencendo === 1 ? '' : 's'}` : parte1;
+}
+
+// Números no topo de cada coluna e resumo da página
+function atualizarContagensQuadro() {
+    const quadro = document.querySelector('#mural-list .vu-quadro');
+    if (!quadro) return;
+    let total = 0;
+    ['pendente', 'andamento'].forEach(nome => {
+        const col = quadro.querySelector(`[data-coluna="${nome}"]`);
+        const cartoes = col.querySelectorAll('.vu-coluna-lista > .card:not([hidden])');
+        col.querySelector('.vu-coluna-topo span').textContent = cartoes.length;
+        total += cartoes.length;
+        const lista = col.querySelector('.vu-coluna-lista');
+        let aviso = lista.querySelector('.vu-coluna-vazia');
+        if (!cartoes.length && !aviso) {
+            lista.insertAdjacentHTML('beforeend', `<p class="vu-coluna-vazia">${nome === 'pendente' ? 'Nada pendente.' : 'Nenhuma tarefa em andamento.'}</p>`);
+        } else if (cartoes.length && aviso) {
+            aviso.remove();
+        }
+    });
+    const vencendo = quadro.querySelectorAll('.card.tarefa-vencida:not([hidden]), .card.tarefa-urgente:not([hidden])').length;
+    atualizarResumoMural(total, vencendo);
+}
+
+// Busca por texto (protocolo, teste, proprietário, sigla) sem ir ao servidor
+function aplicarBuscaMural() {
+    const campo = document.getElementById('mural-busca');
+    const termo = (campo?.value || '').trim().toLowerCase();
+    document.querySelectorAll('#mural-list .vu-quadro .card[data-busca]').forEach(card => {
+        card.hidden = !!termo && !card.dataset.busca.includes(termo);
+    });
+    atualizarContagensQuadro();
+}
+
+// Coluna "Concluídas hoje" (vem do Histórico)
+async function carregarConcluidasHoje(lista) {
+    if (!lista) return;
+    try {
+        const inicio = new Date();
+        inicio.setHours(0, 0, 0, 0);
+        const snap = await getDocs(query(collection(db, 'historico'), where('dataConclusao', '>=', Timestamp.fromDate(inicio))));
+        const itens = [];
+        snap.forEach(d => itens.push(d.data()));
+        itens.sort((a, b) => (b.dataConclusao?.toMillis?.() || 0) - (a.dataConclusao?.toMillis?.() || 0));
+        const coluna = lista.closest('.vu-coluna');
+        coluna.querySelector('.vu-coluna-topo span').textContent = itens.length;
+        if (!itens.length) {
+            lista.innerHTML = '<p class="vu-coluna-vazia">Nenhuma tarefa concluída hoje ainda.</p>';
+            return;
+        }
+        lista.innerHTML = itens.slice(0, 8).map(t => `
+            <div class="card vu-tarefa-feita">
+              <div class="card-body vu-tarefa-corpo">
+                <h3 class="vu-tarefa-nome">${textoSeguro(t.tipo)}${t.subTipo ? ` — ${textoSeguro(t.subTipo)}` : ''}</h3>
+                <div class="vu-tarefa-selos"><span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i> Concluída ${t.dataConclusao?.toDate ? t.dataConclusao.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</span></div>
+                <p class="vu-tarefa-info">Protocolo <code>${textoSeguro(t.id)}</code>${t.siglaResponsavel ? ' · ' + textoSeguro(t.siglaResponsavel) : ''}</p>
+              </div>
+            </div>`).join('') + (itens.length > 8 ? `<a class="vu-btn vu-btn-fantasma" href="historico.html">Ver todas no Histórico</a>` : '');
+    } catch (erro) {
+        console.warn('Não foi possível carregar as concluídas de hoje:', erro);
+        lista.innerHTML = '<p class="vu-coluna-vazia">Veja as concluídas no Histórico.</p>';
+    }
+}
+
+// Move o cartão para a coluna certa quando o status muda (botão "Andamento")
+function moverCartaoDeColuna(card, novoStatus) {
+    const quadro = document.querySelector('#mural-list .vu-quadro');
+    if (!quadro || !card) return;
+    const destino = quadro.querySelector(`[data-coluna="${novoStatus === 'em-progresso' ? 'andamento' : 'pendente'}"] .vu-coluna-lista`);
+    if (destino && card.parentElement !== destino) {
+        destino.prepend(card);
+        card.classList.remove('vu-chegou'); void card.offsetWidth; card.classList.add('vu-chegou');
+    }
+    atualizarContagensQuadro();
+}
+
+// Folha de confirmação do sistema (cai no confirm() se o ui.js não carregar)
+function confirmarAcao(opcoes) {
+    if (window.VirologiaUFSM?.confirmar) return window.VirologiaUFSM.confirmar(opcoes);
+    return Promise.resolve(window.confirm(opcoes.titulo + (opcoes.texto ? '\n\n' + opcoes.texto : '')));
+}
+
+// Sem argumentos, recarrega respeitando o filtro e a ordem escolhidos na tela
+async function carregarTarefas(
+    filtro = document.getElementById("filtro-tipo")?.value || "Todos",
+    ordem = document.getElementById("filtro-ordem")?.value || "recentes"
+) {
     mostrarLoading();
     try {
         // Atualizar prazos de tarefas existentes silenciosamente
@@ -788,7 +897,10 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
             return;
         }
 
-        muralList.innerHTML = "<p>Carregando tarefas...</p>";
+        muralList.innerHTML = `<div class="vu-coluna-lista" aria-label="Carregando tarefas">
+            <div class="vu-esqueleto" style="height:132px;border-radius:24px"></div>
+            <div class="vu-esqueleto" style="height:132px;border-radius:24px"></div>
+            <div class="vu-esqueleto" style="height:132px;border-radius:24px"></div></div>`;
 
         const user = auth.currentUser;
         if (!user) {
@@ -799,7 +911,7 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
 
         // Verificar conexão com a internet
         if (!navigator.onLine) {
-            muralList.innerHTML = '<p class="text-danger">Sem conexão com a internet. Verifique sua conexão e tente novamente.</p>';
+            muralList.innerHTML = vazioMural('bi-wifi-off', 'Você está sem internet', 'Quando a conexão voltar, toque em “Mural” de novo para ver as tarefas.');
             esconderLoading();
             return;
         }
@@ -841,12 +953,30 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            muralList.innerHTML = "<p>Nenhuma tarefa encontrada.</p>";
+            muralList.innerHTML = vazioMural('bi-check2-circle', 'Tudo em dia', 'Nenhuma tarefa no Mural. Quando chegar uma amostra, toque em “Nova tarefa”.');
+            atualizarResumoMural(0);
             esconderLoading();
             return;
         }
 
-        muralList.innerHTML = "";
+        // Quadro: Pendentes | Em andamento | Concluídas hoje
+        muralList.innerHTML = `
+          <div class="vu-quadro">
+            <section class="vu-coluna" data-coluna="pendente">
+              <h2 class="vu-coluna-topo"><i style="background:var(--tinta-suave)"></i>Pendentes<span>0</span></h2>
+              <div class="vu-coluna-lista"></div>
+            </section>
+            <section class="vu-coluna" data-coluna="andamento">
+              <h2 class="vu-coluna-topo"><i style="background:var(--azul)"></i>Em andamento<span>0</span></h2>
+              <div class="vu-coluna-lista"></div>
+            </section>
+            <section class="vu-coluna" data-coluna="concluidas">
+              <h2 class="vu-coluna-topo"><i style="background:var(--verde)"></i>Concluídas hoje<span>0</span></h2>
+              <div class="vu-coluna-lista"><p class="vu-coluna-vazia">Buscando…</p></div>
+            </section>
+          </div>`;
+        const colunaPendente = muralList.querySelector('[data-coluna="pendente"] .vu-coluna-lista');
+        const colunaAndamento = muralList.querySelector('[data-coluna="andamento"] .vu-coluna-lista');
         querySnapshot.forEach((doc) => {
             const tarefa = doc.data();
             
@@ -1003,8 +1133,15 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
               </div>
             `;
 
-            muralList.appendChild(amostraItem);
+            amostraItem.dataset.busca = [tarefa.id, tipoDisplay, tarefa.subTipo, tarefa.alvo, tarefa.proprietario?.nome, tarefa.siglaResponsavel]
+                .filter(Boolean).join(' ').toLowerCase();
+            (tarefa.status === 'em-progresso' ? colunaAndamento : colunaPendente).appendChild(amostraItem);
         });
+
+        // Contagens, resumo do topo, busca e concluídas de hoje
+        atualizarContagensQuadro();
+        aplicarBuscaMural();
+        carregarConcluidasHoje(muralList.querySelector('[data-coluna="concluidas"] .vu-coluna-lista'));
 
         // Adiciona event listeners para os botões
         document.querySelectorAll('.btn-progresso').forEach(btn => {
@@ -1144,6 +1281,7 @@ window.marcarProgresso = async (id) => {
             } else {
                 cardElement.classList.remove('em-progresso');
             }
+            moverCartaoDeColuna(cardElement, novoStatus);
         }
         
         // Salva no Firestore
@@ -1172,8 +1310,17 @@ window.marcarProgresso = async (id) => {
 
 // Função para concluir tarefa
 window.concluirTarefa = async (id) => {
-    if (!confirm("Tem certeza que deseja concluir esta tarefa?")) return;
-    
+    const cartao = document.querySelector(`.btn-concluir[data-id="${id}"]`)?.closest('.card');
+    const nome = cartao?.querySelector('.vu-tarefa-nome')?.textContent?.trim() || 'esta tarefa';
+    const ok = await confirmarAcao({
+        titulo: 'Concluir esta tarefa?',
+        texto: `${nome} sai do Mural e vai para o Histórico. Dá para restaurar depois, se precisar.`,
+        sim: 'Sim, concluir',
+        icone: 'bi-check2-all'
+    });
+    if (!ok) return;
+    if (cartao) cartao.classList.add('saindo');
+
     mostrarLoading();
     try {
         const tarefaRef = doc(db, "tarefas", id);
@@ -1202,8 +1349,16 @@ window.concluirTarefa = async (id) => {
 
 // Função para excluir tarefa
 window.excluirTarefa = async (id) => {
-    if (!confirm("Tem certeza que deseja excluir esta tarefa?")) return;
-    
+    const cartao = document.querySelector(`.btn-excluir[data-id="${id}"]`)?.closest('.card');
+    const nome = cartao?.querySelector('.vu-tarefa-nome')?.textContent?.trim() || 'Esta tarefa';
+    const ok = await confirmarAcao({
+        titulo: 'Excluir esta tarefa?',
+        texto: `${nome} será apagada do Mural. Isso não pode ser desfeito.`,
+        sim: 'Sim, excluir',
+        perigo: true
+    });
+    if (!ok) return;
+
     mostrarLoading();
     try {
         await deleteDoc(doc(db, "tarefas", id));
@@ -1754,6 +1909,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 carregarTarefas(filtroTipo, filtroOrdem);
             });
         }
+
+        // Busca por texto no quadro
+        const buscaMural = document.getElementById("mural-busca");
+        if (buscaMural) buscaMural.addEventListener('input', aplicarBuscaMural);
+
+        // Pílulas de filtro e contador (identidade visual)
+        if (window.VirologiaUFSM) window.VirologiaUFSM.iniciar(document);
 
         if (filtroOrdemSelect) {
             filtroOrdemSelect.addEventListener('change', function() {
