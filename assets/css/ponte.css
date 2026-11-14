@@ -424,3 +424,177 @@ body.vu-antiga .conta-title { letter-spacing: -0.015em !important; }
   body.vu-antiga .sv-acoes { bottom: calc(var(--barra-abas) + var(--esp-4) + env(safe-area-inset-bottom, 0px)); flex-wrap: nowrap; border-radius: var(--raio-grande); padding: var(--esp-2); box-shadow: var(--sombra-elevada); }
   body.vu-antiga .sv-acoes .sv-btn { flex: 1 1 0; min-width: 0; padding: 0 var(--esp-2); }
 }
+
+/* ==========================================================
+   Identidade visual em todas as peças
+   ========================================================== */
+
+/* ---------- Cores utilitárias do Bootstrap nos tons do sistema ---------- */
+body.vu-antiga .text-success { color: var(--verde-escuro) !important; }
+body.vu-antiga .text-warning { color: var(--ambar-texto) !important; }
+body.vu-antiga .text-danger { color: var(--vermelho) !important; }
+body.vu-antiga .text-primary, body.vu-antiga .text-info { color: var(--azul) !important; }
+body.vu-antiga .text-muted, body.vu-antiga .text-secondary { color: var(--tinta-suave) !important; }
+
+/* Badges viram selos (fundo claro + texto escuro do mesmo tom) */
+body.vu-antiga .badge { font-size: 14px; font-weight: 700; }
+body.vu-antiga .badge.bg-success { background: var(--verde-claro) !important; color: var(--verde-escuro) !important; }
+body.vu-antiga .badge.bg-warning { background: var(--ambar-claro) !important; color: var(--ambar-texto) !important; }
+body.vu-antiga .badge.bg-danger { background: var(--vermelho-claro) !important; color: var(--vermelho) !important; }
+body.vu-antiga .badge.bg-primary, body.vu-antiga .badge.bg-info { background: var(--azul-claro) !important; color: var(--azul) !important; }
+body.vu-antiga .badge.bg-secondary, body.vu-antiga .badge.bg-light { background: var(--cartao-suave) !important; color: var(--tinta-suave) !important; }
+
+/* ---------- Tarefas (Mural e Histórico) no formato do componente Tarefa ---------- */
+body.vu-antiga .mural-list .card,
+body.vu-antiga .historico-item {
+  background: var(--cartao) !important;
+  border: 1px solid var(--linha) !important;
+  border-left: 1px solid var(--linha) !important;
+  border-radius: var(--raio-grande) !important;
+  box-shadow: var(--sombra-cartao) !important;
+  padding: 0 !important;
+  margin-bottom: var(--esp-3) !important;
+  transition: box-shadow var(--dur-media);
+}
+body.vu-antiga .mural-list .card:hover,
+body.vu-antiga .historico-item:hover { box-shadow: var(--sombra-elevada) !important; }
+body.vu-antiga .mural-list .card .card-body,
+body.vu-antiga .historico-item .vu-tarefa-corpo { padding: var(--esp-4) var(--esp-5); }
+body.vu-antiga .vu-tarefa-corpo { display: grid; gap: var(--esp-2); }
+body.vu-antiga .vu-tarefa-nome { margin: 0; color: var(--tinta); font-family: var(--font-titulo); font-size: 19px; line-height: 24px; font-weight: 600; }
+body.vu-antiga .vu-tarefa-info { margin: 0; font-size: 15px; line-height: 22px; color: var(--tinta-suave); }
+body.vu-antiga .vu-tarefa-info code { font-family: var(--font-numeros); font-size: 15px; color: var(--tinta); }
+body.vu-antiga .vu-tarefa-info mark, body.vu-antiga .vu-tarefa-nome mark { background: var(--lima); color: var(--sobre-lima); border-radius: 4px; padding: 0 2px; }
+body.vu-antiga .vu-selo .bi { font-size: 15px; }
+
+/* Selo de status acompanha o botão de andamento (o Mural troca a classe em-progresso) */
+body.vu-antiga .card .so-andamento { display: none; }
+body.vu-antiga .card.em-progresso .so-andamento { display: inline-flex; }
+body.vu-antiga .card.em-progresso .so-pendente { display: none; }
+
+/* Botões da tarefa: Concluir principal, os outros contorno, Mais fantasma */
+body.vu-antiga .vu-tarefa-acoes { display: flex !important; flex-wrap: wrap; gap: var(--esp-2); margin-top: var(--esp-2); }
+body.vu-antiga .vu-tarefa-acoes > .btn,
+body.vu-antiga .vu-tarefa-acoes .btn-group > .btn { border-radius: var(--raio-medio) !important; margin: 0 !important; }
+body.vu-antiga .vu-tarefa-acoes .vu-btn:not(.vu-btn-principal):not(.vu-btn-fantasma) {
+  background: var(--cartao) !important; border: 2px solid var(--linha-forte) !important; color: var(--tinta) !important; box-shadow: none !important;
+}
+body.vu-antiga .vu-tarefa-acoes .vu-btn:not(.vu-btn-principal):not(.vu-btn-fantasma):hover { border-color: var(--tinta) !important; background: var(--cartao-suave) !important; }
+body.vu-antiga .vu-tarefa-acoes .vu-btn-principal { background: var(--verde) !important; border: 2px solid var(--verde) !important; color: var(--sobre-verde) !important; }
+body.vu-antiga .vu-tarefa-acoes .vu-btn-fantasma { background: transparent !important; border: 2px solid transparent !important; color: var(--verde-escuro) !important; box-shadow: none !important; }
+body.vu-antiga .vu-tarefa-acoes .vu-btn-fantasma:hover { background: var(--cartao-suave) !important; }
+body.vu-antiga .card.em-progresso .btn-progresso { background: var(--azul-claro) !important; border-color: var(--azul) !important; color: var(--azul) !important; }
+body.vu-antiga .card .btn-progresso::after { display: none !important; }
+body.vu-antiga .card .btn-progresso .btn-text-original { opacity: 1 !important; }
+body.vu-antiga .dropdown-menu { border: 1px solid var(--linha); border-radius: var(--raio-medio); box-shadow: var(--sombra-elevada); padding: var(--esp-1); }
+body.vu-antiga .dropdown-item { min-height: 44px; display: flex; align-items: center; border-radius: 10px; font-weight: 600; }
+body.vu-antiga .dropdown-item:active { background: var(--verde-claro); color: var(--verde-escuro); }
+
+/* ---------- Protocolos: linhas no formato da Lista ---------- */
+body.vu-antiga .protocolo-item {
+  background: var(--cartao) !important;
+  border: 1px solid var(--linha) !important;
+  border-left: 1px solid var(--linha) !important;
+  border-radius: var(--raio-grande) !important;
+  box-shadow: var(--sombra-cartao) !important;
+  padding: var(--esp-4) var(--esp-5) !important;
+}
+body.vu-antiga .protocolo-item h5 { color: var(--tinta) !important; font-family: var(--font-titulo); font-weight: 600 !important; font-size: 19px; }
+body.vu-antiga .protocolo-id { font-family: var(--font-numeros); font-size: 14px; color: var(--tinta-suave); }
+body.vu-antiga .protocolo-tags .tag { display: inline-flex; align-items: center; height: 28px; padding: 0 var(--esp-2); margin: 2px; border-radius: var(--raio-pilula); background: var(--roxo-claro) !important; color: var(--roxo) !important; font-size: 14px; font-weight: 700; }
+
+/* ---------- Etapas da ficha SV no formato do componente Etapas ---------- */
+body.vu-antiga .sv-etapas a,
+body.vu-antiga .sv-etapas span {
+  min-height: 48px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--raio-pilula) !important;
+  background: var(--cartao) !important; border: 2px solid var(--linha) !important;
+  color: var(--tinta-suave) !important; font-weight: 700; text-decoration: none;
+}
+body.vu-antiga .sv-etapas a:hover { border-color: var(--linha-forte) !important; color: var(--tinta) !important; }
+body.vu-antiga .sv-etapas .ativa {
+  background: var(--floresta-alta) !important; border-color: var(--floresta-alta) !important; color: var(--sobre-floresta) !important;
+  box-shadow: 0 0 0 4px var(--verde-claro);
+}
+
+/* ---------- Resultado das calculadoras: cartão escuro com lima ---------- */
+body.vu-antiga .resultado-card {
+  background: radial-gradient(100% 140% at 0% 0%, var(--floresta-alta), var(--floresta) 60%) !important;
+  color: var(--sobre-floresta) !important;
+  border: 0 !important;
+  border-radius: var(--raio-xl) !important;
+  padding: var(--esp-5) !important;
+  box-shadow: var(--sombra-elevada) !important;
+}
+body.vu-antiga .resultado-card h3, body.vu-antiga .resultado-card h4, body.vu-antiga .resultado-card h5, body.vu-antiga .resultado-card h6,
+body.vu-antiga .resultado-card strong, body.vu-antiga .resultado-card b, body.vu-antiga .resultado-card label,
+body.vu-antiga .resultado-card .text-success, body.vu-antiga .resultado-card .text-primary { color: var(--lima) !important; }
+body.vu-antiga .resultado-card p, body.vu-antiga .resultado-card span, body.vu-antiga .resultado-card div,
+body.vu-antiga .resultado-card li, body.vu-antiga .resultado-card td, body.vu-antiga .resultado-card small { color: inherit; }
+body.vu-antiga .resultado-card .text-muted { color: var(--sobre-floresta-suave) !important; }
+body.vu-antiga .resultado-card .badge { background: var(--lima) !important; color: var(--sobre-lima) !important; font-family: var(--font-numeros); }
+body.vu-antiga .resultado-card hr { border-color: var(--floresta-alta); opacity: 1; }
+body.vu-antiga .resultado-card .table { --bs-table-color: var(--sobre-floresta); --bs-table-bg: transparent; color: var(--sobre-floresta); }
+body.vu-antiga .resultado-card .table thead th { background: var(--floresta-alta); color: var(--lima); }
+body.vu-antiga .resultado-card .table td, body.vu-antiga .resultado-card .table th { border-color: var(--floresta-alta); }
+body.vu-antiga .resultado-card .alert { background: var(--floresta-alta); color: var(--sobre-floresta); }
+
+/* ---------- Fichas LABAC e LADOPAR (só na tela; a impressão continua igual) ---------- */
+@media screen {
+  body.vu-antiga .form-section { border: 1px solid var(--linha) !important; border-radius: var(--raio-grande) !important; box-shadow: var(--sombra-cartao); background: var(--cartao); }
+  body.vu-antiga .form-section .section-title {
+    background: var(--cartao-suave) !important;
+    color: var(--tinta) !important;
+    border-bottom: 1px solid var(--linha);
+    font-family: var(--font-titulo);
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0;
+    text-transform: none;
+    padding: var(--esp-3) var(--esp-4) !important;
+  }
+  body.vu-antiga .btn-secondary, body.vu-antiga .btn-info {
+    background: var(--cartao) !important; border: 2px solid var(--linha-forte) !important; color: var(--tinta) !important; box-shadow: none !important;
+  }
+}
+
+/* Botões das tarefas do Mural alinhados à esquerda e no tamanho do sistema */
+body.vu-antiga .card .vu-tarefa-acoes { width: auto !important; margin: var(--esp-2) 0 0 !important; justify-content: flex-start !important; gap: var(--esp-2) !important; }
+body.vu-antiga .card .vu-tarefa-acoes .btn {
+  flex: none !important; height: auto !important; min-height: 48px; padding: 0 var(--esp-4) !important;
+  font-size: 16px !important; white-space: nowrap; overflow: visible;
+}
+
+/* Campos das fichas LABAC e LADOPAR no visual do sistema (só na tela) */
+@media screen {
+  body.vu-antiga .form-section input:not([type="checkbox"]):not([type="radio"]),
+  body.vu-antiga .form-section select,
+  body.vu-antiga .form-section textarea {
+    min-height: 48px;
+    border: 2px solid var(--linha-forte) !important;
+    border-radius: var(--raio-medio) !important;
+    background: var(--cartao) !important;
+    font-size: 17px;
+    padding-left: var(--esp-3);
+  }
+  body.vu-antiga .form-section input:focus, body.vu-antiga .form-section select:focus, body.vu-antiga .form-section textarea:focus {
+    border-color: var(--verde) !important; box-shadow: 0 0 0 5px var(--verde-claro) !important; outline: none;
+  }
+  body.vu-antiga .form-section label { color: var(--tinta); font-weight: 700; }
+  body.vu-antiga .form-section input[type="checkbox"], body.vu-antiga .form-section input[type="radio"] { width: 1.3em; height: 1.3em; accent-color: var(--verde); }
+}
+
+@media (max-width: 899.98px) {
+  body.vu-antiga .card .vu-tarefa-acoes .btn { padding: 0 var(--esp-2) !important; font-size: 15px !important; width: 100%; }
+}
+
+/* Caixas internas do resultado (diluições, quadros) no tom escuro, para o texto claro aparecer */
+body.vu-antiga .resultado-card .diluicoes,
+body.vu-antiga .resultado-card .card,
+body.vu-antiga .resultado-card .bg-light,
+body.vu-antiga .resultado-card [class*="box"],
+body.vu-antiga .resultado-card [class*="item"] { background: var(--floresta-alta) !important; color: var(--sobre-floresta) !important; border-color: var(--floresta-alta) !important; border-radius: var(--raio-medio); }
+
+/* Unidade ao lado do campo (g, mL, amostras) grudada nele, no visual do sistema */
+body.vu-antiga .input-group > .form-control:not(:last-child) { border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; }
+body.vu-antiga .input-group-text { min-height: 48px; border: 2px solid var(--linha-forte); border-left: 0; border-radius: 0 var(--raio-medio) var(--raio-medio) 0 !important; background: var(--cartao-suave); color: var(--tinta-suave); font-family: var(--font-numeros); font-size: 15px; }

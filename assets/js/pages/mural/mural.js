@@ -936,25 +936,36 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
                 prazoIcon = '<i class="bi bi-clock text-success me-1"></i>';
             }
             
-            // Mantenha a estrutura original de botões
+            // Selo do prazo, sempre com ícone + palavra (identidade visual)
+            const dataPrazoStr = infoPrazo.dataPrazo.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            let seloPrazo;
+            if (infoPrazo.vencido) {
+                seloPrazo = `<span class="vu-selo vu-selo-vencida"><i class="bi bi-exclamation-circle"></i> Vencida (${dataPrazoStr})</span>`;
+            } else if (infoPrazo.diasRestantes <= 2) {
+                const quando = infoPrazo.diasRestantes <= 0 ? 'Vence hoje' : infoPrazo.diasRestantes === 1 ? 'Vence amanhã' : `Vence em ${infoPrazo.diasRestantes} dias`;
+                seloPrazo = `<span class="vu-selo vu-selo-atencao"><i class="bi bi-exclamation-triangle"></i> ${quando}</span>`;
+            } else {
+                seloPrazo = `<span class="vu-selo"><i class="bi bi-calendar3"></i> Prazo ${dataPrazoStr}</span>`;
+            }
+
+            // Botões no padrão: Concluir é a ação principal
             const botoesHtml = `
-              <div class="btn-group">
-                <button class="btn btn-sm btn-primary btn-progresso" data-id="${doc.id}">
-                  <i class="bi bi-arrow-clockwise me-1"></i><span class="btn-text-original">Progresso</span>
+              <div class="btn-group vu-tarefa-acoes">
+                <button class="btn vu-btn btn-progresso" data-id="${doc.id}">
+                  <i class="bi bi-play-circle"></i><span class="btn-text-original">Andamento</span>
                 </button>
-                
-                <button class="btn btn-sm btn-success btn-concluir" data-id="${doc.id}">
-                  <i class="bi bi-check2-all me-1"></i>Concluir
+
+                <button class="btn vu-btn vu-btn-principal btn-concluir" data-id="${doc.id}">
+                  <i class="bi bi-check2-all"></i>Concluir
                 </button>
-                
-                ${showResultsButton ? `<button class="btn btn-sm btn-warning text-white btn-resultados" data-id="${doc.id}">
-                  <i class="bi bi-clipboard-data me-1"></i>Resultado
+
+                ${showResultsButton ? `<button class="btn vu-btn btn-resultados" data-id="${doc.id}">
+                  <i class="bi bi-clipboard-data"></i>Resultado
                 </button>` : ''}
-                
-                <!-- Dropdown "Mais" sem estilos inline -->
-                <button type="button" class="btn btn-sm btn-purple dropdown-toggle" 
+
+                <button type="button" class="btn vu-btn vu-btn-fantasma dropdown-toggle"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-three-dots-vertical"></i> <span class="d-none d-sm-inline">Mais</span>
+                  <i class="bi bi-three-dots"></i> Mais
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li><a class="dropdown-item btn-detalhes" href="#" data-id="${doc.id}">
@@ -978,18 +989,16 @@ async function carregarTarefas(filtro = "Todos", ordem = "recentes") {
 
             // E use assim na construção do item
             amostraItem.innerHTML = `
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center flex-wrap">
-                  <div class="mb-2">
-                    <h5 class="card-title mb-1 text-success fw-bold">${tarefa.id}</h5>
-                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipoDisplay}${tarefa.subTipo ? ` - ${tarefa.subTipo}` : ''}${tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? ` - ${tarefa.alvo}` : ''}</div>
-                    <div class="mb-1"><span class="fw-medium">Quantidade:</span> ${tarefa.quantidade || '0'}</div>
-                    <div class="mb-1"><span class="fw-medium">Recebimento:</span> ${dataRecebimentoStr}</div>
-                    <div class="mb-2">${prazoIcon}<span class="fw-medium">Prazo:</span> ${prazoTexto}</div>
-                  </div>
+              <div class="card-body vu-tarefa-corpo">
+                <h3 class="vu-tarefa-nome">${tipoDisplay}${tarefa.subTipo ? ` — ${tarefa.subTipo}` : ''}${tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? ` — ${tarefa.alvo}` : ''}</h3>
+                <div class="vu-tarefa-selos">
+                  ${tarefa.status === 'concluido'
+                    ? `<span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i> Concluída</span>`
+                    : `<span class="vu-selo vu-selo-andamento so-andamento"><span class="vu-ponto"></span> Em andamento</span>
+                       <span class="vu-selo so-pendente"><i class="bi bi-clock"></i> Pendente</span>
+                       ${seloPrazo}`}
                 </div>
-                
-                <!-- Botões no formato original -->
+                <p class="vu-tarefa-info">Protocolo <code>${tarefa.id}</code> · ${tarefa.quantidade || '0'} amostra${Number(tarefa.quantidade) === 1 ? '' : 's'} · recebida ${dataRecebimentoStr}</p>
                 ${botoesHtml}
               </div>
             `;

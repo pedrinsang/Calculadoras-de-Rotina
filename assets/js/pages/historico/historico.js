@@ -627,17 +627,23 @@ function renderizarTarefas(tarefas) {
         }
         
         historicoItem.innerHTML = `
-            <div class="d-flex justify-content-between align-items-start flex-wrap">
-                <div>
-                    <h5 class="mb-1 text-success fw-bold">${id}</h5>
-                    <div class="mb-1"><span class="fw-medium">Tipo:</span> ${tipo}${complemento ? ` - ${complemento}` : ''}</div>
-                    <div><span class="fw-medium">Concluído em:</span> ${tarefa.dataConclusao?.toDate().toLocaleDateString("pt-BR") || 'N/A'}</div>
-                    <div><span class="fw-medium">Proprietário:</span> ${proprietarioDisplay}</div>
+            <div class="vu-tarefa-corpo">
+                <h3 class="vu-tarefa-nome">${tipo}${complemento ? ` — ${complemento}` : ''}</h3>
+                <div class="vu-tarefa-selos">
+                    <span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i> Concluída em ${tarefa.dataConclusao?.toDate().toLocaleDateString("pt-BR") || '—'}</span>
                 </div>
-                <div class="d-flex flex-wrap gap-2 mt-2">
+                <p class="vu-tarefa-info">Protocolo <code>${id}</code> · ${proprietarioDisplay}</p>
+                <div class="vu-tarefa-acoes">
+                    <button class="btn vu-btn vu-btn-principal" onclick="voltarParaMural('${tarefa.docId}')">
+                        <i class="bi bi-arrow-counterclockwise"></i>Restaurar
+                    </button>
+                    ${showResultsButton ? `
+                    <button class="btn vu-btn" onclick="mostrarResultados('${tarefa.docId}')">
+                        <i class="bi bi-clipboard-data"></i>Resultados
+                    </button>` : ''}
                     <div class="btn-group">
-                        <button type="button" class="btn btn-purple btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-three-dots-vertical me-1"></i>Mais
+                        <button type="button" class="btn vu-btn vu-btn-fantasma dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots"></i> Mais
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
@@ -652,13 +658,6 @@ function renderizarTarefas(tarefas) {
                             </li>
                         </ul>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="voltarParaMural('${tarefa.docId}')">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar
-                    </button>
-                    ${showResultsButton ? `
-                    <button class="btn btn-warning text-white btn-sm" onclick="mostrarResultados('${tarefa.docId}')">
-                        <i class="bi bi-clipboard-data me-1"></i>Resultados
-                    </button>` : ''}
                 </div>
             </div>
         `;
