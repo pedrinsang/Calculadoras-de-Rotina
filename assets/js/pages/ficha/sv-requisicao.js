@@ -88,7 +88,7 @@ function coletar() {
     };
 }
 
-function validar(dados) {
+async function validar(dados) {
     const faltando = [];
     if (!dados.identificacao.dataEntrada) faltando.push(['data-entrada', 'Data de entrada']);
     if (!dados.identificacao.recebidoPor) faltando.push(['recebido-por', 'Recebido por']);
@@ -99,7 +99,14 @@ function validar(dados) {
         return false;
     }
     if (!Object.values(dados.exames).some(Boolean)) {
-        return confirm('Nenhum exame foi marcado. Salvar mesmo assim?');
+        const opcoes = {
+            titulo: 'Salvar sem nenhum exame?',
+            texto: 'Nenhum exame foi marcado, então nenhuma tarefa vai para o Mural. Dá para marcar depois, editando a requisição.',
+            sim: 'Salvar assim mesmo',
+            nao: 'Voltar e marcar',
+            icone: 'bi-clipboard2-x'
+        };
+        return window.VirologiaUFSM?.confirmar ? window.VirologiaUFSM.confirmar(opcoes) : confirm(opcoes.titulo);
     }
     return true;
 }
@@ -107,7 +114,7 @@ function validar(dados) {
 async function salvar(e) {
     e.preventDefault();
     const dados = coletar();
-    if (!validar(dados)) return;
+    if (!(await validar(dados))) return;
     const btn = $('btn-salvar');
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Salvando…';

@@ -34,8 +34,17 @@ function filtrar() {
 
 function render() {
     const lista = filtrar();
+    const semLaudo = fichas.filter(f => f.status !== STATUS.LAUDO_EMITIDO).length;
+    const resumo = $('sv-resumo');
+    if (resumo) {
+        resumo.textContent = fichas.length
+            ? `${fichas.length} ficha${fichas.length === 1 ? '' : 's'} neste aparelho${semLaudo ? ` · ${semLaudo} sem laudo` : ''}`
+            : 'Requisições e laudos salvos neste aparelho';
+    }
     if (!lista.length) {
-        $('lista').innerHTML = `<p class="sv-vazio">${fichas.length ? 'Nenhuma ficha encontrada com esses filtros.' : 'Nenhuma ficha salva ainda. Clique em <strong>Nova requisição</strong>.'}</p>`;
+        $('lista').innerHTML = fichas.length
+            ? `<div class="vu-vazio"><span class="vu-vazio-icone"><i class="bi bi-search" style="font-size:40px"></i></span><h3>Nada encontrado</h3><p>Nenhuma ficha com esses filtros. Tente outro protocolo, nome ou data.</p></div>`
+            : `<div class="vu-vazio"><span class="vu-vazio-icone"><i class="bi bi-clipboard2-plus" style="font-size:40px"></i></span><h3>Nenhuma ficha ainda</h3><p>Quando uma amostra chegar, comece pela requisição. Os exames marcados vão sozinhos para o Mural.</p><a class="vu-btn vu-btn-principal" href="sv-requisicao.html"><i class="bi bi-plus-lg"></i> Nova requisição</a></div>`;
         return;
     }
     $('lista').innerHTML = lista.map(f => {
@@ -43,16 +52,24 @@ function render() {
         const emitido = f.status === STATUS.LAUDO_EMITIDO;
         const exames = examesMarcados(f).length;
         return `
-        <article class="sv-card">
-            <div>
-                <h3>${esc(f.protocolo)}<span class="sv-status ${emitido ? 'sv-status-emitido' : 'sv-status-aguardando'}">${esc(f.status)}</span></h3>
-                <p><strong>${esc(f.proprietario?.nome || '—')}</strong>${f.proprietario?.cidade ? ' · ' + esc(f.proprietario.cidade) : ''}</p>
-                <p>Entrada: ${esc(dataBR(f.identificacao?.dataEntrada)) || '—'} · ${exames} exame${exames === 1 ? '' : 's'} · Recebido por ${esc(f.identificacao?.recebidoPor || '—')}</p>
+        <article class="sv-card vu-ficha-cartao">
+            <div class="vu-tarefa-corpo">
+                <h3 class="vu-tarefa-nome vu-ficha-protocolo">${esc(f.protocolo)}</h3>
+                <div class="vu-tarefa-selos">
+                    ${emitido
+                        ? '<span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i> Laudo emitido</span>'
+                        : '<span class="vu-selo vu-selo-atencao"><i class="bi bi-hourglass-split"></i> Sem laudo</span>'}
+                </div>
+                <p class="vu-tarefa-info"><strong>${esc(f.proprietario?.nome || '—')}</strong>${f.proprietario?.cidade ? ' · ' + esc(f.proprietario.cidade) : ''}<br>
+                    Entrada ${esc(dataBR(f.identificacao?.dataEntrada)) || '—'} · ${exames} exame${exames === 1 ? '' : 's'} · recebida por ${esc(f.identificacao?.recebidoPor || '—')}</p>
             </div>
-            <div class="sv-card-acoes">
-                <a class="sv-btn sv-btn-pequeno" href="sv-requisicao.html?id=${id}" title="Editar requisição"><i class="bi bi-pencil"></i> Requisição</a>
-                <a class="sv-btn sv-btn-pequeno ${emitido ? '' : 'sv-btn-primario'}" href="sv-laudo.html?id=${id}"><i class="bi bi-clipboard2-pulse"></i> ${emitido ? 'Ver laudo' : 'Laudar'}</a>
-                <a class="sv-btn sv-btn-pequeno sv-btn-azul" href="sv-visualizar.html?id=${id}"><i class="bi bi-eye"></i> Visualizar / PDF</a>
+            <div class="vu-tarefa-acoes">
+                ${emitido
+                    ? `<a class="vu-btn" href="sv-visualizar.html?id=${id}"><i class="bi bi-file-earmark-pdf"></i> Ver e imprimir</a>
+                       <a class="vu-btn vu-btn-fantasma" href="sv-laudo.html?id=${id}"><i class="bi bi-clipboard2-pulse"></i> Laudo</a>`
+                    : `<a class="vu-btn vu-btn-principal" href="sv-laudo.html?id=${id}"><i class="bi bi-clipboard2-pulse"></i> Laudar</a>
+                       <a class="vu-btn" href="sv-visualizar.html?id=${id}"><i class="bi bi-eye"></i> Ver</a>`}
+                <a class="vu-btn vu-btn-fantasma" href="sv-requisicao.html?id=${id}"><i class="bi bi-pencil"></i> Requisição</a>
             </div>
         </article>`;
     }).join('');
@@ -74,5 +91,6 @@ async function iniciar() {
 }
 
 ['busca-texto', 'busca-de', 'busca-ate', 'busca-status'].forEach(id => $(id).addEventListener('input', render));
+if (window.VirologiaUFSM) window.VirologiaUFSM.iniciar(document);
 
 exigirLogin(iniciar);

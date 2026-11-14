@@ -180,6 +180,14 @@ export function separarIdentificacoes(texto) {
 }
 
 export function mostrarAviso(msg, tipo = 'sucesso') {
+    // Aviso do sistema (assets/js/utils/ui.js); o aviso antigo fica de reserva
+    if (window.VirologiaUFSM?.aviso) {
+        const texto = String(msg ?? '').trim();
+        const t = tipo === 'erro' ? 'erro' : tipo === 'info' ? 'info' : 'ok';
+        if (texto.length <= 60) window.VirologiaUFSM.aviso({ tipo: t, titulo: texto });
+        else window.VirologiaUFSM.aviso({ tipo: t, titulo: t === 'erro' ? 'Falta alguma coisa' : 'Pronto', texto });
+        return;
+    }
     let el = document.getElementById('sv-toast');
     if (!el) {
         el = document.createElement('div');

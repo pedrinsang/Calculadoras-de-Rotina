@@ -659,3 +659,96 @@ body.vu-antiga .vu-historico-grupo .historico-item { margin: 0 !important; }
 @media (min-width: 1100px) { body.vu-antiga .vu-historico-grupo .vu-tarefa-selos .vu-selo { justify-self: start; } }
 @media (min-width: 1100px) { body.vu-antiga .vu-historico-grupo .vu-tarefa-acoes { width: 392px; } body.vu-antiga .vu-historico-grupo .vu-tarefa-acoes .btn { padding: 0 14px !important; white-space: nowrap; flex: none; } }
 body.vu-antiga .vu-historico-grupo .vu-tarefa-info { overflow-wrap: anywhere; }
+
+/* ==========================================================
+   Fichas (escolha do laboratório e páginas SV)
+   ========================================================== */
+body.vu-antiga .vu-fichas-secao { margin-top: var(--esp-5); }
+body.vu-antiga .vu-secao-cabeca { display: flex; align-items: center; justify-content: space-between; gap: var(--esp-2); }
+body.vu-antiga .vu-secao-cabeca .vu-sobrelinha { padding: 0 var(--esp-1); color: var(--tinta-suave); }
+body.vu-antiga .vu-fichas-secao > .vu-sobrelinha { padding: 0 var(--esp-1); color: var(--tinta-suave); }
+body.vu-antiga .vu-trilha { margin-bottom: var(--esp-2); }
+body.vu-antiga .vu-mais-filtros summary { display: inline-flex; align-items: center; gap: var(--esp-2); min-height: 44px; cursor: pointer; color: var(--verde-escuro); font-weight: 700; list-style: none; }
+body.vu-antiga .vu-mais-filtros summary::-webkit-details-marker { display: none; }
+body.vu-antiga .vu-mais-filtros[open] summary { margin-bottom: var(--esp-2); }
+
+/* Cabeçalho das páginas SV: sem o logo repetido, título no padrão */
+body.vu-antiga .sv-cabecalho { display: block !important; margin: var(--esp-2) 0 var(--esp-4) !important; padding: 0 !important; border: 0 !important; text-align: left !important; }
+body.vu-antiga .sv-cabecalho img { display: none !important; }
+body.vu-antiga .sv-cabecalho h1 { margin: 0 0 var(--esp-1) !important; }
+body.vu-antiga .sv-cabecalho p { margin: 0 !important; color: var(--tinta-suave) !important; }
+body.vu-antiga .sv-topo { display: flex; align-items: center; justify-content: space-between; gap: var(--esp-3); margin-bottom: 0 !important; }
+body.vu-antiga .sv-topo .sv-btn {
+  min-height: 48px; padding: 0 var(--esp-4) 0 var(--esp-3) !important; border-radius: var(--raio-pilula) !important;
+  border: 0 !important; background: var(--cartao-suave) !important; color: var(--tinta) !important; box-shadow: none !important;
+}
+body.vu-antiga .sv-topo .sv-btn:hover { background: var(--verde-claro) !important; }
+body.vu-antiga .sv-topo .sv-usuario { color: var(--tinta-suave) !important; font-weight: 700; }
+
+/* Seções do formulário viram Blocos */
+body.vu-antiga .sv-secao {
+  margin: 0 0 var(--esp-4) !important; padding: var(--esp-4) var(--esp-5) !important;
+  background: var(--cartao) !important; border: 1px solid var(--linha) !important;
+  border-radius: var(--raio-grande) !important; box-shadow: var(--sombra-cartao) !important;
+}
+body.vu-antiga .sv-secao > h2 {
+  margin: 0 0 var(--esp-4) !important; padding: 0 !important; border: 0 !important;
+  font-family: var(--font-titulo); font-size: 19px !important; line-height: 24px; font-weight: 600 !important; color: var(--tinta) !important;
+}
+body.vu-antiga .sv-dica { color: var(--tinta-suave) !important; font-size: 15px; }
+
+/* Exames: Caixas de marcar grandes */
+body.vu-antiga .sv-secao-exames { margin: var(--esp-4) 0 var(--esp-2) !important; font-family: var(--font-titulo); font-size: 17px !important; color: var(--tinta) !important; }
+body.vu-antiga .sv-grupo-exames { border: 1px solid var(--linha) !important; border-radius: var(--raio-medio) !important; background: var(--cartao-suave) !important; padding: var(--esp-3) !important; margin-bottom: var(--esp-3) !important; }
+body.vu-antiga .sv-grupo-exames legend {
+  float: none; width: auto; padding: 0 var(--esp-2) !important; margin: 0 0 var(--esp-2) !important;
+  font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta-suave) !important;
+}
+body.vu-antiga .sv-exames-grid { gap: var(--esp-2) !important; }
+body.vu-antiga .sv-exame {
+  min-height: 52px; display: flex; flex-wrap: wrap; align-items: center; gap: var(--esp-2);
+  padding: var(--esp-2) var(--esp-3) !important; border: 2px solid var(--linha) !important; border-radius: var(--raio-medio) !important;
+  background: var(--cartao) !important; transition: background-color var(--dur-media), border-color var(--dur-media);
+}
+body.vu-antiga .sv-exame:hover { border-color: var(--linha-forte) !important; }
+body.vu-antiga .sv-exame label { gap: var(--esp-3) !important; font-weight: 600; color: var(--tinta); min-height: 36px; }
+body.vu-antiga .sv-exame input[type=checkbox] { width: 24px !important; height: 24px !important; accent-color: var(--verde); }
+body.vu-antiga .sv-exame.marcado { background: var(--verde-claro) !important; border-color: var(--verde) !important; }
+body.vu-antiga .sv-exame.marcado .sv-exame-nome { text-decoration: none !important; color: var(--verde-escuro) !important; font-weight: 700; }
+body.vu-antiga .sv-exame-outro { min-height: 40px; border: 2px solid var(--linha-forte) !important; border-radius: var(--raio-pequeno) !important; padding: 0 var(--esp-2) !important; background: var(--cartao); }
+
+/* Barra de salvar: flutua no rodapé como no design */
+@media (min-width: 900px) {
+  body.vu-antiga .sv-acoes:not([style*="static"]) {
+    background: var(--cartao) !important; border: 1px solid var(--linha) !important; border-radius: var(--raio-grande) !important;
+    box-shadow: var(--sombra-elevada) !important; padding: var(--esp-3) var(--esp-4) !important; bottom: var(--esp-4) !important;
+  }
+}
+
+/* Cartões das fichas SV (lista) */
+body.vu-antiga .vu-ficha-cartao {
+  display: grid !important; gap: var(--esp-3); padding: var(--esp-4) var(--esp-5) !important;
+  background: var(--cartao) !important; border: 1px solid var(--linha) !important; border-radius: var(--raio-grande) !important;
+  box-shadow: var(--sombra-cartao) !important; margin-bottom: var(--esp-3);
+}
+body.vu-antiga .vu-ficha-cartao:hover { box-shadow: var(--sombra-elevada) !important; }
+body.vu-antiga .vu-ficha-protocolo { font-family: var(--font-numeros) !important; font-weight: 700 !important; }
+body.vu-antiga .vu-ficha-cartao .vu-tarefa-acoes { margin: 0; }
+@media (min-width: 1000px) {
+  body.vu-antiga .vu-ficha-cartao { grid-template-columns: minmax(0, 1fr) auto !important; align-items: center; }
+  body.vu-antiga .vu-ficha-cartao .vu-tarefa-acoes { justify-content: flex-end; }
+}
+body.vu-antiga .sv-status { border-radius: var(--raio-pilula); padding: 4px 12px; font-size: 14px; }
+body.vu-antiga .sv-status-aguardando { background: var(--ambar-claro) !important; color: var(--ambar-texto) !important; }
+body.vu-antiga .sv-status-emitido { background: var(--verde-claro) !important; color: var(--verde-escuro) !important; }
+
+/* Voltar das páginas SV em pílula (precisa vencer a regra geral de contorno dos sv-btn) */
+body.vu-antiga .sv-topo .sv-btn:not(.sv-btn-primario):not(.sv-btn-perigo):not(.sv-btn-azul):not(.sv-btn-link):not(.sv-btn-icone):not(.x) { border: 0 !important; background: var(--cartao-suave) !important; border-radius: var(--raio-pilula) !important; }
+body.vu-antiga .sv-topo .sv-btn:not(.sv-btn-primario):not(.sv-btn-perigo):not(.sv-btn-azul):not(.sv-btn-link):not(.sv-btn-icone):not(.x):hover { background: var(--verde-claro) !important; }
+
+/* Todos os campos das seções SV no visual do sistema (resultado, títulos de VN, cobrança) */
+body.vu-antiga .sv-secao input:not([type=checkbox]):not([type=radio]), body.vu-antiga .sv-secao select, body.vu-antiga .sv-secao textarea { min-height: 48px; border: 2px solid var(--linha-forte) !important; border-radius: var(--raio-medio) !important; background-color: var(--cartao); font-size: 17px; }
+body.vu-antiga .sv-secao input:focus, body.vu-antiga .sv-secao select:focus, body.vu-antiga .sv-secao textarea:focus { border-color: var(--verde) !important; box-shadow: 0 0 0 5px var(--verde-claro) !important; outline: none; }
+body.vu-antiga .sv-vn-bloco { background: var(--cartao-suave) !important; border: 1px solid var(--linha) !important; border-radius: var(--raio-medio) !important; }
+body.vu-antiga .sv-vn-bloco h4, body.vu-antiga .sv-grupo-exames legend { color: var(--tinta) !important; }
+body.vu-antiga .sv-btn-icone { width: 48px; min-height: 48px; border: 2px solid var(--linha) !important; border-radius: var(--raio-medio) !important; color: var(--vermelho) !important; background: var(--cartao) !important; }

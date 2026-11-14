@@ -96,6 +96,7 @@
       b.addEventListener('click', function () {
         if (sel.value === b.getAttribute('data-valor')) return marcarEspelho(grupo);
         sel.value = b.getAttribute('data-valor');
+        sel.dispatchEvent(new Event('input', { bubbles: true }));
         sel.dispatchEvent(new Event('change', { bubbles: true }));
         marcarEspelho(grupo);
       });

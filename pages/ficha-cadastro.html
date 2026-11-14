@@ -15,42 +15,82 @@
 
 <body>
   <div class="ficha-container">
-    <!-- Botão de voltar -->
-    <div class="back-button-container">
-      <button onclick="window.location.href='hub.html'" class="back-button">
-        <i class="bi bi-arrow-left"></i> Voltar
-      </button>
-    </div>
+    <header class="vu-pagina-topo">
+      <div>
+        <h1 class="page-title">Fichas</h1>
+        <p>Escolha o laboratório.</p>
+      </div>
+      <div class="vu-acoes-topo">
+        <a href="ficha/sv-requisicao.html" class="vu-btn vu-btn-principal"><i class="bi bi-plus-lg"></i> Nova requisição SV</a>
+      </div>
+    </header>
 
-    <img src="../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM" class="logo">
+    <section class="vu-secao vu-fichas-secao">
+      <p class="vu-sobrelinha">Laboratórios</p>
+      <div class="vu-lista">
+        <a class="vu-item" href="ficha/sv-fichas.html">
+          <img class="vu-item-logo" src="../assets/images/logo-sv.png" alt="">
+          <span class="vu-item-texto"><span class="vu-item-nome">Setor de Virologia</span><span class="vu-item-desc">Requisição, laudo e PDF</span></span>
+          <span class="vu-item-fim"><span class="vu-etiqueta cor-ambar" id="sv-sem-laudo" hidden></span><i class="bi bi-chevron-right vu-ico"></i></span>
+        </a>
+        <a class="vu-item" href="ficha/labac.html">
+          <img class="vu-item-logo" src="../assets/images/logo-LABAC.png" alt="">
+          <span class="vu-item-texto"><span class="vu-item-nome">LABAC</span><span class="vu-item-desc">Bacteriologia · ficha e cobrança</span></span>
+          <span class="vu-item-fim"><i class="bi bi-chevron-right vu-ico"></i></span>
+        </a>
+        <a class="vu-item" href="ficha/ladopar.html">
+          <img class="vu-item-logo" src="../assets/images/logo-LADOPAR.png" alt="">
+          <span class="vu-item-texto"><span class="vu-item-nome">LADOPAR</span><span class="vu-item-desc">Doenças parasitárias · ficha e cobrança</span></span>
+          <span class="vu-item-fim"><i class="bi bi-chevron-right vu-ico"></i></span>
+        </a>
+      </div>
+    </section>
 
-    <h1 class="page-title">Ficha de Cadastro</h1>
-    <p class="page-subtitle">Selecione o setor</p>
-
-    <!-- Botões dos setores -->
-    <div class="setores-buttons">
-      <a href="ficha/labac.html" class="setor-button">
-        <i class="bi bi-building"></i>
-        <span>LABAC</span>
-      </a>
-      
-      <a href="ficha/ladopar.html" class="setor-button">
-        <i class="bi bi-building"></i>
-        <span>LADOPAR</span>
-      </a>
-      
-      <a href="ficha/sv-fichas.html" class="setor-button">
-        <i class="bi bi-building"></i>
-        <span>Setor de Virologia</span>
-      </a>
-    </div>
-
-    
+    <section class="vu-secao vu-fichas-secao" id="sv-recentes-secao" hidden>
+      <div class="vu-secao-cabeca">
+        <p class="vu-sobrelinha">Fichas SV recentes</p>
+        <a href="ficha/sv-fichas.html" class="vu-btn vu-btn-fantasma">Ver todas</a>
+      </div>
+      <div class="vu-lista" id="sv-recentes"></div>
+    </section>
   </div>
 
   <!-- Bootstrap JS Bundle com Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../assets/js/utils/casca.js"></script>
   <script type="module" src="../assets/js/pages/ficha-cadastro.js"></script>
+  <script type="module">
+    // Últimas fichas SV e quantas estão sem laudo
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { auth } from "../assets/js/firebase.js";
+    import { listarFichas, STATUS } from "../assets/js/utils/svFichasDB.js";
+
+    const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const ordem = f => { const m = String(f.protocolo).match(/(\d+)\s*\/\s*(\d{2})/); return m ? +m[2] * 100000 + +m[1] : 0; };
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+      try {
+        const fichas = (await listarFichas()).sort((a, b) => ordem(b) - ordem(a));
+        const semLaudo = fichas.filter(f => f.status !== STATUS.LAUDO_EMITIDO).length;
+        const etiqueta = document.getElementById('sv-sem-laudo');
+        if (semLaudo) { etiqueta.textContent = `${semLaudo} sem laudo`; etiqueta.hidden = false; }
+        if (!fichas.length) return;
+        document.getElementById('sv-recentes').innerHTML = fichas.slice(0, 4).map(f => {
+          const emitido = f.status === STATUS.LAUDO_EMITIDO;
+          const id = encodeURIComponent(f.protocolo);
+          return `<a class="vu-item ${emitido ? '' : 'cor-petroleo'}" href="ficha/${emitido ? 'sv-visualizar' : 'sv-laudo'}.html?id=${id}">
+            <span class="vu-item-icone"><i class="bi bi-clipboard2-pulse vu-ico"></i></span>
+            <span class="vu-item-texto"><span class="vu-item-nome" style="font-family:var(--font-numeros)">${esc(f.protocolo)}</span>
+              <span class="vu-item-desc">${esc(f.proprietario?.nome || '—')}${f.proprietario?.cidade ? ' · ' + esc(f.proprietario.cidade) : ''}</span></span>
+            <span class="vu-item-fim"><span class="vu-etiqueta ${emitido ? '' : 'cor-ambar'}">${emitido ? 'Emitido' : 'Sem laudo'}</span><i class="bi bi-chevron-right vu-ico"></i></span>
+          </a>`;
+        }).join('');
+        document.getElementById('sv-recentes-secao').hidden = false;
+      } catch (erro) {
+        console.warn('Não foi possível listar as fichas SV:', erro);
+      }
+    });
+  </script>
 </body>
 </html>

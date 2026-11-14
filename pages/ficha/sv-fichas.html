@@ -15,51 +15,49 @@
 
 <body class="sv-page">
   <div class="sv-container">
-    <div class="sv-topo">
-      <a href="../ficha-cadastro.html" class="sv-btn sv-btn-pequeno"><i class="bi bi-arrow-left"></i> Voltar</a>
-      <span class="sv-usuario"></span>
-    </div>
-
-    <div class="sv-cabecalho">
-      <img src="../../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM">
+    <nav class="vu-trilha"><a href="../ficha-cadastro.html">Fichas</a><i class="bi bi-chevron-right"></i><span>Setor de Virologia</span></nav>
+    <header class="vu-pagina-topo">
       <div>
-        <h1>Requisição de Exames / Laudo</h1>
-        <p>Setor de Virologia · fichas salvas neste aparelho</p>
+        <h1>Fichas SV</h1>
+        <p id="sv-resumo">Requisições e laudos salvos neste aparelho</p>
       </div>
-    </div>
+      <div class="vu-acoes-topo">
+        <a href="sv-requisicao.html" class="vu-btn vu-btn-principal"><i class="bi bi-plus-lg"></i> Nova requisição</a>
+      </div>
+      <span class="sv-usuario vu-oculto"></span>
+    </header>
 
-    <div class="sv-acoes" style="position:static;border:0;padding-top:0;justify-content:flex-start">
-      <a href="sv-requisicao.html" class="sv-btn sv-btn-primario"><i class="bi bi-plus-lg"></i> Nova requisição</a>
-    </div>
-
-    <section class="sv-secao">
-      <h2>Buscar ficha</h2>
-      <div class="sv-busca">
-        <div>
-          <label for="busca-texto">Protocolo ou proprietário</label>
-          <input type="search" id="busca-texto" placeholder="Ex.: SV 07/26 ou João" autocomplete="off">
+    <div class="vu-barra-filtros">
+      <div class="vu-barra-filtros-linha">
+        <div class="vu-busca">
+          <i class="bi bi-search vu-ico"></i>
+          <input type="search" id="busca-texto" placeholder="Protocolo ou proprietário" autocomplete="off" aria-label="Buscar ficha">
         </div>
-        <div>
-          <label for="busca-de">Entrada de</label>
-          <input type="date" id="busca-de">
-        </div>
-        <div>
-          <label for="busca-ate">até</label>
-          <input type="date" id="busca-ate">
-        </div>
-        <div>
-          <label for="busca-status">Status</label>
-          <select id="busca-status">
-            <option value="">Todos</option>
-            <option>Aguardando análise</option>
-            <option>Laudo emitido</option>
-          </select>
+        <div class="vu-filtros" data-espelho="busca-status" role="group" aria-label="Situação">
+          <span class="vu-filtros-marca"></span>
+          <button type="button" class="vu-filtro" data-valor="">Todas</button>
+          <button type="button" class="vu-filtro" data-valor="Aguardando análise">Sem laudo</button>
+          <button type="button" class="vu-filtro" data-valor="Laudo emitido">Emitidas</button>
         </div>
       </div>
-      <div id="lista" class="sv-lista" aria-live="polite"></div>
-    </section>
+      <details class="vu-mais-filtros">
+        <summary><i class="bi bi-calendar3"></i> Filtrar por data de entrada</summary>
+        <div class="vu-grade-2">
+          <div class="vu-campo"><label for="busca-de">De</label><input type="date" id="busca-de" class="form-control"></div>
+          <div class="vu-campo"><label for="busca-ate">Até</label><input type="date" id="busca-ate" class="form-control"></div>
+        </div>
+      </details>
+      <select id="busca-status" class="vu-oculto" aria-hidden="true" tabindex="-1">
+        <option value="">Todos</option>
+        <option>Aguardando análise</option>
+        <option>Laudo emitido</option>
+      </select>
+    </div>
+
+    <div id="lista" class="sv-lista" aria-live="polite"></div>
   </div>
 
+  <script src="../../assets/js/utils/ui.js"></script>
   <script type="module" src="../../assets/js/utils/casca.js"></script>
   <script type="module" src="../../assets/js/pages/ficha/sv-fichas.js"></script>
 </body>
