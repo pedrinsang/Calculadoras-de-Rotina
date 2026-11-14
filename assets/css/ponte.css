@@ -614,3 +614,48 @@ body.vu-antiga .vu-quadro .card { margin-bottom: 0 !important; }
 body.vu-antiga .vu-acoes-topo #adicionar-tarefa, body.vu-antiga .vu-acoes-topo #historico-button { width: auto !important; height: auto !important; min-height: 52px; margin: 0 !important; flex: none; padding: 0 var(--esp-5); }
 body.vu-antiga .vu-acoes-topo { flex-wrap: nowrap; }
 @media (max-width: 575.98px) { body.vu-antiga .vu-acoes-topo { width: 100%; } body.vu-antiga .vu-acoes-topo > .vu-btn { flex: 1 !important; padding: 0 var(--esp-2); white-space: nowrap; font-size: 16px; } }
+
+/* ==========================================================
+   Histórico: grupos por mês; no computador, linhas de tabela
+   ========================================================== */
+body.vu-antiga #search-button:not(.btn-warning) { display: none !important; }
+body.vu-antiga #search-button.btn-warning { background: transparent !important; border-color: transparent !important; color: var(--verde-escuro) !important; box-shadow: none !important; width: auto !important; }
+body.vu-antiga .vu-busca input.border-primary { border-color: var(--verde) !important; }
+
+body.vu-antiga .vu-historico-mes { display: grid; gap: var(--esp-2); margin-bottom: var(--esp-5); }
+body.vu-antiga .vu-historico-mes > .vu-sobrelinha { padding: 0 var(--esp-1); color: var(--tinta-suave); }
+body.vu-antiga .vu-historico-grupo { display: grid; gap: var(--esp-3); }
+body.vu-antiga .vu-historico-grupo .historico-item { margin: 0 !important; }
+
+@media (min-width: 1100px) {
+  body.vu-antiga .vu-historico-grupo {
+    gap: 0;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-grande);
+    background: var(--cartao);
+    box-shadow: var(--sombra-cartao);
+    overflow: visible;
+  }
+  body.vu-antiga .vu-historico-grupo .historico-item {
+    border: 0 !important;
+    border-top: 1px solid var(--linha) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    transition: background-color var(--dur-media);
+  }
+  body.vu-antiga .vu-historico-grupo .historico-item:first-child { border-top: 0 !important; border-radius: var(--raio-grande) var(--raio-grande) 0 0 !important; }
+  body.vu-antiga .vu-historico-grupo .historico-item:last-child { border-radius: 0 0 var(--raio-grande) var(--raio-grande) !important; }
+  body.vu-antiga .vu-historico-grupo .historico-item:hover { background: var(--cartao-suave) !important; box-shadow: none !important; }
+  body.vu-antiga .vu-historico-grupo .historico-item .vu-tarefa-corpo {
+    grid-template-columns: minmax(0, 1fr) 236px minmax(0, 1.2fr) auto;
+    align-items: center;
+    gap: var(--esp-4);
+    padding: var(--esp-3) var(--esp-4);
+  }
+  body.vu-antiga .vu-historico-grupo .vu-tarefa-acoes { grid-column: auto; margin: 0 !important; flex-wrap: nowrap; justify-content: flex-end; }
+  body.vu-antiga .vu-historico-grupo .vu-tarefa-acoes .btn { min-height: 44px; }
+}
+@media (min-width: 1100px) { body.vu-antiga .vu-historico-grupo .vu-tarefa-selos .vu-selo { justify-self: start; } }
+@media (min-width: 1100px) { body.vu-antiga .vu-historico-grupo .vu-tarefa-acoes { width: 392px; } body.vu-antiga .vu-historico-grupo .vu-tarefa-acoes .btn { padding: 0 14px !important; white-space: nowrap; flex: none; } }
+body.vu-antiga .vu-historico-grupo .vu-tarefa-info { overflow-wrap: anywhere; }

@@ -327,6 +327,17 @@ function formatarTipoTeste(tarefa) {
 }
 
 export function mostrarFeedback(mensagem, tipo = "success") {
+    // Aviso do sistema (assets/js/utils/ui.js); a versão antiga abaixo fica de reserva
+    if (window.VirologiaUFSM?.aviso) {
+        const div = document.createElement('div');
+        div.innerHTML = String(mensagem ?? '');
+        const texto = div.textContent.trim();
+        const tipos = { success: 'ok', error: 'erro', warning: 'atencao', info: 'info' };
+        const titulos = { success: 'Pronto', error: 'Algo deu errado', warning: 'Atenção', info: 'Informação' };
+        if (texto.length <= 60) window.VirologiaUFSM.aviso({ tipo: tipos[tipo] || 'info', titulo: texto });
+        else window.VirologiaUFSM.aviso({ tipo: tipos[tipo] || 'info', titulo: titulos[tipo] || 'Aviso', texto });
+        return;
+    }
     // Verificar se container de notificações existe, senão criar
     let container = document.querySelector('.toastify-container');
     if (!container) {
@@ -419,9 +430,46 @@ window.mostrarFeedback = mostrarFeedback;
 // ============================================================================
 
 // Carregar histórico COM PROTEÇÃO
+// ---------- Identidade visual: período, grupos por mês, vazio, resumo ----------
+let periodoHistorico = 'tudo';
+const nomesPeriodo = { mes: 'neste mês', ano: 'neste ano', tudo: 'nos últimos 12 meses' };
+
+function textoSeguroH(t) {
+    return String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function vazioHistorico(icone, titulo, texto, acao = '') {
+    return `<div class="vu-vazio">
+        <span class="vu-vazio-icone"><i class="bi ${icone}" style="font-size:40px"></i></span>
+        <h3>${textoSeguroH(titulo)}</h3>
+        <p>${textoSeguroH(texto)}</p>${acao}
+    </div>`;
+}
+
+function filtrarPorPeriodo(tarefas) {
+    if (periodoHistorico === 'tudo') return tarefas;
+    const agora = new Date();
+    return tarefas.filter(t => {
+        const d = t.dataConclusao?.toDate ? t.dataConclusao.toDate() : null;
+        if (!d) return false;
+        if (periodoHistorico === 'ano') return d.getFullYear() === agora.getFullYear();
+        return d.getFullYear() === agora.getFullYear() && d.getMonth() === agora.getMonth();
+    });
+}
+
+function atualizarResumoHistorico(qtd, termo) {
+    const el = document.getElementById('historico-resumo');
+    if (!el) return;
+    const base = `${qtd} tarefa${qtd === 1 ? '' : 's'} concluída${qtd === 1 ? '' : 's'} ${nomesPeriodo[periodoHistorico]}`;
+    el.textContent = termo ? `${base} para “${termo}”` : base;
+}
+
 async function carregarHistorico() {
     const historicoList = document.getElementById("historico-list");
-    historicoList.innerHTML = '<p>Carregando histórico...</p>';
+    historicoList.innerHTML = `<div class="vu-coluna-lista" aria-label="Carregando o Histórico">
+        <div class="vu-esqueleto" style="height:88px;border-radius:24px"></div>
+        <div class="vu-esqueleto" style="height:88px;border-radius:24px"></div>
+        <div class="vu-esqueleto" style="height:88px;border-radius:24px"></div></div>`;
 
     try {
         await executarComRetry(async () => {
@@ -441,7 +489,8 @@ async function carregarHistorico() {
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                historicoList.innerHTML = "<p>Nenhuma tarefa concluída encontrada no último ano.</p>";
+                historicoList.innerHTML = vazioHistorico('bi-clock-history', 'Nada concluído ainda', 'As tarefas concluídas no Mural aparecem aqui por 12 meses.');
+                atualizarResumoHistorico(0, '');
                 return;
             }
 
@@ -459,15 +508,9 @@ async function carregarHistorico() {
         
     } catch (error) {
         console.error("Erro ao carregar histórico:", error);
-        historicoList.innerHTML = `
-            <div class="alert alert-warning">
-                <h6>Erro ao carregar histórico</h6>
-                <p>${error.message}</p>
-                <button class="btn btn-outline-warning btn-sm" onclick="carregarHistorico()">
-                    <i class="bi bi-arrow-clockwise me-1"></i>Tentar Novamente
-                </button>
-            </div>
-        `;
+        historicoList.innerHTML = vazioHistorico('bi-exclamation-triangle', 'Não foi possível carregar o Histórico',
+            'Confira a internet e tente de novo.',
+            `<button class="vu-btn vu-btn-principal" onclick="carregarHistorico()"><i class="bi bi-arrow-clockwise"></i> Tentar de novo</button>`);
     }
 }
 
@@ -500,8 +543,6 @@ function filtrarTarefas(termo) {
         return;
     }
 
-    historicoList.innerHTML = `<div class="text-center my-3"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Procurando...</p></div>`;
-
     // Dividir a busca em termos para busca mais precisa
     const termos = termo.toLowerCase().split(" ").filter(t => t.length > 0);
     
@@ -531,21 +572,8 @@ function filtrarTarefas(termo) {
         return termos.every(termo => textoCompleto.includes(termo));
     });
 
-    if (tarefasFiltradas.length === 0) {
-        historicoList.innerHTML = `
-            <div class="alert alert-info text-center" role="alert">
-                <i class="bi bi-search me-2"></i>
-                Nenhuma tarefa encontrada com o termo "<strong>${termo}</strong>".
-            </div>`;
-    } else {
-        renderizarTarefas(tarefasFiltradas);
-        
-        // Adicionar contador de resultados
-        const resultCounter = document.createElement("div");
-        resultCounter.className = "alert alert-success mb-3";
-        resultCounter.innerHTML = `<i class="bi bi-check-circle me-2"></i> <strong>${tarefasFiltradas.length}</strong> ${tarefasFiltradas.length === 1 ? 'resultado encontrado' : 'resultados encontrados'} para "<strong>${termo}</strong>"`;
-        historicoList.insertBefore(resultCounter, historicoList.firstChild);
-    }
+    // A lista mostra o resultado; o resumo do topo diz quantos ("3 tarefas concluídas … para “bvdv”")
+    renderizarTarefas(tarefasFiltradas);
 }
 
 // Função para destacar termos de busca no texto
@@ -580,20 +608,36 @@ function debounce(func, timeout = 300) {
 function renderizarTarefas(tarefas) {
     const historicoList = document.getElementById("historico-list");
     const searchTermo = document.getElementById("search-input").value;
-    
+
+    // Período escolhido (Este mês / Este ano / 12 meses)
+    tarefas = filtrarPorPeriodo(tarefas);
+    atualizarResumoHistorico(tarefas.length, searchTermo.trim());
+
     if (!tarefas.length) {
-        historicoList.innerHTML = "<p class='text-center mt-4'>Não há tarefas disponíveis.</p>";
+        historicoList.innerHTML = searchTermo.trim()
+            ? vazioHistorico('bi-search', 'Nada encontrado', `Nenhuma tarefa ${nomesPeriodo[periodoHistorico]} com “${searchTermo.trim()}”.`,
+                `<button class="vu-btn" type="button" onclick="document.getElementById('search-input').value='';document.getElementById('search-input').dispatchEvent(new Event('input'))"><i class="bi bi-x-lg"></i> Limpar busca</button>`)
+            : vazioHistorico('bi-calendar-x', 'Nada neste período', `Nenhuma tarefa concluída ${nomesPeriodo[periodoHistorico]}.`);
         return;
     }
-    
-    // Limpa apenas o conteúdo principal, mantém o contador se existir
-    const counterAlert = historicoList.querySelector('.alert-success');
+
     historicoList.innerHTML = "";
-    if (counterAlert) {
-        historicoList.appendChild(counterAlert);
-    }
+
+    // Um grupo por mês, como na identidade visual ("NOVEMBRO DE 2026")
+    let mesAtual = '';
+    let grupo = null;
 
     tarefas.forEach((tarefa) => {
+        const dataC = tarefa.dataConclusao?.toDate ? tarefa.dataConclusao.toDate() : null;
+        const mes = dataC ? dataC.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'Sem data';
+        if (mes !== mesAtual) {
+            mesAtual = mes;
+            const secao = document.createElement('section');
+            secao.className = 'vu-historico-mes';
+            secao.innerHTML = `<p class="vu-sobrelinha">${mes}</p><div class="vu-historico-grupo"></div>`;
+            historicoList.appendChild(secao);
+            grupo = secao.querySelector('.vu-historico-grupo');
+        }
         const historicoItem = document.createElement("div");
         historicoItem.className = "historico-item";
         
@@ -634,7 +678,7 @@ function renderizarTarefas(tarefas) {
                 </div>
                 <p class="vu-tarefa-info">Protocolo <code>${id}</code> · ${proprietarioDisplay}</p>
                 <div class="vu-tarefa-acoes">
-                    <button class="btn vu-btn vu-btn-principal" onclick="voltarParaMural('${tarefa.docId}')">
+                    <button class="btn vu-btn" onclick="voltarParaMural('${tarefa.docId}')">
                         <i class="bi bi-arrow-counterclockwise"></i>Restaurar
                     </button>
                     ${showResultsButton ? `
@@ -661,7 +705,7 @@ function renderizarTarefas(tarefas) {
                 </div>
             </div>
         `;
-        historicoList.appendChild(historicoItem);
+        grupo.appendChild(historicoItem);
     });
 }
 
@@ -672,7 +716,18 @@ function renderizarTarefas(tarefas) {
 // Voltar tarefa para o mural
 window.voltarParaMural = async (id) => {
     try {
-        if (!confirm("Tem certeza que deseja enviar esta tarefa de volta ao mural?")) return;
+        const tarefaInfo = todasTarefas.find(t => t.docId === id);
+        const nomeTarefa = tarefaInfo ? `${formatarTipoTeste(tarefaInfo)} (${tarefaInfo.id || 'sem protocolo'})` : 'Esta tarefa';
+        const opcoes = {
+            titulo: 'Restaurar esta tarefa?',
+            texto: `${nomeTarefa} volta para o Mural como pendente e sai do Histórico.`,
+            sim: 'Sim, restaurar',
+            icone: 'bi-arrow-counterclockwise'
+        };
+        const ok = window.VirologiaUFSM?.confirmar
+            ? await window.VirologiaUFSM.confirmar(opcoes)
+            : confirm(opcoes.titulo);
+        if (!ok) return;
         
         // Obter os dados da tarefa do histórico
         const historicoRef = doc(db, "historico", id);
@@ -1151,8 +1206,14 @@ function inicializarAplicacao() {
     const searchInput = document.getElementById("search-input");
     const searchButton = document.getElementById("search-button");
 
-    // Certifique-se de que o botão sempre tenha estas classes independente do estado
-    searchButton.classList.add("btn-sm", "rounded-pill", "fixed-width-button");
+    // Pílulas de período (Este mês / Este ano / 12 meses)
+    if (window.VirologiaUFSM) window.VirologiaUFSM.iniciar(document);
+    document.querySelectorAll('#historico-periodo [data-periodo]').forEach(botao => {
+        botao.addEventListener('click', () => {
+            periodoHistorico = botao.dataset.periodo;
+            filtrarTarefas(searchInput.value);
+        });
+    });
 
     // Busca com debounce ao digitar
     const debouncedSearch = debounce(() => {
