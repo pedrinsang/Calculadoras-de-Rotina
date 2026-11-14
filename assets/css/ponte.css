@@ -1,0 +1,426 @@
+/* ==========================================================
+   Ponte: faz as páginas antigas (Bootstrap + CSS de cada página)
+   seguirem o visual novo. Carregue DEPOIS do CSS da página e de tema.css.
+   Tudo fica preso a body.vu-antiga (a classe é posta por casca.js).
+   ========================================================== */
+
+.vu-oculto { display: none !important; }
+
+/* ---------- Página ---------- */
+body.vu-antiga {
+  display: block !important;
+  min-height: 100vh;
+  padding: 0 !important;
+  margin: 0;
+  background: var(--fundo) !important;
+  color: var(--tinta);
+  font-family: var(--font-texto);
+  font-size: 17px;
+  overflow-x: hidden;
+}
+body.vu-antiga h1, body.vu-antiga h2, body.vu-antiga h3, body.vu-antiga h4, body.vu-antiga h5,
+body.vu-antiga .modal-title, body.vu-antiga .section-title {
+  font-family: var(--font-titulo);
+  letter-spacing: -0.01em;
+}
+
+/* O contêiner principal de cada página vira um cartão do sistema */
+body.vu-antiga .vu-casca-main > .container,
+body.vu-antiga .vu-casca-main > .calculadora-card,
+body.vu-antiga .vu-casca-main > .ficha-container,
+body.vu-antiga .vu-casca-main > .ficha-setor-container,
+body.vu-antiga .vu-casca-main > .sv-container,
+body.vu-antiga .vu-casca-main > [class*="-card"] {
+  width: 100% !important;
+  max-width: 1100px !important;
+  margin: 0 !important;
+  padding: var(--esp-5) !important;
+  background: var(--cartao) !important;
+  border: 1px solid var(--linha) !important;
+  border-radius: var(--raio-xl) !important;
+  box-shadow: var(--sombra-cartao) !important;
+  text-align: left;
+}
+@media (max-width: 899.98px) {
+  body.vu-antiga .vu-casca-main > .container,
+  body.vu-antiga .vu-casca-main > .calculadora-card,
+  body.vu-antiga .vu-casca-main > .ficha-container,
+  body.vu-antiga .vu-casca-main > .ficha-setor-container,
+  body.vu-antiga .vu-casca-main > .sv-container,
+  body.vu-antiga .vu-casca-main > [class*="-card"] {
+    padding: var(--esp-4) !important;
+    border-radius: var(--raio-grande) !important;
+  }
+}
+
+/* Título da página */
+body.vu-antiga .vu-casca-main h1,
+body.vu-antiga .calculadora-title,
+body.vu-antiga .title-calculadora,
+body.vu-antiga .page-title {
+  margin: 0 0 var(--esp-4) !important;
+  color: var(--tinta) !important;
+  font-family: var(--font-titulo) !important;
+  font-size: 30px !important;
+  line-height: 36px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.015em !important;
+  text-align: left !important;
+}
+body.vu-antiga .vu-casca-main h1 .bi,
+body.vu-antiga .calculadora-title .bi { color: var(--verde); margin-right: var(--esp-1); }
+body.vu-antiga .page-subtitle { color: var(--tinta-suave) !important; text-align: left !important; }
+@media (max-width: 899.98px) {
+  body.vu-antiga .vu-casca-main h1,
+  body.vu-antiga .calculadora-title,
+  body.vu-antiga .page-title { font-size: 26px !important; line-height: 32px !important; }
+}
+body.vu-antiga .section-title,
+body.vu-antiga .vu-casca-main h2:not(.calculadora-title),
+body.vu-antiga .vu-casca-main h3 {
+  color: var(--tinta);
+}
+
+/* ---------- Botões ---------- */
+body.vu-antiga .btn,
+body.vu-antiga [class*="-btn"]:not([class*="-btn-container"]):not(.btn-close),
+body.vu-antiga .back-button,
+body.vu-antiga .setor-button,
+body.vu-antiga .tipo-ficha-button,
+body.vu-antiga .sv-btn {
+  min-height: 48px;
+  border-radius: var(--raio-medio) !important;
+  font-family: var(--font-texto);
+  font-weight: 700 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--esp-2);
+  transition: background-color var(--dur-media), border-color var(--dur-media), color var(--dur-media), transform var(--dur-rapida) var(--curva-saida), box-shadow var(--dur-media) !important;
+}
+body.vu-antiga .btn:active,
+body.vu-antiga [class*="-btn"]:active,
+body.vu-antiga .sv-btn:active { transform: scale(0.96); }
+body.vu-antiga .btn-sm { min-height: 40px; }
+body.vu-antiga .btn.w-100, body.vu-antiga .btn-block { display: flex; }
+
+/* Principal (verde) */
+body.vu-antiga .btn-success,
+body.vu-antiga .btn-primary,
+body.vu-antiga #adicionar-tarefa,
+body.vu-antiga .sv-btn-primario,
+body.vu-antiga .mural-btn,
+body.vu-antiga .protocolo-btn,
+body.vu-antiga .historico-btn,
+body.vu-antiga .conta-btn,
+body.vu-antiga .btn-aprovar,
+body.vu-antiga form .btn[type="submit"] {
+  background: var(--verde) !important;
+  border: 2px solid var(--verde) !important;
+  color: var(--sobre-verde) !important;
+  box-shadow: var(--sombra-cartao);
+}
+body.vu-antiga .btn-success:hover,
+body.vu-antiga .btn-primary:hover,
+body.vu-antiga #adicionar-tarefa:hover,
+body.vu-antiga .sv-btn-primario:hover,
+body.vu-antiga .mural-btn:hover,
+body.vu-antiga .protocolo-btn:hover,
+body.vu-antiga .historico-btn:hover,
+body.vu-antiga .conta-btn:hover,
+body.vu-antiga .btn-aprovar:hover {
+  background: var(--verde-escuro) !important;
+  border-color: var(--verde-escuro) !important;
+  box-shadow: var(--sombra-elevada);
+}
+
+/* Secundário (contorno) */
+body.vu-antiga .btn-outline-success,
+body.vu-antiga .btn-outline-primary,
+body.vu-antiga .btn-outline-secondary,
+body.vu-antiga .btn-secondary-container .btn,
+body.vu-antiga .btn-top-nav,
+body.vu-antiga .mural-btn-outline,
+body.vu-antiga .protocolo-btn-outline,
+body.vu-antiga .admin-btn-outline,
+body.vu-antiga .conta-btn-outline,
+body.vu-antiga .back-button,
+body.vu-antiga .sv-btn:not(.sv-btn-primario):not(.sv-btn-perigo):not(.sv-btn-azul):not(.sv-btn-link):not(.sv-btn-icone),
+body.vu-antiga #historico-button,
+body.vu-antiga #voltar-button {
+  background: var(--cartao) !important;
+  border: 2px solid var(--linha-forte) !important;
+  color: var(--tinta) !important;
+  box-shadow: none !important;
+}
+body.vu-antiga .btn-outline-success:hover,
+body.vu-antiga .btn-outline-primary:hover,
+body.vu-antiga .btn-outline-secondary:hover,
+body.vu-antiga .btn-secondary-container .btn:hover,
+body.vu-antiga .btn-top-nav:hover,
+body.vu-antiga .mural-btn-outline:hover,
+body.vu-antiga .protocolo-btn-outline:hover,
+body.vu-antiga .admin-btn-outline:hover,
+body.vu-antiga .conta-btn-outline:hover,
+body.vu-antiga .back-button:hover,
+body.vu-antiga #historico-button:hover,
+body.vu-antiga #voltar-button:hover {
+  border-color: var(--tinta) !important;
+  background: var(--cartao-suave) !important;
+}
+
+/* Perigo */
+body.vu-antiga .btn-danger,
+body.vu-antiga .btn-outline-danger,
+body.vu-antiga .sv-btn-perigo,
+body.vu-antiga .conta-btn-danger,
+body.vu-antiga .btn-excluir,
+body.vu-antiga .btn-excluir-conta,
+body.vu-antiga .btn-rejeitar,
+body.vu-antiga .logout-button,
+body.vu-antiga .btn-logout {
+  background: var(--cartao) !important;
+  border: 2px solid var(--vermelho) !important;
+  color: var(--vermelho) !important;
+  box-shadow: none !important;
+}
+body.vu-antiga .btn-danger:hover,
+body.vu-antiga .btn-outline-danger:hover,
+body.vu-antiga .sv-btn-perigo:hover,
+body.vu-antiga .conta-btn-danger:hover,
+body.vu-antiga .btn-excluir:hover,
+body.vu-antiga .btn-excluir-conta:hover,
+body.vu-antiga .btn-rejeitar:hover,
+body.vu-antiga .logout-button:hover,
+body.vu-antiga .btn-logout:hover {
+  background: var(--vermelho-claro) !important;
+}
+
+/* Azul (visualizar/PDF) e roxo (resultados) mantêm a cor, no formato novo */
+body.vu-antiga .sv-btn-azul { background: var(--azul) !important; border: 2px solid var(--azul) !important; color: #fff !important; }
+body.vu-antiga .btn-purple, body.vu-antiga .btn-resultado { background: var(--roxo) !important; border: 2px solid var(--roxo) !important; color: #fff !important; }
+body.vu-antiga .btn-warning { color: var(--sobre-lima) !important; }
+body.vu-antiga .sv-btn-link { min-height: 44px; background: none !important; border: 0 !important; color: var(--verde-escuro) !important; }
+body.vu-antiga .btn-close { border-radius: 50%; }
+
+/* ---------- Campos ---------- */
+body.vu-antiga .form-label,
+body.vu-antiga [class*="-form-label"],
+body.vu-antiga .detalhe-label,
+body.vu-antiga .sv-campo label,
+body.vu-antiga .sv-rotulo {
+  color: var(--tinta) !important;
+  font-weight: 700 !important;
+  font-size: 16px;
+}
+body.vu-antiga .form-control,
+body.vu-antiga .form-select,
+body.vu-antiga .sv-campo input,
+body.vu-antiga .sv-campo select,
+body.vu-antiga .sv-campo textarea,
+body.vu-antiga .sv-busca input,
+body.vu-antiga .sv-busca select {
+  min-height: 48px;
+  border: 2px solid var(--linha-forte) !important;
+  border-radius: var(--raio-medio) !important;
+  background-color: var(--cartao);
+  color: var(--tinta);
+  font-size: 17px;
+  box-shadow: none !important;
+  transition: border-color var(--dur-media), box-shadow var(--dur-media);
+}
+body.vu-antiga textarea.form-control, body.vu-antiga .sv-campo textarea { min-height: 96px; padding-top: 10px; }
+body.vu-antiga .form-control:focus,
+body.vu-antiga .form-select:focus,
+body.vu-antiga .sv-campo input:focus,
+body.vu-antiga .sv-campo select:focus,
+body.vu-antiga .sv-campo textarea:focus {
+  border-color: var(--verde) !important;
+  box-shadow: 0 0 0 5px var(--verde-claro) !important;
+  outline: none;
+}
+body.vu-antiga .form-control[readonly], body.vu-antiga .form-control:disabled {
+  background-color: var(--cartao-suave);
+  color: var(--tinta-suave);
+}
+body.vu-antiga .form-check-input { width: 1.3em; height: 1.3em; border: 2px solid var(--linha-forte); }
+body.vu-antiga .form-check-input:checked { background-color: var(--verde); border-color: var(--verde); }
+body.vu-antiga .form-check-input:focus { box-shadow: 0 0 0 4px var(--verde-claro); }
+body.vu-antiga .invalid-feedback { font-weight: 700; color: var(--vermelho); }
+
+/* ---------- Cartões, acordeões, abas ---------- */
+body.vu-antiga .card,
+body.vu-antiga .accordion-item,
+body.vu-antiga .conta-item,
+body.vu-antiga .sv-card,
+body.vu-antiga .sv-secao,
+body.vu-antiga .info-card,
+body.vu-antiga .config-card,
+body.vu-antiga .option-card,
+body.vu-antiga .user-card {
+  border-radius: var(--raio-grande) !important;
+  border-color: var(--linha) !important;
+  box-shadow: var(--sombra-cartao);
+}
+body.vu-antiga .accordion { display: grid; gap: var(--esp-3); }
+body.vu-antiga .accordion-item { overflow: hidden; border: 1px solid var(--linha) !important; }
+body.vu-antiga .accordion-button {
+  min-height: 56px;
+  font-family: var(--font-titulo);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--tinta);
+  background: var(--cartao);
+  border-radius: 0 !important;
+}
+body.vu-antiga .accordion-button:not(.collapsed) {
+  background: var(--cartao-suave);
+  color: var(--verde-escuro);
+  box-shadow: none;
+}
+body.vu-antiga .accordion-button:focus { box-shadow: 0 0 0 4px var(--verde-claro); }
+
+body.vu-antiga .nav-tabs { gap: var(--esp-2); border-bottom: 0; padding: 6px; border-radius: var(--raio-pilula); background: var(--cartao-suave); flex-wrap: nowrap; overflow-x: auto; }
+body.vu-antiga .nav-tabs .nav-link {
+  min-height: 44px;
+  border: 0 !important;
+  border-radius: var(--raio-pilula) !important;
+  color: var(--tinta-suave);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color var(--dur-media), color var(--dur-media);
+}
+body.vu-antiga .nav-tabs .nav-link.active { background: var(--cartao); color: var(--tinta); box-shadow: var(--sombra-cartao); }
+
+body.vu-antiga .badge { border-radius: var(--raio-pilula); padding: 6px 12px; font-weight: 700; }
+body.vu-antiga .alert { border-radius: var(--raio-medio); border-width: 0; font-weight: 600; }
+
+/* Resultado das calculadoras */
+body.vu-antiga .resultado-card {
+  background: var(--verde-claro) !important;
+  border: 0 !important;
+  border-radius: var(--raio-grande) !important;
+  color: var(--tinta);
+  animation: vu-sobe var(--dur-lenta) var(--curva-saida);
+}
+
+/* ---------- Tabelas ---------- */
+body.vu-antiga .table { --bs-table-bg: transparent; margin: 0; }
+body.vu-antiga .table thead th {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+  background: var(--cartao-suave);
+  border-bottom: 0;
+}
+body.vu-antiga .table td, body.vu-antiga .table th { padding: 12px 14px; vertical-align: middle; border-color: var(--linha); }
+body.vu-antiga .table-responsive { border-radius: var(--raio-grande); border: 1px solid var(--linha); }
+
+/* ---------- Janelas (modais) ---------- */
+body.vu-antiga .modal-content {
+  border: 0;
+  border-radius: var(--raio-xl) !important;
+  box-shadow: var(--sombra-elevada);
+  overflow: hidden;
+}
+body.vu-antiga .modal-header { border-bottom: 1px solid var(--linha); padding: var(--esp-4) var(--esp-5); background: var(--cartao) !important; color: var(--tinta) !important; }
+body.vu-antiga .modal-title { color: var(--tinta) !important; font-weight: 600; }
+body.vu-antiga .modal-body { padding: var(--esp-5); }
+body.vu-antiga .modal-footer { border-top: 1px solid var(--linha); padding: var(--esp-3) var(--esp-5); gap: var(--esp-2); }
+body.vu-antiga .modal-backdrop.show { opacity: 0.55; background: var(--floresta); }
+@media (max-width: 575.98px) {
+  body.vu-antiga .modal-dialog { margin: 0; min-height: 100%; display: flex; align-items: flex-end; }
+  body.vu-antiga .modal-content { border-radius: var(--raio-xl) var(--raio-xl) 0 0 !important; max-height: 92vh; }
+  body.vu-antiga .modal-body { overflow-y: auto; }
+}
+
+/* ---------- Avisos e carregamento (styles.css) ---------- */
+body.vu-antiga .notification {
+  border-radius: var(--raio-grande) !important;
+  background: var(--cartao) !important;
+  border: 1px solid var(--linha) !important;
+  box-shadow: var(--sombra-elevada) !important;
+}
+body.vu-antiga .notification-title { color: var(--tinta) !important; font-weight: 700; }
+body.vu-antiga .notification-message { color: var(--tinta-suave) !important; opacity: 1; }
+body.vu-antiga .notification-success .notification-icon { color: var(--verde) !important; }
+body.vu-antiga .notification-error .notification-icon { color: var(--vermelho) !important; }
+body.vu-antiga .notification-info .notification-icon { color: var(--azul) !important; }
+body.vu-antiga .notification-warning .notification-icon { color: var(--ambar) !important; }
+body.vu-antiga .loading-overlay { background: rgba(15, 61, 36, 0.55) !important; }
+body.vu-antiga .loading-container { border-radius: var(--raio-grande) !important; box-shadow: var(--sombra-elevada) !important; }
+body.vu-antiga .spinner-border { color: var(--verde); }
+
+/* ---------- Impressão: só o conteúdo ---------- */
+@media print {
+  body.vu-antiga { background: #fff !important; }
+  body.vu-antiga .vu-lateral, body.vu-antiga .vu-abas-fixa { display: none !important; }
+  body.vu-antiga .vu-casca { display: block; }
+  body.vu-antiga .vu-casca-main { padding: 0; max-width: none; display: block; }
+  body.vu-antiga .vu-casca-main > * { border: 0 !important; box-shadow: none !important; padding: 0 !important; max-width: none !important; }
+}
+
+/* ---------- Páginas sem menu (conta desativada) ---------- */
+body.vu-sozinha { display: grid !important; place-items: center; padding: var(--esp-5) var(--esp-4) !important; }
+body.vu-sozinha .container-fluid { height: auto !important; }
+body.vu-sozinha .desativado-card {
+  max-width: 560px;
+  border: 1px solid var(--linha) !important;
+  border-radius: var(--raio-xl) !important;
+  box-shadow: var(--sombra-elevada) !important;
+  animation: vu-sobe var(--dur-lenta) var(--curva-saida) both;
+}
+body.vu-sozinha .title { color: var(--tinta) !important; font-family: var(--font-titulo); font-weight: 700; }
+body.vu-sozinha .icon-container { width: 88px; height: 88px; margin-left: auto; margin-right: auto; display: grid; place-items: center; border-radius: 50%; background: var(--ambar-claro); }
+body.vu-sozinha .icon-container .bi { color: var(--ambar-texto) !important; }
+
+/* ---------- Correções gerais da casca ---------- */
+/* Botões de voltar ao início: a navegação já está na lateral e nas abas */
+body.vu-antiga #voltar-hub,
+body.vu-antiga #hub-button,
+body.vu-antiga #acessar-mural,
+body.vu-antiga #mural-button,
+body.vu-antiga .back-button-container { display: none !important; }
+
+/* Cartões que tinham altura fixa e rolagem própria: agora a página rola inteira */
+body.vu-antiga .vu-casca-main > .container,
+body.vu-antiga .vu-casca-main > [class*="-card"],
+body.vu-antiga .vu-casca-main > .ficha-container,
+body.vu-antiga .vu-casca-main > .ficha-setor-container {
+  height: auto !important;
+  min-height: 0 !important;
+}
+body.vu-antiga .mural-list,
+body.vu-antiga .historico-list,
+body.vu-antiga .admin-card .tab-content { overflow: visible !important; max-height: none !important; }
+
+/* Botões do Mural e do Histórico com a altura do sistema */
+body.vu-antiga #adicionar-tarefa { height: auto !important; min-height: 56px; }
+body.vu-antiga #historico-button { height: auto !important; }
+body.vu-antiga .card .btn { height: auto !important; min-height: 44px; }
+
+/* Títulos que eram centralizados no meio do cartão */
+body.vu-antiga .mural-title,
+body.vu-antiga .historico-title,
+body.vu-antiga .protocolo-title,
+body.vu-antiga .admin-title,
+body.vu-antiga .conta-title { letter-spacing: -0.015em !important; }
+
+/* ---------- Celular: botões das tarefas e barras presas embaixo ---------- */
+@media (max-width: 899.98px) {
+  /* Os 4 botões de cada tarefa do Mural/Histórico em 2 colunas, sem cortar o texto */
+  body.vu-antiga .card .btn-group {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--esp-2);
+    width: 100%;
+  }
+  body.vu-antiga .card .btn-group > .btn,
+  body.vu-antiga .card .btn-group > .btn-group,
+  body.vu-antiga .card .btn-group > .btn-group > .btn { width: 100%; margin: 0 !important; font-size: 15px; }
+  /* A barra de salvar da ficha SV fica acima das abas */
+  body.vu-antiga .sv-acoes { bottom: calc(var(--barra-abas) + var(--esp-4) + env(safe-area-inset-bottom, 0px)); flex-wrap: nowrap; border-radius: var(--raio-grande); padding: var(--esp-2); box-shadow: var(--sombra-elevada); }
+  body.vu-antiga .sv-acoes .sv-btn { flex: 1 1 0; min-width: 0; padding: 0 var(--esp-2); }
+}

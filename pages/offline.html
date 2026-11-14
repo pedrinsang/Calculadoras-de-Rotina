@@ -2,39 +2,39 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offline</title>
-  <link rel="stylesheet" href="../assets/css/styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f3d24">
+  <title>Sem internet | Virologia UFSM</title>
+  <!-- Página que abre sem internet: tudo aqui dentro, sem depender de arquivos de fora -->
   <style>
-    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:16px; background:#f6f7f9; color:#123; }
-    .card { background:#fff; border-radius:12px; padding:24px; box-shadow:0 6px 24px rgba(0,0,0,.08); max-width:520px; width:100%; text-align:center; }
-    h1 { font-size:1.25rem; margin:0 0 8px; color:#1b5e20; }
-    p { margin:0 0 12px; }
-    .tips { font-size:.95rem; color:#456; }
-    .btn { display:inline-block; margin-top:12px; padding:10px 16px; border-radius:8px; background:#1b5e20; color:#fff; text-decoration:none; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: #0f3d24; color: #13241a; font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif; font-size: 17px; overflow: hidden; }
+    .aurora i { position: fixed; z-index: -1; border-radius: 50%; filter: blur(80px); animation: mexe 22s ease-in-out infinite alternate; }
+    .aurora i:nth-child(1) { width: 520px; height: 520px; left: -120px; top: -140px; background: #1a5c38; }
+    .aurora i:nth-child(2) { width: 420px; height: 420px; right: -100px; bottom: -120px; background: #2e7d32; opacity: .6; animation-duration: 26s; }
+    .aurora i:nth-child(3) { width: 260px; height: 260px; left: 45%; bottom: -80px; background: #b5e04a; opacity: .3; animation-duration: 18s; }
+    @keyframes mexe { 50% { translate: 60px 40px; scale: 1.1; } }
+    .cartao { width: 100%; max-width: 420px; padding: 32px 24px; border-radius: 32px; background: #fff; text-align: center; box-shadow: 0 22px 44px -16px rgba(0,0,0,.5); animation: sobe .6s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes sobe { from { opacity: 0; translate: 0 20px; } }
+    .icone { width: 80px; height: 80px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 50%; background: #fdf0d9; color: #8a5200; animation: flutua 3s ease-in-out infinite; }
+    @keyframes flutua { 50% { translate: 0 -6px; } }
+    h1 { margin: 0 0 8px; font-size: 24px; line-height: 30px; }
+    p { margin: 0 0 20px; color: #4d5e52; line-height: 26px; }
+    button { width: 100%; min-height: 56px; border: 0; border-radius: 16px; background: #2e7d32; color: #fff; font: inherit; font-weight: 700; cursor: pointer; transition: transform .14s; }
+    button:active { transform: scale(.96); }
+    button:focus-visible { outline: 3px solid #9a5c00; outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
   </style>
-  <meta name="robots" content="noindex">
-  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="pragma" content="no-cache">
-  <meta http-equiv="expires" content="0">
-  <link rel="icon" href="../icons/favicon.ico">
-  <link rel="apple-touch-icon" href="../icons/icon-192x192.png">
-  <meta name="theme-color" content="#1b5e20">
-  <link rel="manifest" href="../manifest.json">
-  
-  <!-- Minimal inline script to allow user to retry -->
-  <script>
-    function tentarNovamente(){ location.reload(); }
-  </script>
-  
-  <!-- Copyright (c) app owners. Simple offline page. -->
 </head>
 <body>
-  <div class="card">
-    <h1>Você está offline</h1>
-    <p>Não foi possível carregar a página no momento.</p>
-    <p class="tips">Verifique sua conexão com a internet e tente novamente.</p>
-    <a class="btn" href="#" onclick="tentarNovamente()">Tentar novamente</a>
-  </div>
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <main class="cartao">
+    <div class="icone" aria-hidden="true">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 10.7 5M5 12.6a10 10 0 0 1 3-1.8M19 12.6a10 10 0 0 0-1.5-1.1M8.5 16.4a5 5 0 0 1 7 0M12 20h.01M2 2l20 20"/></svg>
+    </div>
+    <h1>Você está sem internet</h1>
+    <p>O que já foi salvo continua no aparelho. Quando a conexão voltar, toque no botão abaixo.</p>
+    <button type="button" onclick="location.reload()">Tentar de novo</button>
+  </main>
 </body>
 </html>
