@@ -779,6 +779,18 @@ function textoSeguro(t) {
     return String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Cor e ícone de cada área de teste (tokens do design system)
+function areaDoTeste(tipo = '') {
+    const t = String(tipo).toUpperCase();
+    if (t.startsWith('SN')) return { cor: 'verde', icone: 'bi-droplet-half' };
+    if (t.startsWith('ELISA')) return { cor: 'ambar', icone: 'bi-grid-3x3-gap' };
+    if (t.startsWith('MOLECULAR') || t === 'PCR') return { cor: 'petroleo', icone: 'bi-diagram-3' };
+    if (t.startsWith('RAIVA')) return { cor: 'vermelho', icone: 'bi-shield-exclamation' };
+    if (t.startsWith('ICC')) return { cor: 'roxo', icone: 'bi-bullseye' };
+    if (t.startsWith('VACINA')) return { cor: 'azul', icone: 'bi-capsule' };
+    return { cor: 'petroleo', icone: 'bi-clipboard2-pulse' };
+}
+
 // Estado vazio no padrão do sistema
 function vazioMural(icone, titulo, texto) {
     return `<div class="vu-vazio">
@@ -803,7 +815,7 @@ function atualizarContagensQuadro() {
     let total = 0;
     ['pendente', 'andamento'].forEach(nome => {
         const col = quadro.querySelector(`[data-coluna="${nome}"]`);
-        const cartoes = col.querySelectorAll('.vu-coluna-lista > .card:not([hidden])');
+        const cartoes = col.querySelectorAll('.vu-coluna-lista > .vu-linha:not([hidden])');
         col.querySelector('.vu-coluna-topo span').textContent = cartoes.length;
         total += cartoes.length;
         const lista = col.querySelector('.vu-coluna-lista');
@@ -814,7 +826,7 @@ function atualizarContagensQuadro() {
             aviso.remove();
         }
     });
-    const vencendo = quadro.querySelectorAll('.card.tarefa-vencida:not([hidden]), .card.tarefa-urgente:not([hidden])').length;
+    const vencendo = quadro.querySelectorAll('.vu-linha.tarefa-vencida:not([hidden]), .vu-linha.tarefa-urgente:not([hidden])').length;
     atualizarResumoMural(total, vencendo);
 }
 
@@ -822,7 +834,7 @@ function atualizarContagensQuadro() {
 function aplicarBuscaMural() {
     const campo = document.getElementById('mural-busca');
     const termo = (campo?.value || '').trim().toLowerCase();
-    document.querySelectorAll('#mural-list .vu-quadro .card[data-busca]').forEach(card => {
+    document.querySelectorAll('#mural-list .vu-quadro .vu-linha[data-busca]').forEach(card => {
         card.hidden = !!termo && !card.dataset.busca.includes(termo);
     });
     atualizarContagensQuadro();
@@ -845,11 +857,11 @@ async function carregarConcluidasHoje(lista) {
             return;
         }
         lista.innerHTML = itens.slice(0, 8).map(t => `
-            <div class="card vu-tarefa-feita">
-              <div class="card-body vu-tarefa-corpo">
+            <div class="vu-linha vu-linha--feita">
+              <span class="vu-linha-icone" aria-hidden="true"><i class="bi bi-check2"></i></span>
+              <div class="vu-linha-texto">
                 <h3 class="vu-tarefa-nome">${textoSeguro(t.tipo)}${t.subTipo ? ` — ${textoSeguro(t.subTipo)}` : ''}</h3>
-                <div class="vu-tarefa-selos"><span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i> Concluída ${t.dataConclusao?.toDate ? t.dataConclusao.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</span></div>
-                <p class="vu-tarefa-info">Protocolo <code>${textoSeguro(t.id)}</code>${t.siglaResponsavel ? ' · ' + textoSeguro(t.siglaResponsavel) : ''}</p>
+                <p class="vu-tarefa-info"><code>${textoSeguro(t.id)}</code>${t.dataConclusao?.toDate ? ' · ' + t.dataConclusao.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}${t.siglaResponsavel ? ' · ' + textoSeguro(t.siglaResponsavel) : ''}</p>
               </div>
             </div>`).join('') + (itens.length > 8 ? `<a class="vu-btn vu-btn-fantasma" href="historico.html">Ver todas no Histórico</a>` : '');
     } catch (erro) {
@@ -959,18 +971,20 @@ async function carregarTarefas(
             return;
         }
 
-        // Quadro: Pendentes | Em andamento | Concluídas hoje
+        // Mural em lista: Em andamento e Pendentes (uma linha por tarefa) + Concluídas hoje ao lado
         muralList.innerHTML = `
-          <div class="vu-quadro">
-            <section class="vu-coluna" data-coluna="pendente">
-              <h2 class="vu-coluna-topo"><i style="background:var(--tinta-suave)"></i>Pendentes<span>0</span></h2>
-              <div class="vu-coluna-lista"></div>
-            </section>
-            <section class="vu-coluna" data-coluna="andamento">
-              <h2 class="vu-coluna-topo"><i style="background:var(--azul)"></i>Em andamento<span>0</span></h2>
-              <div class="vu-coluna-lista"></div>
-            </section>
-            <section class="vu-coluna" data-coluna="concluidas">
+          <div class="vu-quadro vu-mural">
+            <div class="vu-mural-grupos">
+              <section class="vu-coluna vu-grupo" data-coluna="andamento">
+                <h2 class="vu-coluna-topo"><i style="background:var(--azul)"></i>Em andamento<span>0</span></h2>
+                <div class="vu-coluna-lista"></div>
+              </section>
+              <section class="vu-coluna vu-grupo" data-coluna="pendente">
+                <h2 class="vu-coluna-topo"><i style="background:var(--tinta-suave)"></i>Pendentes<span>0</span></h2>
+                <div class="vu-coluna-lista"></div>
+              </section>
+            </div>
+            <section class="vu-coluna vu-grupo vu-grupo--feitas" data-coluna="concluidas">
               <h2 class="vu-coluna-topo"><i style="background:var(--verde)"></i>Concluídas hoje<span>0</span></h2>
               <div class="vu-coluna-lista"><p class="vu-coluna-vazia">Buscando…</p></div>
             </section>
@@ -1041,8 +1055,10 @@ async function carregarTarefas(
                                     tarefa.tipo === "ELISA BVDV" ||
                                     tarefa.tipo === "PCR";
 
-            const amostraItem = document.createElement("div");
-            amostraItem.className = `card mb-4 shadow-sm ${combinedClass}`;
+            const amostraItem = document.createElement("article");
+            amostraItem.className = `vu-linha ${combinedClass}`;
+            const areaTeste = areaDoTeste(tarefa.tipo);
+            amostraItem.style.cssText = `--cor:var(--${areaTeste.cor});--cor-fundo:var(--${areaTeste.cor}-claro)`;
             
             // Formatar informações do prazo para exibição
             let prazoTexto = '';
@@ -1078,36 +1094,34 @@ async function carregarTarefas(
                 seloPrazo = `<span class="vu-selo"><i class="bi bi-calendar3"></i> Prazo ${dataPrazoStr}</span>`;
             }
 
-            // Botões no padrão: Concluir é a ação principal
+            // Botões compactos: Iniciar/Pausar, Resultado, Concluir (principal) e Mais
             const botoesHtml = `
-              <div class="btn-group vu-tarefa-acoes">
-                <button class="btn vu-btn btn-progresso" data-id="${doc.id}">
-                  <i class="bi bi-play-circle"></i><span class="btn-text-original">Andamento</span>
+              <div class="vu-linha-acoes">
+                <button type="button" class="vu-btn vu-btn-mini btn-progresso" data-id="${doc.id}">
+                  <i class="bi bi-play-fill so-pendente"></i><i class="bi bi-pause-fill so-andamento"></i><span class="btn-text-original"><span class="so-pendente">Iniciar</span><span class="so-andamento">Pausar</span></span>
                 </button>
-
-                <button class="btn vu-btn vu-btn-principal btn-concluir" data-id="${doc.id}">
-                  <i class="bi bi-check2-all"></i>Concluir
-                </button>
-
-                ${showResultsButton ? `<button class="btn vu-btn btn-resultados" data-id="${doc.id}">
-                  <i class="bi bi-clipboard-data"></i>Resultado
+                ${showResultsButton ? `<button type="button" class="vu-btn vu-btn-mini btn-resultados" data-id="${doc.id}" title="Registrar resultado">
+                  <i class="bi bi-clipboard-data"></i><span>Resultado</span>
                 </button>` : ''}
-
-                <button type="button" class="btn vu-btn vu-btn-fantasma dropdown-toggle"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-three-dots"></i> Mais
+                <button type="button" class="vu-btn vu-btn-mini vu-btn-principal btn-concluir" data-id="${doc.id}">
+                  <i class="bi bi-check2-all"></i><span>Concluir</span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                  <li><a class="dropdown-item btn-detalhes" href="#" data-id="${doc.id}">
-                      <i class="bi bi-info-circle me-2"></i>Detalhes</a></li>
-                  <li><a class="dropdown-item btn-formulario-cobranca" href="#" data-id="${doc.id}">
-                      <i class="bi bi-receipt me-2"></i>Formulario de cobranca</a></li>
-                  <li><a class="dropdown-item btn-editar" href="#" data-id="${doc.id}">
-                      <i class="bi bi-pencil-square me-2"></i>Editar</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item text-danger btn-excluir" href="#" data-id="${doc.id}">
-                      <i class="bi bi-trash3 me-2"></i>Excluir</a></li>
-                </ul>
+                <div class="dropdown">
+                  <button type="button" class="vu-btn vu-btn-mini vu-btn-fantasma vu-btn-icone" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mais ações" title="Mais ações">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item btn-detalhes" href="#" data-id="${doc.id}">
+                        <i class="bi bi-info-circle me-2"></i>Detalhes</a></li>
+                    <li><a class="dropdown-item btn-formulario-cobranca" href="#" data-id="${doc.id}">
+                        <i class="bi bi-receipt me-2"></i>Formulário de cobrança</a></li>
+                    <li><a class="dropdown-item btn-editar" href="#" data-id="${doc.id}">
+                        <i class="bi bi-pencil-square me-2"></i>Editar</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger btn-excluir" href="#" data-id="${doc.id}">
+                        <i class="bi bi-trash3 me-2"></i>Excluir</a></li>
+                  </ul>
+                </div>
               </div>
             `;
 
@@ -1117,20 +1131,18 @@ async function carregarTarefas(
                 tipoDisplay = "SN BVDV-1";
             }
 
-            // E use assim na construção do item
+            const dono = tarefa.proprietario?.nome ? ` · ${textoSeguro(tarefa.proprietario.nome)}` : '';
+            const sigla = tarefa.siglaResponsavel ? ` · ${textoSeguro(tarefa.siglaResponsavel)}` : '';
+            const dataReceb = tarefa.dataRecebimento?.toDate ? tarefa.dataRecebimento.toDate() : (tarefa.criadoEm?.toDate ? tarefa.criadoEm.toDate() : null);
+            const recebidaCurta = dataReceb ? dataReceb.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '—';
             amostraItem.innerHTML = `
-              <div class="card-body vu-tarefa-corpo">
-                <h3 class="vu-tarefa-nome">${tipoDisplay}${tarefa.subTipo ? ` — ${tarefa.subTipo}` : ''}${tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? ` — ${tarefa.alvo}` : ''}</h3>
-                <div class="vu-tarefa-selos">
-                  ${tarefa.status === 'concluido'
-                    ? `<span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i> Concluída</span>`
-                    : `<span class="vu-selo vu-selo-andamento so-andamento"><span class="vu-ponto"></span> Em andamento</span>
-                       <span class="vu-selo so-pendente"><i class="bi bi-clock"></i> Pendente</span>
-                       ${seloPrazo}`}
-                </div>
-                <p class="vu-tarefa-info">Protocolo <code>${tarefa.id}</code> · ${tarefa.quantidade || '0'} amostra${Number(tarefa.quantidade) === 1 ? '' : 's'} · recebida ${dataRecebimentoStr}</p>
-                ${botoesHtml}
+              <span class="vu-linha-icone" aria-hidden="true"><i class="bi ${areaTeste.icone}"></i></span>
+              <div class="vu-linha-texto">
+                <h3 class="vu-tarefa-nome">${textoSeguro(tipoDisplay)}${tarefa.subTipo ? ` — ${textoSeguro(tarefa.subTipo)}` : ''}${tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? ` — ${textoSeguro(tarefa.alvo)}` : ''}</h3>
+                <p class="vu-tarefa-info"><code>${textoSeguro(tarefa.id)}</code> · ${tarefa.quantidade || '0'} amostra${Number(tarefa.quantidade) === 1 ? '' : 's'}${dono} · recebida ${recebidaCurta}${sigla}</p>
               </div>
+              <div class="vu-linha-prazo">${seloPrazo}</div>
+              ${botoesHtml}
             `;
 
             amostraItem.dataset.busca = [tarefa.id, tipoDisplay, tarefa.subTipo, tarefa.alvo, tarefa.proprietario?.nome, tarefa.siglaResponsavel]
@@ -1274,7 +1286,7 @@ window.marcarProgresso = async (id) => {
         const novoStatus = tarefa.status === 'em-progresso' ? 'pendente' : 'em-progresso';
         
         // Atualiza o card imediatamente na UI
-        const cardElement = document.querySelector(`[data-id="${id}"]`).closest('.card');
+        const cardElement = document.querySelector(`[data-id="${id}"]`)?.closest('.vu-linha');
         if (cardElement) {
             if (novoStatus === 'em-progresso') {
                 cardElement.classList.add('em-progresso');
@@ -1310,7 +1322,7 @@ window.marcarProgresso = async (id) => {
 
 // Função para concluir tarefa
 window.concluirTarefa = async (id) => {
-    const cartao = document.querySelector(`.btn-concluir[data-id="${id}"]`)?.closest('.card');
+    const cartao = document.querySelector(`.btn-concluir[data-id="${id}"]`)?.closest('.vu-linha');
     const nome = cartao?.querySelector('.vu-tarefa-nome')?.textContent?.trim() || 'esta tarefa';
     const ok = await confirmarAcao({
         titulo: 'Concluir esta tarefa?',
@@ -1349,7 +1361,7 @@ window.concluirTarefa = async (id) => {
 
 // Função para excluir tarefa
 window.excluirTarefa = async (id) => {
-    const cartao = document.querySelector(`.btn-excluir[data-id="${id}"]`)?.closest('.card');
+    const cartao = document.querySelector(`.btn-excluir[data-id="${id}"]`)?.closest('.vu-linha');
     const nome = cartao?.querySelector('.vu-tarefa-nome')?.textContent?.trim() || 'Esta tarefa';
     const ok = await confirmarAcao({
         titulo: 'Excluir esta tarefa?',

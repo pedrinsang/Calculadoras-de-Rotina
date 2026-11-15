@@ -29,6 +29,19 @@
 
   aplicar();
   document.addEventListener('DOMContentLoaded', aplicar);
+
+  // Páginas antigas (com ponte.css): a casca.js só põe "vu-antiga" no body depois que a página
+  // carrega, e até lá os estilos antigos pintam cartões brancos (o "piscar" no tema escuro).
+  // Aqui a classe entra assim que o <body> existe, antes da primeira pintura.
+  function marcarCorpo() {
+    if (!document.body) return false;
+    if (document.querySelector('link[href*="ponte.css"]')) document.body.classList.add('vu-app', 'vu-antiga');
+    return true;
+  }
+  if (!marcarCorpo() && window.MutationObserver) {
+    var obs = new MutationObserver(function () { if (marcarCorpo()) obs.disconnect(); });
+    obs.observe(raiz, { childList: true });
+  }
   if (midia) {
     var mudou = function () { if (escolha() === 'auto') aplicar(); };
     if (midia.addEventListener) midia.addEventListener('change', mudou); else if (midia.addListener) midia.addListener(mudou);

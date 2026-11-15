@@ -32,6 +32,52 @@ function contarAte(id, valor) {
   if (ui) ui.contar(el); else el.textContent = String(valor);
 }
 
+// ---------- Lista "Próximas do prazo" ----------
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function areaDoTeste(tipo = '') {
+  const t = String(tipo).toUpperCase();
+  if (t.startsWith('SN')) return { cor: 'verde', icone: 'bi-droplet-half' };
+  if (t.startsWith('ELISA')) return { cor: 'ambar', icone: 'bi-grid-3x3-gap' };
+  if (t.startsWith('MOLECULAR') || t === 'PCR') return { cor: 'petroleo', icone: 'bi-diagram-3' };
+  if (t.startsWith('RAIVA')) return { cor: 'vermelho', icone: 'bi-shield-exclamation' };
+  if (t.startsWith('ICC')) return { cor: 'roxo', icone: 'bi-bullseye' };
+  if (t.startsWith('VACINA')) return { cor: 'azul', icone: 'bi-capsule' };
+  return { cor: 'petroleo', icone: 'bi-clipboard2-pulse' };
+}
+
+function seloPrazo(prazo) {
+  if (!prazo) return '';
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const dia = new Date(prazo); dia.setHours(0, 0, 0, 0);
+  const dias = Math.round((dia - hoje) / 864e5);
+  const data = prazo.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  if (dias < 0) return `<span class="vu-selo vu-selo-vencida"><i class="bi bi-exclamation-circle"></i> Vencida ${data}</span>`;
+  if (dias <= 2) return `<span class="vu-selo vu-selo-atencao"><i class="bi bi-exclamation-triangle"></i> ${dias === 0 ? 'Vence hoje' : dias === 1 ? 'Amanhã' : 'Em 2 dias'}</span>`;
+  return `<span class="vu-selo"><i class="bi bi-calendar3"></i> ${data}</span>`;
+}
+
+function mostrarProximas(tarefas) {
+  const lista = document.getElementById('hoje-lista');
+  if (!lista) return;
+  if (!tarefas.length) {
+    lista.innerHTML = `<p class="vu-proximas-vazio"><i class="bi bi-check2-circle"></i> Nada pendente no Mural.</p>`;
+    return;
+  }
+  tarefas.sort((a, b) => (a.prazo ? a.prazo.getTime() : Infinity) - (b.prazo ? b.prazo.getTime() : Infinity));
+  lista.innerHTML = tarefas.slice(0, 6).map(({ t, prazo }) => {
+    const area = areaDoTeste(t.tipo);
+    const nome = [t.tipo, t.subTipo].filter(Boolean).join(' — ');
+    const qtd = Number(t.quantidade) || 0;
+    const andando = t.status === 'em-progresso' ? '<span class="vu-proximas-andando">Em andamento</span> · ' : '';
+    return `<a class="vu-item" href="mural.html" style="--cor:var(--${area.cor});--cor-fundo:var(--${area.cor}-claro)">
+      <span class="vu-item-icone"><i class="bi ${area.icone} vu-ico"></i></span>
+      <span class="vu-item-texto"><span class="vu-item-nome">${esc(nome)}</span><span class="vu-item-desc">${andando}${esc(t.id || '')}${qtd ? ` · ${qtd} amostra${qtd === 1 ? '' : 's'}` : ''}</span></span>
+      <span class="vu-item-fim">${seloPrazo(prazo)}</span>
+    </a>`;
+  }).join('') + (tarefas.length > 6 ? `<a class="vu-proximas-mais" href="mural.html">Mais ${tarefas.length - 6} no Mural <i class="bi bi-arrow-right"></i></a>` : '');
+}
+
 async function carregarPainelHoje() {
   const proxima = document.getElementById('hoje-proxima');
   try {
@@ -40,6 +86,7 @@ async function carregarPainelHoje() {
     fimDeHoje.setHours(23, 59, 59, 999);
 
     let total = 0, vencendo = 0, andando = 0, maisUrgente = null;
+    const pendentes = [];
     snap.forEach(d => {
       const t = d.data();
       if (t.status === 'concluido') return;
@@ -48,8 +95,10 @@ async function carregarPainelHoje() {
       const prazo = t.dataPrazo?.toDate ? t.dataPrazo.toDate() : null;
       if (prazo && prazo <= fimDeHoje) vencendo++;
       if (prazo && (!maisUrgente || prazo < maisUrgente.prazo)) maisUrgente = { prazo, t };
+      pendentes.push({ t, prazo });
     });
 
+    mostrarProximas(pendentes);
     contarAte('hoje-total', total);
     contarAte('hoje-vencendo', vencendo);
     contarAte('hoje-andando', andando);
@@ -76,6 +125,8 @@ async function carregarPainelHoje() {
       if (el) el.textContent = '–';
     });
     if (proxima) proxima.textContent = 'Não foi possível carregar. Abrir o Mural';
+    const lista = document.getElementById('hoje-lista');
+    if (lista) lista.innerHTML = '<p class="vu-proximas-vazio">Não foi possível carregar as tarefas.</p>';
   }
 }
 
