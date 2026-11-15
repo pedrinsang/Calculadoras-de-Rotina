@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#0f3d24">
   <title>Sem internet | Virologia UFSM</title>
   <!-- Página que abre sem internet: tudo aqui dentro, sem depender de arquivos de fora -->
+  <script src="../assets/js/utils/tema.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: #0f3d24; color: #13241a; font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif; font-size: 17px; overflow: hidden; }
@@ -23,6 +24,15 @@
     button { width: 100%; min-height: 56px; border: 0; border-radius: 16px; background: #2e7d32; color: #fff; font: inherit; font-weight: 700; cursor: pointer; transition: transform .14s; }
     button:active { transform: scale(.96); }
     button:focus-visible { outline: 3px solid #9a5c00; outline-offset: 3px; }
+    /* Tema escuro (tema.js põe data-bs-theme no <html>) */
+    [data-bs-theme="dark"] body { background: #0d2a1b; color: #e7f0e6; }
+    [data-bs-theme="dark"] .cartao { background: #13211a; }
+    [data-bs-theme="dark"] p { color: #9db3a3; }
+    [data-bs-theme="dark"] .icone { background: #3a2c12; color: #ffc26b; }
+    [data-bs-theme="dark"] button { background: #7ccf86; color: #06210f; }
+    [data-bs-theme="dark"] button:focus-visible { outline-color: #ffd166; }
+    [data-bs-theme="dark"] .aurora i:nth-child(1) { background: #164a2d; }
+    [data-bs-theme="dark"] .aurora i:nth-child(3) { background: #c6e87a; opacity: .15; }
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
   </style>
 </head>

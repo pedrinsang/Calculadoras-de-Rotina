@@ -851,3 +851,47 @@ body.vu-antiga .vu-admin .tab-content { padding: 0 !important; }
   .vu-admin .vu-mini-acoes { width: 100%; margin-left: 56px; justify-content: flex-start; }
   .vu-admin .vu-mini-acoes .vu-btn:not(.vu-btn-icone) { flex: 1; }
 }
+
+/* ---------- Tema escuro nas páginas antigas ----------
+   tema.js põe data-bs-theme="dark" no <html> quando o tema escuro vale; o Bootstrap
+   troca as cores dele sozinho. Aqui só as variáveis antigas do styles.css e o que ficou fixo. */
+[data-bs-theme="dark"] {
+  --verde-medio: var(--verde);
+  --verde-bg: var(--fundo);
+  --verde-hover: var(--verde);
+  --verde-btn: var(--verde);
+  --verde-btn-hover: var(--verde);
+  --bs-body-bg: var(--fundo);
+  --bs-body-color: var(--tinta);
+  --bs-border-color: var(--linha);
+  --bs-secondary-color: var(--tinta-suave);
+  --bs-tertiary-bg: var(--cartao-suave);
+}
+[data-bs-theme="dark"] body.vu-antiga .sv-btn-azul,
+[data-bs-theme="dark"] body.vu-antiga .btn-purple,
+[data-bs-theme="dark"] body.vu-antiga .btn-resultado { color: var(--fundo) !important; }
+
+/* Conta: escolha do tema */
+.vu-aparencia { gap: var(--esp-3); }
+.vu-aparencia .vu-filtros { width: max-content; }
+.vu-aparencia-dica { margin: 0; color: var(--tinta-suave); font-size: 15px; line-height: 22px; }
+
+/* Escuro: fichas LABAC/LADOPAR (imitam o papel) e a tela de conta desativada */
+[data-bs-theme="dark"] body.vu-antiga .ficha-form,
+[data-bs-theme="dark"] .ladopar-page .form-header,
+[data-bs-theme="dark"] body.vu-antiga .desativado-card,
+[data-bs-theme="dark"] body.vu-antiga .option-card { background: var(--cartao) !important; color: var(--tinta) !important; border-color: var(--linha) !important; }
+[data-bs-theme="dark"] body.vu-antiga .form-header,
+[data-bs-theme="dark"] .ladopar-page .page-subtitle,
+[data-bs-theme="dark"] body.vu-antiga .user-info { background: var(--cartao-suave) !important; color: var(--tinta) !important; }
+[data-bs-theme="dark"] body.vu-antiga .option-card:hover { background: var(--cartao-suave) !important; }
+[data-bs-theme="dark"] body.vu-antiga .ficha-form label,
+[data-bs-theme="dark"] .ladopar-page .pcr-type,
+[data-bs-theme="dark"] body.vu-antiga .ficha-form .pcr-option label span,
+[data-bs-theme="dark"] body.vu-antiga .ficha-form .sample-note,
+[data-bs-theme="dark"] body.vu-antiga .desativado-card h1,
+[data-bs-theme="dark"] body.vu-antiga .desativado-card h2,
+[data-bs-theme="dark"] body.vu-antiga .desativado-card h6,
+[data-bs-theme="dark"] body.vu-antiga .desativado-card strong,
+[data-bs-theme="dark"] body.vu-antiga .user-info span { color: var(--tinta) !important; }
+[data-bs-theme="dark"] .ladopar-page .pcr-option { border-color: var(--linha-forte) !important; }

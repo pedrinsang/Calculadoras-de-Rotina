@@ -60,6 +60,87 @@
   --font-titulo: Lexend, "Segoe UI", system-ui, sans-serif;
   --font-texto: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --font-numeros: "Atkinson Hyperlegible Mono", ui-monospace, Consolas, monospace;
+  --veu: rgba(15, 61, 36, 0.55);
+  --veu-carregando: rgba(243, 246, 238, 0.72);
+  color-scheme: light;
+}
+
+/* ---------- Tema escuro (tokens do design system) ----------
+   Vale quando o aparelho está no escuro e a pessoa não escolheu "Claro",
+   ou quando ela escolheu "Escuro" (assets/js/utils/tema.js põe data-tema no <html>). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --fundo: #0b1510;
+    --cartao: #13211a;
+    --cartao-suave: #1a2b22;
+    --linha: #24382c;
+    --linha-forte: #63806c;
+    --tinta: #e7f0e6;
+    --tinta-suave: #9db3a3;
+    --floresta: #0d2a1b;
+    --floresta-alta: #164a2d;
+    --sobre-floresta: #e7f0e6;
+    --sobre-floresta-suave: #a9c9b2;
+    --lima: #c6e87a;
+    --sobre-lima: #0b1510;
+    --verde: #7ccf86;
+    --sobre-verde: #06210f;
+    --verde-escuro: #a8e0b0;
+    --verde-claro: #1d3524;
+    --azul: #7cb4ff;
+    --azul-claro: #1a2b40;
+    --petroleo: #5fd0d8;
+    --petroleo-claro: #153236;
+    --roxo: #b5a0ff;
+    --roxo-claro: #251f3d;
+    --ambar: #ffc26b;
+    --ambar-texto: #ffc26b;
+    --ambar-claro: #3a2c12;
+    --vermelho: #ff9c86;
+    --vermelho-claro: #3d1f1a;
+    --foco: #ffd166;
+    --sombra-cartao: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px -8px rgba(0, 0, 0, 0.6);
+    --sombra-elevada: 0 2px 4px rgba(0, 0, 0, 0.4), 0 22px 44px -16px rgba(0, 0, 0, 0.8);
+    --veu: rgba(0, 0, 0, 0.6);
+    --veu-carregando: rgba(11, 21, 16, 0.72);
+    color-scheme: dark;
+  }
+}
+:root[data-tema="escuro"] {
+  --fundo: #0b1510;
+  --cartao: #13211a;
+  --cartao-suave: #1a2b22;
+  --linha: #24382c;
+  --linha-forte: #63806c;
+  --tinta: #e7f0e6;
+  --tinta-suave: #9db3a3;
+  --floresta: #0d2a1b;
+  --floresta-alta: #164a2d;
+  --sobre-floresta: #e7f0e6;
+  --sobre-floresta-suave: #a9c9b2;
+  --lima: #c6e87a;
+  --sobre-lima: #0b1510;
+  --verde: #7ccf86;
+  --sobre-verde: #06210f;
+  --verde-escuro: #a8e0b0;
+  --verde-claro: #1d3524;
+  --azul: #7cb4ff;
+  --azul-claro: #1a2b40;
+  --petroleo: #5fd0d8;
+  --petroleo-claro: #153236;
+  --roxo: #b5a0ff;
+  --roxo-claro: #251f3d;
+  --ambar: #ffc26b;
+  --ambar-texto: #ffc26b;
+  --ambar-claro: #3a2c12;
+  --vermelho: #ff9c86;
+  --vermelho-claro: #3d1f1a;
+  --foco: #ffd166;
+  --sombra-cartao: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px -8px rgba(0, 0, 0, 0.6);
+  --sombra-elevada: 0 2px 4px rgba(0, 0, 0, 0.4), 0 22px 44px -16px rgba(0, 0, 0, 0.8);
+  --veu: rgba(0, 0, 0, 0.6);
+  --veu-carregando: rgba(11, 21, 16, 0.72);
+  color-scheme: dark;
 }
 
 
@@ -563,7 +644,7 @@ a.vu-avatar { text-decoration: none; }
    ========================================================== */
 
 /* Folha de confirmação */
-.vu-folha-fundo { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: var(--esp-4); background: rgba(15, 61, 36, 0.55); animation: vu-aparece var(--dur-media) var(--curva-saida); }
+.vu-folha-fundo { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: var(--esp-4); background: var(--veu); animation: vu-aparece var(--dur-media) var(--curva-saida); }
 .vu-folha-fundo .vu-folha { width: 100%; max-width: 440px; }
 .vu-folha-fundo.saindo { opacity: 0; transition: opacity 0.2s; }
 .vu-folha-icone--ok { background: var(--verde-claro) !important; color: var(--verde-escuro) !important; }
@@ -585,7 +666,7 @@ a.vu-avatar { text-decoration: none; }
 .vu-aviso-fechar:hover { background: var(--cartao-suave); color: var(--tinta); }
 
 /* Carregando: microplaca por cima da tela */
-.vu-carregando-tela { position: fixed; inset: 0; z-index: 1900; display: grid; place-items: center; background: rgba(243, 246, 238, 0.72); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: vu-aparece var(--dur-media) var(--curva-saida); }
+.vu-carregando-tela { position: fixed; inset: 0; z-index: 1900; display: grid; place-items: center; background: var(--veu-carregando); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: vu-aparece var(--dur-media) var(--curva-saida); }
 .vu-carregando-tela .vu-carregando { color: var(--tinta); font-weight: 700; }
 
 /* Contador com campo de digitar dentro */
