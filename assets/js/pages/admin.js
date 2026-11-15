@@ -26,6 +26,55 @@ import { app, auth, db } from "../firebase.js";
 // Firebase centralizado
 
 // ============================================================================
+// AJUDANTES DO VISUAL (Folha de confirmação, Avisos, Lista)
+// ============================================================================
+const ui = () => window.VirologiaUFSM;
+
+function confirmar(op) {
+    if (ui()) return ui().confirmar(op);
+    return Promise.resolve(confirm(op.titulo + (op.texto ? '\n\n' + op.texto : '')));
+}
+
+function avisar(tipo, titulo, texto) {
+    if (ui()) ui().aviso({ tipo, titulo, texto });
+    else alert(texto ? `${titulo}\n${texto}` : titulo);
+}
+
+function esc(texto) {
+    return String(texto ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function iniciais(user) {
+    const nome = (user.nome || user.email || '?').trim();
+    return esc((user.sigla || nome.split(/\s+/).map(p => p[0]).join('')).slice(0, 2).toUpperCase());
+}
+
+function dataBR(valor) {
+    if (!valor) return 'sem data';
+    const d = new Date(valor);
+    return isNaN(d) ? 'sem data' : d.toLocaleDateString('pt-BR');
+}
+
+// Atualiza o selo do topo e o número na aba
+function contagem(tipo, n) {
+    const id = tipo === 'pendentes' ? 'pending-count' : 'active-count';
+    document.getElementById(id).textContent = `${n} ${n === 1 ? tipo.slice(0, -1) : tipo}`;
+    const aba = document.querySelector(`[data-contagem="${tipo}"]`);
+    if (aba) aba.textContent = n;
+}
+
+function vazio(icone, titulo, texto) {
+    return `<div class="vu-vazio"><span class="vu-vazio-icone"><i class="bi ${icone}"></i></span><h3>${titulo}</h3><p>${texto}</p></div>`;
+}
+
+// Ocupa o botão enquanto o Firebase responde
+function ocupar(btn, sim) {
+    if (!btn) return;
+    btn.disabled = sim;
+    btn.setAttribute('aria-busy', String(sim));
+}
+
+// ============================================================================
 // INICIALIZAÇÃO DO PAINEL
 // ============================================================================
 document.addEventListener('DOMContentLoaded', function() {
@@ -61,6 +110,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (detectarBtn) detectarBtn.addEventListener('click', detectarUsuariosDesatualizados);
     if (atualizarBtn) atualizarBtn.addEventListener('click', atualizarTodosUsuarios);
+
+    // Pílulas das abas (indicador deslizante)
+    if (ui()) ui().iniciar(document);
 });
 
 // ============================================================================
@@ -116,29 +168,32 @@ async function carregarUsuariosPendentes() {
             where("aprovado", "==", false),
             orderBy("dataCadastro", "desc")
         );
-        
+
         const querySnapshot = await getDocs(q);
         const container = document.getElementById('usuarios-pendentes-lista');
-        
+
         if (querySnapshot.empty) {
-            container.innerHTML = '<p class="text-center text-muted">✅ Nenhum usuário pendente de aprovação.</p>';
-            document.getElementById('pending-count').textContent = "0 pendentes";
+            container.innerHTML = vazio('bi-check2', 'Nenhum pedido esperando', 'Quando alguém se cadastrar, o pedido aparece aqui para aprovar.');
+            contagem('pendentes', 0);
             return;
         }
 
         let html = '';
         querySnapshot.forEach((doc) => {
             const user = doc.data();
+            if (!user.uid) user.uid = doc.id;
             html += criarCardUsuarioPendente(user);
         });
 
-        container.innerHTML = html;
-        document.getElementById('pending-count').textContent = `${querySnapshot.size} pendentes`;
-        
+        container.innerHTML = `<div class="vu-lista">${html}</div>`;
+        contagem('pendentes', querySnapshot.size);
+
         adicionarEventListenersUsuariosPendentes();
-        
+
     } catch (error) {
         console.error("❌ Erro ao carregar usuários pendentes:", error);
+        document.getElementById('usuarios-pendentes-lista').innerHTML =
+            vazio('bi-exclamation-circle', 'Não foi possível carregar os pedidos', esc(error.message));
     }
 }
 
@@ -146,34 +201,17 @@ async function carregarUsuariosPendentes() {
  * Cria card visual para usuário pendente
  */
 function criarCardUsuarioPendente(user) {
-    const dataCadastro = new Date(user.dataCadastro).toLocaleDateString('pt-BR');
-    
     return `
-        <div class="card mb-3 user-card" data-uid="${user.uid}">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h5 class="card-title mb-1">
-                            <i class="bi bi-person-circle me-2"></i>${user.nome}
-                        </h5>
-                        <p class="card-text mb-1">
-                            <small class="text-muted">
-                                <strong>Email:</strong> ${user.email} | 
-                                <strong>Sigla:</strong> ${user.sigla} | 
-                                <strong>Cadastro:</strong> ${dataCadastro}
-                            </small>
-                        </p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <button class="btn btn-success btn-sm me-2 btn-aprovar" data-uid="${user.uid}">
-                            <i class="bi bi-check-circle me-1"></i>Aprovar
-                        </button>
-                        <button class="btn btn-danger btn-sm btn-rejeitar" data-uid="${user.uid}">
-                            <i class="bi bi-x-circle me-1"></i>Rejeitar
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="vu-item vu-item--estatico user-card" data-uid="${esc(user.uid)}">
+            <span class="vu-avatar">${iniciais(user)}</span>
+            <span class="vu-item-texto">
+                <span class="vu-item-nome">${esc(user.nome)}</span>
+                <span class="vu-item-desc">${esc(user.email)} · ${esc(user.sigla || 'sem sigla')} · cadastro em ${dataBR(user.dataCadastro)}</span>
+            </span>
+            <span class="vu-mini-acoes">
+                <button type="button" class="vu-btn vu-btn-principal btn-aprovar" data-uid="${esc(user.uid)}"><i class="bi bi-check2"></i> Aprovar</button>
+                <button type="button" class="vu-btn vu-btn-perigo vu-btn-icone btn-rejeitar" data-uid="${esc(user.uid)}" aria-label="Recusar ${esc(user.nome)}" title="Recusar"><i class="bi bi-x-lg"></i></button>
+            </span>
         </div>
     `;
 }
@@ -195,26 +233,30 @@ function adicionarEventListenersUsuariosPendentes() {
  * Aprova um usuário pendente
  */
 async function aprovarUsuario(e) {
-    const uid = e.target.closest('.btn-aprovar').dataset.uid;
-    
-    if (!confirm('✅ Tem certeza que deseja aprovar este usuário?')) return;
-    
+    const btn = e.target.closest('.btn-aprovar');
+    const uid = btn.dataset.uid;
+    const nome = btn.closest('.user-card')?.querySelector('.vu-item-nome')?.textContent || 'esta pessoa';
+
+    if (!await confirmar({ titulo: `Aprovar ${nome}?`, texto: 'Ela passa a ter acesso ao app.', sim: 'Aprovar', icone: 'bi-person-check' })) return;
+
+    ocupar(btn, true);
     try {
         await updateDoc(doc(db, "usuarios", uid), {
             aprovado: true,
             ativo: true,
             dataAprovacao: new Date().toISOString()
         });
-        
-        alert('✅ Usuário aprovado com sucesso!');
+
+        avisar('ok', 'Cadastro aprovado', `${nome} já pode entrar.`);
         await Promise.all([
             carregarUsuariosPendentes(),
             carregarUsuariosAtivos()
         ]);
-        
+
     } catch (error) {
         console.error("❌ Erro ao aprovar usuário:", error);
-        alert('❌ Erro ao aprovar usuário: ' + error.message);
+        avisar('erro', 'Não foi possível aprovar', error.message);
+        ocupar(btn, false);
     }
 }
 
@@ -222,18 +264,22 @@ async function aprovarUsuario(e) {
  * Rejeita e exclui um usuário pendente
  */
 async function rejeitarUsuario(e) {
-    const uid = e.target.closest('.btn-rejeitar').dataset.uid;
-    
-    if (!confirm('⚠️ Tem certeza que deseja rejeitar este usuário?\n\nEsta ação irá excluir a conta permanentemente.')) return;
-    
+    const btn = e.target.closest('.btn-rejeitar');
+    const uid = btn.dataset.uid;
+    const nome = btn.closest('.user-card')?.querySelector('.vu-item-nome')?.textContent || 'esta pessoa';
+
+    if (!await confirmar({ titulo: `Recusar ${nome}?`, texto: 'O cadastro é excluído para sempre.', sim: 'Recusar e excluir', perigo: true })) return;
+
+    ocupar(btn, true);
     try {
         await deleteDoc(doc(db, "usuarios", uid));
-        alert('✅ Usuário rejeitado e excluído!');
+        avisar('ok', 'Cadastro recusado e excluído');
         await carregarUsuariosPendentes();
-        
+
     } catch (error) {
         console.error("❌ Erro ao rejeitar usuário:", error);
-        alert('❌ Erro ao rejeitar usuário: ' + error.message);
+        avisar('erro', 'Não foi possível recusar', error.message);
+        ocupar(btn, false);
     }
 }
 
@@ -256,8 +302,8 @@ async function carregarUsuariosAtivos() {
         const container = document.getElementById('usuarios-ativos-lista');
         
         if (querySnapshot.empty) {
-            container.innerHTML = '<p class="text-center text-muted">Nenhum usuário ativo encontrado.</p>';
-            document.getElementById('active-count').textContent = "0 ativos";
+            container.innerHTML = vazio('bi-people', 'Ninguém na equipe ainda', 'Quem for aprovado aparece aqui.');
+            contagem('ativos', 0);
             return;
         }
 
@@ -278,8 +324,8 @@ async function carregarUsuariosAtivos() {
             }
         });
 
-        container.innerHTML = html;
-        document.getElementById('active-count').textContent = `${usuariosValidos} ativos`;
+        container.innerHTML = `<div class="vu-lista">${html}</div>`;
+        contagem('ativos', usuariosValidos);
         
         adicionarEventListenersUsuariosAtivos();
         
@@ -287,14 +333,14 @@ async function carregarUsuariosAtivos() {
         console.error("❌ Erro ao carregar usuários ativos:", error);
         const container = document.getElementById('usuarios-ativos-lista');
         container.innerHTML = `
-            <div class="alert alert-danger">
-                <h6>❌ Erro ao carregar usuários</h6>
-                <p>${error.message}</p>
-                <button class="btn btn-primary btn-sm" onclick="carregarUsuariosAtivos()">
-                    <i class="bi bi-arrow-clockwise"></i> Tentar Novamente
-                </button>
+            <div class="vu-vazio">
+                <span class="vu-vazio-icone"><i class="bi bi-exclamation-circle"></i></span>
+                <h3>Não foi possível carregar a equipe</h3>
+                <p>${esc(error.message)}</p>
+                <button type="button" class="vu-btn" id="tentar-ativos"><i class="bi bi-arrow-clockwise"></i> Tentar de novo</button>
             </div>
         `;
+        document.getElementById('tentar-ativos')?.addEventListener('click', carregarUsuariosAtivos);
     }
 }
 
@@ -302,48 +348,27 @@ async function carregarUsuariosAtivos() {
  * Cria card visual para usuário ativo
  */
 function criarCardUsuarioAtivo(user) {
-    const dataCadastro = user.dataCadastro ? 
-        new Date(user.dataCadastro).toLocaleDateString('pt-BR') : 
-        'Data não informada';
-    
     const isAdmin = user.role === 'admin';
     const isAtivo = user.ativo !== false;
-    const uid = user.uid || user.id;
-    
+    const uid = esc(user.uid || user.id);
+
     return `
-        <div class="card mb-3 user-card ${!isAtivo ? 'user-inactive' : ''}" data-uid="${uid}">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h5 class="card-title mb-1">
-                            <i class="bi bi-person-${isAtivo ? 'check-fill' : 'dash-fill'} me-2"></i>
-                            ${user.nome}
-                            ${isAdmin ? '<span class="badge bg-primary ms-2">Admin</span>' : ''}
-                            ${!isAtivo ? '<span class="badge bg-secondary ms-2">Inativo</span>' : '<span class="badge bg-success ms-2">Ativo</span>'}
-                        </h5>
-                        <p class="card-text mb-1">
-                            <small class="text-muted">
-                                <strong>Email:</strong> ${user.email} | 
-                                <strong>Sigla:</strong> ${user.sigla || 'N/A'} | 
-                                <strong>Cadastro:</strong> ${dataCadastro}
-                            </small>
-                        </p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        ${!isAdmin ? `
-                            <button class="btn btn-warning btn-sm me-2 btn-promover" data-uid="${uid}">
-                                <i class="bi bi-arrow-up-circle me-1"></i>Promover
-                            </button>
-                        ` : ''}
-                        
-                        <button class="btn ${isAtivo ? 'btn-danger' : 'btn-success'} btn-sm btn-toggle-ativo" 
-                                data-uid="${uid}" data-ativo="${isAtivo}">
-                            <i class="bi bi-${isAtivo ? 'pause-circle' : 'play-circle'} me-1"></i>
-                            ${isAtivo ? 'Desativar' : 'Ativar'}
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="vu-item vu-item--estatico user-card ${!isAtivo ? 'user-inactive' : ''}" data-uid="${uid}">
+            <span class="vu-avatar">${iniciais(user)}</span>
+            <span class="vu-item-texto">
+                <span class="vu-item-nome">${esc(user.nome)}</span>
+                <span class="vu-item-desc">${esc(user.email)} · ${esc(user.sigla || 'sem sigla')} · desde ${dataBR(user.dataCadastro)}</span>
+                <span class="vu-admin-selos">
+                    ${isAdmin ? '<span class="vu-selo vu-selo-andamento"><i class="bi bi-shield-check"></i>Admin</span>' : ''}
+                    ${isAtivo ? '<span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i>Ativo</span>' : '<span class="vu-selo"><i class="bi bi-pause"></i>Desativado</span>'}
+                </span>
+            </span>
+            <span class="vu-mini-acoes">
+                ${!isAdmin ? `<button type="button" class="vu-btn btn-promover" data-uid="${uid}"><i class="bi bi-shield-plus"></i> Tornar admin</button>` : ''}
+                <button type="button" class="vu-btn ${isAtivo ? 'vu-btn-perigo' : 'vu-btn-principal'} btn-toggle-ativo" data-uid="${uid}" data-ativo="${isAtivo}">
+                    <i class="bi bi-${isAtivo ? 'pause-circle' : 'play-circle'}"></i> ${isAtivo ? 'Desativar' : 'Reativar'}
+                </button>
+            </span>
         </div>
     `;
 }
@@ -365,22 +390,26 @@ function adicionarEventListenersUsuariosAtivos() {
  * Promove usuário para administrador
  */
 async function promoverUsuario(e) {
-    const uid = e.target.closest('.btn-promover').dataset.uid;
-    
-    if (!confirm('🚀 Tem certeza que deseja promover este usuário para administrador?')) return;
-    
+    const btn = e.target.closest('.btn-promover');
+    const uid = btn.dataset.uid;
+    const nome = btn.closest('.user-card')?.querySelector('.vu-item-nome')?.textContent || 'esta pessoa';
+
+    if (!await confirmar({ titulo: `Tornar ${nome} administrador?`, texto: 'Ela poderá aprovar cadastros e mudar o código secreto.', sim: 'Tornar admin', icone: 'bi-shield-plus' })) return;
+
+    ocupar(btn, true);
     try {
         await updateDoc(doc(db, "usuarios", uid), {
             role: "admin",
             promoviadoEm: new Date().toISOString()
         });
-        
-        alert('🎉 Usuário promovido para administrador!');
+
+        avisar('ok', `${nome} agora é administrador`);
         await carregarUsuariosAtivos();
-        
+
     } catch (error) {
         console.error("❌ Erro ao promover usuário:", error);
-        alert('❌ Erro ao promover usuário: ' + error.message);
+        avisar('erro', 'Não foi possível promover', error.message);
+        ocupar(btn, false);
     }
 }
 
@@ -392,55 +421,59 @@ async function toggleAtivarUsuario(e) {
     const uid = btn.dataset.uid;
     const isAtivo = btn.dataset.ativo === 'true';
     const novoStatus = !isAtivo;
-    
+    const nome = btn.closest('.user-card')?.querySelector('.vu-item-nome')?.textContent || 'esta pessoa';
+
     // Validações
     if (!uid || uid === 'undefined' || uid === 'null') {
-        alert('❌ Erro: UID do usuário inválido');
+        avisar('erro', 'Cadastro sem identificação', 'Recarregue a página e tente de novo.');
         console.error('UID inválido:', uid);
         return;
     }
-    
+
     const acao = novoStatus ? 'ativar' : 'desativar';
-    const emoji = novoStatus ? '✅' : '⚠️';
-    
-    if (!confirm(`${emoji} Tem certeza que deseja ${acao} este usuário?`)) return;
-    
+    const ok = await confirmar(novoStatus
+        ? { titulo: `Reativar ${nome}?`, texto: 'Ela volta a ter acesso ao app.', sim: 'Reativar', icone: 'bi-play-circle' }
+        : { titulo: `Desativar ${nome}?`, texto: 'Ela perde o acesso até ser reativada. Nada é apagado.', sim: 'Desativar', perigo: true, icone: 'bi-pause-circle' });
+    if (!ok) return;
+
+    ocupar(btn, true);
     try {
         // Verificar se o documento existe
         const userDoc = await getDoc(doc(db, "usuarios", uid));
-        
+
         if (!userDoc.exists()) {
-            alert(`❌ Usuário não encontrado no banco de dados.\n\nRecarregando a lista...`);
+            avisar('atencao', 'Cadastro não encontrado', 'A lista foi recarregada.');
             await carregarUsuariosAtivos();
             return;
         }
-        
+
         // Preparar dados para atualização
         const updateData = {
             ativo: novoStatus,
             atualizadoEm: new Date().toISOString()
         };
-        
+
         if (novoStatus) {
             updateData.dataAtivacao = new Date().toISOString();
         } else {
             updateData.dataDesativacao = new Date().toISOString();
         }
-        
+
         // Atualizar no Firestore
         await updateDoc(doc(db, "usuarios", uid), updateData);
-        
-        alert(`${emoji} Usuário ${novoStatus ? 'ativado' : 'desativado'} com sucesso!`);
+
+        avisar('ok', novoStatus ? `${nome} foi reativado` : `${nome} foi desativado`);
         await carregarUsuariosAtivos();
-        
+
     } catch (error) {
         console.error(`❌ Erro ao ${acao} usuário:`, error);
-        
+
         if (error.code === 'not-found') {
-            alert(`❌ Usuário não encontrado. Recarregando lista...`);
+            avisar('atencao', 'Cadastro não encontrado', 'A lista foi recarregada.');
             await carregarUsuariosAtivos();
         } else {
-            alert(`❌ Erro ao ${acao} usuário: ${error.message}`);
+            avisar('erro', `Não foi possível ${acao}`, error.message);
+            ocupar(btn, false);
         }
     }
 }
@@ -468,26 +501,34 @@ async function carregarConfiguracoes() {
  * Atualiza código secreto do sistema
  */
 async function atualizarCodigoSecreto() {
-    const novoCodigo = document.getElementById('codigo-secreto').value.trim();
-    
+    const campo = document.getElementById('codigo-secreto');
+    const novoCodigo = campo.value.trim();
+    const btn = document.getElementById('atualizar-codigo');
+
     if (!novoCodigo) {
-        alert('⚠️ Por favor, insira um código secreto válido.');
+        const bloco = campo.closest('.vu-campo');
+        bloco?.classList.add('tem-erro');
+        campo.addEventListener('input', () => bloco?.classList.remove('tem-erro'), { once: true });
+        avisar('erro', 'Digite um código secreto');
         return;
     }
-    
-    if (!confirm('🔑 Tem certeza que deseja alterar o código secreto?')) return;
-    
+
+    if (!await confirmar({ titulo: 'Trocar o código secreto?', texto: 'O código antigo deixa de valer para novos cadastros.', sim: 'Trocar código', icone: 'bi-key' })) return;
+
+    ocupar(btn, true);
     try {
         await updateDoc(doc(db, "configuracoes", "sistema"), {
             codigoSecreto: novoCodigo,
             atualizadoEm: new Date().toISOString()
         });
-        
-        alert('✅ Código secreto atualizado com sucesso!');
-        
+
+        avisar('ok', 'Código secreto atualizado');
+
     } catch (error) {
         console.error("❌ Erro ao atualizar código:", error);
-        alert('❌ Erro ao atualizar código: ' + error.message);
+        avisar('erro', 'Não foi possível salvar o código', error.message);
+    } finally {
+        ocupar(btn, false);
     }
 }
 
@@ -534,7 +575,7 @@ async function detectarUsuariosDesatualizados() {
         
     } catch (error) {
         console.error("❌ Erro ao detectar usuários:", error);
-        alert("❌ Erro ao detectar usuários: " + error.message);
+        avisar('erro', 'Não foi possível procurar', error.message);
     }
 }
 
@@ -542,7 +583,7 @@ async function detectarUsuariosDesatualizados() {
  * Atualiza todos os usuários desatualizados de uma vez
  */
 async function atualizarTodosUsuarios() {
-    if (!confirm('🔧 Tem certeza que deseja atualizar TODOS os usuários desatualizados?')) {
+    if (!await confirmar({ titulo: 'Corrigir todos os cadastros incompletos?', texto: 'Os campos que faltam recebem os valores padrão.', sim: 'Corrigir todos', icone: 'bi-wrench-adjustable' })) {
         return;
     }
     
@@ -588,7 +629,7 @@ async function atualizarTodosUsuarios() {
         
         if (contador > 0) {
             await Promise.all(promises);
-            alert(`✅ ${contador} usuários foram atualizados com sucesso!`);
+            avisar('ok', `${contador} ${contador === 1 ? 'cadastro corrigido' : 'cadastros corrigidos'}`);
             
             // Recarregar interfaces
             await Promise.all([
@@ -597,12 +638,12 @@ async function atualizarTodosUsuarios() {
                 carregarUsuariosAtivos()
             ]);
         } else {
-            alert('✅ Nenhum usuário precisava ser atualizado.');
+            avisar('info', 'Nada para corrigir', 'Todos os cadastros já estão completos.');
         }
         
     } catch (error) {
         console.error("❌ Erro ao atualizar usuários:", error);
-        alert("❌ Erro ao atualizar usuários: " + error.message);
+        avisar('erro', 'Não foi possível corrigir', error.message);
     }
 }
 
@@ -642,15 +683,11 @@ async function corrigirUsuarioIndividual(e) {
         
         // Feedback visual
         userCard.classList.add('fixed');
-        userCard.innerHTML = `
-            <div class="alert alert-success">
-                ✅ <strong>${userData.nome || userData.email}</strong> foi corrigido com sucesso!
-            </div>
-        `;
+        userCard.querySelector('.vu-mini-acoes').innerHTML = '<span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i>Corrigido</span>';
         
     } catch (error) {
         console.error("❌ Erro ao corrigir usuário:", error);
-        alert("❌ Erro ao corrigir usuário: " + error.message);
+        avisar('erro', 'Não foi possível corrigir', error.message);
     }
 }
 
@@ -661,42 +698,35 @@ function exibirUsuariosDesatualizados(usuarios) {
     const container = document.getElementById('usuarios-desatualizados');
     const lista = document.getElementById('lista-usuarios-desatualizados');
     const botaoAtualizar = document.getElementById('atualizar-todos-usuarios');
-    
+
     if (usuarios.length === 0) {
-        lista.innerHTML = '<div class="alert alert-success">✅ Todos os usuários estão atualizados!</div>';
-        container.style.display = 'block';
+        lista.innerHTML = vazio('bi-check2', 'Tudo completo', 'Nenhum cadastro com campos faltando.');
+        container.style.display = '';
         botaoAtualizar.style.display = 'none';
         return;
     }
-    
-    let html = `<div class="alert alert-warning">⚠️ Encontrados ${usuarios.length} usuários desatualizados:</div>`;
-    
+
+    let html = `<p class="vu-dica"><b>${usuarios.length}</b> ${usuarios.length === 1 ? 'cadastro precisa' : 'cadastros precisam'} de ajuste.</p><div class="vu-lista">`;
+
     usuarios.forEach(usuario => {
         html += `
-            <div class="user-outdated-card" data-uid="${usuario.id}">
-                <div class="user-info">
-                    <div class="user-details">
-                        <h6><strong>${usuario.data.nome || 'Sem nome'}</strong></h6>
-                        <p><small>${usuario.data.email || 'Sem email'}</small></p>
-                        <div class="missing-fields">
-                            <strong>Campos faltando:</strong> 
-                            <span class="badge bg-danger">${usuario.camposFaltando.join(', ')}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="user-actions">
-                    <button class="btn btn-warning btn-sm btn-fix-user" data-uid="${usuario.id}">
-                        <i class="bi bi-wrench"></i> Corrigir
-                    </button>
-                </div>
+            <div class="vu-item vu-item--estatico user-outdated-card" data-uid="${esc(usuario.id)}">
+                <span class="vu-avatar">${iniciais(usuario.data)}</span>
+                <span class="vu-item-texto">
+                    <span class="vu-item-nome">${esc(usuario.data.nome || 'Sem nome')}</span>
+                    <span class="vu-item-desc">${esc(usuario.data.email || 'Sem email')} · falta: ${esc(usuario.camposFaltando.join(', '))}</span>
+                </span>
+                <span class="vu-mini-acoes">
+                    <button type="button" class="vu-btn btn-fix-user" data-uid="${esc(usuario.id)}"><i class="bi bi-wrench"></i> Corrigir</button>
+                </span>
             </div>
         `;
     });
-    
-    lista.innerHTML = html;
-    container.style.display = 'block';
-    botaoAtualizar.style.display = 'block';
-    
+
+    lista.innerHTML = html + '</div>';
+    container.style.display = '';
+    botaoAtualizar.style.display = '';
+
     // Adicionar event listeners
     document.querySelectorAll('.btn-fix-user').forEach(btn => {
         btn.addEventListener('click', corrigirUsuarioIndividual);

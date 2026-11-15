@@ -821,3 +821,33 @@ body.vu-antiga .vu-passos .vu-marcar .bi { font-size: 18px; }
 body.vu-antiga .vu-progresso { margin-bottom: var(--esp-3); gap: var(--esp-2); }
 body.vu-antiga .vu-progresso .vu-dica { font-weight: 700; }
 body.vu-antiga #infoELISA .card, body.vu-antiga #infoELISA .card-body { border: 0 !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; }
+
+/* ==========================================================
+   Administração: selos de contagem, abas em pílula e Listas
+   ========================================================== */
+body.vu-antiga .vu-admin .vu-pagina-topo { margin-bottom: var(--esp-4); }
+.vu-admin-contagens { display: flex; flex-wrap: wrap; gap: var(--esp-2); }
+.vu-admin-abas { margin-bottom: var(--esp-4); }
+.vu-admin-abas .vu-filtro.active { color: var(--tinta); }
+body.vu-antiga .vu-admin .tab-content { padding: 0 !important; }
+.vu-admin-sobrelinha { margin: 0 0 var(--esp-2) !important; padding: 0 var(--esp-1); color: var(--tinta-suave); }
+.vu-admin .vu-item { flex-wrap: wrap; row-gap: var(--esp-2); padding-top: var(--esp-3); padding-bottom: var(--esp-3); }
+.vu-admin .vu-item .vu-item-texto { min-width: 200px; }
+.vu-admin .vu-item-desc { overflow-wrap: anywhere; }
+.vu-admin .vu-mini-acoes { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.vu-admin .vu-mini-acoes .vu-btn { min-height: 44px; padding: 0 var(--esp-4); }
+.vu-admin .vu-mini-acoes .vu-btn-icone { width: 44px; padding: 0; }
+.vu-admin-selos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.vu-admin-selos .vu-selo { height: 28px; font-size: 14px; padding: 0 10px; }
+.vu-admin .user-inactive .vu-avatar { background: var(--cartao-suave); color: var(--tinta-suave); }
+.vu-admin .user-inactive .vu-item-nome { color: var(--tinta-suave); }
+.vu-admin .vu-vazio { background: var(--cartao); }
+.vu-admin .vu-vazio h3 { margin: 0; font-size: 19px; }
+.vu-admin-bloco { max-width: 680px; }
+.vu-admin-bloco > .vu-btn { justify-self: start; }
+.vu-admin-migracao { display: grid; gap: var(--esp-4); }
+.vu-admin .user-outdated-card.fixed { background: var(--verde-claro); }
+@media (max-width: 599.98px) {
+  .vu-admin .vu-mini-acoes { width: 100%; margin-left: 56px; justify-content: flex-start; }
+  .vu-admin .vu-mini-acoes .vu-btn:not(.vu-btn-icone) { flex: 1; }
+}

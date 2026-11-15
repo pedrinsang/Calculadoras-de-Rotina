@@ -7,130 +7,92 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../assets/css/styles.css">
-    <link rel="stylesheet" href="../assets/css/pages/admin.css">
   <link rel="stylesheet" href="../assets/css/tema.css">
   <link rel="stylesheet" href="../assets/css/ponte.css">
 </head>
 <body>
-    <div class="container admin-card shadow">
-        <h1 class="admin-title mb-3">
-            <i class="bi bi-shield-check me-2"></i>Painel Administrativo
-        </h1>
-        
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <button id="hub-button" class="admin-btn-outline">
-                <i class="bi bi-house me-1"></i> Voltar ao Hub
-            </button>
-            <div class="admin-stats">
-                <span class="badge bg-warning" id="pending-count">0 pendentes</span>
-                <span class="badge bg-success" id="active-count">0 ativos</span>
+    <div class="container admin-card vu-admin">
+        <header class="vu-pagina-topo">
+            <div>
+                <h1 class="admin-title">Administração</h1>
+                <p>Aprovação de cadastros, pessoas da equipe e ajustes do sistema.</p>
             </div>
+            <div class="vu-admin-contagens" aria-live="polite">
+                <span class="vu-selo vu-selo-atencao"><i class="bi bi-hourglass-split"></i><span id="pending-count">0 pendentes</span></span>
+                <span class="vu-selo vu-selo-feito"><i class="bi bi-people"></i><span id="active-count">0 ativos</span></span>
+            </div>
+            <!-- Mantido escondido: o script ainda procura por ele -->
+            <button id="hub-button" class="vu-oculto" type="button">Início</button>
+        </header>
+
+        <!-- Abas (pílulas); o Bootstrap troca o conteúdo pelo data-bs-target -->
+        <div class="vu-filtros vu-admin-abas" id="admin-tabs" role="tablist" aria-label="Seções da administração">
+            <span class="vu-filtros-marca"></span>
+            <button type="button" class="vu-filtro active" role="tab" aria-pressed="true" data-bs-toggle="tab" data-bs-target="#usuarios-pendentes"><i class="bi bi-hourglass-split"></i>Pedidos<small data-contagem="pendentes">0</small></button>
+            <button type="button" class="vu-filtro" role="tab" aria-pressed="false" data-bs-toggle="tab" data-bs-target="#usuarios-ativos"><i class="bi bi-people"></i>Equipe<small data-contagem="ativos">0</small></button>
+            <button type="button" class="vu-filtro" role="tab" aria-pressed="false" data-bs-toggle="tab" data-bs-target="#configuracoes"><i class="bi bi-key"></i>Código</button>
+            <button type="button" class="vu-filtro" role="tab" aria-pressed="false" data-bs-toggle="tab" data-bs-target="#migracao-usuarios"><i class="bi bi-wrench-adjustable"></i>Migração</button>
         </div>
 
-        <!-- Abas de navegação -->
-        <ul class="nav nav-tabs mb-3" id="admin-tabs">
-            <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#usuarios-pendentes">
-                    <i class="bi bi-clock-history me-1"></i>Usuários Pendentes
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#usuarios-ativos">
-                    <i class="bi bi-people me-1"></i>Usuários Ativos
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#configuracoes">
-                    <i class="bi bi-gear me-1"></i>Configurações
-                </button>
-            </li>
-            <!-- Nova aba para Migração de Usuários -->
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#migracao-usuarios">
-                    <i class="bi bi-arrow-clockwise me-1"></i> Migração
-                </button>
-            </li>
-        </ul>
-
-        <!-- Conteúdo das abas -->
         <div class="tab-content">
-            <!-- Usuários Pendentes -->
-            <div class="tab-pane fade show active" id="usuarios-pendentes">
+            <!-- Pedidos de cadastro -->
+            <div class="tab-pane fade show active" id="usuarios-pendentes" role="tabpanel">
+                <p class="vu-sobrelinha vu-admin-sobrelinha">Esperando aprovação</p>
                 <div id="usuarios-pendentes-lista">
-                    <p class="text-center text-muted">Carregando usuários pendentes...</p>
+                    <div class="vu-lista vu-admin-carregando">
+                        <div class="vu-item vu-item--estatico"><div class="vu-esqueleto" style="width:60%"></div></div>
+                        <div class="vu-item vu-item--estatico"><div class="vu-esqueleto" style="width:45%"></div></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Usuários Ativos -->
-            <div class="tab-pane fade" id="usuarios-ativos">
+            <!-- Equipe -->
+            <div class="tab-pane fade" id="usuarios-ativos" role="tabpanel">
+                <p class="vu-sobrelinha vu-admin-sobrelinha">Pessoas com acesso</p>
                 <div id="usuarios-ativos-lista">
-                    <p class="text-center text-muted">Carregando usuários ativos...</p>
-                </div>
-            </div>
-
-            <!-- Configurações -->
-            <div class="tab-pane fade" id="configuracoes">
-                <div class="config-section">
-                    <h4><i class="bi bi-key me-2"></i>Código Secreto</h4>
-                    <div class="input-group mb-3">
-                        <input type="text" id="codigo-secreto" class="form-control" placeholder="Código atual">
-                        <button class="btn btn-success" id="atualizar-codigo">
-                            <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
-                        </button>
+                    <div class="vu-lista vu-admin-carregando">
+                        <div class="vu-item vu-item--estatico"><div class="vu-esqueleto" style="width:60%"></div></div>
+                        <div class="vu-item vu-item--estatico"><div class="vu-esqueleto" style="width:45%"></div></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Migração de Usuários -->
-            <div class="tab-pane fade" id="migracao-usuarios">
-                <div class="content-header">
-                    <h2><i class="bi bi-arrow-clockwise me-2"></i>Migração de Usuários</h2>
-                    <p>Detecte e atualize usuários com dados incompletos</p>
-                </div>
-                
-                <div class="migration-tools">
-                    <div class="config-card">
-                        <div class="config-header">
-                            <div class="config-icon">
-                                <i class="bi bi-search"></i>
-                            </div>
-                            <div>
-                                <h4>Detectar Usuários Desatualizados</h4>
-                                <p>Encontre usuários sem os campos obrigatórios</p>
-                            </div>
-                        </div>
-                        <div class="config-content">
-                            <button class="btn-modern btn-info" id="detectar-usuarios">
-                                <i class="bi bi-search"></i>
-                                <span>Detectar Usuários</span>
-                            </button>
+            <!-- Código secreto -->
+            <div class="tab-pane fade" id="configuracoes" role="tabpanel">
+                <section class="vu-bloco vu-admin-bloco">
+                    <h2 class="vu-bloco-titulo"><span class="vu-item-icone cor-ambar"><i class="bi bi-key"></i></span>Código secreto</h2>
+                    <div class="vu-campo">
+                        <label for="codigo-secreto">Código para novos cadastros</label>
+                        <p class="vu-dica">Quem for se cadastrar precisa digitar este código. Ao trocar, o antigo deixa de valer.</p>
+                        <div class="vu-entrada">
+                            <input type="text" id="codigo-secreto" autocomplete="off" placeholder="Código atual" style="font-family:var(--font-numeros)">
                         </div>
                     </div>
-                    
-                    <div class="config-card" id="usuarios-desatualizados" style="display: none;">
-                        <div class="config-header">
-                            <div class="config-icon">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
-                            <div>
-                                <h4>Usuários Encontrados</h4>
-                                <p>Usuários que precisam ser atualizados</p>
-                            </div>
-                        </div>
-                        <div class="config-content">
-                            <div id="lista-usuarios-desatualizados"></div>
-                            <button class="btn-modern btn-success" id="atualizar-todos-usuarios" style="display: none;">
-                                <i class="bi bi-arrow-clockwise"></i>
-                                <span>Atualizar Todos</span>
-                            </button>
-                        </div>
-                    </div>
+                    <button type="button" class="vu-btn vu-btn-principal" id="atualizar-codigo"><i class="bi bi-check2"></i> Salvar código</button>
+                </section>
+            </div>
+
+            <!-- Migração de usuários -->
+            <div class="tab-pane fade" id="migracao-usuarios" role="tabpanel">
+                <div class="migration-tools vu-admin-migracao">
+                    <section class="vu-bloco vu-admin-bloco">
+                        <h2 class="vu-bloco-titulo"><span class="vu-item-icone cor-azul"><i class="bi bi-search"></i></span>Cadastros incompletos</h2>
+                        <p class="vu-dica">Procura pessoas sem os campos obrigatórios (aprovado, ativo, data de cadastro e função) e permite corrigir.</p>
+                        <button type="button" class="vu-btn" id="detectar-usuarios"><i class="bi bi-search"></i> Procurar</button>
+                    </section>
+
+                    <section class="vu-bloco vu-admin-bloco" id="usuarios-desatualizados" style="display: none;">
+                        <h2 class="vu-bloco-titulo"><span class="vu-item-icone cor-ambar"><i class="bi bi-exclamation-triangle"></i></span>Encontrados</h2>
+                        <div id="lista-usuarios-desatualizados"></div>
+                        <button type="button" class="vu-btn vu-btn-principal" id="atualizar-todos-usuarios" style="display: none;"><i class="bi bi-wrench-adjustable"></i> Corrigir todos</button>
+                    </section>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/utils/ui.js"></script>
     <script type="module" src="../assets/js/utils/casca.js"></script>
   <script type="module" src="../assets/js/pages/admin.js"></script>
 </body>
