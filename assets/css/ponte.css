@@ -906,7 +906,7 @@ body.vu-antiga .vu-admin .tab-content { padding: 0 !important; }
    Em andamento e Pendentes empilhados; Concluídas hoje numa coluna ao lado no computador. */
 body.vu-antiga .container.mural-card { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
 body.vu-antiga .vu-quadro.vu-mural { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--esp-4); align-items: start; }
-@media (min-width: 1360px) { body.vu-antiga .vu-quadro.vu-mural { grid-template-columns: minmax(0, 1fr) 300px; } }
+@media (min-width: 1360px) { body.vu-antiga .vu-quadro.vu-mural { grid-template-columns: minmax(0, 1fr) 280px; } }
 body.vu-antiga .vu-mural-grupos { display: grid; gap: var(--esp-4); min-width: 0; }
 body.vu-antiga .vu-quadro.vu-mural .vu-grupo { display: block; padding: 0; overflow: visible; background: var(--cartao) !important; border: 1px solid var(--linha); border-radius: var(--raio-grande); box-shadow: var(--sombra-cartao); }
 body.vu-antiga .vu-mural .vu-coluna-topo { margin: 0; padding: var(--esp-3) var(--esp-4); border-bottom: 1px solid var(--linha); font-size: 17px; }
@@ -962,7 +962,7 @@ body.vu-antiga .vu-linha--feita .vu-tarefa-nome { font-size: 15px; line-height: 
 body.vu-antiga .vu-mural .vu-grupo { container-type: inline-size; }
 body.vu-antiga .vu-linha-acoes .btn-resultados span { display: none; }
 body.vu-antiga .vu-linha-acoes .btn-resultados { width: 40px; padding: 0; }
-@container (max-width: 820px) {
+@container (max-width: 740px) {
   body.vu-antiga .vu-linha:not(.vu-linha--feita) { grid-template-columns: 40px minmax(0, 1fr) auto; }
   body.vu-antiga .vu-linha-acoes { grid-column: 2 / -1; }
 }
