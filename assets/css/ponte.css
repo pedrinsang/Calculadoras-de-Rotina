@@ -781,3 +781,33 @@ body.vu-antiga .vu-barra-filtros .vu-opcoes--rolar { margin: 0; padding: 2px 0; 
 body.vu-antiga .conta-dados .form-section { border: 0 !important; padding: 0 !important; margin: 0 !important; background: transparent !important; box-shadow: none !important; }
 body.vu-antiga .conta-dados .form-section input.form-control[readonly]:not([type="checkbox"]) { min-height: 0 !important; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; font-size: 17px; font-weight: 700; color: var(--tinta) !important; }
 body.vu-antiga .conta-dados .row > div { margin-bottom: var(--esp-3) !important; }
+
+/* ==========================================================
+   Calculadoras: tela sem cartão em volta, formulário em Bloco
+   e Resultado ao lado no computador
+   ========================================================== */
+body.vu-antiga .vu-casca-main > .calculadora-card.vu-calc-tela {
+  padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+  display: grid; gap: var(--esp-5); max-width: 1100px !important;
+}
+body.vu-antiga .vu-calc-tela .vu-pagina-topo h1 { margin: 0 !important; }
+body.vu-antiga .vu-calc-tela .vu-trilha { margin-bottom: var(--esp-1); }
+body.vu-antiga .vu-calc-tela .vu-bloco-titulo { margin: 0 !important; font-size: 19px !important; color: var(--tinta) !important; }
+body.vu-antiga .vu-calc-tela .vu-campo label { margin: 0; color: var(--tinta); }
+body.vu-antiga .vu-calc-tela .vu-vazio { background: var(--cartao); }
+body.vu-antiga .vu-calc-tela .vu-vazio h3 { margin: 0; font-size: 19px !important; color: var(--tinta) !important; }
+body.vu-antiga .vu-calc-tela .vu-resultado { scroll-margin-top: var(--esp-4); }
+body.vu-antiga .vu-calc-tela .vu-resultado-valor { font-size: clamp(40px, 7vw, 56px); line-height: 1.1; overflow-wrap: anywhere; }
+body.vu-antiga .vu-calc-tela .vu-resultado-linhas li span { color: var(--sobre-floresta-suave); }
+body.vu-antiga .vu-calc-tela .vu-resultado-linhas code { white-space: nowrap; }
+body.vu-antiga .vu-calc-tela .vu-resultado .vu-resultado-grupo { margin: 0 0 var(--esp-2); }
+.vu-resultado-nota { margin: 0 0 var(--esp-4); font-size: 15px; line-height: 22px; color: var(--sobre-floresta-suave); }
+body.vu-antiga .vu-calc-tela .vu-calc-consulta { margin: var(--esp-2) 0 calc(var(--esp-3) * -1); padding: 0 var(--esp-1); color: var(--tinta-suave); }
+body.vu-antiga .vu-calc-tela .accordion { margin-top: 0 !important; }
+body.vu-antiga .vu-calc-tela .vu-creditos { color: var(--tinta-suave); margin-top: var(--esp-2); }
+/* Pílulas grandes do tipo de calculadora (vacinas e ELISA) */
+body.vu-antiga .vu-calc-tela .vu-filtros { display: flex; width: max-content; }
+@media (max-width: 899.98px) {
+  body.vu-antiga .vu-casca-main > .calculadora-card.vu-calc-tela { padding: 0 !important; gap: var(--esp-4); }
+  body.vu-antiga .vu-calc-tela .vu-fixo { position: static; }
+}

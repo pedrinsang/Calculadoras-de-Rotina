@@ -8,55 +8,61 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/pages/calculadoras.css"> 
-  <link rel="stylesheet" href="../assets/css//pages/soroneutralizacao.css">
+  <link rel="stylesheet" href="../assets/css/pages/soroneutralizacao.css">
   <link rel="stylesheet" href="../assets/css/tema.css">
   <link rel="stylesheet" href="../assets/css/ponte.css">
-
+</head>
 <body>
-  <div class="calculadora-card container">
-    <!-- Adicione a classe "top-buttons-container" ao div que contém os botões -->
-    <div class="top-buttons-container">
-      <button id="voltar-hub" class="btn btn-outline-success btn-top-nav">
-        <i class="bi bi-house-door"></i> Voltar ao Hub
-      </button>
-      <button id="acessar-mural" class="btn btn-outline-success btn-top-nav">
-        <i class="bi bi-clipboard"></i> Acessar Mural
-      </button>
-    </div>
-    
-    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
-         alt="Logo Setor de Virologia UFSM" 
-         class="logo img-fluid">
-         
-    
-   <h2 class="calculadora-title mb-4"><i class="bi bi-calculator me-2"></i>Calculadora de Soroneutralização</h2>
+  <div class="calculadora-card container vu-calc-tela">
+    <!-- Mantidos escondidos: o script ainda procura por eles -->
+    <button id="voltar-hub" class="vu-oculto" type="button">Início</button>
+    <button id="acessar-mural" class="vu-oculto" type="button">Mural</button>
 
-    <form id="calculadora-form">
-      <div class="mb-3">
-        <label for="titulacao" class="form-label">Titulação Viral:</label>
-        <input type="text" id="titulacao" class="form-control" placeholder="Ex: 10^2 ou 10^6,1" required>
+    <header class="vu-pagina-topo">
+      <div>
+        <nav class="vu-trilha"><a href="hub.html">Calculadoras</a><i class="bi bi-chevron-right"></i><span>Soroneutralização</span></nav>
+        <h1 class="calculadora-title">Soroneutralização</h1>
+        <p>Volume de vírus e diluições para as placas.</p>
       </div>
+    </header>
 
-      <div class="mb-3">
-        <label for="amostras" class="form-label">Número de Amostras:</label>
-        <input type="number" id="amostras" class="form-control" placeholder="Digite o número de amostras" min="1" required>
-      </div>
+    <div class="vu-colunas vu-colunas--meio vu-calc-colunas">
+      <form id="calculadora-form" class="vu-bloco" novalidate>
+        <h2 class="vu-bloco-titulo"><span class="vu-item-icone"><i class="bi bi-calculator"></i></span>Dados do ensaio</h2>
 
-      <div class="d-grid">
-        <button type="button" class="btn btn-success" onclick="calcular()">
-          <i class="bi bi-calculator me-2"></i>Calcular
+        <div class="vu-campo">
+          <label for="titulacao">Titulação viral</label>
+          <p class="vu-dica">O expoente do título. Ex.: 10^6,1</p>
+          <div class="vu-entrada">
+            <input type="text" id="titulacao" inputmode="decimal" autocomplete="off" placeholder="10^6,1" required style="font-family:var(--font-numeros)">
+          </div>
+        </div>
+
+        <div class="vu-campo">
+          <label for="amostras">Número de amostras</label>
+          <p class="vu-dica">A 1ª placa leva 6 amostras; as outras, 12 cada.</p>
+          <div class="vu-contador" data-min="1" data-max="200">
+            <button type="button" aria-label="Diminuir"><i class="bi bi-dash-lg"></i></button>
+            <input type="number" id="amostras" min="1" max="200" value="6" inputmode="numeric" aria-live="polite" required>
+            <button type="button" data-mais aria-label="Aumentar"><i class="bi bi-plus-lg"></i></button>
+          </div>
+        </div>
+
+        <button type="submit" class="vu-btn vu-btn-principal vu-btn-grande vu-btn-largo">
+          <i class="bi bi-calculator"></i> Calcular
         </button>
+      </form>
+
+      <div class="vu-fixo">
+        <div id="resultado-vazio" class="vu-vazio vu-so-pc">
+          <span class="vu-vazio-icone"><i class="bi bi-droplet-half"></i></span>
+          <h3>O resultado aparece aqui</h3>
+          <p>Informe a titulação e o número de amostras e toque em Calcular.</p>
+        </div>
+        <section id="resultado" class="vu-resultado d-none" role="status" aria-live="polite">
+          <!-- O resultado será inserido aqui -->
+        </section>
       </div>
-    </form>
-
-    <div id="resultado" class="resultado-card d-none">
-      <!-- O resultado será inserido aqui -->
-    </div>
-
-    <div class="d-grid mt-3">
-      <button id="copiar-resultado" class="btn btn-outline-success d-none" onclick="copiarResultado()">
-        <i class="bi bi-clipboard me-1"></i> Copiar Resultado
-      </button>
     </div>
 
     <!-- Modal para selecionar tarefas -->
@@ -76,6 +82,7 @@
       </div>
     </div>
 
+    <p class="vu-sobrelinha vu-calc-consulta">Para consultar</p>
     <!-- Acordeão para informações adicionais -->
     <div class="accordion mt-4" id="infoAcordeao">
       <!-- Passo a Passo do Cálculo -->
@@ -299,15 +306,14 @@
       </div>
     </div>
     
-    <!-- Créditos -->
-    <div class="text-center mt-4">
-      <small class="text-muted">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</small>
-    </div>
+    <p class="vu-creditos">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</p>
   </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/utils/ui.js"></script>
+  <script src="../assets/js/pages/calculadoras/comum.js"></script>
   <script src="../assets/js/pages/calculadoras/soroneutralizacao.js"></script>
-    <script type="module" src="../assets/js/utils/casca.js"></script>
+  <script type="module" src="../assets/js/utils/casca.js"></script>
 </body>
 </html>
