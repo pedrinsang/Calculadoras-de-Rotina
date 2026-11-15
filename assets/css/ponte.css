@@ -811,3 +811,13 @@ body.vu-antiga .vu-calc-tela .vu-filtros { display: flex; width: max-content; }
   body.vu-antiga .vu-casca-main > .calculadora-card.vu-calc-tela { padding: 0 !important; gap: var(--esp-4); }
   body.vu-antiga .vu-calc-tela .vu-fixo { position: static; }
 }
+body.vu-antiga .vu-calc-tela .vu-calc-secao > .vu-dica { margin-top: calc(var(--esp-2) * -1); }
+body.vu-antiga .vu-calc-tela .vu-calc-dupla { grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); }
+body.vu-antiga .vu-calc-tela .vu-contador input { width: 80px; }
+/* Passo a passo do ELISA: Caixas de marcar com barra de progresso */
+body.vu-antiga .vu-passos { display: grid; gap: var(--esp-2); margin-bottom: var(--esp-3); }
+body.vu-antiga .vu-passos .vu-marcar { margin: 0; font-weight: 400; }
+body.vu-antiga .vu-passos .vu-marcar .bi { font-size: 18px; }
+body.vu-antiga .vu-progresso { margin-bottom: var(--esp-3); gap: var(--esp-2); }
+body.vu-antiga .vu-progresso .vu-dica { font-weight: 700; }
+body.vu-antiga #infoELISA .card, body.vu-antiga #infoELISA .card-body { border: 0 !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; }
