@@ -60,6 +60,9 @@
   --font-titulo: Lexend, "Segoe UI", system-ui, sans-serif;
   --font-texto: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --font-numeros: "Atkinson Hyperlegible Mono", ui-monospace, Consolas, monospace;
+  --botao: var(--verde);
+  --botao-alto: var(--verde);
+  --sobre-botao: var(--sobre-verde);
   --veu: rgba(15, 61, 36, 0.55);
   --veu-carregando: rgba(243, 246, 238, 0.72);
   color-scheme: light;
@@ -101,7 +104,10 @@
     --foco: #ffd166;
     --sombra-cartao: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px -8px rgba(0, 0, 0, 0.6);
     --sombra-elevada: 0 2px 4px rgba(0, 0, 0, 0.4), 0 22px 44px -16px rgba(0, 0, 0, 0.8);
-    --veu: rgba(0, 0, 0, 0.6);
+    --botao: #2e7d32;
+    --botao-alto: #38913d;
+    --sobre-botao: #ffffff;
+  --veu: rgba(0, 0, 0, 0.6);
     --veu-carregando: rgba(11, 21, 16, 0.72);
     color-scheme: dark;
   }
@@ -138,6 +144,9 @@
   --foco: #ffd166;
   --sombra-cartao: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px -8px rgba(0, 0, 0, 0.6);
   --sombra-elevada: 0 2px 4px rgba(0, 0, 0, 0.4), 0 22px 44px -16px rgba(0, 0, 0, 0.8);
+  --botao: #2e7d32;
+  --botao-alto: #38913d;
+  --sobre-botao: #ffffff;
   --veu: rgba(0, 0, 0, 0.6);
   --veu-carregando: rgba(11, 21, 16, 0.72);
   color-scheme: dark;
@@ -165,8 +174,8 @@ h1, h2, h3, h4 { font-family: var(--font-titulo); }
 .vu-btn { position: relative; overflow: hidden; font: inherit; font-weight: 700; min-height: var(--alvo-toque); padding: 0 var(--esp-5); display: inline-flex; align-items: center; justify-content: center; gap: var(--esp-2); border-radius: var(--raio-medio); border: 2px solid var(--linha-forte); background: var(--cartao); color: var(--tinta); cursor: pointer; text-decoration: none; transition: background-color var(--dur-media), border-color var(--dur-media), color var(--dur-media), transform var(--dur-rapida) var(--curva-saida), box-shadow var(--dur-media); }
 .vu-btn:hover { border-color: var(--tinta); }
 .vu-btn:active { transform: scale(0.96); }
-.vu-btn-principal { background: var(--verde); border-color: var(--verde); color: var(--sobre-verde); box-shadow: var(--sombra-cartao); }
-.vu-btn-principal:hover { border-color: var(--verde); box-shadow: var(--sombra-elevada); transform: translateY(-2px); }
+.vu-btn-principal { background: var(--botao); border-color: var(--botao); color: var(--sobre-botao); box-shadow: var(--sombra-cartao); }
+.vu-btn-principal:hover { background: var(--botao-alto); border-color: var(--botao-alto); box-shadow: var(--sombra-elevada); transform: translateY(-2px); }
 .vu-btn-principal:active { transform: scale(0.96); }
 .vu-btn-lima { background: var(--lima); border-color: var(--lima); color: var(--sobre-lima); }
 .vu-btn-lima:hover { border-color: var(--sobre-lima); }

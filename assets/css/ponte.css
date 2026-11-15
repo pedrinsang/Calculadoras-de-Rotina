@@ -115,9 +115,9 @@ body.vu-antiga .historico-btn,
 body.vu-antiga .conta-btn,
 body.vu-antiga .btn-aprovar,
 body.vu-antiga form .btn[type="submit"] {
-  background: var(--verde) !important;
-  border: 2px solid var(--verde) !important;
-  color: var(--sobre-verde) !important;
+  background: var(--botao) !important;
+  border: 2px solid var(--botao) !important;
+  color: var(--sobre-botao) !important;
   box-shadow: var(--sombra-cartao);
 }
 body.vu-antiga .btn-success:hover,
@@ -480,7 +480,7 @@ body.vu-antiga .vu-tarefa-acoes .vu-btn:not(.vu-btn-principal):not(.vu-btn-fanta
   background: var(--cartao) !important; border: 2px solid var(--linha-forte) !important; color: var(--tinta) !important; box-shadow: none !important;
 }
 body.vu-antiga .vu-tarefa-acoes .vu-btn:not(.vu-btn-principal):not(.vu-btn-fantasma):hover { border-color: var(--tinta) !important; background: var(--cartao-suave) !important; }
-body.vu-antiga .vu-tarefa-acoes .vu-btn-principal { background: var(--verde) !important; border: 2px solid var(--verde) !important; color: var(--sobre-verde) !important; }
+body.vu-antiga .vu-tarefa-acoes .vu-btn-principal { background: var(--botao) !important; border: 2px solid var(--botao) !important; color: var(--sobre-botao) !important; }
 body.vu-antiga .vu-tarefa-acoes .vu-btn-fantasma { background: transparent !important; border: 2px solid transparent !important; color: var(--verde-escuro) !important; box-shadow: none !important; }
 body.vu-antiga .vu-tarefa-acoes .vu-btn-fantasma:hover { background: var(--cartao-suave) !important; }
 body.vu-antiga .card.em-progresso .btn-progresso { background: var(--azul-claro) !important; border-color: var(--azul) !important; color: var(--azul) !important; }
