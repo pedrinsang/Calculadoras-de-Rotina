@@ -752,3 +752,32 @@ body.vu-antiga .sv-secao input:focus, body.vu-antiga .sv-secao select:focus, bod
 body.vu-antiga .sv-vn-bloco { background: var(--cartao-suave) !important; border: 1px solid var(--linha) !important; border-radius: var(--raio-medio) !important; }
 body.vu-antiga .sv-vn-bloco h4, body.vu-antiga .sv-grupo-exames legend { color: var(--tinta) !important; }
 body.vu-antiga .sv-btn-icone { width: 48px; min-height: 48px; border: 2px solid var(--linha) !important; border-radius: var(--raio-medio) !important; color: var(--vermelho) !important; background: var(--cartao) !important; }
+
+/* Protocolos agrupados por categoria */
+body.vu-antiga .vu-protocolos-grupo { margin-bottom: var(--esp-5); }
+body.vu-antiga .vu-protocolos-grupo > .vu-sobrelinha { padding: 0 var(--esp-1); color: var(--tinta-suave); }
+
+/* ==========================================================
+   Conta
+   ========================================================== */
+body.vu-antiga .vu-conta-secao { margin-top: var(--esp-5); }
+body.vu-antiga .vu-conta-secao > .vu-sobrelinha { padding: 0 var(--esp-1); color: var(--tinta-suave); }
+body.vu-antiga .conta-dados .row { --bs-gutter-x: var(--esp-4); }
+body.vu-antiga .conta-dados .form-control[readonly] { background: var(--cartao-suave) !important; color: var(--tinta) !important; font-weight: 600; }
+body.vu-antiga .conta-dados .conta-form-label { color: var(--tinta-suave) !important; font-size: 15px; }
+/* Linha de Lista feita de <button> */
+button.vu-item { width: 100%; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+body.vu-antiga .vu-perfil h2 { color: var(--sobre-floresta) !important; margin: 0; }
+body.vu-antiga .vu-perfil p { color: var(--sobre-floresta-suave); }
+body.vu-antiga .vu-conta-saida { display: grid; justify-items: center; gap: var(--esp-2); margin-top: var(--esp-6); max-width: 420px; margin-left: auto; margin-right: auto; }
+.vu-link-perigo { min-height: 44px; border: 0; background: transparent; color: var(--vermelho); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.vu-link-perigo:hover { color: var(--tinta); }
+body.vu-antiga .btn-close-white { filter: none; }
+body.vu-antiga .modal-header.bg-danger { border-bottom: 3px solid var(--vermelho) !important; }
+
+/* Pílulas que rolam de lado ficam dentro do cartão */
+body.vu-antiga .vu-barra-filtros .vu-opcoes--rolar { margin: 0; padding: 2px 0; }
+/* Conta: "Seus dados" como texto (são só para leitura), sem caixa dentro de caixa */
+body.vu-antiga .conta-dados .form-section { border: 0 !important; padding: 0 !important; margin: 0 !important; background: transparent !important; box-shadow: none !important; }
+body.vu-antiga .conta-dados .form-section input.form-control[readonly]:not([type="checkbox"]) { min-height: 0 !important; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; font-size: 17px; font-weight: 700; color: var(--tinta) !important; }
+body.vu-antiga .conta-dados .row > div { margin-bottom: var(--esp-3) !important; }

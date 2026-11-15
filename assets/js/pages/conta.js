@@ -16,11 +16,25 @@ import { app, auth, db } from "../firebase.js";
 
 // Firebase já inicializado via módulo compartilhado
 
+// Avisos no padrão do sistema (cai no alert() se o ui.js não carregar)
+function avisarConta(msg) {
+  const texto = String(msg ?? "").trim();
+  if (!window.VirologiaUFSM?.aviso) { window.alert(texto); return; }
+  const erro = /erro|não foi possível|por favor|deve |não foi carregado/i.test(texto);
+  const sucesso = /sucesso|enviado/i.test(texto);
+  const tipo = erro ? "erro" : sucesso ? "ok" : "info";
+  if (texto.length <= 60) window.VirologiaUFSM.aviso({ tipo, titulo: texto });
+  else window.VirologiaUFSM.aviso({ tipo, titulo: erro ? "Algo deu errado" : "Pronto", texto });
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   console.log("Página conta.html carregada");
   
   // Mostrar mensagem de carregamento
-  document.body.innerHTML += '<div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999;"><div class="spinner-border text-success" role="status"><span class="visually-hidden">Carregando...</span></div></div>';
+  // (insertAdjacentHTML só acrescenta; "innerHTML +=" recriava a página e apagava os eventos da casca)
+  document.body.insertAdjacentHTML('beforeend', '<div id="loading-overlay" class="vu-carregando-tela"><div class="vu-carregando" role="status"><div class="vu-placa">' +
+    Array.from({ length: 12 }, (_, i) => `<i style="--d:${i}"></i>`).join('') + '</div><span>Carregando seus dados…</span></div></div>');
   
   // Verificar autenticação de forma assíncrona
   onAuthStateChanged(auth, async (user) => {
@@ -63,11 +77,21 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sigla').value = userData.sigla || '';
         document.getElementById('email').value = userData.email || '';
         
-        // Formatar data de cadastro se disponível
+        // Formatar data de cadastro se disponível (aceita texto, número ou Timestamp do Firestore)
         if (userData.dataCadastro) {
-          const date = new Date(userData.dataCadastro);
-          document.getElementById('data-cadastro').value = date.toLocaleDateString('pt-BR');
+          const date = userData.dataCadastro.toDate ? userData.dataCadastro.toDate() : new Date(userData.dataCadastro);
+          if (!isNaN(date)) document.getElementById('data-cadastro').value = date.toLocaleDateString('pt-BR');
         }
+
+        // Cartão do perfil no topo
+        const nomePerfil = (userData.nome || '').trim();
+        document.querySelectorAll('[data-conta-nome]').forEach(el => { el.textContent = nomePerfil || 'Minha conta'; });
+        document.querySelectorAll('[data-conta-iniciais]').forEach(el => {
+          el.textContent = (userData.sigla || nomePerfil.split(/\s+/).map(p => p[0]).join('') || '··').slice(0, 2).toUpperCase();
+        });
+        document.querySelectorAll('[data-conta-detalhe]').forEach(el => {
+          el.textContent = [userData.sigla ? `Sigla ${userData.sigla}` : '', userData.email || ''].filter(Boolean).join(' · ');
+        });
         
         // Preencher campos do formulário de edição
         document.getElementById('edit-nome').value = userData.nome || '';
@@ -77,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
-      alert("Erro ao carregar dados: " + error.message);
+      avisarConta("Erro ao carregar dados: " + error.message);
     }
     
     // Função auxiliar para adicionar event listeners com segurança
@@ -112,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.show();
       } else {
         console.error("Bootstrap não está disponível");
-        alert("Erro: Bootstrap não foi carregado corretamente");
+        avisarConta("Erro: Bootstrap não foi carregado corretamente");
       }
     });
     
@@ -122,13 +146,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const sigla = document.getElementById('edit-sigla').value.trim().toUpperCase();
       
       if (nome.length < 3) {
-        alert("O nome deve ter pelo menos 3 caracteres");
+        avisarConta("O nome deve ter pelo menos 3 caracteres");
         return;
       }
       
       // Validar sigla (máximo 3 letras)
       if (sigla.length > 3) {
-        alert("A sigla deve ter no máximo 3 letras");
+        avisarConta("A sigla deve ter no máximo 3 letras");
         return;
       }
       
@@ -155,14 +179,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Fechar modal e mostrar feedback
         if (typeof bootstrap !== 'undefined') {
           bootstrap.Modal.getInstance(document.getElementById('edit-profile-modal')).hide();
-          alert("Perfil atualizado com sucesso!");
+          avisarConta("Perfil atualizado com sucesso!");
         } else {
           document.getElementById('edit-profile-modal').style.display = 'none';
-          alert("Perfil atualizado com sucesso!");
+          avisarConta("Perfil atualizado com sucesso!");
         }
       } catch (error) {
         console.error("Erro ao atualizar perfil:", error);
-        alert("Erro ao atualizar: " + error.message);
+        avisarConta("Erro ao atualizar: " + error.message);
       }
     });
     
@@ -170,10 +194,10 @@ document.addEventListener('DOMContentLoaded', function() {
     addSafeEventListener('change-password-btn', 'click', async () => {
       try {
         await sendPasswordResetEmail(auth, user.email);
-        alert("Email de redefinição de senha enviado! Verifique sua caixa de entrada.");
+        avisarConta("Email de redefinição de senha enviado! Verifique sua caixa de entrada.");
       } catch (error) {
         console.error("Erro ao enviar email de redefinição:", error);
-        alert("Erro: " + error.message);
+        avisarConta("Erro: " + error.message);
       }
     });
     
@@ -192,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteModal.show();
       } else {
         console.error("Bootstrap não está disponível");
-        alert("Erro: Bootstrap não foi carregado corretamente");
+        avisarConta("Erro: Bootstrap não foi carregado corretamente");
       }
     });
     
@@ -225,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Solicitar senha para reautenticação
         const senha = document.getElementById('delete-password').value;
         if (!senha) {
-          alert("Por favor, digite sua senha para confirmar a exclusão.");
+          avisarConta("Por favor, digite sua senha para confirmar a exclusão.");
           this.disabled = false;
           this.innerHTML = '<i class="bi bi-trash3"></i> Excluir Permanentemente';
           return;
@@ -248,23 +272,23 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem("manterConectado");
         sessionStorage.removeItem("usuario");
         
-        alert("Sua conta foi excluída com sucesso!");
+        window.alert("Sua conta foi excluída com sucesso!");
         window.location.href = "../index.html?deleted=true";
         
       } catch (error) {
         console.error("Erro ao excluir conta:", error);
         
         if (error.code === 'auth/requires-recent-login') {
-          alert("Não foi possível autenticar. Faça login novamente antes de excluir sua conta.");
+          avisarConta("Não foi possível autenticar. Faça login novamente antes de excluir sua conta.");
           await signOut(auth);
           window.location.href = "../index.html?action=reauth&intent=delete";
           return;
         }
         
         if (error.code === 'auth/wrong-password') {
-          alert("Senha incorreta. Tente novamente.");
+          avisarConta("Senha incorreta. Tente novamente.");
         } else {
-          alert("Erro ao excluir conta: " + error.message);
+          avisarConta("Erro ao excluir conta: " + error.message);
         }
         
         this.disabled = false;

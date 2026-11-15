@@ -25,15 +25,26 @@ document.addEventListener('DOMContentLoaded', function () {
     window.location.href = "mural.html";
   });
 
-  // Força o recálculo do layout e corrige altura do body na entrada
-  document.body.style.height = window.innerHeight + 'px';
+  // Pílulas de categoria (espelham o select escondido)
+  if (window.VirologiaUFSM) window.VirologiaUFSM.iniciar(document);
   window.scrollTo(0, 0); // Garante que a página comece no topo
 });
 
-// Ajuste de altura ao redimensionar
-window.addEventListener('resize', function() {
-  document.body.style.height = window.innerHeight + 'px';
-});
+// Nomes das categorias, na ordem em que aparecem na lista
+const NOMES_CATEGORIA = {
+  'cultivo-celular': 'Cultivo celular',
+  'virologia': 'Técnicas virológicas',
+  'imunologia': 'Técnicas imunológicas',
+  'molecular': 'Biologia molecular',
+  'microscopia': 'Microscopia',
+  'hemaglutinacao': 'Hemaglutinação',
+  'soroneutralizacao': 'Soroneutralização',
+  'esterilizacao': 'Esterilização e limpeza'
+};
+
+function textoSeguroP(t) {
+  return String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
 
 // Funções de UI
 function mostrarLoading() {
@@ -74,42 +85,49 @@ function carregarProtocolos(filtro = '', categoria = 'todos') {
       return buscaMatch && categoriaMatch;
     });
 
+    const resumo = document.getElementById("protocolos-resumo");
+    if (resumo) {
+      resumo.textContent = filtro || categoria !== 'todos'
+        ? `${protocolosFiltrados.length} de ${protocolos.length} protocolos`
+        : `${protocolos.length} PDFs do setor`;
+    }
+
     if (protocolosFiltrados.length === 0) {
       protocolosList.innerHTML = `
-        <div class="alert alert-info text-center" role="alert">
-          <i class="bi bi-info-circle me-2"></i>
-          Nenhum protocolo encontrado com os critérios de busca.
+        <div class="vu-vazio">
+          <span class="vu-vazio-icone"><i class="bi bi-search" style="font-size:40px"></i></span>
+          <h3>Nenhum protocolo encontrado</h3>
+          <p>Tente outra palavra ou escolha “Todos” nas categorias.</p>
         </div>`;
       return;
     }
 
-    // Ordenar por título
+    // Ordenar por título e agrupar por categoria (como na identidade visual)
     protocolosFiltrados.sort((a, b) => a.titulo.localeCompare(b.titulo));
+    const ordem = Object.keys(NOMES_CATEGORIA);
+    const grupos = {};
+    protocolosFiltrados.forEach(p => { (grupos[p.categoria] ??= []).push(p); });
+    const chaves = Object.keys(grupos).sort((a, b) => (ordem.indexOf(a) + 1 || 99) - (ordem.indexOf(b) + 1 || 99));
 
-    // Renderizar protocolos
-    protocolosList.innerHTML = '';
-    protocolosFiltrados.forEach(protocolo => {
-      const protocoloItem = document.createElement("div");
-      protocoloItem.className = "protocolo-item";
-
-      protocoloItem.innerHTML = `
-        <div class="protocolo-header">
-          <h5 class="mb-0 text-success fw-bold">
-            ${protocolo.titulo} <span class="protocolo-id">(${protocolo.id})</span>
-          </h5>
-          <div class="protocolo-actions">
-            <button class="btn btn-success btn-sm rounded-pill px-3" onclick="abrirProtocolo('${protocolo.arquivo}')">
-              <i class="bi bi-file-earmark-text me-1"></i>Visualizar
-            </button>
-          </div>
+    protocolosList.innerHTML = chaves.map(chave => `
+      <section class="vu-secao vu-protocolos-grupo">
+        <p class="vu-sobrelinha">${textoSeguroP(NOMES_CATEGORIA[chave] || 'Outros')}</p>
+        <div class="vu-lista">
+          ${grupos[chave].map(p => `
+            <a class="vu-item cor-roxo" href="#" data-arquivo="${textoSeguroP(p.arquivo)}">
+              <span class="vu-item-icone"><i class="bi bi-file-earmark-pdf vu-ico"></i></span>
+              <span class="vu-item-texto">
+                <span class="vu-item-nome">${textoSeguroP(p.titulo)}</span>
+                <span class="vu-item-desc">${textoSeguroP(p.descricao)}</span>
+              </span>
+              <span class="vu-item-fim"><span class="vu-etiqueta vu-so-pc">${textoSeguroP(p.id)}</span><i class="bi bi-chevron-right vu-ico"></i></span>
+            </a>`).join('')}
         </div>
-        <p class="mt-2 mb-1 text-muted">${protocolo.descricao}</p>
-        <div class="protocolo-tags">
-          ${protocolo.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-        </div>
-      `;
+      </section>`).join('');
 
-      protocolosList.appendChild(protocoloItem);
+    // Tocar na linha abre o PDF
+    protocolosList.querySelectorAll('[data-arquivo]').forEach(link => {
+      link.addEventListener('click', e => { e.preventDefault(); abrirProtocolo(link.dataset.arquivo); });
     });
   } catch (error) {
     console.error("Erro ao carregar protocolos:", error);

@@ -15,22 +15,22 @@
 
 <body>
   <div class="container conta-card shadow">
-    <h1 class="conta-title mb-3"><i class="bi bi-person-gear"></i> Configurações da Conta</h1>
-    
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <!-- Container para botões de navegação -->
-      <div class="btn-secondary-container">
-        <button id="voltar-hub" class="btn">
-          <i class="bi bi-house"></i> Voltar ao Hub
-        </button>
-      </div>
-    </div>
+    <h1 class="conta-title vu-oculto">Minha conta</h1>
+    <!-- Mantido escondido: o script ainda procura por ele -->
+    <button id="voltar-hub" class="vu-oculto" type="button">Início</button>
 
-    <!-- Informações Pessoais -->
-    <div class="conta-item">
-      <h2 class="section-title"><i class="bi bi-person-vcard"></i> Informações Pessoais</h2>
-      
-      <div class="form-section">
+    <!-- Perfil -->
+    <section class="vu-perfil vu-entra">
+      <span class="vu-avatar" data-conta-iniciais>··</span>
+      <h2 data-conta-nome>Minha conta</h2>
+      <p data-conta-detalhe></p>
+    </section>
+
+    <!-- Seus dados -->
+    <section class="vu-secao vu-conta-secao">
+      <p class="vu-sobrelinha">Seus dados</p>
+      <div class="vu-bloco conta-dados">
+        <div class="form-section">
         <div class="row">
           <div class="col-md-6 mb-3">
             <label for="nome" class="conta-form-label">Nome Completo</label>
@@ -53,30 +53,33 @@
           </div>
         </div>
         
-        <!-- Botão editar perfil -->
-        <button id="edit-profile-btn" class="conta-btn mt-2">
-          <i class="bi bi-pencil"></i> Editar Informações
+        </div>
+      </div>
+    </section>
+
+    <!-- Conta -->
+    <section class="vu-secao vu-conta-secao">
+      <p class="vu-sobrelinha">Conta</p>
+      <div class="vu-lista">
+        <button type="button" id="edit-profile-btn" class="vu-item cor-cinza">
+          <span class="vu-item-icone"><i class="bi bi-person vu-ico"></i></span>
+          <span class="vu-item-texto"><span class="vu-item-nome">Editar nome e sigla</span><span class="vu-item-desc">Aparecem no Mural e nos laudos</span></span>
+          <span class="vu-item-fim"><i class="bi bi-chevron-right vu-ico"></i></span>
+        </button>
+        <button type="button" id="change-password-btn" class="vu-item cor-cinza">
+          <span class="vu-item-icone"><i class="bi bi-shield-lock vu-ico"></i></span>
+          <span class="vu-item-texto"><span class="vu-item-nome">Alterar senha</span><span class="vu-item-desc">Enviamos um link para o seu email</span></span>
+          <span class="vu-item-fim"><i class="bi bi-chevron-right vu-ico"></i></span>
         </button>
       </div>
-    </div>
-    
-    <!-- Segurança -->
-    <div class="conta-item">
-      <h2 class="section-title"><i class="bi bi-shield-lock"></i> Segurança</h2>
-      
-      <button id="change-password-btn" class="conta-btn conta-btn-warning">
-        <i class="bi bi-key"></i> Alterar Senha
+    </section>
+
+    <div class="vu-conta-saida">
+      <button type="button" class="vu-btn vu-btn-perigo vu-btn-largo" data-sair-conta>
+        <i class="bi bi-box-arrow-right"></i> Sair da conta
       </button>
-    </div>
-    
-    <!-- Zona de Perigo -->
-    <div class="conta-item danger-item">
-      <h2 class="section-title text-danger"><i class="bi bi-exclamation-triangle"></i> Excluir conta</h2>
-      
-      <p>Esta ação excluirá permanentemente sua conta e todos os dados associados. Esta ação não pode ser desfeita.</p>
-      
-      <button id="delete-account-btn" class="conta-btn conta-btn-danger">
-        <i class="bi bi-trash3"></i> Excluir Minha Conta
+      <button type="button" id="delete-account-btn" class="vu-link-perigo">
+        Excluir minha conta
       </button>
     </div>
   </div>
@@ -146,7 +149,24 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/utils/ui.js"></script>
   <script type="module" src="../assets/js/utils/casca.js"></script>
   <script type="module" src="../assets/js/pages/conta.js"></script>
+  <script type="module">
+    // Sair da conta (com confirmação na Folha do sistema)
+    import { signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { auth } from "../assets/js/firebase.js";
+    document.querySelector('[data-sair-conta]')?.addEventListener('click', async () => {
+      const ok = window.VirologiaUFSM?.confirmar
+        ? await VirologiaUFSM.confirmar({ titulo: 'Sair da conta?', texto: 'Para voltar, é só entrar de novo com seu email e senha.', sim: 'Sim, sair', icone: 'bi-box-arrow-right' })
+        : confirm('Sair da conta?');
+      if (!ok) return;
+      localStorage.removeItem('usuario');
+      localStorage.removeItem('manterConectado');
+      sessionStorage.removeItem('usuario');
+      await signOut(auth);
+      location.href = '../index.html?logout=true';
+    });
+  </script>
 </body>
 </html>
