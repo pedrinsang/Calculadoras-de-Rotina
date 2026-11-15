@@ -1,211 +1,142 @@
-let calculadoraAtiva = null;
+let calculadoraAtiva = 'bovina';
+
+// Quanto cada dose leva, por tipo de vacina
+const RECEITAS = {
+  bovina: { nome: 'Vacina bovina', papilomaPorDose: 5, hanks: 20, cloroformio: 5, volume: 15 },
+  canina: { nome: 'Vacina canina', papilomaPorDose: 1, hanks: 10, cloroformio: 1, volume: 6 }
+};
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares, com auxílio do ChatGPT.");
+
+  document.getElementById('bovina').addEventListener('submit', function(e) { e.preventDefault(); calcularBovina(); });
+  document.getElementById('canina').addEventListener('submit', function(e) { e.preventDefault(); calcularCanina(); });
+  document.getElementById('formol').addEventListener('submit', function(e) { e.preventDefault(); calcularFormol(); });
+
+  // Mudou um dado: o resultado daquele tipo deixa de valer
+  ['bovina', 'canina', 'formol'].forEach(function(tipo) {
+    document.getElementById(tipo).addEventListener('input', function() {
+      Calc.esconder(document.getElementById(`resultado-${tipo}`), document.getElementById('resultado-vazio'));
+    });
+  });
+
+  if (window.VirologiaUFSM) window.VirologiaUFSM.iniciar(document);
 });
 
+// Troca o tipo de cálculo (as pílulas do topo)
 function toggleCalculator(tipo) {
-  // Esconder todas as calculadoras e resetar opções
-  document.querySelectorAll('.calculadora-section').forEach(el => {
-    el.classList.remove('active');
+  calculadoraAtiva = tipo;
+  ['bovina', 'canina', 'formol'].forEach(function(t) {
+    const ativo = t === tipo;
+    document.getElementById(t).classList.toggle('vu-oculto', !ativo);
+    document.getElementById(`opcao-${t}`).setAttribute('aria-pressed', String(ativo));
+    if (!ativo) document.getElementById(`resultado-${t}`).classList.add('d-none');
   });
-  
-  document.querySelectorAll('.option-card').forEach(el => {
-    el.classList.remove('active');
+  const resultado = document.getElementById(`resultado-${tipo}`);
+  const temResultado = resultado.innerHTML.trim() !== '';
+  if (temResultado) Calc.mostrar(resultado, document.getElementById('resultado-vazio'));
+  else Calc.esconder(resultado, document.getElementById('resultado-vazio'));
+}
+
+function contasVacina(tipo, papiloma, vacinas) {
+  const r = RECEITAS[tipo];
+  const necessario = vacinas * r.papilomaPorDose;
+  const vacinasExtras = Math.max(0, Math.floor((papiloma - necessario) / r.papilomaPorDose));
+  return {
+    necessario, vacinasExtras, falta: Math.max(0, necessario - papiloma),
+    hanks: vacinas * r.hanks, cloroformio: vacinas * r.cloroformio, volume: vacinas * r.volume
+  };
+}
+
+function lerVacina(tipo) {
+  const papiloma = parseFloat(document.getElementById(`papiloma-${tipo}`).value);
+  const vacinas = parseInt(document.getElementById(`vacinas-${tipo}`).value, 10);
+  if (isNaN(papiloma) || papiloma <= 0) {
+    Calc.marcarErro(`papiloma-${tipo}`);
+    Calc.avisar('erro', 'Informe os gramas de papiloma');
+    return null;
+  }
+  if (isNaN(vacinas) || vacinas <= 0) {
+    Calc.marcarErro(`vacinas-${tipo}`);
+    Calc.avisar('erro', 'Informe a quantidade de vacinas');
+    return null;
+  }
+  return { papiloma, vacinas };
+}
+
+function calcularVacina(tipo) {
+  const dados = lerVacina(tipo);
+  if (!dados) return;
+  const c = contasVacina(tipo, dados.papiloma, dados.vacinas);
+  const n = Calc.num;
+  const doses = `${dados.vacinas} ${dados.vacinas === 1 ? 'vacina' : 'vacinas'}`;
+
+  const resultadoDiv = document.getElementById(`resultado-${tipo}`);
+  resultadoDiv.innerHTML = Calc.cartao({
+    titulo: RECEITAS[tipo].nome,
+    valor: `${n(c.volume)} ml`,
+    texto: c.falta > 0
+      ? `Volume final para <b>${doses}</b>. Faltam <b>${n(c.falta)} g</b> de papiloma.`
+      : `Volume final para <b>${doses}</b>. Sobra papiloma para mais <b>${c.vacinasExtras}</b>.`,
+    linhas: [
+      ['Papiloma necessário', `${n(c.necessario)} g`],
+      ['Hanks', `${n(c.hanks)} ml`],
+      ['Clorofórmio', `${n(c.cloroformio)} ml`],
+      ['Volume total', `${n(c.volume)} ml`],
+      ['Vacinas extras', `${c.vacinasExtras}`]
+    ],
+    idCopiar: `copiar-resultado-${tipo}`
   });
-  
-  // Ativar a calculadora selecionada
-  if (tipo !== calculadoraAtiva) {
-    document.getElementById(tipo).classList.add('active');
-    document.getElementById(`opcao-${tipo}`).classList.add('active');
-    calculadoraAtiva = tipo;
-  } else {
-    calculadoraAtiva = null;
-  }
+  document.getElementById(`copiar-resultado-${tipo}`).addEventListener('click', function() { copiarResultado(tipo); });
+  Calc.mostrar(resultadoDiv, document.getElementById('resultado-vazio'));
 }
 
-function calcularBovina() {
-  const papiloma = parseFloat(document.getElementById('papiloma-bovina').value);
-  const vacinas = parseFloat(document.getElementById('vacinas-bovina').value);
-  
-  if (isNaN(papiloma) || isNaN(vacinas) || papiloma <= 0 || vacinas <= 0) {
-    alert("Por favor, preencha ambos os campos com valores válidos.");
-    return;
-  }
-
-  const necessario = vacinas * 5;
-  const vacinasExtras = Math.floor((papiloma - necessario) / 5);
-  
-  const resultadoDiv = document.getElementById('resultado-bovina');
-  resultadoDiv.innerHTML = `
-    <div class="row">
-      <div class="col-md-6 mb-2">
-        <strong class="text-success">Papiloma Necessário:</strong> 
-        <span>${necessario}g</span>
-      </div>
-      <div class="col-md-6 mb-2">
-        <strong class="text-success">Vacinas Extras:</strong> 
-        <span>${vacinasExtras >= 0 ? vacinasExtras : 0}</span>
-      </div>
-      <div class="col-md-6 mb-2">
-        <strong class="text-success">Hanks:</strong> 
-        <span>${vacinas * 20}ml</span>
-      </div>
-      <div class="col-md-6 mb-2">
-        <strong class="text-success">Clorofórmio:</strong> 
-        <span>${vacinas * 5}ml</span>
-      </div>
-      <div class="col-12 mb-2">
-        <strong class="text-success">Volume Total:</strong> 
-        <span>${vacinas * 15}ml</span>
-      </div>
-    </div>
-  `;
-  
-  resultadoDiv.classList.remove('d-none');
-  document.getElementById('copiar-resultado-bovina').classList.remove('d-none');
-}
-
-function calcularCanina() {
-  const papiloma = parseFloat(document.getElementById('papiloma-canina').value);
-  const vacinas = parseFloat(document.getElementById('vacinas-canina').value);
-  
-  if (isNaN(papiloma) || isNaN(vacinas) || papiloma <= 0 || vacinas <= 0) {
-    alert("Por favor, preencha ambos os campos com valores válidos.");
-    return;
-  }
-
-  const necessario = vacinas * 1;
-  const vacinasExtras = Math.floor(papiloma - necessario);
-  
-  const resultadoDiv = document.getElementById('resultado-canina');
-  resultadoDiv.innerHTML = `
-    <div class="row">
-      <div class="col-md-6 mb-2">
-        <strong class="text-success">Papiloma Necessário:</strong> 
-        <span>${necessario}g</span>
-      </div>
-      <div class="col-md-6 mb-2">
-        <strong class="text-success">Vacinas Extras:</strong> 
-        <span>${vacinasExtras >= 0 ? vacinasExtras : 0}</span>
-      </div>
-      <div class="col-md-6 mb-2">
-        <strong class="text-success">Hanks:</strong> 
-        <span>${vacinas * 10}ml</span>
-      </div>
-      <div class="col-md-6 mb-2">
-        <strong class="text-success">Clorofórmio:</strong> 
-        <span>${vacinas * 1}ml</span>
-      </div>
-      <div class="col-12 mb-2">
-        <strong class="text-success">Volume Total:</strong> 
-        <span>${vacinas * 6}ml</span>
-      </div>
-    </div>
-  `;
-  
-  resultadoDiv.classList.remove('d-none');
-  document.getElementById('copiar-resultado-canina').classList.remove('d-none');
-}
+function calcularBovina() { calcularVacina('bovina'); }
+function calcularCanina() { calcularVacina('canina'); }
 
 function calcularFormol() {
   const volume = parseFloat(document.getElementById('volume-recuperado').value);
-  
   if (isNaN(volume) || volume <= 0) {
-    alert("Por favor, insira um volume válido.");
+    Calc.marcarErro('volume-recuperado');
+    Calc.avisar('erro', 'Informe o volume recuperado');
     return;
   }
 
   const formol = (volume * 0.5) / 100;
   const resultadoDiv = document.getElementById('resultado-formol');
-  resultadoDiv.innerHTML = `
-    <div class="text-center">
-      <h5 class="mb-3">Resultado</h5>
-      <div class="d-inline-block p-3 bg-light rounded-circle mb-3" style="width: 100px; height: 100px; border: 2px solid var(--verde-medio);">
-        <div class="d-flex flex-column justify-content-center align-items-center h-100">
-          <strong class="fs-5">${formol.toFixed(3)}</strong>
-          <small>ml</small>
-        </div>
-      </div>
-      <p class="mb-0">
-        <strong class="d-block mb-2">Volume de Formol Necessário</strong>
-        <span class="text-muted">(0,5% do volume total)</span>
-      </p>
-    </div>
-  `;
-  
-  resultadoDiv.classList.remove('d-none');
-  document.getElementById('copiar-resultado-formol').classList.remove('d-none');
+  resultadoDiv.innerHTML = Calc.cartao({
+    titulo: 'Formol necessário',
+    valor: `${Calc.num(formol, 3)} ml`,
+    texto: `0,5% de <b>${Calc.num(volume)} ml</b> recuperados.`,
+    depois: '<p class="vu-resultado-nota"><i class="bi bi-exclamation-triangle"></i> Use equipamentos de proteção ao manipular formol.</p>',
+    idCopiar: 'copiar-resultado-formol'
+  });
+  document.getElementById('copiar-resultado-formol').addEventListener('click', function() { copiarResultado('formol'); });
+  Calc.mostrar(resultadoDiv, document.getElementById('resultado-vazio'));
 }
 
 function copiarResultado(tipo) {
-  try {
-    // Obter os valores para formatar o texto
-    let textoFinal = '';
-    
-    if (tipo === 'bovina') {
-      const papiloma = document.getElementById('papiloma-bovina').value;
-      const vacinas = document.getElementById('vacinas-bovina').value;
-      const necessario = vacinas * 5;
-      const vacinasExtras = Math.floor((papiloma - necessario) / 5);
-      
-      textoFinal = `Vacina Bovina:\n` +
-                  `Papiloma Necessário: ${necessario}g\n` +
-                  `Vacinas Extras: ${vacinasExtras >= 0 ? vacinasExtras : 0}\n` +
-                  `Hanks: ${vacinas * 20}ml\n` +
-                  `Clorofórmio: ${vacinas * 5}ml\n` +
-                  `Volume Total: ${vacinas * 15}ml`;
-    }
-    else if (tipo === 'canina') {
-      const papiloma = document.getElementById('papiloma-canina').value;
-      const vacinas = document.getElementById('vacinas-canina').value;
-      const necessario = vacinas * 1;
-      const vacinasExtras = Math.floor(papiloma - necessario);
-      
-      textoFinal = `Vacina Canina:\n` +
-                  `Papiloma Necessário: ${necessario}g\n` +
-                  `Vacinas Extras: ${vacinasExtras >= 0 ? vacinasExtras : 0}\n` +
-                  `Hanks: ${vacinas * 10}ml\n` +
-                  `Clorofórmio: ${vacinas * 1}ml\n` +
-                  `Volume Total: ${vacinas * 6}ml`;
-    }
-    else if (tipo === 'formol') {
-      const volume = document.getElementById('volume-recuperado').value;
-      const formol = (volume * 0.5) / 100;
-      
-      textoFinal = `Cálculo de Formol:\n` +
-                  `Volume Recuperado: ${volume}ml\n` +
-                  `Formol Necessário: ${formol.toFixed(3)}ml (0,5% do volume total)`;
-    }
-    
-    // Criar elemento temporário para copiar
-    const textarea = document.createElement('textarea');
-    textarea.value = textoFinal;
-    document.body.appendChild(textarea);
-    textarea.select();
-    
-    // Executar cópia
-    const copiado = document.execCommand('copy');
-    document.body.removeChild(textarea);
-    
-    // Feedback visual
-    const btn = document.getElementById(`copiar-resultado-${tipo}`);
-    if (copiado) {
-      btn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Copiado!';
-      btn.classList.add('btn-success');
-      btn.classList.remove('btn-outline-success');
-      setTimeout(() => {
-        btn.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copiar Resultado';
-        btn.classList.remove('btn-success');
-        btn.classList.add('btn-outline-success');
-      }, 2000);
-    } else {
-      throw new Error('Não foi possível copiar');
-    }
-  } catch (error) {
-    console.error("Erro ao copiar:", error);
-    alert("Erro ao copiar. Você pode selecionar e copiar manualmente.");
+  let textoFinal = '';
+
+  if (tipo === 'bovina' || tipo === 'canina') {
+    const dados = lerVacina(tipo);
+    if (!dados) return;
+    const c = contasVacina(tipo, dados.papiloma, dados.vacinas);
+    textoFinal = `Vacina ${tipo === 'bovina' ? 'Bovina' : 'Canina'}:\n` +
+                 `Papiloma Necessário: ${c.necessario}g\n` +
+                 `Vacinas Extras: ${c.vacinasExtras}\n` +
+                 `Hanks: ${c.hanks}ml\n` +
+                 `Clorofórmio: ${c.cloroformio}ml\n` +
+                 `Volume Total: ${c.volume}ml`;
+  } else if (tipo === 'formol') {
+    const volume = document.getElementById('volume-recuperado').value;
+    const formol = (volume * 0.5) / 100;
+    textoFinal = `Cálculo de Formol:\n` +
+                 `Volume Recuperado: ${volume}ml\n` +
+                 `Formol Necessário: ${formol.toFixed(3)}ml (0,5% do volume total)`;
   }
+
+  Calc.copiar(textoFinal, document.getElementById(`copiar-resultado-${tipo}`));
 }
 
 // Tornar funções globalmente acessíveis

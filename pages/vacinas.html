@@ -14,140 +14,90 @@
 </head>
 
 <body>
-  <div class="calculadora-card container">
-    <div class="top-buttons-container">
-      <a href="hub.html" class="btn btn-outline-success btn-top-nav">
-        <i class="bi bi-house-door"></i> Voltar ao Hub
-      </a>
-      <a href="mural.html" class="btn btn-outline-success btn-top-nav">
-        <i class="bi bi-clipboard2-check"></i> Acessar Mural
-      </a>
-    </div>
-    
-    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
-         alt="Logo Setor de Virologia UFSM" 
-         class="logo img-fluid">
-         
-    <h2 class="calculadora-title mb-4"><i class="bi bi-virus me-2"></i>Calculadora de Vacinas</h2>
+  <div class="calculadora-card container vu-calc-tela">
+    <header class="vu-pagina-topo">
+      <div>
+        <nav class="vu-trilha"><a href="hub.html">Calculadoras</a><i class="bi bi-chevron-right"></i><span>Vacinas</span></nav>
+        <h1 class="calculadora-title">Vacinas</h1>
+        <p>Composição a partir do papiloma, e o formol do volume recuperado.</p>
+      </div>
+    </header>
 
-
-    <div class="row g-3 mb-4">
-      <div class="col-md-4">
-        <div class="option-card" id="opcao-bovina" onclick="toggleCalculator('bovina')">
-          <i class="bi bi-calculator fs-4 d-block mb-2"></i>
-          <span class="fw-bold">Vacina Bovina</span>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="option-card" id="opcao-canina" onclick="toggleCalculator('canina')">
-          <i class="bi bi-calculator fs-4 d-block mb-2"></i>
-          <span class="fw-bold">Vacina Canina</span>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="option-card" id="opcao-formol" onclick="toggleCalculator('formol')">
-          <i class="bi bi-eyedropper fs-4 d-block mb-2"></i>
-          <span class="fw-bold">Formol</span>
-        </div>
-      </div>
+    <div class="vu-filtros" role="group" aria-label="Tipo de cálculo">
+      <span class="vu-filtros-marca"></span>
+      <button type="button" class="vu-filtro" id="opcao-bovina" aria-pressed="true" onclick="toggleCalculator('bovina')"><i class="bi bi-capsule"></i>Bovina</button>
+      <button type="button" class="vu-filtro" id="opcao-canina" aria-pressed="false" onclick="toggleCalculator('canina')"><i class="bi bi-capsule"></i>Canina</button>
+      <button type="button" class="vu-filtro" id="opcao-formol" aria-pressed="false" onclick="toggleCalculator('formol')"><i class="bi bi-eyedropper"></i>Formol</button>
     </div>
 
-    <!-- Calculadoras -->
-    <div id="bovina" class="calculadora-section">
-      <h4 class="text-center"><i class="bi bi-capsule me-2"></i>Vacina Bovina</h4>
-      
-      <div class="mb-3">
-        <label for="papiloma-bovina" class="form-label">Gramas de Papiloma:</label>
-        <div class="input-group">
-          <input type="number" id="papiloma-bovina" class="form-control" placeholder="Ex: 100">
-          <span class="input-group-text">g</span>
+    <div class="vu-colunas vu-colunas--meio vu-calc-colunas">
+      <div>
+      <form id="bovina" class="vu-bloco vu-calc-secao" novalidate>
+        <h2 class="vu-bloco-titulo"><span class="vu-item-icone"><i class="bi bi-capsule"></i></span>Vacina bovina</h2>
+        <div class="vu-campo">
+          <label for="papiloma-bovina">Papiloma macerado</label>
+          <div class="vu-entrada">
+            <input type="number" id="papiloma-bovina" inputmode="decimal" min="0" step="any" placeholder="Ex.: 100" style="font-family:var(--font-numeros)">
+            <span class="vu-unidade">g</span>
+          </div>
         </div>
-      </div>
-      
-      <div class="mb-3">
-        <label for="vacinas-bovina" class="form-label">Quantidade de Vacinas:</label>
-        <div class="input-group">
-          <input type="number" id="vacinas-bovina" class="form-control" placeholder="Ex: 20">
-          <span class="input-group-text">unidades</span>
+        <div class="vu-campo">
+          <label for="vacinas-bovina">Quantidade de vacinas</label>
+          <div class="vu-contador" data-min="1" data-max="500">
+            <button type="button" aria-label="Diminuir"><i class="bi bi-dash-lg"></i></button>
+            <input type="number" id="vacinas-bovina" min="1" max="500" value="20" inputmode="numeric" aria-live="polite">
+            <button type="button" data-mais aria-label="Aumentar"><i class="bi bi-plus-lg"></i></button>
+          </div>
         </div>
+        <button type="submit" class="vu-btn vu-btn-principal vu-btn-grande vu-btn-largo"><i class="bi bi-calculator"></i> Calcular</button>
+      </form>
+      <form id="canina" class="vu-bloco vu-calc-secao vu-oculto" novalidate>
+        <h2 class="vu-bloco-titulo"><span class="vu-item-icone"><i class="bi bi-capsule"></i></span>Vacina canina</h2>
+        <div class="vu-campo">
+          <label for="papiloma-canina">Papiloma macerado</label>
+          <div class="vu-entrada">
+            <input type="number" id="papiloma-canina" inputmode="decimal" min="0" step="any" placeholder="Ex.: 50" style="font-family:var(--font-numeros)">
+            <span class="vu-unidade">g</span>
+          </div>
+        </div>
+        <div class="vu-campo">
+          <label for="vacinas-canina">Quantidade de vacinas</label>
+          <div class="vu-contador" data-min="1" data-max="500">
+            <button type="button" aria-label="Diminuir"><i class="bi bi-dash-lg"></i></button>
+            <input type="number" id="vacinas-canina" min="1" max="500" value="10" inputmode="numeric" aria-live="polite">
+            <button type="button" data-mais aria-label="Aumentar"><i class="bi bi-plus-lg"></i></button>
+          </div>
+        </div>
+        <button type="submit" class="vu-btn vu-btn-principal vu-btn-grande vu-btn-largo"><i class="bi bi-calculator"></i> Calcular</button>
+      </form>
+      <form id="formol" class="vu-bloco vu-calc-secao vu-oculto" novalidate>
+        <h2 class="vu-bloco-titulo"><span class="vu-item-icone"><i class="bi bi-eyedropper"></i></span>Formol</h2>
+        <div class="vu-campo">
+          <label for="volume-recuperado">Volume recuperado</label>
+          <p class="vu-dica">O volume total depois do preparo da vacina.</p>
+          <div class="vu-entrada">
+            <input type="number" id="volume-recuperado" inputmode="decimal" min="0" step="any" placeholder="Ex.: 500" style="font-family:var(--font-numeros)">
+            <span class="vu-unidade">ml</span>
+          </div>
+        </div>
+        <button type="submit" class="vu-btn vu-btn-principal vu-btn-grande vu-btn-largo"><i class="bi bi-calculator"></i> Calcular formol</button>
+      </form>
       </div>
-      
-      <div class="d-grid">
-        <button type="button" class="btn btn-success" onclick="calcularBovina()">
-          <i class="bi bi-calculator me-2"></i>Calcular
-        </button>
-      </div>
-      
-      <div id="resultado-bovina" class="resultado-card mt-4 d-none"></div>
-      
-      <div class="d-grid mt-3">
-        <button class="btn btn-outline-success d-none" id="copiar-resultado-bovina" onclick="copiarResultado('bovina')">
-          <i class="bi bi-clipboard me-1"></i> Copiar Resultado
-        </button>
-      </div>
-    </div>
 
-    <div id="canina" class="calculadora-section">
-      <h4 class="text-center"><i class="bi bi-capsule me-2"></i>Vacina Canina</h4>
-      
-      <div class="mb-3">
-        <label for="papiloma-canina" class="form-label">Gramas de Papiloma:</label>
-        <div class="input-group">
-          <input type="number" id="papiloma-canina" class="form-control" placeholder="Ex: 50">
-          <span class="input-group-text">g</span>
+      <div class="vu-fixo">
+        <div id="resultado-vazio" class="vu-vazio vu-so-pc">
+          <span class="vu-vazio-icone"><i class="bi bi-capsule"></i></span>
+          <h3>O resultado aparece aqui</h3>
+          <p>Preencha os dados e toque em Calcular.</p>
         </div>
-      </div>
-      
-      <div class="mb-3">
-        <label for="vacinas-canina" class="form-label">Quantidade de Vacinas:</label>
-        <div class="input-group">
-          <input type="number" id="vacinas-canina" class="form-control" placeholder="Ex: 10">
-          <span class="input-group-text">unidades</span>
-        </div>
-      </div>
-      
-      <div class="d-grid">
-        <button type="button" class="btn btn-success" onclick="calcularCanina()">
-          <i class="bi bi-calculator me-2"></i>Calcular
-        </button>
-      </div>
-      
-      <div id="resultado-canina" class="resultado-card mt-4 d-none"></div>
-      
-      <div class="d-grid mt-3">
-        <button class="btn btn-outline-success d-none" id="copiar-resultado-canina" onclick="copiarResultado('canina')">
-          <i class="bi bi-clipboard me-1"></i> Copiar Resultado
-        </button>
+        <section id="resultado-bovina" class="vu-resultado d-none" role="status" aria-live="polite"></section>
+        <section id="resultado-canina" class="vu-resultado d-none" role="status" aria-live="polite"></section>
+        <section id="resultado-formol" class="vu-resultado d-none" role="status" aria-live="polite"></section>
       </div>
     </div>
 
-    <div id="formol" class="calculadora-section">
-      <h4 class="text-center"><i class="bi bi-eyedropper me-2"></i>Calculadora de Formol</h4>
-      
-      <div class="mb-3">
-        <label for="volume-recuperado" class="form-label">Volume Recuperado:</label>
-        <div class="input-group">
-          <input type="number" id="volume-recuperado" class="form-control" placeholder="Ex: 500">
-          <span class="input-group-text">ml</span>
-        </div>
-      </div>
-      
-      <div class="d-grid">
-        <button type="button" class="btn btn-success" onclick="calcularFormol()">
-          <i class="bi bi-calculator me-2"></i>Calcular Formol
-        </button>
-      </div>
-      
-      <div id="resultado-formol" class="resultado-card mt-4 d-none"></div>
-      
-      <div class="d-grid mt-3">
-        <button class="btn btn-outline-success d-none" id="copiar-resultado-formol" onclick="copiarResultado('formol')">
-          <i class="bi bi-clipboard me-1"></i> Copiar Resultado
-        </button>
-      </div>
-    </div>
-
-    <div class="accordion mt-4" id="infoVacinas">
+    <p class="vu-sobrelinha vu-calc-consulta">Para consultar</p>
+    <div class="accordion" id="infoVacinas">
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#infoVacinaContent">
@@ -203,14 +153,13 @@
       </div>
     </div>
     
-    <!-- Créditos -->
-    <div class="text-center mt-4">
-      <small class="text-muted">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</small>
-    </div>
+    <p class="vu-creditos">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</p>
   </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/utils/ui.js"></script>
+  <script src="../assets/js/pages/calculadoras/comum.js"></script>
   <script src="../assets/js/pages/calculadoras/vacinas.js"></script>
   <script type="module" src="../assets/js/utils/casca.js"></script>
 </body>
