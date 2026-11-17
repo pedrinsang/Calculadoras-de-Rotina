@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Calculadora de ELISA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/pages/calculadoras.css">
+  <link rel="stylesheet" href="../assets/css/pages/elisa.css">
+</head>
+
+<body>
+  <div class="calculadora-card container">
+    <div class="d-flex justify-content-between mb-3">
+      <a href="hub.html" class="btn btn-outline-success btn-top-nav">
+        <i class="bi bi-house-door"></i> Voltar ao Hub
+      </a>
+      <a href="mural.html" class="btn btn-outline-success btn-top-nav">
+        <i class="bi bi-clipboard2-check"></i> Acessar Mural
+      </a>
+    </div>
+    
+    <img src="https://setordevirologiaufsm.wordpress.com/wp-content/uploads/2023/11/logo-sv-2.jpg" 
+         alt="Logo Setor de Virologia UFSM" 
+         class="logo img-fluid">
+         
+    <h2 class="calculadora-title mb-4"><i class="bi bi-eyedropper me-2"></i>Calculadora de ELISA</h2>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="option-card" id="opcao-leucose" onclick="toggleCalculator('leucose')">
+          <i class="bi bi-droplet-fill fs-4 d-block mb-2"></i>
+          <span class="fw-bold">ELISA Leucose</span>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="option-card" id="opcao-bvdv" onclick="toggleCalculator('bvdv')">
+          <i class="bi bi-droplet-half fs-4 d-block mb-2"></i>
+          <span class="fw-bold">ELISA BVDV</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calculadora Leucose -->
+    <div id="leucose" class="calculadora-section">
+      <h4 class="text-center"><i class="bi bi-droplet-fill me-2"></i>ELISA Leucose</h4>
+      
+      <div class="mb-3">
+        <label for="amostras-leucose" class="form-label">Número de Amostras:</label>
+        <div class="input-group">
+          <input type="number" id="amostras-leucose" class="form-control" placeholder="Digite o número de amostras">
+          <span class="input-group-text">amostras</span>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label for="controles-leucose" class="form-label">Número de Controles:</label>
+        <div class="input-group">
+          <input type="number" id="controles-leucose" class="form-control" placeholder="Positivos + Negativos">
+          <span class="input-group-text">controles</span>
+        </div>
+      </div>
+      
+      <div class="d-grid">
+        <button type="button" class="btn btn-success" onclick="calcularLeucose()">
+          <i class="bi bi-calculator me-2"></i>Calcular
+        </button>
+      </div>
+      
+      <div id="resultado-leucose" class="resultado-card mt-4 d-none"></div>
+      
+      <div class="d-grid mt-3">
+        <button class="btn btn-outline-success d-none" id="copiar-resultado-leucose" onclick="copiarResultado('leucose')">
+          <i class="bi bi-clipboard me-1"></i> Copiar Resultado
+        </button>
+      </div>
+    </div>
+
+    <!-- Calculadora BVDV -->
+    <div id="bvdv" class="calculadora-section">
+      <h4 class="text-center"><i class="bi bi-droplet-half me-2"></i>ELISA BVDV</h4>
+      
+      <div class="mb-3">
+        <label for="amostras-bvdv" class="form-label">Número de Amostras:</label>
+        <div class="input-group">
+          <input type="number" id="amostras-bvdv" class="form-control" placeholder="Digite o número de amostras">
+          <span class="input-group-text">amostras</span>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label for="controles-bvdv" class="form-label">Número de Controles:</label>
+        <div class="input-group">
+          <input type="number" id="controles-bvdv" class="form-control" placeholder="Positivos + Negativos">
+          <span class="input-group-text">controles</span>
+        </div>
+      </div>
+      
+      <div class="d-grid">
+        <button type="button" class="btn btn-success" onclick="calcularBvdv()">
+          <i class="bi bi-calculator me-2"></i>Calcular
+        </button>
+      </div>
+      
+      <div id="resultado-bvdv" class="resultado-card mt-4 d-none"></div>
+      
+      <div class="d-grid mt-3">
+        <button class="btn btn-outline-success d-none" id="copiar-resultado-bvdv" onclick="copiarResultado('bvdv')">
+          <i class="bi bi-clipboard me-1"></i> Copiar Resultado
+        </button>
+      </div>
+    </div>
+
+    <!-- Acordeão para Informações e Protocolos -->
+    <div class="accordion mt-4" id="infoELISA">
+      <!-- Instruções -->
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#instrucoes">
+            <i class="bi bi-info-circle me-2"></i> Instruções Gerais
+          </button>
+        </h2>
+        <div id="instrucoes" class="accordion-collapse collapse" data-bs-parent="#infoELISA">
+          <div class="accordion-body">
+            <h5 class="mb-3">Instruções Passo a Passo:</h5>
+            <ol>
+              <li>Insira o número de amostras e controles (positivos + negativos) nos campos acima.</li>
+              <li>Clique em "Calcular" para obter a quantidade de solução de lavagem e conjugado necessários.</li>
+              <li>Prepare os reagentes conforme as quantidades calculadas.</li>
+              <li>Siga o protocolo ELISA para realizar o teste.</li>
+            </ol>
+            <div class="alert alert-warning mt-3">
+              <div class="d-flex">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                <div>
+                  <strong>Importante:</strong>
+                  <p class="mb-0">Sempre verifique no kit disponível as instruções específicas do fabricante, que podem diferir das orientações gerais.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Protocolo ELISA Leucose -->
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#protocoloLeucose">
+            <i class="bi bi-journal-text me-2"></i> Protocolo ELISA Leucose
+          </button>
+        </h2>
+        <div id="protocoloLeucose" class="accordion-collapse collapse" data-bs-parent="#infoELISA">
+          <div class="accordion-body">
+            <h5 class="mb-3">Passo a Passo do Teste ELISA Leucose:</h5>
+            <div class="card">
+              <div class="card-body">
+                <div class="mb-3">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-1">
+                    <label class="form-check-label" for="leucose-check-1">
+                      Prepare os reagentes conforme descrito no protocolo.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-2">
+                    <label class="form-check-label" for="leucose-check-2">
+                      Adicione 50 µL de solução de lavagem em cada poço da placa.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-3">
+                    <label class="form-check-label" for="leucose-check-3">
+                      Adicione 50 µL do Controle Negativo (NC) em duplicata.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-4">
+                    <label class="form-check-label" for="leucose-check-4">
+                      Adicione 50 µL do Controle Positivo (PC) em duplicata.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-5">
+                    <label class="form-check-label" for="leucose-check-5">
+                      Adicione 50 µL das amostras nos poços restantes.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-6">
+                    <label class="form-check-label" for="leucose-check-6">
+                      Misture o conteúdo dos poços batendo suavemente na placa ou usando um agitador de microplacas.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-7">
+                    <label class="form-check-label" for="leucose-check-7">
+                      Cubra a placa e incube por 30 minutos a 18–26°C.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-8">
+                    <label class="form-check-label" for="leucose-check-8">
+                      Remova a solução e lave cada poço com aproximadamente 300 µL de solução de lavagem três vezes.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-9">
+                    <label class="form-check-label" for="leucose-check-9">
+                      Bata a placa em material absorvente após a lavagem final para remover qualquer resíduo.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-10">
+                    <label class="form-check-label" for="leucose-check-10">
+                      Adicione 100 µL do Conjugado diluído em cada poço.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-11">
+                    <label class="form-check-label" for="leucose-check-11">
+                      Cubra a placa e incube por 1 hora a 18–26°C.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-12">
+                    <label class="form-check-label" for="leucose-check-12">
+                      Repita o processo de lavagem.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-13">
+                    <label class="form-check-label" for="leucose-check-13">
+                      Adicione 100 µL do Substrato TMB N.9 em cada poço.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-14">
+                    <label class="form-check-label" for="leucose-check-14">
+                      Incube por 20 minutos a 18–26°C, longe da luz direta.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-15">
+                    <label class="form-check-label" for="leucose-check-15">
+                      Adicione 100 µL da Solução de Parada N.3 em cada poço.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="leucose-check-16">
+                    <label class="form-check-label" for="leucose-check-16">
+                      Meça e registre os valores de absorbância a 450 nm.
+                    </label>
+                  </div>
+                </div>
+                <div class="d-grid">
+                  <button class="btn btn-outline-success btn-sm" onclick="resetChecklist('leucose')">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Resetar Checklist
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Protocolo ELISA BVDV -->
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#protocoloBvdv">
+            <i class="bi bi-journal-text me-2"></i> Protocolo ELISA BVDV
+          </button>
+        </h2>
+        <div id="protocoloBvdv" class="accordion-collapse collapse" data-bs-parent="#infoELISA">
+          <div class="accordion-body">
+            <h5 class="mb-3">Passo a Passo do Teste ELISA BVDV:</h5>
+            <div class="card">
+              <div class="card-body">
+                <div class="mb-3">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-1">
+                    <label class="form-check-label" for="bvdv-check-1">
+                      Prepare os reagentes conforme descrito no protocolo (Solução de Lavagem 1:10 e Conjugado diluído).
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-2">
+                    <label class="form-check-label" for="bvdv-check-2">
+                      Adicione 50 µL de Anticorpos de Detecção em cada poço da placa.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-3">
+                    <label class="form-check-label" for="bvdv-check-3">
+                      Adicione 50 µL do Controle Negativo (CN) em duplicata nos poços designados.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-4">
+                    <label class="form-check-label" for="bvdv-check-4">
+                      Adicione 50 µL do Controle Positivo (CP) em duplicata nos poços designados.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-5">
+                    <label class="form-check-label" for="bvdv-check-5">
+                      Adicione 50 µL das amostras (soro, plasma ou tampão de fragmento de orelha) nos poços restantes.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-6">
+                    <label class="form-check-label" for="bvdv-check-6">
+                      Misture o conteúdo dos poços batendo suavemente a placa ou usando um agitador de microplacas.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-7">
+                    <label class="form-check-label" for="bvdv-check-7">
+                      Cubra a placa e incube por 2 horas (±5 min) a 37°C ou 12-18 horas a 2-8°C (selada para evitar evaporação).
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-8">
+                    <label class="form-check-label" for="bvdv-check-8">
+                      Remova o líquido e lave cada poço com 300 µL de Solução de Lavagem, repetindo 5 vezes.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-9">
+                    <label class="form-check-label" for="bvdv-check-9">
+                      Bata a placa em material absorvente após a última lavagem para remover resíduos.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-10">
+                    <label class="form-check-label" for="bvdv-check-10">
+                      Adicione 100 µL do Conjugado diluído em cada poço.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-11">
+                    <label class="form-check-label" for="bvdv-check-11">
+                      Cubra a placa e incube por 30 minutos (±2 min) a 18-26°C.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-12">
+                    <label class="form-check-label" for="bvdv-check-12">
+                      Repita o processo de lavagem (5 lavagens com 300 µL cada).
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-13">
+                    <label class="form-check-label" for="bvdv-check-13">
+                      Adicione 100 µL do Substrato TMB em cada poço.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-14">
+                    <label class="form-check-label" for="bvdv-check-14">
+                      Incube por 10 minutos (±1 min) a 18-26°C, protegido da luz.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-15">
+                    <label class="form-check-label" for="bvdv-check-15">
+                      Adicione 100 µL da Solução de Interrupção em cada poço.
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="bvdv-check-16">
+                    <label class="form-check-label" for="bvdv-check-16">
+                      Meça a absorbância em 450 nm (ou 450/650 nm para duplo comprimento de onda).
+                    </label>
+                  </div>
+                </div>
+                <div class="d-grid">
+                  <button class="btn btn-outline-success btn-sm" onclick="resetChecklist('bvdv')">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Resetar Checklist
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Dicas e Observações -->
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dicas">
+            <i class="bi bi-lightbulb me-2"></i> Dicas e Observações
+          </button>
+        </h2>
+        <div id="dicas" class="accordion-collapse collapse" data-bs-parent="#infoELISA">
+          <div class="accordion-body">
+            <div class="alert alert-success mb-3">
+              <h5 class="alert-heading"><i class="bi bi-check2-circle me-2"></i>Dicas importantes:</h5>
+              <ul class="mb-0">
+                <li>Sempre equilibre todos os reagentes à temperatura ambiente antes de iniciar o teste</li>
+                <li>Homogeneize bem os reagentes antes do uso</li>
+                <li>Lave as mãos antes de manipular os kits</li>
+                <li>Use sempre ponteiras novas para cada amostra</li>
+                <li>Verifique os prazos de validade dos reagentes</li>
+                <li>Mantenha registro detalhado de todas as etapas</li>
+              </ul>
+            </div>
+            <div class="alert alert-warning">
+              <h5 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Precauções:</h5>
+              <ul class="mb-0">
+                <li>Evite contaminação cruzada entre amostras</li>
+                <li>Use equipamentos de proteção individual</li>
+                <li>Não misture reagentes de lotes diferentes</li>
+                <li>Descarte os resíduos conforme regulamentações locais</li>
+                <li>Armazene os kits nas condições recomendadas pelo fabricante</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Créditos -->
+    <div class="text-center mt-4">
+      <small class="text-muted">Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares</small>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/pages/calculadoras/elisa.js"></script>
+  </body>
+</html>

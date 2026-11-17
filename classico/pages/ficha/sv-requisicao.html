@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Requisição de Exames - Setor de Virologia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/pages/sv-fichas.css">
+</head>
+
+<body class="sv-page">
+  <div class="sv-container">
+    <div class="sv-topo">
+      <a href="sv-fichas.html" class="sv-btn sv-btn-pequeno"><i class="bi bi-arrow-left"></i> Fichas</a>
+      <span class="sv-usuario"></span>
+    </div>
+
+    <div class="sv-cabecalho">
+      <img src="../../assets/images/logo-sv.png" alt="Logo Setor de Virologia UFSM">
+      <div>
+        <h1>Requisição de Exames / Laudo</h1>
+        <p id="subtitulo">Etapa 1 · Recepção preenche a requisição</p>
+      </div>
+    </div>
+
+    <nav class="sv-etapas" aria-label="Etapas">
+      <span class="ativa">1 · Requisição</span>
+      <a href="sv-fichas.html">2 · Análise / Laudo</a>
+      <a href="sv-fichas.html">3 · Consulta e impressão</a>
+    </nav>
+
+    <form id="form-requisicao" novalidate>
+      <section class="sv-secao">
+        <h2>Identificação</h2>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="protocolo">Protocolo</label>
+            <input type="text" id="protocolo" readonly placeholder="Gerando…">
+          </div>
+          <div class="sv-campo">
+            <label for="data-entrada" class="sv-obrigatorio">Data de entrada</label>
+            <input type="date" id="data-entrada" required>
+          </div>
+          <div class="sv-campo">
+            <label for="recebido-por" class="sv-obrigatorio">Recebido por</label>
+            <input type="text" id="recebido-por" required autocomplete="off" placeholder="Nome de quem recebeu">
+          </div>
+        </div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Proprietário</h2>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="prop-nome" class="sv-obrigatorio">Nome</label>
+            <input type="text" id="prop-nome" required>
+          </div>
+        </div>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="prop-endereco">Endereço</label>
+            <input type="text" id="prop-endereco">
+          </div>
+          <div class="sv-campo">
+            <label for="prop-cidade">Cidade</label>
+            <input type="text" id="prop-cidade">
+          </div>
+        </div>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="prop-cpf">CPF</label>
+            <input type="text" id="prop-cpf" inputmode="numeric" placeholder="000.000.000-00">
+          </div>
+          <div class="sv-campo">
+            <label for="prop-contato">E-mail/celular</label>
+            <input type="text" id="prop-contato">
+          </div>
+        </div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Veterinário(a) solicitante</h2>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="vet-nome">Nome</label>
+            <input type="text" id="vet-nome">
+          </div>
+          <div class="sv-campo">
+            <label for="vet-crmv">CRMV</label>
+            <input type="text" id="vet-crmv">
+          </div>
+        </div>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="vet-email">E-mail</label>
+            <input type="email" id="vet-email">
+          </div>
+          <div class="sv-campo">
+            <label for="vet-celular">Celular</label>
+            <input type="tel" id="vet-celular" placeholder="(00) 00000-0000">
+          </div>
+        </div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Identificação das amostras</h2>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="am-especie">Espécie</label>
+            <input type="text" id="am-especie">
+          </div>
+          <div class="sv-campo">
+            <label for="am-tipo">Amostra / tipo</label>
+            <input type="text" id="am-tipo">
+          </div>
+          <div class="sv-campo">
+            <label for="am-data-coleta">Data da coleta</label>
+            <input type="date" id="am-data-coleta">
+          </div>
+        </div>
+        <div class="sv-linha">
+          <div class="sv-campo">
+            <label for="am-raca">Raça</label>
+            <input type="text" id="am-raca">
+          </div>
+          <div class="sv-campo">
+            <label for="am-idade">Idade</label>
+            <input type="text" id="am-idade">
+          </div>
+        </div>
+        <div class="sv-campo" style="margin-bottom:.75rem">
+          <label for="am-identificacao">Identificação <small>(uma por linha ou separadas por vírgula)</small></label>
+          <textarea id="am-identificacao" rows="2"></textarea>
+        </div>
+        <div class="sv-campo" style="margin-bottom:.75rem">
+          <label for="am-historico">Histórico</label>
+          <textarea id="am-historico" rows="5"></textarea>
+        </div>
+        <div class="sv-campo">
+          <label for="am-observacoes">Observações</label>
+          <textarea id="am-observacoes" rows="3"></textarea>
+        </div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Exames solicitados</h2>
+        <div id="exames"></div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Resultados vírus-neutralização</h2>
+        <p class="sv-dica" style="margin-bottom:.75rem">Opcional nesta etapa — normalmente preenchido na análise/laudo.</p>
+        <div id="vn"></div>
+      </section>
+
+      <section class="sv-secao">
+        <h2>Cobrança e Pagamento</h2>
+        <div id="cobranca"></div>
+      </section>
+
+      <div class="sv-acoes">
+        <a href="sv-fichas.html" class="sv-btn"><i class="bi bi-x-lg"></i> Cancelar</a>
+        <button type="submit" class="sv-btn sv-btn-primario" id="btn-salvar"><i class="bi bi-save"></i> Salvar requisição</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module" src="../../assets/js/pages/ficha/sv-requisicao.js"></script>
+</body>
+</html>

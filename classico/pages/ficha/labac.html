@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LABAC - Ficha de Cadastro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <link rel="stylesheet" href="../../assets/css/pages/ficha-setor.css">
+  <link rel="stylesheet" href="../../assets/css/pages/ficha-diagnostico.css">
+</head>
+
+<body>
+  <div class="ficha-setor-container">
+    <!-- Botão de voltar -->
+    <div class="back-button-container">
+      <button onclick="window.location.href='../ficha-cadastro.html'" class="back-button">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </button>
+    </div>
+
+    <img src="../../assets/images/logo-LABAC.png" alt="Logo LABAC UFSM" class="logo">
+
+    <h1 class="page-title">LABAC - LABORATÓRIO DE BACTERIOLOGIA</h1>
+    <p class="page-subtitle">Ficha de Encaminhamento de Amostras</p>
+
+    <!-- Formulário da ficha -->
+    <div class="ficha-form-container">
+      <form id="ficha-form" class="ficha-form">
+        
+        <!-- Cabeçalho com Data e Protocolo -->
+        <div class="form-header">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="data-chegada">DATA DE CHEGADA:</label>
+              <input type="date" id="data-chegada" name="data-chegada">
+            </div>
+            <div class="form-group">
+              <label for="protocolo">PROTOCOLO:</label>
+              <input type="text" id="protocolo" name="protocolo">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Proprietário/Tutor -->
+        <div class="form-section proprietario-section">
+          <h3 class="section-title">PROPRIETÁRIO/TUTOR</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proprietario-nome">NOME:</label>
+              <input type="text" id="proprietario-nome" name="proprietario-nome">
+            </div>
+            <div class="form-group">
+              <label for="proprietario-telefone">TELEFONE:</label>
+              <input type="tel" id="proprietario-telefone" name="proprietario-telefone">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proprietario-municipio">MUNICÍPIO/ESTADO:</label>
+              <input type="text" id="proprietario-municipio" name="proprietario-municipio">
+            </div>
+            <div class="form-group">
+              <label for="proprietario-email">E-MAIL:</label>
+              <input type="email" id="proprietario-email" name="proprietario-email">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Médico Veterinário -->
+        <div class="form-section medico-section">
+          <h3 class="section-title">MÉDICO VETERINÁRIO</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medico-nome">NOME:</label>
+              <input type="text" id="medico-nome" name="medico-nome">
+            </div>
+            <div class="form-group">
+              <label for="medico-crmv">CRMV:</label>
+              <input type="text" id="medico-crmv" name="medico-crmv">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medico-telefone">TELEFONE:</label>
+              <input type="tel" id="medico-telefone" name="medico-telefone">
+            </div>
+            <div class="form-group">
+              <label for="medico-municipio">MUNICÍPIO/ESTADO:</label>
+              <input type="text" id="medico-municipio" name="medico-municipio">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="medico-email">E-MAIL:</label>
+              <input type="email" id="medico-email" name="medico-email">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Dados para Nota Fiscal -->
+        <div class="form-section dados-fiscais-section">
+          <h3 class="section-title">DADOS PARA NOTA FISCAL</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nf-razao">RAZÃO SOCIAL:</label>
+              <input type="text" id="nf-razao" name="nf-razao">
+            </div>
+            <div class="form-group">
+              <label for="nf-cnpjcpf">CNPJ/CPF:</label>
+              <input type="text" id="nf-cnpjcpf" name="nf-cnpjcpf">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nf-nascimento">SE CPF, INFORMAR DATA DE NASCIMENTO:</label>
+              <input type="date" id="nf-nascimento" name="nf-nascimento">
+            </div>
+            <div class="form-group">
+              <label for="nf-endereco">ENDEREÇO:</label>
+              <input type="text" id="nf-endereco" name="nf-endereco">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nf-cep">CEP:</label>
+              <input type="text" id="nf-cep" name="nf-cep">
+            </div>
+            <div class="form-group">
+              <label for="nf-municipio">MUNICÍPIO:</label>
+              <input type="text" id="nf-municipio" name="nf-municipio">
+            </div>
+            <div class="form-group">
+              <label for="nf-uf">UF:</label>
+              <input type="text" id="nf-uf" name="nf-uf" maxlength="2">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nf-tel">TEL.:</label>
+              <input type="tel" id="nf-tel" name="nf-tel">
+            </div>
+            <div class="form-group">
+              <label for="nf-email">E-MAIL:</label>
+              <input type="email" id="nf-email" name="nf-email">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nf-insc-estadual">INSCRIÇÃO ESTADUAL:</label>
+              <input type="text" id="nf-insc-estadual" name="nf-insc-estadual">
+            </div>
+            <div class="form-group">
+              <label for="nf-insc-municipal">INSC. MUNICIPAL:</label>
+              <input type="text" id="nf-insc-municipal" name="nf-insc-municipal">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Identificação da Amostra -->
+        <div class="form-section amostras-section">
+          <h3 class="section-title">IDENTIFICAÇÃO DA AMOSTRA</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="material">MATERIAL:</label>
+              <input type="text" id="material" name="material">
+            </div>
+            <div class="form-group">
+              <label for="identificacao-animal">IDENTIFICAÇÃO DO ANIMAL:</label>
+              <input type="text" id="identificacao-animal" name="identificacao-animal">
+            </div>
+            <div class="form-group">
+              <label for="idade">IDADE:</label>
+              <input type="text" id="idade" name="idade">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="especie">ESPÉCIE:</label>
+              <input type="text" id="especie" name="especie">
+            </div>
+            <div class="form-group">
+              <label for="raca">RAÇA:</label>
+              <input type="text" id="raca" name="raca">
+            </div>
+            <div class="form-group">
+              <label for="sexo">SEXO:</label>
+              <input type="text" id="sexo" name="sexo">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="data-coleta">DATA DA COLETA:</label>
+              <input type="date" id="data-coleta" name="data-coleta">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Métodos de Exame -->
+        <div class="form-section testes-section">
+          <h3 class="section-title">MÉTODO: MARQUE O(S) EXAME(S) A SER(EM) REALIZADO(S)</h3>
+          
+          <div class="test-grid">
+            <div class="checkbox-grid">
+              <div class="checkbox-item">
+                <input type="checkbox" id="met-cultura-aerobiose" name="exames" value="Cultura em aerobiose">
+                <label for="met-cultura-aerobiose">CULTURA EM AEROBIOSE</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="met-cultura-anaerobiose" name="exames" value="Cultura em anaerobiose">
+                <label for="met-cultura-anaerobiose">CULTURA EM ANAEROBIOSE</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="met-antibiograma" name="exames" value="Antibiograma (disco-difusão)">
+                <label for="met-antibiograma">ANTIBIOGRAMA (DISCO-DIFUSÃO)</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="met-cultura-micro" name="exames" value="Cultura em microaerobiose">
+                <label for="met-cultura-micro">CULTURA EM MICROAEROBIOSE</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="met-bacterioscopia" name="exames" value="Bacterioscopia">
+                <label for="met-bacterioscopia">BACTERIOSCOPIA</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="met-contagem-leite" name="exames" value="Contagem bacteriana no leite">
+                <label for="met-contagem-leite">CONTAGEM BACTERIANA NO LEITE</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="met-pcr" name="exames" value="PCR (informe o agente)">
+                <label for="met-pcr">PCR (INFORME O AGENTE)</label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="met-pcr-agente">SE PCR, INFORME O AGENTE:</label>
+              <input type="text" id="met-pcr-agente" name="met-pcr-agente">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção Histórico -->
+        <div class="form-section historico-section">
+          <h3 class="section-title">HISTÓRICO</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>O ANIMAL RECEBEU ANTIBIÓTICO HÁ MENOS DE 7 DIAS?</label>
+              <div class="checkbox-grid">
+                <div class="checkbox-item">
+                  <input type="radio" id="antibiotico-sim" name="antibiotico-7d" value="sim">
+                  <label for="antibiotico-sim">SIM</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="radio" id="antibiotico-nao" name="antibiotico-7d" value="nao">
+                  <label for="antibiotico-nao">NÃO</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="principio-ativo">SE RECEBEU ANTIBIÓTICO, QUAL O PRINCÍPIO ATIVO?</label>
+              <input type="text" id="principio-ativo" name="principio-ativo">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>HÁ MAIS ANIMAIS NA PROPRIEDADE COM OS MESMOS SINAIS CLÍNICOS?</label>
+              <div class="checkbox-grid">
+                <div class="checkbox-item">
+                  <input type="radio" id="mais-animais-sim" name="mais-animais" value="sim">
+                  <label for="mais-animais-sim">SIM</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="radio" id="mais-animais-nao" name="mais-animais" value="nao">
+                  <label for="mais-animais-nao">NÃO</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="historico-detalhado">DETALHE O HISTÓRICO DO CASO E INCLUA OBSERVAÇÕES IMPORTANTES:</label>
+              <textarea id="historico-detalhado" name="historico-detalhado" rows="6"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="window.location.href='../ficha-cadastro.html'">
+            <i class="bi bi-arrow-left"></i> Cancelar
+          </button>
+          <button type="reset" id="limparFicha" class="btn-secondary">
+            <i class="bi bi-arrow-clockwise"></i> Limpar
+          </button>
+          <button type="button" id="visualizarImpressaoLabac" class="btn-info">
+            <i class="bi bi-eye"></i> Visualizar Impressão
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle com Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../../assets/js/pages/ficha/labac.js"></script>
+</body>
+</html>

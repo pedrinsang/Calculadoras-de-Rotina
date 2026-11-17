@@ -489,6 +489,8 @@ body.vu-antiga .vu-tarefa-acoes .vu-btn:not(.vu-btn-principal):not(.vu-btn-fanta
 body.vu-antiga .vu-tarefa-acoes .vu-btn-principal { background: var(--verde) !important; border: 2px solid var(--verde) !important; color: var(--sobre-verde) !important; }
 body.vu-antiga .vu-tarefa-acoes .vu-btn-fantasma { background: transparent !important; border: 2px solid transparent !important; color: var(--verde-escuro) !important; box-shadow: none !important; }
 body.vu-antiga .vu-tarefa-acoes .vu-btn-fantasma:hover { background: var(--cartao-suave) !important; }
+body.vu-antiga .vu-tarefa-acoes .vu-btn.vu-btn-perigo:not(.vu-btn-principal):not(.vu-btn-fantasma) { border-color: var(--vermelho) !important; color: var(--vermelho) !important; }
+body.vu-antiga .vu-tarefa-acoes .vu-btn.vu-btn-perigo:not(.vu-btn-principal):not(.vu-btn-fantasma):hover { background: var(--vermelho-claro) !important; border-color: var(--vermelho) !important; }
 body.vu-antiga .card.em-progresso .btn-progresso { background: var(--azul-claro) !important; border-color: var(--azul) !important; color: var(--azul) !important; }
 body.vu-antiga .card .btn-progresso::after { display: none !important; }
 body.vu-antiga .card .btn-progresso .btn-text-original { opacity: 1 !important; }
