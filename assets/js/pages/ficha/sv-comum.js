@@ -120,8 +120,87 @@ export const GRUPOS_EXAMES = [
 
 // Títulos da vírus-neutralização
 export const TITULOS_VN = ['<4', '4', '8', '16', '32', '64', '128', '256', '≥512'];
+// Amostras que não puderam ser avaliadas (mesmas categorias do Mural)
+export const CATEGORIAS_VN_NAO_AVALIAVEIS = ['Imprópria', 'Tóxica', 'Insuficiente'];
 
-export const OPCOES_RESULTADO = ['', 'Positivo', 'Negativo', 'Inconclusivo', 'Não realizado'];
+// Interpretação de cada amostra da VN: "<4" = negativa; título ≥ 4 = positiva.
+export function classificarVN(titulo) {
+    if (!titulo) return '';
+    if (titulo === '<4') return 'Negativa';
+    if (TITULOS_VN.includes(titulo)) return 'Positiva';
+    return 'Não avaliável';
+}
+
+// Resumo de uma lista de linhas da VN: { positivas: [...], negativas: [...], naoAvaliaveis: [...] }
+export function resumoVN(linhas) {
+    const r = { positivas: [], negativas: [], naoAvaliaveis: [] };
+    (linhas || []).forEach(l => {
+        const c = classificarVN(l.titulo);
+        const nome = l.amostra || '—';
+        if (c === 'Positiva') r.positivas.push(nome);
+        else if (c === 'Negativa') r.negativas.push(nome);
+        else if (c) r.naoAvaliaveis.push(`${nome} (${l.titulo.toLowerCase()})`);
+    });
+    return r;
+}
+
+// ------------------------------------------------------------------
+// Resultado por amostra/pool: cada amostra mantém a sua classificação (nada de "Positivo" geral
+// quando há amostras negativas). Formato: [{ nome, resultado }]
+// ------------------------------------------------------------------
+export function classeResultado(valor) {
+    const s = String(valor || '').trim().toLowerCase();
+    if (!s) return '';
+    if (/n[ãa]o\s*reagente|negativ/.test(s)) return 'Negativo';
+    if (/positiv|reagente/.test(s)) return 'Positivo';
+    if (/inconclusiv/.test(s)) return 'Inconclusivo';
+    if (/n[ãa]o\s*realizad/.test(s)) return 'Não realizado';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// Linhas da VN -> amostras (título <4 = Negativo, ≥4 = Positivo, demais = Não avaliável)
+export function amostrasDaVN(linhas) {
+    return (linhas || []).filter(l => l.amostra || l.titulo).map(l => {
+        const c = classificarVN(l.titulo);
+        return {
+            nome: l.amostra || '—',
+            resultado: c === 'Positiva' ? 'Positivo' : c === 'Negativa' ? 'Negativo' : c ? `Não avaliável (${String(l.titulo).toLowerCase()})` : ''
+        };
+    }).filter(a => a.resultado);
+}
+
+const ORDEM_RESULTADO = ['Positivo', 'Negativo', 'Inconclusivo'];
+
+// Agrupa as amostras pelo resultado, positivos primeiro: [{ resultado, amostras: [nomes] }]
+export function gruposPorResultado(amostras) {
+    const grupos = new Map();
+    (amostras || []).forEach(a => {
+        const r = classeResultado(a.resultado) || '—';
+        if (!grupos.has(r)) grupos.set(r, []);
+        grupos.get(r).push(a.nome);
+    });
+    const pos = (r) => { const i = ORDEM_RESULTADO.indexOf(r); return i === -1 ? ORDEM_RESULTADO.length : i; };
+    return [...grupos.entries()]
+        .map(([resultado, nomes]) => ({ resultado, amostras: nomes }))
+        .sort((a, b) => pos(a.resultado) - pos(b.resultado));
+}
+
+// Resultado único do exame só quando todas as amostras concordam; misto -> ''
+export function resultadoGeral(amostras) {
+    const grupos = gruposPorResultado(amostras);
+    return grupos.length === 1 && OPCOES_RESULTADO.includes(grupos[0].resultado) ? grupos[0].resultado : '';
+}
+
+// Texto que versões anteriores geravam sozinhas a partir do Mural ("Pool 1: Negativo; Pool 2: Positivo"
+// ou "6 positiva(s): ...; 1 negativa(s): ..."). Quando há resultado por amostra ele é substituído.
+export function detalheAutomatico(texto) {
+    const s = String(texto || '').trim();
+    if (!s) return false;
+    if (/^\d+ positiva\(s\)/i.test(s)) return true;
+    return s.split(';').every(p => /^[^:]+:\s.*(positiv|negativ|reagente|inconclusiv)/i.test(p.trim()));
+}
+
+export const OPCOES_RESULTADO =['', 'Positivo', 'Negativo', 'Inconclusivo', 'Não realizado'];
 
 export const FORMAS_PAGAMENTO = ['', 'Dinheiro', 'PIX', 'Transferência', 'Boleto', 'Cartão', 'Empenho/Nota de empenho', 'Outra'];
 
@@ -249,7 +328,8 @@ export async function sair() {
 
 // ------------------------------------------------------------------
 // Protocolo no padrão do projeto: "SV NN/AA" (o mesmo do mural e da ficha antiga).
-// Próximo número = maior entre fichas locais, tarefas do mural (Firestore) e contador local + 1.
+// Próximo número = maior entre fichas SV (Firestore), tarefas do mural (Firestore) e contador local + 1.
+// A unicidade é garantida na gravação (criarFicha falha se o protocolo já existir).
 // ------------------------------------------------------------------
 const RE_SV = /SV\s*(\d+)\s*\/\s*(\d{2})/i;
 
@@ -281,7 +361,7 @@ export async function proximoProtocolo() {
             const m = String(f.protocolo || '').match(RE_SV);
             if (m && m[2] === sufixo) maior = Math.max(maior, parseInt(m[1], 10) || 0);
         });
-    } catch (err) { console.warn('[SV] Erro ao ler fichas locais:', err); }
+    } catch (err) { console.warn('[SV] Erro ao ler fichas SV:', err); }
     maior = Math.max(maior, await maiorSVMural(sufixo));
     // contador usado pelo mural guarda o "próximo" número
     const contador = parseInt(localStorage.getItem(`svNumber_${ano}`) || '0', 10);
@@ -399,16 +479,39 @@ export function renderVNForm(container, ficha, identificacoesTexto = '') {
         const rem = e.target.closest('[data-vn-rem]');
         if (rem) rem.closest('.sv-vn-linha').remove();
     };
+    // Mostra ao lado de cada amostra se ela é positiva ou negativa
+    container.onchange = (e) => {
+        const sel = e.target.closest('.sv-vn-titulo');
+        if (sel) atualizarClasseVN(sel.closest('.sv-vn-linha'));
+    };
+}
+
+function seloVN(titulo) {
+    const c = classificarVN(titulo);
+    const classe = c === 'Positiva' ? 'sv-vn-pos' : c === 'Negativa' ? 'sv-vn-neg' : c ? 'sv-vn-na' : '';
+    return `<span class="sv-vn-classe ${classe}">${esc(c)}</span>`;
+}
+
+function atualizarClasseVN(linha) {
+    const atual = linha?.querySelector('.sv-vn-classe');
+    if (atual) atual.outerHTML = seloVN(linha.querySelector('.sv-vn-titulo').value);
 }
 
 function linhaVN(l) {
+    const extra = l.titulo && !TITULOS_VN.includes(l.titulo) && !CATEGORIAS_VN_NAO_AVALIAVEIS.includes(l.titulo) ? [l.titulo] : [];
     return `
     <div class="sv-vn-linha">
         <input type="text" class="sv-vn-amostra" placeholder="Amostra / identificação" value="${esc(l.amostra)}" aria-label="Amostra">
         <select class="sv-vn-titulo" aria-label="Título">
             <option value="">Título…</option>
+            <optgroup label="Título">
             ${TITULOS_VN.map(t => `<option value="${esc(t)}" ${l.titulo === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+            </optgroup>
+            <optgroup label="Não avaliável">
+            ${[...CATEGORIAS_VN_NAO_AVALIAVEIS, ...extra].map(t => `<option value="${esc(t)}" ${l.titulo === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+            </optgroup>
         </select>
+        ${seloVN(l.titulo)}
         <button type="button" class="sv-btn-icone" data-vn-rem title="Remover amostra" aria-label="Remover amostra"><i class="bi bi-x-lg"></i></button>
     </div>`;
 }

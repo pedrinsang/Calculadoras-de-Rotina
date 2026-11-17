@@ -1,10 +1,11 @@
 // Etapa 1 — a recepção preenche a requisição (nova ficha) ou corrige uma ficha existente (?id=PROTOCOLO).
 import {
-    exigirLogin, proximoProtocolo, registrarProtocoloUsado, hojeISO, mostrarAviso,
+    exigirLogin, proximoProtocolo, registrarProtocoloUsado, hojeISO, mostrarAviso, usuarioArmazenado,
     renderExamesForm, coletarExamesForm, renderVNForm, coletarVNForm,
     renderCobrancaForm, coletarCobrancaForm
 } from "./sv-comum.js";
-import { obterFicha, criarFicha, atualizarFicha, STATUS } from "../../utils/svFichasDB.js";
+import { obterFicha, criarFicha, atualizarFicha, migrarFichasLocais, STATUS } from "../../utils/svFichasDB.js";
+import { sincronizarTarefasDaFicha } from "./sv-mural.js";
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -120,9 +121,10 @@ async function salvar(e) {
     btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Salvando…';
     try {
         let protocolo;
+        let fichaSalva;
         if (protocoloEdicao) {
             protocolo = protocoloEdicao;
-            await atualizarFicha(protocolo, dados);
+            fichaSalva = await atualizarFicha(protocolo, dados);
         } else {
             protocolo = $('protocolo').value || await proximoProtocolo();
             const novo = {
@@ -133,19 +135,34 @@ async function salvar(e) {
                 criadoPor: usuario ? { uid: usuario.uid, nome: usuario.nome } : null,
                 laudo: null
             };
-            try {
-                await criarFicha(novo);
-            } catch (err) {
-                if (err?.name !== 'ConstraintError') throw err;
-                // Protocolo já usado neste meio-tempo: gera o próximo e tenta de novo
-                protocolo = await proximoProtocolo();
-                novo.protocolo = protocolo;
-                novo.identificacao.protocolo = protocolo;
-                await criarFicha(novo);
+            // Se outra pessoa usou o mesmo protocolo neste meio-tempo, gera o próximo e tenta de novo
+            for (let tentativa = 1; ; tentativa++) {
+                try {
+                    fichaSalva = await criarFicha(novo);
+                    break;
+                } catch (err) {
+                    if (err?.name !== 'ConstraintError' || tentativa >= 5) throw err;
+                    protocolo = await proximoProtocolo();
+                    novo.protocolo = protocolo;
+                    novo.identificacao.protocolo = protocolo;
+                }
+            }
+            if (protocolo !== $('protocolo').value) {
+                alert(`Atenção: o protocolo ${$('protocolo').value} foi usado por outra pessoa enquanto você preenchia. Esta ficha foi salva como ${protocolo}.`);
             }
             registrarProtocoloUsado(protocolo);
         }
-        location.href = `sv-fichas.html?salvo=${encodeURIComponent(protocolo)}`;
+        // Cria/atualiza no Mural uma tarefa para cada exame marcado
+        let aviso = '';
+        try {
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Enviando ao Mural…';
+            const r = await sincronizarTarefasDaFicha(fichaSalva, { uid: usuario?.uid, sigla: usuarioArmazenado()?.sigla });
+            if (r.criadas) aviso = `&mural=${r.criadas}`;
+        } catch (err) {
+            console.error('Erro ao criar tarefas no Mural:', err);
+            alert(`A ficha ${protocolo} foi salva, mas não foi possível criar as tarefas no Mural (${err?.message || err}). Abra e salve a requisição de novo para tentar outra vez.`);
+        }
+        location.href = `sv-fichas.html?salvo=${encodeURIComponent(protocolo)}${aviso}`;
     } catch (err) {
         console.error('Erro ao salvar ficha:', err);
         mostrarAviso('Erro ao salvar: ' + (err?.message || err), 'erro');
@@ -169,6 +186,7 @@ async function iniciar(u) {
         preencher(fichaAtual);
     } else {
         preencher({});
+        await migrarFichasLocais(proximoProtocolo);
         $('protocolo').value = await proximoProtocolo();
     }
 }

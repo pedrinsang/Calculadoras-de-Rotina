@@ -42,7 +42,13 @@
       </section>
 
       <section class="sv-secao">
+        <h2>Cobrança e Pagamento</h2>
+        <div id="cobranca"></div>
+      </section>
+
+      <section class="sv-secao">
         <h2>Resultados por exame</h2>
+        <div id="mural-painel" class="sv-mural-painel">Buscando tarefas no Mural…</div>
         <div id="resultados"></div>
         <div class="sv-campo" id="campo-aborto-resultado" style="margin-top:.75rem" hidden>
           <label for="aborto-teste-resultado">Investigação de abortos — Teste/ resultado</label>
@@ -52,13 +58,17 @@
 
       <section class="sv-secao">
         <h2>Resultados vírus-neutralização</h2>
+        <p class="sv-dica">Uma linha por amostra. Título &lt;4 = negativa; título ≥ 4 = positiva. Quando o resultado da SN é lançado no Mural, as amostras aparecem aqui sozinhas.</p>
         <div id="vn"></div>
       </section>
 
       <section class="sv-secao">
         <h2>Laudo final</h2>
         <div class="sv-campo" style="margin-bottom:.75rem">
-          <label for="conclusao">Laudo / conclusão</label>
+          <div class="sv-rotulo-acao">
+            <label for="conclusao">Laudo / conclusão</label>
+            <button type="button" class="sv-btn-link" id="btn-conclusao"><i class="bi bi-magic"></i> Preencher com os resultados</button>
+          </div>
           <textarea id="conclusao" rows="5"></textarea>
         </div>
         <div class="sv-linha">
@@ -72,11 +82,6 @@
           </div>
         </div>
         <p class="sv-dica">Responsável técnico: Eduardo Furtado Flores – Médico Veterinário – CRMV-1 3178</p>
-      </section>
-
-      <section class="sv-secao">
-        <h2>Cobrança e Pagamento</h2>
-        <div id="cobranca"></div>
       </section>
 
       <div class="sv-acoes">

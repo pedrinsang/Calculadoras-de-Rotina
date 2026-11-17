@@ -1,6 +1,8 @@
 import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+// Toda página carrega este módulo; aproveitamos para manter o app sempre atualizado.
+import "./utils/atualizacaoApp.js";
 
 // Centraliza a inicialização do Firebase para evitar duplicação e erros de [DEFAULT] app already exists
 const firebaseConfig = {

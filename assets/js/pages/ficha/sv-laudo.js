@@ -2,13 +2,17 @@
 // na MESMA ficha (mesmo protocolo); ao emitir, o status vira "Laudo emitido".
 import {
     exigirLogin, esc, dataBR, separarIdentificacoes, hojeISO, mostrarAviso, examesMarcados, nomeExame, OPCOES_RESULTADO,
-    renderVNForm, coletarVNForm, renderCobrancaForm, coletarCobrancaForm
+    renderVNForm, coletarVNForm, renderCobrancaForm, coletarCobrancaForm,
+    amostrasDaVN, gruposPorResultado, resultadoGeral, detalheAutomatico
 } from "./sv-comum.js";
 import { obterFicha, atualizarFicha, STATUS } from "../../utils/svFichasDB.js";
+import { observarTarefasDaFicha, resultadosDoMural, descreverTarefa, statusTarefa } from "./sv-mural.js";
 
 const $ = (id) => document.getElementById(id);
 const protocolo = new URLSearchParams(location.search).get('id');
 let ficha = null;
+// Resultado por amostra/pool de cada exame (vindo do Mural ou salvo na ficha): { exame: [{ nome, resultado }] }
+let amostrasPorExame = {};
 
 function renderResumo(f) {
     const itens = [
@@ -45,9 +49,11 @@ function renderResultados(f) {
                     ${OPCOES_RESULTADO.map(o => `<option value="${esc(o)}" ${r.resultado === o ? 'selected' : ''}>${o ? esc(o) : 'Resultado…'}</option>`).join('')}
                 </select>
                 <input type="text" placeholder="Detalhes / valor / observação" value="${esc(r.detalhe || '')}" aria-label="Detalhes de ${esc(nomeExame(f, i))}">
+                <div class="sv-resultado-amostras" hidden></div>
             </div>`;
         }).join('');
     }
+    amostrasPorExame = Object.fromEntries(Object.entries(res).filter(([, r]) => r.amostras?.length).map(([k, r]) => [k, r.amostras]));
     const temAborto = marcados.some(i => i.grupo.secao);
     $('campo-aborto-resultado').hidden = !temAborto && !f.laudo?.abortoTesteResultado;
     $('aborto-teste-resultado').value = f.laudo?.abortoTesteResultado || '';
@@ -56,9 +62,11 @@ function renderResultados(f) {
 function coletarLaudo() {
     const resultados = {};
     document.querySelectorAll('[data-resultado]').forEach(el => {
+        const amostras = amostrasDoExame(el.dataset.resultado);
         resultados[el.dataset.resultado] = {
             resultado: el.querySelector('select').value,
-            detalhe: el.querySelector('input').value.trim()
+            detalhe: el.querySelector('input').value.trim(),
+            ...(amostras.length ? { amostras } : {})
         };
     });
     return {
@@ -120,6 +128,10 @@ async function iniciar(usuario) {
     renderResultados(ficha);
     renderVNForm($('vn'), ficha, ficha.amostras?.identificacao);
     renderCobrancaForm($('cobranca'), ficha.cobranca || {});
+    atualizarAmostras();
+    // Títulos da VN digitados aqui atualizam o resultado por amostra da sorologia
+    ['input', 'change'].forEach(ev => $('vn').addEventListener(ev, atualizarAmostras));
+    $('vn').addEventListener('click', () => setTimeout(atualizarAmostras));
     $('conclusao').value = ficha.laudo?.conclusao || '';
     $('data-emissao').value = ficha.laudo?.dataEmissao || hojeISO();
     $('analisado-por').value = ficha.laudo?.analisadoPor || usuario?.nome || '';
@@ -127,6 +139,108 @@ async function iniciar(usuario) {
 
     $('carregando').hidden = true;
     $('form-laudo').hidden = false;
+
+    // Resultados lançados no Mural entram na ficha em tempo real
+    observarTarefasDaFicha(protocolo, aplicarMural, () => {
+        $('mural-painel').innerHTML = '<span class="sv-mural-aviso">Não foi possível ler as tarefas do Mural agora.</span>';
+    });
+}
+
+// ------------------------------------------------------------------
+// Resultado por amostra/pool: cada classificação em sua linha, positivos em negrito
+// ------------------------------------------------------------------
+function amostrasDoExame(exame) {
+    const vn = coletarVNForm($('vn'))[exame];
+    if (vn) return amostrasDaVN(vn);
+    return amostrasPorExame[exame] || [];
+}
+
+function atualizarAmostras() {
+    document.querySelectorAll('[data-resultado]').forEach(el => {
+        const grupos = gruposPorResultado(amostrasDoExame(el.dataset.resultado));
+        const alvo = el.querySelector('.sv-resultado-amostras');
+        alvo.innerHTML = grupos.map(g => `
+            <div class="sv-res-grupo ${g.resultado === 'Positivo' ? 'sv-res-pos' : g.resultado === 'Negativo' ? 'sv-res-neg' : ''}">
+                <span>${esc(g.resultado)} (${g.amostras.length})</span> ${esc(g.amostras.join(', '))}
+            </div>`).join('');
+        alvo.hidden = !grupos.length;
+    });
+}
+
+// Texto do laudo final montado a partir dos resultados (o responsável revisa antes de emitir)
+function textoConclusao() {
+    return [...document.querySelectorAll('[data-resultado]')].map(el => {
+        const nome = el.querySelector('.sv-resultado-nome > span').firstChild.textContent.trim();
+        const grupos = gruposPorResultado(amostrasDoExame(el.dataset.resultado));
+        if (grupos.length) return `${nome}: ${grupos.map(g => `${g.resultado} – ${g.amostras.join(', ')}`).join('; ')}.`;
+        const r = el.querySelector('select').value;
+        const d = el.querySelector('input').value.trim();
+        return r ? `${nome}: ${r}${d ? ` (${d})` : ''}.` : '';
+    }).filter(Boolean).join('\n');
+}
+
+$('btn-conclusao').addEventListener('click', () => {
+    const texto = textoConclusao();
+    if (!texto) { mostrarAviso('Ainda não há resultados para montar o laudo.', 'erro'); return; }
+    const atual = $('conclusao').value.trim();
+    if (atual && atual !== texto && !confirm('Substituir o texto atual do laudo final pelos resultados?')) return;
+    $('conclusao').value = texto;
+});
+
+// ------------------------------------------------------------------
+// Mural -> laudo
+// ------------------------------------------------------------------
+function aplicarMural(tarefas) {
+    const m = resultadosDoMural(ficha, tarefas);
+    renderPainelMural(tarefas, m);
+
+    // Resultado por exame: o Mural tem prioridade quando já há resultado lançado
+    Object.entries(m.resultados).forEach(([exame, r]) => {
+        const el = document.querySelector(`[data-resultado="${exame}"]`);
+        if (!el) return;
+        const sel = el.querySelector('select');
+        const input = el.querySelector('input');
+        if (r.amostras?.length) {
+            // Por amostra: o resultado geral só é preenchido quando todas concordam (misto fica em branco)
+            amostrasPorExame[exame] = r.amostras;
+            sel.value = resultadoGeral(r.amostras);
+            if (detalheAutomatico(input.value)) input.value = '';
+        } else {
+            if (r.resultado && [...sel.options].some(o => o.value === r.resultado)) sel.value = r.resultado;
+            if (r.detalhe) input.value = r.detalhe;
+        }
+        const nome = el.querySelector('.sv-resultado-nome span');
+        if (nome && !nome.querySelector('.sv-mural-selo')) nome.insertAdjacentHTML('beforeend', '<span class="sv-mural-selo">do Mural</span>');
+    });
+
+    // VN: amostras e títulos vindos da SN do Mural substituem as do vírus correspondente
+    if (Object.keys(m.vn).length) {
+        const atual = coletarVNForm($('vn'));
+        renderVNForm($('vn'), { ...ficha, vn: { ...atual, ...m.vn } }, ficha.amostras?.identificacao);
+        Object.keys(m.vn).forEach(v => {
+            const h = document.querySelector(`[data-vn="${v}"] h4`);
+            if (h && !h.querySelector('.sv-mural-selo')) h.insertAdjacentHTML('beforeend', '<span class="sv-mural-selo">do Mural</span>');
+        });
+    }
+    atualizarAmostras();
+}
+
+function renderPainelMural(tarefas, m) {
+    const painel = $('mural-painel');
+    if (!tarefas.length) {
+        painel.innerHTML = `<strong>Mural:</strong> nenhuma tarefa ligada a esta ficha.
+            <a href="sv-requisicao.html?id=${encodeURIComponent(protocolo)}">Abra e salve a requisição</a> para criá-las.`;
+        return;
+    }
+    const nomes = Object.fromEntries(examesMarcados(ficha).map(i => [i.id, nomeExame(ficha, i)]));
+    const itens = Object.entries(m.tarefasPorExame).flatMap(([exame, ts]) =>
+        ts.map(t => `<li><strong>${esc(nomes[exame] || t.exameFichaNome || exame)}</strong> — ${esc(descreverTarefa(t))}: ${esc(statusTarefa(t))}</li>`));
+    m.semVinculo.forEach(t => itens.push(`<li class="sv-mural-aviso">${esc(descreverTarefa(t))}: ${esc(statusTarefa(t))} (não ligada a nenhum exame marcado)</li>`));
+    const comResultado = tarefas.filter(t => t.resultados).length;
+    painel.innerHTML = `<strong>Mural:</strong> ${tarefas.length} tarefa${tarefas.length === 1 ? '' : 's'}, ${comResultado} com resultado.
+        Os resultados lançados no Mural preenchem os campos abaixo automaticamente.
+        <ul>${itens.join('')}</ul>
+        <a href="../mural.html">Abrir o Mural</a>`;
 }
 
 $('form-laudo').addEventListener('submit', (e) => { e.preventDefault(); salvar(true); });
