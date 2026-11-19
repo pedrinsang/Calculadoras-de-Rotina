@@ -1,0 +1,68 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function privileged() {
+      return signedIn() && (
+        (
+          request.auth.token.email == 'setordevirologia@gmail.com' &&
+          request.auth.token.email_verified == true
+        ) ||
+        (
+          exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+          (
+            get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin' ||
+            get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.perfilAcesso == 'programador'
+          )
+        )
+      );
+    }
+
+    function secretaria() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.perfilAcesso == 'secretaria';
+    }
+
+    function secretariaMarcaEnvioLaudo() {
+      let usuario = get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+      let antes = resource.data.get('envioLaudo', {});
+      let depois = request.resource.data.get('envioLaudo', {});
+      return secretaria() &&
+        resource.data.status == 'Laudo emitido' &&
+        antes.get('enviado', false) == false &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['envioLaudo']) &&
+        depois.keys().hasOnly(['enviado', 'data', 'uid', 'nome']) &&
+        depois.enviado == true &&
+        depois.data == request.time &&
+        depois.uid == request.auth.uid &&
+        depois.nome == usuario.nome;
+    }
+
+    match /fichasSV/{fichaId} {
+      allow update: if privileged() || secretariaMarcaEnvioLaudo();
+    }
+
+    match /auditoria/{document=**} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if privileged();
+    }
+
+    match /usuarios/{uid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == uid;
+      allow update, delete: if privileged();
+    }
+
+    match /{document=**} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if privileged();
+    }
+  }
+}

@@ -38,9 +38,11 @@ A aplicação utiliza Firebase para autenticação de usuários e armazenamento 
     -   **Soroneutralização:** Cálculos detalhados para ensaios de soroneutralização.
     -   **Vacinas:** Cálculos para preparo de vacinas bovinas, caninas e cálculo de formol.
     -   **ELISA:** Ferramentas para auxiliar nos cálculos de reagentes para ensaios de ELISA (Leucose e BVDV) com checklists de protocolo.
--   **Hub de Protocolos:** Acesso facilitado a uma extensa coleção de protocolos laboratoriais em formato PDF, cobrindo diversas áreas da virologia e técnicas moleculares.
+-   **POPs e procedimentos técnicos:** Consulta de PDFs, cadastro de novos documentos, substituição de versões e exclusão por administradores.
 -   **Mural de Tarefas (Kanban):** Sistema para gerenciamento de tarefas e amostras laboratoriais, permitindo o acompanhamento do status (pendente, em progresso, concluído) e registro de resultados.
 -   **Histórico de Tarefas Concluídas:** Armazenamento e consulta de tarefas finalizadas, com opção de visualização de detalhes e **exportação de laudos em formato .docx**.
+-   **Auditoria e perfis de acesso:** Histórico de alterações visível a usuários autenticados, perfis para a equipe e identificação de quem iniciou cada exame.
+-   **Secretaria:** Fila em tempo real de laudos emitidos aguardando envio, com acesso à ficha, registro de envio e aviso discreto no início do app. O perfil Secretaria é atribuído pela Administração.
 -   **Autenticação de Usuário:** Sistema de login e cadastro seguro utilizando Firebase Authentication.
 -   **Gerenciamento de Conta:** Os usuários podem visualizar e editar suas informações de perfil (nome, sigla) e gerenciar a segurança da conta (alteração de senha, exclusão de conta).
 -   **Progressive Web App (PWA):** Permite a instalação da aplicação em dispositivos móveis e desktops para acesso rápido e funcionalidades offline (para assets cacheados).
@@ -58,6 +60,7 @@ A aplicação utiliza Firebase para autenticação de usuários e armazenamento 
 -   **Backend & Infraestrutura:**
     -   Firebase Authentication (para login/cadastro)
     -   Firebase Firestore (para armazenamento de dados do mural, histórico e usuários)
+    -   Firebase Storage (para os PDFs adicionados à área de POPs e procedimentos)
 -   **Bibliotecas Externas (Client-Side):**
     -   `docx` (para geração de documentos .docx)
     -   `pako` (inferido pela presença de `flate.js` em `jszip` dentro de `docx.js`, para compressão/descompressão)
@@ -130,18 +133,32 @@ Para obter uma cópia local funcionando, siga estas etapas.
     -   Edite ou exclua tarefas.
 5.  **Protocolos (`pages/protocolos.html`):**
     -   Navegue e filtre a lista de protocolos.
-    -   Clique em "Visualizar" para abrir o PDF do protocolo desejado em uma nova aba.
+    -   Use os filtros para separar POPs e procedimentos técnicos.
+    -   Administradores podem adicionar PDFs, substituir versões ou excluir documentos existentes. Os documentos publicados como arquivos estáticos também podem ser substituídos ou ocultados da lista.
+    -   A administração exige `usuarios/{uid}.role == "admin"`. Configure regras do Firestore e do Storage para permitir leitura a usuários autenticados e limitar criação/alteração/exclusão a administradores; regras no servidor são necessárias e não podem ser substituídas pela verificação da interface. PDFs gerenciados aceitam até 25 MB.
+    -   O registro de substituição/exclusão de POPs é incluído na Auditoria.
 6.  **Histórico (`pages/historico.html`):**
     -   Visualize tarefas que foram marcadas como "Concluídas" no mural.
     -   Busque por tarefas antigas.
     -   Veja detalhes das tarefas e seus resultados.
     -   Restaure tarefas para o mural, se necessário.
     -   **Baixe laudos em formato .docx**.
-7.  **Conta (`pages/conta.html`):**
+7.  **Auditoria e perfis:**
+    -   Usuários aprovados recebem inicialmente o perfil de estagiário; administradores podem atribuir administrador, responsável técnico, pesquisador, residente, técnico ou estagiário na aba **Permissões** do painel administrativo.
+    -   Os emails de bootstrap administrativo e de programador só recebem privilégios depois de confirmar a propriedade da caixa postal; não existe senha padrão. Se necessário, use **Esqueci minha senha**.
+    -   Usuários não administradores podem iniciar exames e lançar resultados. Edição, exclusão, conclusão/arquivamento, restauração e alterações de fichas ficam restritas a administradores.
+    -   Ao iniciar um exame, o nome e o perfil de quem iniciou são salvos como responsável pela execução e aparecem no Mural e no Histórico.
+    -   A página `pages/auditoria.html` é acessível a todos os usuários autenticados e lista quem fez cada alteração, quando e quais campos mudaram.
+    -   Os eventos são gravados junto às alterações no Firestore; valores de campos pessoais e links de arquivos são ocultados.
+8.  **Conta (`pages/conta.html`):**
     -   Visualize suas informações (Nome, Sigla, Email, Data de Cadastro).
     -   Edite seu Nome e Sigla.
     -   Solicite a redefinição de senha (um email será enviado).
     -   Exclua sua conta permanentemente (requer confirmação e senha).
+
+### Limite de segurança da versão atual
+
+Os controles por perfil e a criação dos eventos de auditoria estão implementados no cliente. As regras do Firestore estão em `../firestore.rules`; o acesso especial do email de programador exige email verificado. A regra da Secretaria permite apenas registrar o envio de laudos já emitidos. Publique as regras atualizadas no projeto Firebase usando uma conta Google com permissão para gerenciar regras. Sem esse deploy, alterações protegidas pelo Firestore podem falhar com `Missing or insufficient permissions`. Configure também regras equivalentes no Firebase Storage e considere mover a gravação da Auditoria para uma função confiável; a validação da interface, por si só, não impede alterações diretas no Firebase.
 
 ---
 
