@@ -205,3 +205,17 @@ Calculadoras-de-Rotina/
 │       ├── Clonagem de vírus por ensaio de placa.pdf
 │       ├── Coagulação por glutaraldeído.pdf
 │       └── ... (muitos outros arquivos PDF)
+## Arquitetura institucional Labby X UFSM
+
+A plataforma foi estruturada para operar Secretaria Central, LABAC, LADOPAR e Virologia em um único projeto Firebase.
+
+O sistema possui uma única tela de login. Cada perfil é encaminhado ao seu laboratório;
+a Secretaria Central recebe visão integrada das entradas e requisições dos três setores.
+
+- Entrada administrativa central na coleção `entradasSecretaria`.
+- Requisições independentes na coleção `requisicoes`.
+- Identificadores UUID permanentes e protocolos editáveis.
+- Numeração transacional por laboratório, prefixo e ano.
+- Perfis administrativos e técnicos com isolamento por ambiente.
+- Funções compartilhadas em `assets/js/utils/entradasDB.js`, `requisicoesDB.js`, `protocolosDB.js` e `permissoesDB.js`.
+- Regras de servidor em `firestore.rules` e `storage.rules`.

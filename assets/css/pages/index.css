@@ -33,3 +33,30 @@
 #iosInstallInstructions .vu-ico {
   color: var(--verde);
 }
+
+.vu-selecao-ambiente {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--esp-2);
+  margin-bottom: var(--esp-3);
+}
+
+.vu-ambiente {
+  min-height: 92px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background: var(--cartao);
+  color: var(--tinta);
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.vu-ambiente i { color: var(--verde); font-size: 21px; }
+.vu-ambiente small { color: var(--tinta-suave); }
+.vu-ambiente.ativo {
+  border-color: var(--verde);
+  background: var(--verde-claro);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 18%, transparent);
+}
