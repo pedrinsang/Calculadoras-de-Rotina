@@ -18,6 +18,7 @@
       <img src="../assets/images/logo-sv.png" alt="">
       <div><b>Setor de Virologia</b><small>Sala de diagnóstico</small></div>
     </div>
+    <div class="tv-saudacao" id="tv-saudacao"></div>
     <div class="tv-data" id="tv-data"></div>
     <div class="tv-hora" id="tv-hora" aria-live="off">--:--</div>
   </header>
@@ -36,13 +37,6 @@
 
     <aside class="tv-lado">
       <section class="tv-kpis" id="tv-kpis" aria-label="Resumo"></section>
-
-      <section class="tv-painel" aria-labelledby="t-semana">
-        <div class="tv-cab"><h2 id="t-semana">Prazos da semana</h2></div>
-        <div class="tv-semana" id="tv-semana"></div>
-        <div class="tv-chips" id="tv-chips"></div>
-      </section>
-
       <section class="tv-painel tv-emitidos" aria-labelledby="t-emit">
         <div class="tv-cab"><h2 id="t-emit">Emitidos nos últimos 7 dias</h2><span class="tv-pag" id="tv-emit-qtd"></span></div>
         <ul class="tv-emit-lista" id="tv-emitidos"></ul>
@@ -52,6 +46,7 @@
 
   <footer class="tv-pe">
     <span class="tv-status" id="tv-status"><i></i><span>Conectando…</span></span>
+    <span class="tv-atualizacao" id="tv-atualizacao">Atualizado às --:--:--</span>
     <button type="button" class="tv-tela" id="tv-tela" title="Tela cheia (F)"><i class="bi bi-arrows-fullscreen"></i> Tela cheia</button>
   </footer>
 

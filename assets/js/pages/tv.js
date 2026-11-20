@@ -4,12 +4,11 @@ import { collection, query, where, onSnapshot, Timestamp } from "https://www.gst
 import { db } from "../firebase.js";
 import { observarFichas, STATUS } from "../utils/svFichasDB.js";
 
-const LINHAS = 8;
-const EMITIDOS = 6;
-const TROCA_MS = 12000;
+const LINHAS = 7;
+const EMITIDOS = 4;
 const DIAS_EMITIDOS = 7;
 
-const estado = { tarefas: [], historico: [], fichas: [], pagina: 0 };
+const estado = { tarefas: [], historico: [], fichas: [] };
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -30,8 +29,15 @@ function area(tipo = '') {
 
 function tique() {
   const agora = new Date();
+  const hora = agora.getHours();
+  const saudacao = hora >= 6 && hora < 12
+    ? 'Bom dia'
+    : hora >= 12 && hora < 18
+      ? 'Boa tarde'
+      : 'Boa noite';
   $('tv-hora').textContent = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   $('tv-data').textContent = cap(agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+  $('tv-saudacao').textContent = saudacao;
   if (agora.getHours() === 5 && agora.getMinutes() === 0 && agora.getSeconds() < 20) location.reload();
 }
 
@@ -93,33 +99,6 @@ function desenharKpis(lista) {
     k(andando, 'em andamento');
 }
 
-function desenharSemana(lista) {
-  const hoje = dia0(new Date());
-  const cont = Array(7).fill(0); let atras = 0;
-  lista.forEach(({ prazo }) => {
-    if (!prazo) return;
-    const n = Math.round((dia0(prazo) - hoje) / 864e5);
-    if (n < 0) atras++; else if (n < 7) cont[n]++;
-  });
-  let h = `<div class="tv-dia atrasadas ${atras ? '' : 'zero'}"><span>atrasados</span><strong>${atras}</strong></div>`;
-  cont.forEach((n, i) => {
-    const d = new Date(hoje); d.setDate(d.getDate() + i);
-    const rot = i === 0 ? 'hoje' : d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
-    const fim = d.getDay() === 0 || d.getDay() === 6;
-    h += `<div class="tv-dia${i === 0 ? ' hoje' : ''}${n ? '' : ' zero'}${fim ? ' fim' : ''}"><span>${rot} ${d.getDate()}</span><strong>${n}</strong></div>`;
-  });
-  $('tv-semana').innerHTML = h;
-
-  const porArea = new Map();
-  lista.forEach(({ t }) => {
-    const a = area(t.tipo);
-    const x = porArea.get(a.nome) || { ...a, n: 0 };
-    x.n++; porArea.set(a.nome, x);
-  });
-  $('tv-chips').innerHTML = [...porArea.values()].sort((a, b) => b.n - a.n)
-    .map(a => `<span class="tv-chip" style="--cor:${a.cor}"><i></i>${esc(a.nome)} <b>${a.n}</b></span>`).join('');
-}
-
 function prazoHtml(prazo, t) {
   if (!prazo) return '<span class="tv-prazo">sem prazo</span>';
   const n = Math.round((dia0(prazo) - dia0(new Date())) / 864e5);
@@ -132,21 +111,26 @@ function prazoHtml(prazo, t) {
 }
 
 function desenharLista(lista) {
-  const paginas = Math.max(1, Math.ceil(lista.length / LINHAS));
-  if (estado.pagina >= paginas) estado.pagina = 0;
-  const fatia = lista.slice(estado.pagina * LINHAS, (estado.pagina + 1) * LINHAS);
-  $('tv-pag').textContent = lista.length ? `${lista.length} no total${paginas > 1 ? ` · página ${estado.pagina + 1} de ${paginas}` : ''}` : '';
+  const el = $('tv-lista');
+  el.style.setProperty('--linhas', LINHAS);
+  el.style.setProperty('--escala-linha', 1);
+  $('tv-pag').textContent = lista.length ? `${lista.length} no total` : '';
 
   if (!lista.length) {
+    configurarRolagem(el, false);
     $('tv-lista').innerHTML = '<li class="tv-vazio"><i class="bi bi-check2-circle"></i>Nenhum exame pendente</li>';
     return;
   }
   const hoje = dia0(new Date());
-  let h = fatia.map(({ t, prazo }) => {
+  let h = lista.map(({ t, prazo }) => {
     const n = prazo ? Math.round((dia0(prazo) - hoje) / 864e5) : 99;
     const urg = n < 0 ? 'atrasada' : n === 0 ? 'hoje' : n <= 2 ? 'breve' : '';
     const a = area(t.tipo);
-    const nome = [t.subTipo].filter(Boolean).join(' ');
+    const subtipo = String(t.subTipo || '').trim();
+    const tipo = String(t.tipo || '').trim();
+    const nome = subtipo && subtipo.toLowerCase() !== tipo.toLowerCase() && !subtipo.toLowerCase().startsWith(tipo.toLowerCase())
+      ? subtipo
+      : '';
     const sub = [t.exameFichaNome, t.proprietario?.nome].filter(Boolean).join(' · ');
     return `<li class="tv-linha ${urg}" style="--cor:${a.cor}">
       <span class="tv-prot">${esc(t.id || '—')}</span>
@@ -156,8 +140,35 @@ function desenharLista(lista) {
       ${prazoHtml(prazo, t)}
     </li>`;
   }).join('');
-  for (let i = fatia.length; i < LINHAS; i++) h += '<li class="tv-linha vazia"></li>';
+  for (let i = lista.length; i < LINHAS; i++) h += '<li class="tv-linha vazia"></li>';
   $('tv-lista').innerHTML = h;
+  configurarRolagem(el, lista.length > LINHAS);
+}
+
+let rolagemAutomatica = null;
+let pausaRolagem = null;
+function configurarRolagem(el, ativar) {
+  clearInterval(rolagemAutomatica);
+  clearTimeout(pausaRolagem);
+  rolagemAutomatica = null;
+  pausaRolagem = null;
+  el.classList.toggle('tem-rolagem', ativar);
+  el.scrollTop = 0;
+  if (!ativar) return;
+
+  rolagemAutomatica = setInterval(() => {
+    if (el.scrollHeight <= el.clientHeight) return;
+    const fim = el.scrollTop >= el.scrollHeight - el.clientHeight - 1;
+    if (fim) {
+      clearInterval(rolagemAutomatica);
+      pausaRolagem = setTimeout(() => {
+        el.scrollTop = 0;
+        configurarRolagem(el, true);
+      }, 3000);
+      return;
+    }
+    el.scrollTop += 0.35;
+  }, 40);
 }
 
 function desenharEmitidos() {
@@ -187,7 +198,6 @@ function desenhar() {
     agendado = false;
     const lista = pendentes();
     desenharKpis(lista);
-    desenharSemana(lista);
     desenharLista(lista);
     desenharEmitidos();
   });
@@ -198,8 +208,14 @@ function status(ok, texto) {
   el.classList.toggle('off', !ok);
   el.querySelector('span').textContent = texto;
 }
+let ultimaAtualizacao = null;
+function registrarAtualizacao() {
+  ultimaAtualizacao = new Date();
+  const hora = ultimaAtualizacao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  $('tv-atualizacao').textContent = `Atualizado às ${hora}`;
+}
 const falha = () => status(false, 'Sem conexão com o banco — mostrando o último dado recebido');
-const ok = () => status(true, `Ao vivo · atualizado às ${new Date().toLocaleTimeString('pt-BR')}`);
+const ok = () => { status(true, 'Ao vivo'); registrarAtualizacao(); };
 
 function iniciarDados() {
   onSnapshot(collection(db, 'tarefas'), snap => {
@@ -213,15 +229,6 @@ function iniciarDados() {
 
   observarFichas(lista => { estado.fichas = lista; ok(); desenhar(); }, falha);
 
-  setInterval(() => {
-    estado.pagina++;
-    const lista = pendentes();
-    const el = $('tv-lista');
-    if (Math.ceil(lista.length / LINHAS) > 1) {
-      el.classList.remove('troca'); void el.offsetWidth; el.classList.add('troca');
-    }
-    desenhar();
-  }, TROCA_MS);
   setInterval(desenhar, 60000);
 }
 
