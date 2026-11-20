@@ -2,10 +2,10 @@
 import {
     exigirLogin, proximoProtocolo, registrarProtocoloUsado, hojeISO, mostrarAviso, usuarioArmazenado,
     renderExamesForm, coletarExamesForm, renderVNForm, coletarVNForm,
-    renderCobrancaForm, coletarCobrancaForm
+    renderCobrancaForm, coletarCobrancaForm, normalizarProtocolo
 } from "./sv-comum.js";
-import { obterFicha, criarFicha, atualizarFicha, migrarFichasLocais, STATUS } from "../../utils/svFichasDB.js";
-import { sincronizarTarefasDaFicha } from "./sv-mural.js";
+import { obterFicha, criarFicha, atualizarFicha, renomearFicha, migrarFichasLocais, STATUS } from "../../utils/svFichasDB.js";
+import { sincronizarTarefasDaFicha, renomearTarefasDaFicha } from "./sv-mural.js";
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -91,6 +91,13 @@ function coletar() {
 
 async function validar(dados) {
     const faltando = [];
+    const protocoloNormalizado = normalizarProtocolo($('protocolo').value);
+    if (!protocoloNormalizado) {
+        $('protocolo').focus();
+        mostrarAviso('Informe o protocolo no formato SV 01/26.', 'erro');
+        return false;
+    }
+    $('protocolo').value = protocoloNormalizado;
     if (!dados.identificacao.dataEntrada) faltando.push(['data-entrada', 'Data de entrada']);
     if (!dados.identificacao.recebidoPor) faltando.push(['recebido-por', 'Recebido por']);
     if (!dados.proprietario.nome) faltando.push(['prop-nome', 'Nome do proprietário']);
@@ -116,6 +123,7 @@ async function salvar(e) {
     e.preventDefault();
     const dados = coletar();
     if (!(await validar(dados))) return;
+    const protocoloInformado = $('protocolo').value;
     const btn = $('btn-salvar');
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Salvando…';
@@ -123,10 +131,17 @@ async function salvar(e) {
         let protocolo;
         let fichaSalva;
         if (protocoloEdicao) {
-            protocolo = protocoloEdicao;
-            fichaSalva = await atualizarFicha(protocolo, dados);
+            if (protocoloInformado !== protocoloEdicao) {
+                fichaSalva = await renomearFicha(protocoloEdicao, protocoloInformado);
+                await renomearTarefasDaFicha(protocoloEdicao, protocoloInformado);
+                fichaSalva = await atualizarFicha(protocoloInformado, dados);
+                protocolo = protocoloInformado;
+            } else {
+                protocolo = protocoloEdicao;
+                fichaSalva = await atualizarFicha(protocolo, dados);
+            }
         } else {
-            protocolo = $('protocolo').value || await proximoProtocolo();
+            protocolo = protocoloInformado || await proximoProtocolo();
             const novo = {
                 ...dados,
                 protocolo,
@@ -194,6 +209,10 @@ async function iniciar(u) {
 // Formatação de CPF / celular
 $('prop-cpf').addEventListener('input', e => { e.target.value = formatarCPF(e.target.value); });
 $('vet-celular').addEventListener('input', e => { e.target.value = formatarCelular(e.target.value); });
+$('protocolo').addEventListener('blur', () => {
+    const protocoloNormalizado = normalizarProtocolo($('protocolo').value);
+    if (protocoloNormalizado) $('protocolo').value = protocoloNormalizado;
+});
 
 // Ao mudar sorologias, refaz as tabelas de VN mantendo o que já foi digitado
 document.addEventListener('exames-alterados', () => {

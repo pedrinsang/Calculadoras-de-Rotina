@@ -123,6 +123,27 @@ async function buscar(colecao, campo, valor) {
     return snap.docs.map(d => ({ docId: d.id, colecao, ...d.data() }));
 }
 
+export async function renomearTarefasDaFicha(protocoloAtual, novoProtocolo) {
+    if (protocoloAtual === novoProtocolo) return;
+    const documentos = new Map();
+    for (const colecao of ['tarefas', 'historico']) {
+        for (const campo of ['fichaSV', 'id']) {
+            const itens = await buscar(colecao, campo, protocoloAtual);
+            itens.forEach(item => documentos.set(`${colecao}/${item.docId}`, item));
+        }
+    }
+    if (!documentos.size) return;
+    const lote = writeBatch(db);
+    documentos.forEach((item, chave) => {
+        const barra = chave.indexOf('/');
+        const colecao = chave.slice(0, barra);
+        const docId = chave.slice(barra + 1);
+        const alteracoes = { fichaSV: novoProtocolo, id: novoProtocolo };
+        lote.update(doc(db, colecao, docId), alteracoes);
+    });
+    await lote.commit();
+}
+
 function semResultados(t) {
     return !t.resultados && (t.status || 'pendente') === 'pendente';
 }

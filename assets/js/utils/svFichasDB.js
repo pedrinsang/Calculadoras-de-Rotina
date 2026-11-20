@@ -180,6 +180,45 @@ export async function atualizarFicha(protocolo, alteracoes) {
     });
 }
 
+// Renomeia uma ficha existente e mantém o protocolo no campo de identificação.
+export async function renomearFicha(protocoloAtual, novoProtocolo) {
+    await exigirAdministradorAtual();
+    const atualRef = refFicha(protocoloAtual);
+    const novoRef = refFicha(novoProtocolo);
+    const ator = await obterAtorAuditoria();
+    const referenciaAuditoria = novaReferenciaAuditoria();
+    return runTransaction(db, async (tx) => {
+        const atualSnap = await tx.get(atualRef);
+        if (!atualSnap.exists()) throw new Error(`Ficha ${protocoloAtual} não encontrada.`);
+        if (atualRef.id !== novoRef.id) {
+            const novoSnap = await tx.get(novoRef);
+            if (novoSnap.exists()) throw new ProtocoloEmUsoError(novoProtocolo);
+        }
+        const atual = atualSnap.data();
+        const registro = limpar({
+            ...atual,
+            protocolo: novoProtocolo,
+            identificacao: {
+                ...(atual.identificacao || {}),
+                protocolo: novoProtocolo
+            },
+            atualizadoEm: new Date().toISOString()
+        });
+        tx.set(novoRef, registro);
+        if (atualRef.id !== novoRef.id) tx.delete(atualRef);
+        tx.set(referenciaAuditoria, criarEventoAuditoria({
+            ator,
+            acao: 'renomeou ficha',
+            modulo: 'Fichas',
+            registroId: idDoc(novoProtocolo),
+            registroNome: novoProtocolo,
+            antes: atual,
+            depois: registro
+        }));
+        return registro;
+    });
+}
+
 // ------------------------------------------------------------------
 // Migração: fichas que ficaram só no navegador (IndexedDB, versão anterior) vão para o Firestore.
 // Se o protocolo já existe no Firestore com OUTRA ficha, a ficha local recebe um protocolo novo

@@ -337,6 +337,13 @@ export function formatarProtocolo(numero, anoSufixo) {
     return `SV ${String(numero).padStart(2, '0')}/${anoSufixo}`;
 }
 
+export function normalizarProtocolo(valor) {
+    const texto = String(valor || '').trim();
+    const correspondencia = texto.match(/^SV\s*(\d{1,4})\s*\/\s*(\d{2})$/i);
+    if (!correspondencia) return null;
+    return `SV ${String(parseInt(correspondencia[1], 10)).padStart(2, '0')}/${correspondencia[2]}`;
+}
+
 async function maiorSVMural(anoSufixo) {
     const leitura = getDocs(collection(db, 'tarefas')).then(snap => {
         let maior = 0;
