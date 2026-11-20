@@ -6,6 +6,14 @@
   align-content: start;
 }
 
+/* Itens de grade encolhem até a largura da coluna (sem isso, textos longos em uma linha
+   alargam a coluna e o fim da linha sai da tela em telas pequenas). */
+.vu-coluna-inicio > * { min-width: 0; }
+.vu-coluna-inicio .vu-lista { grid-template-columns: minmax(0, 1fr); }
+.vu-coluna-inicio .vu-item, .vu-coluna-inicio .vu-item-texto { min-width: 0; }
+.vu-coluna-inicio .vu-calcs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.vu-coluna-inicio .vu-calc { min-width: 0; overflow-wrap: anywhere; }
+
 .so-secretaria[hidden],
 .vu-laudo-aviso[hidden] {
   display: none !important;
