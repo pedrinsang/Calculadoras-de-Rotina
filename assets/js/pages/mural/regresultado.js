@@ -2,10 +2,26 @@ import { mostrarLoading, esconderLoading, mostrarFeedback } from "./ui-utils.js"
 import { 
     doc,
     getDoc,
-    updateDoc,
     Timestamp
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { db } from "../../firebase.js";
+import { gravarComAuditoria } from "../../utils/auditoria.js";
+
+async function salvarResultadoAuditado(tarefaRef, dados) {
+    const snapshot = await getDoc(tarefaRef);
+    if (!snapshot.exists()) throw new Error("Tarefa não encontrada");
+    const tarefa = snapshot.data();
+    await gravarComAuditoria({
+        operacao: 'atualizar',
+        referencia: tarefaRef,
+        antes: tarefa,
+        dados,
+        modulo: 'Resultados dos exames',
+        registroId: tarefaRef.id,
+        registroNome: tarefa.id,
+        acao: 'registrou resultado'
+    });
+}
 
 // Função para registrar resultado SN
 async function registrarResultadoSN(id) {
@@ -190,7 +206,7 @@ async function registrarResultadoSN(id) {
                     dataRegistro: Timestamp.now()
                 };
 
-                await updateDoc(tarefaRef, {
+                await salvarResultadoAuditado(tarefaRef, {
                     resultados: resultados,
                     status: "resultados-registrados",
                     atualizadoEm: Timestamp.now()
@@ -337,7 +353,7 @@ async function registrarResultadoELISA(id) {
                     });
                 }
 
-                await updateDoc(tarefaRef, {
+                await salvarResultadoAuditado(tarefaRef, {
                     resultados: {
                         amostras: amostrasAtualizadas,
                         dataRegistro: Timestamp.now()
@@ -517,7 +533,7 @@ async function registrarResultadoMolecularSimples(tarefa, tarefaRef) {
                 });
             }
 
-            await updateDoc(tarefaRef, {
+            await salvarResultadoAuditado(tarefaRef, {
                 resultados: {
                     amostras: amostrasAtualizadas,
                     dataRegistro: Timestamp.now()
@@ -701,7 +717,7 @@ async function registrarResultadoDuplexRotaCoronaBovino(tarefa, tarefaRef) {
                 });
             }
 
-            await updateDoc(tarefaRef, {
+            await salvarResultadoAuditado(tarefaRef, {
                 resultados: {
                     amostras: amostrasAtualizadas,
                     dataRegistro: Timestamp.now()
@@ -885,7 +901,7 @@ async function registrarResultadoDuplexRotaCoronaEquino(tarefa, tarefaRef) {
                 });
             }
 
-            await updateDoc(tarefaRef, {
+            await salvarResultadoAuditado(tarefaRef, {
                 resultados: {
                     amostras: amostrasAtualizadas,
                     dataRegistro: Timestamp.now()
@@ -1146,7 +1162,7 @@ async function registrarResultadoMultiplexCrostasBovina(tarefa, tarefaRef) {
                 });
             }
 
-            await updateDoc(tarefaRef, {
+            await salvarResultadoAuditado(tarefaRef, {
                 resultados: {
                     amostras: amostrasAtualizadas,
                     dataRegistro: Timestamp.now()
@@ -1442,7 +1458,7 @@ async function registrarResultadoMultiplexDiarreiaBovinaNeonatal(tarefa, tarefaR
                 });
             }
 
-            await updateDoc(tarefaRef, {
+            await salvarResultadoAuditado(tarefaRef, {
                 resultados: {
                     amostras: amostrasAtualizadas,
                     dataRegistro: Timestamp.now()
@@ -1738,7 +1754,7 @@ async function registrarResultadoMultiplexDoencaRespiratoriaBovina(tarefa, taref
                 });
             }
 
-            await updateDoc(tarefaRef, {
+            await salvarResultadoAuditado(tarefaRef, {
                 resultados: {
                     amostras: amostrasAtualizadas,
                     dataRegistro: Timestamp.now()
@@ -2034,7 +2050,7 @@ async function registrarResultadoMultiplexEncefalitesEquina(tarefa, tarefaRef) {
                 });
             }
 
-            await updateDoc(tarefaRef, {
+            await salvarResultadoAuditado(tarefaRef, {
                 resultados: {
                     amostras: amostrasAtualizadas,
                     dataRegistro: Timestamp.now()
@@ -2210,7 +2226,7 @@ async function registrarResultadoRAIVA(id) {
                         });
                     }
 
-                    await updateDoc(tarefaRef, {
+                    await salvarResultadoAuditado(tarefaRef, {
                         resultados: {
                             amostras: amostrasAtualizadas,
                             dataRegistro: Timestamp.now()
@@ -2412,7 +2428,7 @@ async function registrarResultadoICC(id) {
                         });
                     }
 
-                    await updateDoc(tarefaRef, {
+                    await salvarResultadoAuditado(tarefaRef, {
                         resultados: {
                             amostras: amostrasAtualizadas,
                             dataRegistro: Timestamp.now()

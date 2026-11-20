@@ -1,3 +1,21 @@
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import {
+  collection, doc, getDoc, getDocs, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import {
+  deleteObject, getDownloadURL, ref, uploadBytes
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
+import { app, auth, db } from "../firebase.js";
+import { exigirAdministradorAtual, gravarComAuditoria } from "../utils/auditoria.js";
+import { usuarioEhAdministrador } from "../utils/perfis.js";
+
+const COLECAO_DOCUMENTOS = 'protocolos_tecnicos';
+const TAMANHO_MAXIMO_PDF = 25 * 1024 * 1024;
+const storage = getStorage(app);
+let documentosGerenciaveis = [];
+let usuarioAdmin = false;
+
 document.addEventListener('DOMContentLoaded', function () {
   console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Suares, com auxílio do DeepSeek Chat.");
   
@@ -16,6 +34,16 @@ document.addEventListener('DOMContentLoaded', function () {
     carregarProtocolos(busca, e.target.value);
   });
 
+  document.getElementById("filter-type").addEventListener("change", () => {
+    carregarProtocolos(
+      document.getElementById("search-input").value,
+      document.getElementById("filter-category").value
+    );
+  });
+
+  document.getElementById("pop-form").addEventListener("submit", cadastrarDocumento);
+  document.getElementById("protocolos-list").addEventListener("click", tratarAcaoDocumento);
+
   // Navegação
   document.getElementById("hub-button").addEventListener("click", () => {
     window.location.href = "hub.html";
@@ -28,6 +56,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // Pílulas de categoria (espelham o select escondido)
   if (window.VirologiaUFSM) window.VirologiaUFSM.iniciar(document);
   window.scrollTo(0, 0); // Garante que a página comece no topo
+
+  onAuthStateChanged(auth, inicializarDocumentosGerenciaveis);
 });
 
 // Nomes das categorias, na ordem em que aparecem na lista
@@ -60,7 +90,7 @@ function mostrarFeedback(mensagem, tipo = "success") {
   feedback.className = `feedback ${tipo}`;
   feedback.innerHTML = `
     <i class="${tipo === 'success' ? 'bi bi-check-circle' : 'bi bi-exclamation-circle'} me-2"></i>
-    ${mensagem}
+    ${textoSeguroP(mensagem)}
   `;
   document.body.appendChild(feedback);
 
@@ -69,35 +99,420 @@ function mostrarFeedback(mensagem, tipo = "success") {
   }, 3000);
 }
 
+async function inicializarDocumentosGerenciaveis(user) {
+  usuarioAdmin = false;
+  document.getElementById("pop-admin").hidden = true;
+
+  if (!user) {
+    documentosGerenciaveis = [];
+    carregarProtocolos();
+    return;
+  }
+
+  try {
+    const usuario = await getDoc(doc(db, "usuarios", user.uid));
+    if (auth.currentUser?.uid !== user.uid) return;
+    usuarioAdmin = usuario.exists() && usuarioEhAdministrador(usuario.data());
+    document.getElementById("pop-admin").hidden = !usuarioAdmin;
+  } catch (error) {
+    console.error("Erro ao verificar permissões para gerenciar documentos:", error);
+    mostrarFeedback("Não foi possível verificar as permissões de administrador.", "error");
+  }
+
+  try {
+    await carregarDocumentosGerenciaveis();
+  } catch (error) {
+    console.error("Erro ao buscar POPs e procedimentos cadastrados:", error);
+    mostrarFeedback(`Não foi possível carregar os documentos adicionados: ${error.message}`, "error");
+  }
+
+  if (auth.currentUser?.uid === user.uid) carregarProtocolos();
+}
+
+async function carregarDocumentosGerenciaveis() {
+  const snapshot = await getDocs(collection(db, COLECAO_DOCUMENTOS));
+  documentosGerenciaveis = snapshot.docs.map(documento => {
+    const dados = documento.data();
+    if (dados.legacyId && dados.removido) {
+      return {
+        id: dados.legacyId,
+        documentId: documento.id,
+        legacyId: dados.legacyId,
+        removido: true,
+        documentoGerenciado: true
+      };
+    }
+
+    if (!dados.titulo || !dados.descricao || !dados.categoria ||
+        !['pop', 'procedimento'].includes(dados.tipoDocumento) ||
+        !dados.storagePath || !dados.arquivo) {
+      throw new Error(`O documento ${documento.id} está incompleto no cadastro.`);
+    }
+
+    const url = new URL(dados.arquivo);
+    if (url.protocol !== 'https:' || url.hostname !== 'firebasestorage.googleapis.com') {
+      throw new Error(`O arquivo do documento ${documento.id} não possui um endereço válido.`);
+    }
+
+    return {
+      id: dados.legacyId || documento.id,
+      documentId: documento.id,
+      legacyId: dados.legacyId || null,
+      documentoGerenciado: true,
+      titulo: dados.titulo,
+      descricao: dados.descricao,
+      categoria: dados.categoria,
+      tipoDocumento: dados.tipoDocumento,
+      tags: [],
+      arquivo: url.href,
+      storagePath: dados.storagePath
+    };
+  });
+}
+
+function atualizarStatusAdmin(mensagem, erro = false) {
+  const status = document.getElementById("pop-admin-status");
+  status.textContent = mensagem;
+  status.classList.toggle("erro", erro);
+}
+
+function validarPDF(arquivo) {
+  if (!arquivo || arquivo.size === 0) throw new Error("Selecione um arquivo PDF.");
+  if (!/\.pdf$/i.test(arquivo.name) || (arquivo.type && arquivo.type !== "application/pdf")) {
+    throw new Error("O arquivo selecionado não é um PDF válido.");
+  }
+  if (arquivo.size > TAMANHO_MAXIMO_PDF) {
+    throw new Error("O PDF deve ter no máximo 25 MB.");
+  }
+}
+
+async function exigirAdministrador() {
+  if (!auth.currentUser || !usuarioAdmin) {
+    throw new Error("Apenas administradores autenticados podem gerenciar documentos.");
+  }
+  await exigirAdministradorAtual();
+}
+
+async function enviarPDF(arquivo) {
+  await exigirAdministrador();
+  validarPDF(arquivo);
+  const caminho = `${COLECAO_DOCUMENTOS}/${auth.currentUser.uid}/${crypto.randomUUID()}.pdf`;
+  const referencia = ref(storage, caminho);
+  await uploadBytes(referencia, arquivo, { contentType: "application/pdf" });
+
+  try {
+    return { storagePath: caminho, arquivo: await getDownloadURL(referencia) };
+  } catch (error) {
+    try {
+      await deleteObject(referencia);
+    } catch (erroLimpeza) {
+      console.error("Não foi possível remover um PDF cujo link falhou ao ser obtido:", erroLimpeza);
+    }
+    throw error;
+  }
+}
+
+async function cadastrarDocumento(evento) {
+  evento.preventDefault();
+  const formulario = evento.currentTarget;
+  const botao = document.getElementById("pop-submit");
+  const arquivo = document.getElementById("pop-arquivo").files[0];
+  let novoArquivo;
+
+  try {
+    await exigirAdministrador();
+    validarPDF(arquivo);
+    const dados = {
+      titulo: formulario.elements.titulo.value.trim(),
+      descricao: formulario.elements.descricao.value.trim(),
+      tipoDocumento: formulario.elements.tipo.value,
+      categoria: formulario.elements.categoria.value,
+      tags: [],
+      criadoPor: auth.currentUser.uid,
+      atualizadoEm: serverTimestamp()
+    };
+    if (!dados.titulo || !dados.descricao) throw new Error("Preencha o nome e a descrição do documento.");
+
+    botao.disabled = true;
+    atualizarStatusAdmin("Enviando documento...");
+    novoArquivo = await enviarPDF(arquivo);
+    Object.assign(dados, novoArquivo);
+
+    try {
+      const cadastro = await gravarComAuditoria({
+        operacao: 'criar',
+        referencia: doc(collection(db, COLECAO_DOCUMENTOS)),
+        dados,
+        modulo: 'POPs e procedimentos',
+        registroId: dados.titulo,
+        registroNome: dados.titulo
+      });
+      documentosGerenciaveis.push({
+        ...dados,
+        id: cadastro.id,
+        documentId: cadastro.id,
+        legacyId: null,
+        documentoGerenciado: true
+      });
+    } catch (error) {
+      try {
+        await deleteObject(ref(storage, novoArquivo.storagePath));
+      } catch (erroLimpeza) {
+        console.error("Não foi possível remover o PDF após falha ao salvar o cadastro:", erroLimpeza);
+      }
+      throw error;
+    }
+
+    formulario.reset();
+    carregarProtocolos(
+      document.getElementById("search-input").value,
+      document.getElementById("filter-category").value
+    );
+    atualizarStatusAdmin("Documento adicionado com sucesso.");
+    mostrarFeedback("Documento adicionado com sucesso.");
+  } catch (error) {
+    console.error("Erro ao adicionar POP ou procedimento:", error);
+    atualizarStatusAdmin(`Não foi possível adicionar o documento: ${error.message}`, true);
+    mostrarFeedback(`Não foi possível adicionar o documento: ${error.message}`, "error");
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+async function tratarAcaoDocumento(evento) {
+  const botao = evento.target.closest("[data-document-action]");
+  if (!botao) return;
+
+  evento.preventDefault();
+  const documento = documentosGerenciaveis.find(item => item.documentId === botao.dataset.documentId) ||
+    (() => {
+      const protocolo = protocolos.find(item => `legado-${item.id}` === botao.dataset.documentId);
+      return protocolo ? {
+        ...protocolo,
+        documentId: botao.dataset.documentId,
+        legacyId: protocolo.id,
+        tipoDocumento: 'procedimento',
+        documentoGerenciado: true
+      } : null;
+    })();
+  if (!documento) {
+    mostrarFeedback("Este documento não está mais disponível para alteração.", "error");
+    return;
+  }
+
+  try {
+    await exigirAdministrador();
+    botao.disabled = true;
+    if (botao.dataset.documentAction === "replace") {
+      await substituirPDF(documento);
+    } else if (botao.dataset.documentAction === "delete") {
+      await excluirDocumento(documento);
+    }
+  } catch (error) {
+    console.error("Erro ao gerenciar POP ou procedimento:", error);
+    atualizarStatusAdmin(`Não foi possível concluir a operação: ${error.message}`, true);
+    mostrarFeedback(`Não foi possível concluir a operação: ${error.message}`, "error");
+  } finally {
+    if (botao.isConnected) botao.disabled = false;
+  }
+}
+
+function selecionarPDF() {
+  return new Promise(resolve => {
+    const campo = document.createElement("input");
+    campo.type = "file";
+    campo.accept = "application/pdf,.pdf";
+    campo.addEventListener("change", () => resolve(campo.files[0] || null), { once: true });
+    campo.addEventListener("cancel", () => resolve(null), { once: true });
+    campo.click();
+  });
+}
+
+async function substituirPDF(documento) {
+  const arquivo = await selecionarPDF();
+  if (!arquivo) return;
+
+  validarPDF(arquivo);
+  atualizarStatusAdmin(`Enviando nova versão de “${documento.titulo}”...`);
+  const novoArquivo = await enviarPDF(arquivo);
+  const dadosAtualizados = {
+    titulo: documento.titulo,
+    descricao: documento.descricao,
+    tipoDocumento: documento.tipoDocumento || 'procedimento',
+    categoria: documento.categoria,
+    ...novoArquivo,
+    atualizadoEm: serverTimestamp(),
+    atualizadoPor: auth.currentUser.uid,
+    tags: documento.tags || []
+  };
+  if (documento.legacyId) dadosAtualizados.legacyId = documento.legacyId;
+
+  try {
+    await gravarComAuditoria({
+      operacao: documento.storagePath ? 'atualizar' : 'criar',
+      referencia: doc(db, COLECAO_DOCUMENTOS, documento.documentId),
+      antes: documento.storagePath ? documento : {},
+      dados: dadosAtualizados,
+      modulo: 'POPs e procedimentos',
+      registroId: documento.legacyId || documento.documentId,
+      registroNome: documento.titulo,
+      acao: 'substituiu documento'
+    });
+  } catch (error) {
+    try {
+      await deleteObject(ref(storage, novoArquivo.storagePath));
+    } catch (erroLimpeza) {
+      console.error("Não foi possível remover o novo PDF após falha ao atualizar o cadastro:", erroLimpeza);
+    }
+    throw error;
+  }
+
+  const substituido = {
+    ...documento,
+    ...dadosAtualizados,
+    id: documento.legacyId || documento.documentId,
+    documentId: documento.documentId,
+    documentoGerenciado: true
+  };
+  documentosGerenciaveis = [
+    ...documentosGerenciaveis.filter(item => item.documentId !== documento.documentId),
+    substituido
+  ];
+  carregarProtocolos(
+    document.getElementById("search-input").value,
+    document.getElementById("filter-category").value
+  );
+
+  if (documento.storagePath) {
+    try {
+      await deleteObject(ref(storage, documento.storagePath));
+    } catch (error) {
+      throw new Error(`O documento foi atualizado, mas não foi possível limpar o PDF anterior: ${error.message}`);
+    }
+  }
+
+  atualizarStatusAdmin("PDF substituído com sucesso.");
+  mostrarFeedback("PDF substituído com sucesso.");
+}
+
+async function excluirDocumento(documento) {
+  const confirmar = window.VirologiaUFSM?.confirmar;
+  const autorizado = confirmar
+    ? await confirmar({
+      titulo: "Excluir documento?",
+      texto: documento.storagePath
+        ? `“${documento.titulo}” será removido da lista e o PDF enviado será apagado.`
+        : `“${documento.titulo}” deixará de aparecer na lista.`,
+      sim: "Excluir",
+      perigo: true,
+      icone: "bi-trash3"
+    })
+    : window.confirm(`Excluir “${documento.titulo}” e apagar o PDF?`);
+  if (!autorizado) return;
+
+  atualizarStatusAdmin(`Excluindo “${documento.titulo}”...`);
+  if (documento.legacyId) {
+    const dadosRemovidos = {
+      legacyId: documento.legacyId,
+      removido: true,
+      tipoDocumento: documento.tipoDocumento || 'procedimento',
+      atualizadoEm: serverTimestamp(),
+      atualizadoPor: auth.currentUser.uid
+    };
+    await gravarComAuditoria({
+      operacao: documento.storagePath ? 'atualizar' : 'criar',
+      referencia: doc(db, COLECAO_DOCUMENTOS, documento.documentId),
+      antes: documento.storagePath ? documento : {},
+      dados: dadosRemovidos,
+      modulo: 'POPs e procedimentos',
+      registroId: documento.legacyId,
+      registroNome: documento.titulo,
+      acao: 'excluiu documento'
+    });
+    documentosGerenciaveis = [
+      ...documentosGerenciaveis.filter(item => item.documentId !== documento.documentId),
+      {
+        id: documento.legacyId,
+        documentId: documento.documentId,
+        legacyId: documento.legacyId,
+        removido: true,
+        documentoGerenciado: true
+      }
+    ];
+  } else {
+    await gravarComAuditoria({
+      operacao: 'excluir',
+      referencia: doc(db, COLECAO_DOCUMENTOS, documento.documentId),
+      antes: documento,
+      modulo: 'POPs e procedimentos',
+      registroId: documento.documentId,
+      registroNome: documento.titulo
+    });
+    documentosGerenciaveis = documentosGerenciaveis.filter(item => item.documentId !== documento.documentId);
+  }
+  carregarProtocolos(
+    document.getElementById("search-input").value,
+    document.getElementById("filter-category").value
+  );
+  if (documento.storagePath) {
+    try {
+      await deleteObject(ref(storage, documento.storagePath));
+    } catch (error) {
+      atualizarStatusAdmin(`Documento removido da lista, mas o PDF não pôde ser apagado: ${error.message}`, true);
+      throw new Error(`O cadastro foi excluído, mas falhou a remoção do PDF: ${error.message}`);
+    }
+  }
+  atualizarStatusAdmin("Documento excluído com sucesso.");
+  mostrarFeedback("Documento excluído com sucesso.");
+}
+
 function carregarProtocolos(filtro = '', categoria = 'todos') {
   mostrarLoading();
   const protocolosList = document.getElementById("protocolos-list");
 
   try {
+    const tipo = document.getElementById("filter-type").value;
+    const substituicoes = new Map(
+      documentosGerenciaveis.filter(item => item.legacyId).map(item => [item.legacyId, item])
+    );
+    const todosProtocolos = [
+      ...protocolos
+        .filter(protocolo => !substituicoes.get(protocolo.id)?.removido)
+        .map(protocolo => substituicoes.get(protocolo.id) || {
+          ...protocolo,
+          tipoDocumento: 'procedimento',
+          documentoGerenciado: true,
+          legacyId: protocolo.id,
+          documentId: `legado-${protocolo.id}`
+        }),
+      ...documentosGerenciaveis.filter(item => !item.legacyId)
+    ];
+
     // Filtrar protocolos
-    let protocolosFiltrados = protocolos.filter(protocolo => {
+    let protocolosFiltrados = todosProtocolos.filter(protocolo => {
       const buscaMatch = protocolo.titulo.toLowerCase().includes(filtro.toLowerCase()) ||
         protocolo.descricao.toLowerCase().includes(filtro.toLowerCase()) ||
-        protocolo.tags.some(tag => tag.toLowerCase().includes(filtro.toLowerCase()));
+        (protocolo.tags || []).some(tag => tag.toLowerCase().includes(filtro.toLowerCase()));
 
       const categoriaMatch = categoria === 'todos' || protocolo.categoria === categoria;
+      const tipoMatch = tipo === 'todos' || protocolo.tipoDocumento === tipo;
 
-      return buscaMatch && categoriaMatch;
+      return buscaMatch && categoriaMatch && tipoMatch;
     });
 
     const resumo = document.getElementById("protocolos-resumo");
     if (resumo) {
-      resumo.textContent = filtro || categoria !== 'todos'
-        ? `${protocolosFiltrados.length} de ${protocolos.length} protocolos`
-        : `${protocolos.length} PDFs do setor`;
+      resumo.textContent = filtro || categoria !== 'todos' || tipo !== 'todos'
+        ? `${protocolosFiltrados.length} de ${todosProtocolos.length} documentos`
+        : `${todosProtocolos.length} PDFs do setor`;
     }
 
     if (protocolosFiltrados.length === 0) {
       protocolosList.innerHTML = `
         <div class="vu-vazio">
           <span class="vu-vazio-icone"><i class="bi bi-search" style="font-size:40px"></i></span>
-          <h3>Nenhum protocolo encontrado</h3>
-          <p>Tente outra palavra ou escolha “Todos” nas categorias.</p>
+          <h3>Nenhum documento encontrado</h3>
+          <p>Tente outra palavra ou escolha “Todos” nos filtros.</p>
         </div>`;
       return;
     }
@@ -106,35 +521,45 @@ function carregarProtocolos(filtro = '', categoria = 'todos') {
     protocolosFiltrados.sort((a, b) => a.titulo.localeCompare(b.titulo));
     const ordem = Object.keys(NOMES_CATEGORIA);
     const grupos = {};
-    protocolosFiltrados.forEach(p => { (grupos[p.categoria] ??= []).push(p); });
-    const chaves = Object.keys(grupos).sort((a, b) => (ordem.indexOf(a) + 1 || 99) - (ordem.indexOf(b) + 1 || 99));
+    protocolosFiltrados.forEach(p => {
+      const chave = `${p.tipoDocumento}:${p.categoria}`;
+      (grupos[chave] ??= []).push(p);
+    });
+    const chaves = Object.keys(grupos).sort((a, b) => {
+      const [tipoA, categoriaA] = a.split(':');
+      const [tipoB, categoriaB] = b.split(':');
+      return tipoA.localeCompare(tipoB) ||
+        (ordem.indexOf(categoriaA) + 1 || 99) - (ordem.indexOf(categoriaB) + 1 || 99);
+    });
 
     protocolosList.innerHTML = chaves.map(chave => `
       <section class="vu-secao vu-protocolos-grupo">
-        <p class="vu-sobrelinha">${textoSeguroP(NOMES_CATEGORIA[chave] || 'Outros')}</p>
+        <p class="vu-sobrelinha">${chave.startsWith('pop:') ? 'POPs' : 'Procedimentos técnicos'} · ${textoSeguroP(NOMES_CATEGORIA[chave.split(':')[1]] || 'Outros')}</p>
         <div class="vu-lista">
           ${grupos[chave].map(p => `
-            <a class="vu-item cor-roxo" href="#" data-arquivo="${textoSeguroP(p.arquivo)}">
-              <span class="vu-item-icone"><i class="bi bi-file-earmark-pdf vu-ico"></i></span>
-              <span class="vu-item-texto">
-                <span class="vu-item-nome">${textoSeguroP(p.titulo)}</span>
-                <span class="vu-item-desc">${textoSeguroP(p.descricao)}</span>
-              </span>
-              <span class="vu-item-fim"><span class="vu-etiqueta vu-so-pc">${textoSeguroP(p.id)}</span><i class="bi bi-chevron-right vu-ico"></i></span>
-            </a>`).join('')}
+            <div class="vu-item cor-roxo vu-protocolo-item">
+              <a class="vu-protocolo-link" href="${textoSeguroP(p.arquivo)}" target="_blank" rel="noopener noreferrer">
+                <span class="vu-item-icone"><i class="bi bi-file-earmark-pdf vu-ico"></i></span>
+                <span class="vu-item-texto">
+                  <span class="vu-item-nome">${textoSeguroP(p.titulo)}</span>
+                  <span class="vu-item-desc">${textoSeguroP(p.descricao)}</span>
+                </span>
+                <span class="vu-item-fim"><span class="vu-etiqueta vu-so-pc">${textoSeguroP(p.id)}</span><i class="bi bi-chevron-right vu-ico"></i></span>
+              </a>
+              ${p.documentoGerenciado && usuarioAdmin ? `
+                <span class="vu-protocolo-acoes">
+                  <button type="button" class="vu-btn vu-btn-fantasma" data-document-action="replace" data-document-id="${textoSeguroP(p.documentId)}" aria-label="Substituir PDF de ${textoSeguroP(p.titulo)}"><i class="bi bi-arrow-repeat"></i><span>Substituir PDF</span></button>
+                  <button type="button" class="vu-btn vu-btn-perigo vu-btn-fantasma" data-document-action="delete" data-document-id="${textoSeguroP(p.documentId)}" aria-label="Excluir ${textoSeguroP(p.titulo)}"><i class="bi bi-trash3"></i><span>Excluir</span></button>
+                </span>` : ''}
+            </div>`).join('')}
         </div>
       </section>`).join('');
-
-    // Tocar na linha abre o PDF
-    protocolosList.querySelectorAll('[data-arquivo]').forEach(link => {
-      link.addEventListener('click', e => { e.preventDefault(); abrirProtocolo(link.dataset.arquivo); });
-    });
   } catch (error) {
     console.error("Erro ao carregar protocolos:", error);
     protocolosList.innerHTML = `
       <div class="alert alert-danger text-center" role="alert">
         <i class="bi bi-exclamation-triangle me-2"></i>
-        Erro ao carregar protocolos: ${error.message}
+        Erro ao carregar documentos: ${textoSeguroP(error.message)}
       </div>
     `;
   } finally {

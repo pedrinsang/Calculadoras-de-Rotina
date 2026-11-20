@@ -26,6 +26,8 @@
       <a class="vu-nav" href="mural.html"><i class="bi bi-kanban vu-ico"></i>Mural<span class="vu-contagem" data-contagem-mural hidden></span></a>
       <a class="vu-nav" href="ficha-cadastro.html"><i class="bi bi-clipboard2-pulse vu-ico"></i>Fichas</a>
       <a class="vu-nav" href="historico.html"><i class="bi bi-clock-history vu-ico"></i>Histórico</a>
+      <a class="vu-nav so-secretaria" href="secretaria.html" hidden><i class="bi bi-envelope-paper vu-ico"></i>Secretaria</a>
+      <a class="vu-nav" href="tv.html"><i class="bi bi-tv vu-ico"></i>TV</a>
       <p class="vu-sobrelinha">Calculadoras</p>
       <a class="vu-nav" href="soroneutralizacao.html"><i class="bi bi-calculator vu-ico"></i>Soroneutralização</a>
       <a class="vu-nav" href="vacinas.html"><i class="bi bi-droplet vu-ico"></i>Vacinas</a>
@@ -48,6 +50,11 @@
           <h1>Olá<b data-primeiro-nome></b></h1>
           <p data-data-hoje></p>
         </div>
+        <a id="aviso-laudos" class="vu-laudo-aviso" href="secretaria.html" hidden title="Laudos aguardando envio" aria-label="Laudos aguardando envio">
+          <i class="bi bi-bell-fill" aria-hidden="true"></i><span class="vu-laudo-pulso" aria-hidden="true"></span>
+          <span id="aviso-laudos-qtd" class="vu-laudo-aviso-qtd"></span>
+        </a>
+        <button id="controle-som-laudos" class="vu-laudo-som so-secretaria" type="button" aria-label="Ativar aviso sonoro" aria-pressed="false" title="Ativar aviso sonoro" hidden></button>
         <a class="vu-avatar vu-so-celular" href="conta.html" data-iniciais aria-label="Minha conta">··</a>
         <a class="vu-btn vu-btn-principal vu-so-pc" href="mural.html"><i class="bi bi-kanban vu-ico"></i> Abrir o Mural</a>
       </header>
@@ -102,6 +109,11 @@
                 <span class="vu-item-icone"><i class="bi bi-clock-history vu-ico"></i></span>
                 <span class="vu-item-texto"><span class="vu-item-nome">Histórico</span><span class="vu-item-desc">Concluídas e laudos em Word</span></span>
                 <span class="vu-item-fim"><i class="bi bi-chevron-right vu-ico"></i></span>
+              </a>
+              <a class="vu-item so-secretaria" href="secretaria.html" hidden>
+                <span class="vu-item-icone"><i class="bi bi-envelope-paper vu-ico"></i></span>
+                <span class="vu-item-texto"><span class="vu-item-nome">Secretaria</span><span class="vu-item-desc">Laudos aguardando envio ao cliente</span></span>
+                <span class="vu-item-fim"><span class="vu-etiqueta" id="secretaria-pendentes" hidden></span><i class="bi bi-chevron-right vu-ico"></i></span>
               </a>
             </div>
           </section>

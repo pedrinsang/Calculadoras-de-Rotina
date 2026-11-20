@@ -4,6 +4,7 @@
 // Carregue como módulo ANTES do script da página.
 import { signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { auth } from "../firebase.js";
+import { usuarioEhAdministrador, usuarioPodeAcessarSecretaria } from "./perfis.js";
 
 const corpo = document.body;
 const naPastaFicha = location.pathname.includes('/pages/ficha/');
@@ -15,13 +16,16 @@ const arquivo = (location.pathname.split('/').pop() || '').replace('.html', '');
 const chaves = {
   hub: 'inicio', mural: 'mural', historico: 'historico', 'ficha-cadastro': 'fichas',
   soroneutralizacao: 'sn', vacinas: 'vacinas', elisa: 'elisa', protocolos: 'protocolos',
-  admin: 'admin', conta: 'conta'
+  auditoria: 'auditoria',
+  admin: 'admin', secretaria: 'secretaria', conta: 'conta'
 };
 const atual = naPastaFicha ? 'fichas' : (chaves[arquivo] || '');
 const abaAtiva = { mural: 1, historico: 1, fichas: 2, conta: 3 }[atual] ?? 0;
 
-const nav = (chave, href, icone, nome, extra = '') =>
-  `<a class="vu-nav${chave === 'admin' ? ' so-admin' : ''}" href="${base}${href}"${chave === atual ? ' aria-current="page"' : ''}${chave === 'admin' ? ' hidden' : ''}><i class="bi ${icone} vu-ico"></i>${nome}${extra}</a>`;
+const nav = (chave, href, icone, nome, extra = '') => {
+  const restrito = ['admin', 'secretaria'].includes(chave);
+  return `<a class="vu-nav${chave === 'admin' ? ' so-admin' : ''}${chave === 'secretaria' ? ' so-secretaria' : ''}" href="${base}${href}"${chave === atual ? ' aria-current="page"' : ''}${restrito ? ' hidden' : ''}><i class="bi ${icone} vu-ico"></i>${nome}${extra}</a>`;
+};
 
 const lateral = `
 <aside class="vu-lateral" aria-label="Menu principal">
@@ -30,12 +34,14 @@ const lateral = `
   ${nav('mural', 'mural.html', 'bi-kanban', 'Mural')}
   ${nav('fichas', 'ficha-cadastro.html', 'bi-clipboard2-pulse', 'Fichas')}
   ${nav('historico', 'historico.html', 'bi-clock-history', 'Histórico')}
+  ${nav('secretaria', 'secretaria.html', 'bi-envelope-paper', 'Secretaria')}
   <p class="vu-sobrelinha">Calculadoras</p>
   ${nav('sn', 'soroneutralizacao.html', 'bi-calculator', 'Soroneutralização')}
   ${nav('vacinas', 'vacinas.html', 'bi-droplet', 'Vacinas')}
   ${nav('elisa', 'elisa.html', 'bi-eyedropper', 'ELISA')}
   <p class="vu-sobrelinha">Consulta</p>
   ${nav('protocolos', 'protocolos.html', 'bi-journal-text', 'Protocolos')}
+  ${nav('auditoria', 'auditoria.html', 'bi-journal-check', 'Auditoria')}
   ${nav('admin', 'admin.html', 'bi-shield-check', 'Administração')}
   <div class="vu-lateral-pe">
     <span class="vu-avatar" data-iniciais>··</span>
@@ -83,7 +89,8 @@ try {
     casca.querySelectorAll('[data-nome]').forEach(el => { el.textContent = nome; });
     casca.querySelectorAll('[data-iniciais]').forEach(el => { el.textContent = iniciais; });
   }
-  casca.querySelectorAll('.so-admin').forEach(el => { el.hidden = u?.role !== 'admin'; });
+  casca.querySelectorAll('.so-admin').forEach(el => { el.hidden = !usuarioEhAdministrador(u); });
+  casca.querySelectorAll('.so-secretaria').forEach(el => { el.hidden = !usuarioPodeAcessarSecretaria(u); });
 } catch (_) { /* sem dados guardados: a casca fica genérica */ }
 
 // Sair da conta

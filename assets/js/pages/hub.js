@@ -1,8 +1,12 @@
 import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { getDoc, getDocs, doc, collection } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { auth, db } from "../firebase.js";
+import { usuarioEhAdministrador, usuarioPodeAcessarSecretaria } from "../utils/perfis.js";
+import { observarLaudosAguardandoEnvio } from "../utils/svFichasDB.js";
+import { configurarControleSonoro, sinalizarLaudoNovo } from "../utils/alertaSonoro.js";
 
 const ui = window.VirologiaUFSM;
+let pararObservacaoLaudos = null;
 
 // ---------- Dados do usuário na tela ----------
 function mostrarUsuario(usuario) {
@@ -14,7 +18,41 @@ function mostrarUsuario(usuario) {
   document.querySelectorAll('[data-nome]').forEach(el => { el.textContent = nome; });
   document.querySelectorAll('[data-primeiro-nome]').forEach(el => { el.textContent = primeiro ? `, ${primeiro}` : ''; });
   document.querySelectorAll('[data-iniciais]').forEach(el => { el.textContent = iniciais; });
-  document.querySelectorAll('.so-admin').forEach(el => { el.hidden = usuario.role !== 'admin'; });
+  document.querySelectorAll('.so-admin').forEach(el => { el.hidden = !usuarioEhAdministrador(usuario); });
+  document.querySelectorAll('.so-secretaria').forEach(el => { el.hidden = !usuarioPodeAcessarSecretaria(usuario); });
+}
+
+function atualizarAvisoLaudos(fichas) {
+  const aviso = document.getElementById('aviso-laudos');
+  const quantidade = document.getElementById('aviso-laudos-qtd');
+  const etiqueta = document.getElementById('secretaria-pendentes');
+  if (!aviso || !quantidade || !etiqueta) return;
+  const total = fichas.length;
+  aviso.hidden = total === 0;
+  aviso.setAttribute('aria-label', `${total} ${total === 1 ? 'laudo aguarda' : 'laudos aguardam'} envio ao cliente`);
+  aviso.title = `${total} ${total === 1 ? 'laudo aguarda' : 'laudos aguardam'} envio ao cliente`;
+  quantidade.textContent = total ? String(total) : '';
+  etiqueta.hidden = total === 0;
+  etiqueta.textContent = total ? String(total) : '';
+}
+
+function observarAvisosLaudo(permitido) {
+  pararObservacaoLaudos?.();
+  pararObservacaoLaudos = null;
+  if (!permitido) {
+    atualizarAvisoLaudos([]);
+    return;
+  }
+  pararObservacaoLaudos = observarLaudosAguardandoEnvio(
+    atualizarAvisoLaudos,
+    error => {
+      console.error('Não foi possível acompanhar laudos para envio:', error);
+      atualizarAvisoLaudos([]);
+    },
+    () => {
+      sinalizarLaudoNovo().catch(error => console.error('Falha ao emitir o aviso sonoro:', error));
+    }
+  );
 }
 
 function mostrarData() {
@@ -135,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log("Desenvolvido por Pedro Ruiz Sangoi e Alexandre Werle Soares");
   mostrarData();
   if (ui) ui.iniciar(document);
+  configurarControleSonoro(document.getElementById('controle-som-laudos'));
 
   // Mostra na hora o que já está guardado no aparelho
   const guardado = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
@@ -159,19 +198,18 @@ document.addEventListener('DOMContentLoaded', () => {
 // Verificação de usuário ativo/inativo
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
+    observarAvisosLaudo(false);
     window.location.href = "../index.html";
     return;
   }
 
   try {
     let stored = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || '{}');
-    if (!stored?.nome) {
-      const snap = await getDoc(doc(db, 'usuarios', user.uid));
-      if (snap.exists()) {
-        stored = snap.data();
-        const manter = localStorage.getItem('manterConectado') === 'true';
-        (manter ? localStorage : sessionStorage).setItem('usuario', JSON.stringify(stored));
-      }
+    const snap = await getDoc(doc(db, 'usuarios', user.uid));
+    if (snap.exists()) {
+      stored = snap.data();
+      const manter = localStorage.getItem('manterConectado') === 'true';
+      (manter ? localStorage : sessionStorage).setItem('usuario', JSON.stringify(stored));
     }
 
     if (stored && stored.ativo === false) {
@@ -180,8 +218,10 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     mostrarUsuario(stored);
+    observarAvisosLaudo(usuarioPodeAcessarSecretaria(stored));
     carregarPainelHoje();
   } catch (error) {
     console.error("Erro ao verificar status do usuário:", error);
+    observarAvisosLaudo(false);
   }
 });

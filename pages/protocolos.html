@@ -31,6 +31,18 @@
         <i class="bi bi-search vu-ico"></i>
         <input type="search" id="search-input" placeholder="Nome do protocolo ou palavra-chave" aria-label="Buscar protocolo">
       </div>
+      <div class="vu-opcoes vu-opcoes--rolar" data-espelho="filter-type" role="group" aria-label="Tipo de documento">
+        <button type="button" class="vu-opcao" data-valor="todos"><i class="bi bi-check2"></i>Todos</button>
+        <button type="button" class="vu-opcao" data-valor="pop"><i class="bi bi-check2"></i>POPs</button>
+        <button type="button" class="vu-opcao" data-valor="procedimento"><i class="bi bi-check2"></i>Procedimentos técnicos</button>
+      </div>
+      <div class="vu-oculto">
+        <select id="filter-type" aria-hidden="true" tabindex="-1">
+          <option value="todos">Todos</option>
+          <option value="pop">POPs</option>
+          <option value="procedimento">Procedimentos técnicos</option>
+        </select>
+      </div>
       <div class="vu-opcoes vu-opcoes--rolar" data-espelho="filter-category" role="group" aria-label="Categoria">
         <button type="button" class="vu-opcao" data-valor="todos"><i class="bi bi-check2"></i>Todos</button>
         <button type="button" class="vu-opcao" data-valor="cultivo-celular"><i class="bi bi-check2"></i>Cultivo celular</button>
@@ -56,7 +68,50 @@
         </select>
       </div>
     </div>
-    
+
+    <section id="pop-admin" class="vu-pop-admin" hidden aria-labelledby="pop-admin-title">
+      <h2 id="pop-admin-title"><i class="bi bi-file-earmark-plus"></i> Gerenciar POPs e procedimentos</h2>
+      <p>Adicione documentos em PDF. Para atualizar um documento, use “Substituir PDF” na lista.</p>
+      <form id="pop-form" class="vu-pop-form">
+        <div class="vu-pop-form-campo">
+          <label for="pop-titulo">Nome do documento</label>
+          <input id="pop-titulo" name="titulo" type="text" maxlength="120" required>
+        </div>
+        <div class="vu-pop-form-campo">
+          <label for="pop-descricao">Descrição</label>
+          <input id="pop-descricao" name="descricao" type="text" maxlength="240" required>
+        </div>
+        <div class="vu-pop-form-campo">
+          <label for="pop-tipo">Tipo</label>
+          <select id="pop-tipo" name="tipo" required>
+            <option value="pop">POP</option>
+            <option value="procedimento">Procedimento técnico</option>
+          </select>
+        </div>
+        <div class="vu-pop-form-campo">
+          <label for="pop-categoria">Categoria</label>
+          <select id="pop-categoria" name="categoria" required>
+            <option value="cultivo-celular">Cultivo celular</option>
+            <option value="virologia">Técnicas virológicas</option>
+            <option value="imunologia">Técnicas imunológicas</option>
+            <option value="molecular">Biologia molecular</option>
+            <option value="microscopia">Microscopia</option>
+            <option value="hemaglutinacao">Hemaglutinação</option>
+            <option value="soroneutralizacao">Soroneutralização</option>
+            <option value="esterilizacao">Esterilização e limpeza</option>
+          </select>
+        </div>
+        <div class="vu-pop-form-campo vu-pop-form-arquivo">
+          <label for="pop-arquivo">Arquivo PDF (máximo 25 MB)</label>
+          <input id="pop-arquivo" name="arquivo" type="file" accept="application/pdf,.pdf" required>
+        </div>
+        <button id="pop-submit" type="submit" class="vu-btn vu-btn-principal">
+          <i class="bi bi-cloud-arrow-up"></i> Adicionar documento
+        </button>
+      </form>
+      <p id="pop-admin-status" class="vu-pop-admin-status" role="status" aria-live="polite"></p>
+    </section>
+
     <div id="protocolos-list" class="protocolo-list">
       <!-- Protocolos serão carregados aqui -->
       <div class="vu-esqueleto" style="height:64px;border-radius:24px"></div>
@@ -73,7 +128,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/utils/ui.js"></script>
-  <script src="../assets/js/pages/protocolos.js"></script>
+  <script type="module" src="../assets/js/pages/protocolos.js"></script>
   <script type="module" src="../assets/js/utils/casca.js"></script>
 </body>
 </html>

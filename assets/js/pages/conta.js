@@ -9,10 +9,9 @@ import {
 import { 
   doc, 
   getDoc, 
-  updateDoc,
-  deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { app, auth, db } from "../firebase.js";
+import { gravarComAuditoria } from "../utils/auditoria.js";
 
 // Firebase já inicializado via módulo compartilhado
 
@@ -158,10 +157,22 @@ document.addEventListener('DOMContentLoaded', function() {
       
       try {
         // Atualizar no Firestore
-        await updateDoc(doc(db, "usuarios", usuarioStorage.uid), {
-          nome: nome,
-          sigla: sigla,
-          atualizadoEm: new Date().toISOString()
+        const referencia = doc(db, "usuarios", usuarioStorage.uid);
+        const snapshot = await getDoc(referencia);
+        if (!snapshot.exists()) throw new Error('Cadastro do usuário não encontrado.');
+        await gravarComAuditoria({
+          operacao: 'atualizar',
+          referencia,
+          antes: snapshot.data(),
+          dados: {
+            nome,
+            sigla,
+            atualizadoEm: new Date().toISOString()
+          },
+          modulo: 'Gestão de pessoas',
+          registroId: usuarioStorage.uid,
+          registroNome: nome,
+          acao: 'atualizou dados do perfil'
         });
         
         // Atualizar no storage local
@@ -260,7 +271,21 @@ document.addEventListener('DOMContentLoaded', function() {
         await reauthenticateWithCredential(user, credential);
         
         // Primeiro deletar dados do Firestore
-        await deleteDoc(doc(db, "usuarios", user.uid));
+        await gravarComAuditoria({
+          operacao: 'excluir',
+          referencia: doc(db, "usuarios", user.uid),
+          antes: { ...usuarioStorage },
+          modulo: 'Gestão de pessoas',
+          registroId: user.uid,
+          registroNome: usuarioStorage.nome || user.displayName,
+          acao: 'excluiu a própria conta',
+          ator: {
+            uid: user.uid,
+            nome: usuarioStorage.nome || user.displayName,
+            role: usuarioStorage.role,
+            perfilAcesso: usuarioStorage.perfilAcesso
+          }
+        });
         console.log("Dados do usuário excluídos do Firestore");
         
         // Depois excluir a conta do Authentication

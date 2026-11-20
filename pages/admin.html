@@ -31,6 +31,7 @@
             <span class="vu-filtros-marca"></span>
             <button type="button" class="vu-filtro active" role="tab" aria-pressed="true" data-bs-toggle="tab" data-bs-target="#usuarios-pendentes"><i class="bi bi-hourglass-split"></i>Pedidos<small data-contagem="pendentes">0</small></button>
             <button type="button" class="vu-filtro" role="tab" aria-pressed="false" data-bs-toggle="tab" data-bs-target="#usuarios-ativos"><i class="bi bi-people"></i>Equipe<small data-contagem="ativos">0</small></button>
+            <button type="button" class="vu-filtro" role="tab" aria-pressed="false" data-bs-toggle="tab" data-bs-target="#permissoes"><i class="bi bi-person-gear"></i>Permissões</button>
             <button type="button" class="vu-filtro" role="tab" aria-pressed="false" data-bs-toggle="tab" data-bs-target="#configuracoes"><i class="bi bi-key"></i>Código</button>
             <button type="button" class="vu-filtro" role="tab" aria-pressed="false" data-bs-toggle="tab" data-bs-target="#migracao-usuarios"><i class="bi bi-wrench-adjustable"></i>Migração</button>
         </div>
@@ -56,6 +57,17 @@
                         <div class="vu-item vu-item--estatico"><div class="vu-esqueleto" style="width:45%"></div></div>
                     </div>
                 </div>
+            </div>
+
+            <div class="tab-pane fade" id="permissoes" role="tabpanel">
+                <section class="vu-bloco vu-admin-bloco">
+                    <h2 class="vu-bloco-titulo"><span class="vu-item-icone cor-azul"><i class="bi bi-person-gear"></i></span>Perfis de acesso</h2>
+                    <p class="vu-dica">Apenas administradores podem atribuir perfis. Todos os perfis podem iniciar exames e registrar resultados; alterações e exclusões de registros existentes ficam restritas a administradores.</p>
+                    <div id="permissoes-usuarios-lista" class="vu-lista" aria-live="polite">
+                        <div class="vu-item vu-item--estatico"><span class="vu-esqueleto" style="width:60%"></span></div>
+                    </div>
+                    <p id="permissoes-status" role="status" aria-live="polite"></p>
+                </section>
             </div>
 
             <!-- Código secreto -->

@@ -3,18 +3,25 @@ import {
     collection,
     getDocs,
     Timestamp,
-    deleteDoc,
     doc,
-    updateDoc,
     getDoc,
-    addDoc,
     query,
     where,
     orderBy,
-    writeBatch
+    writeBatch,
+    runTransaction
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { app, auth, db } from "../../../js/firebase.js";
+import {
+    anexarEventoAuditoria,
+    criarEventoAuditoria,
+    exigirAdministradorAtual,
+    gravarComAuditoria,
+    novaReferenciaAuditoria,
+    obterAtorAuditoria,
+    usuarioEhAdministradorAtual
+} from "../../utils/auditoria.js";
 
 // Imports locais
 import { registrarResultadoSN, registrarResultadoELISA, registrarResultadoMolecular, registrarResultadoRAIVA, registrarResultadoICC} from "./regresultado.js";
@@ -69,17 +76,20 @@ function normalizarDataParaUTC(dataString) {
 // Função para atualizar prazos de tarefas existentes (executar uma vez)
 async function atualizarPrazosExistentes() {
     try {
+        if (!await usuarioEhAdministradorAtual()) return;
         // Buscar todas as tarefas para verificar se possuem prazo
         const q = query(collection(db, "tarefas"));
         const querySnapshot = await getDocs(q);
         const batch = writeBatch(db);
         let contador = 0;
+        let ator;
         
-        querySnapshot.forEach((doc) => {
-            const tarefa = doc.data();
+        for (const tarefaDoc of querySnapshot.docs) {
+            const tarefa = tarefaDoc.data();
             
             // Verificar se a tarefa não possui dataPrazo ou tipoPrazo (tarefas antigas que precisam ser atualizadas)
             if (!tarefa.dataPrazo || !tarefa.tipoPrazo) {
+                ator ||= await obterAtorAuditoria();
                 const prazoInfo = obterPrazoDiasTeste(tarefa.tipo, tarefa.subTipo);
                 const dataRecebimento = tarefa.criadoEm?.toDate ? tarefa.criadoEm.toDate() : new Date();
                 
@@ -91,15 +101,24 @@ async function atualizarPrazosExistentes() {
                     dataPrazo = adicionarDiasUteis(dataRecebimento, delta);
                 }
                 
-                batch.update(doc.ref, {
+                const dadosPrazo = {
                     dataPrazo: Timestamp.fromDate(dataPrazo),
                     diasPrazo: prazoInfo.dias,
                     tipoPrazo: prazoInfo.tipo
-                });
+                };
+                batch.update(tarefaDoc.ref, dadosPrazo);
+                await anexarEventoAuditoria(batch, {
+                    acao: 'atualizou prazo',
+                    modulo: 'Exames',
+                    registroId: tarefaDoc.id,
+                    registroNome: tarefa.id,
+                    antes: tarefa,
+                    depois: { ...tarefa, ...dadosPrazo }
+                }, ator);
                 
                 contador++;
             }
-        });
+        }
         
         if (contador > 0) {
             await batch.commit();
@@ -370,7 +389,16 @@ async function adicionarTarefaModal() {
         if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
 
         // Add to Firestore
-        await addDoc(collection(db, "tarefas"), novaTarefa);
+        const referenciaTarefa = doc(collection(db, "tarefas"));
+        await gravarComAuditoria({
+            operacao: 'criar',
+            referencia: referenciaTarefa,
+            dados: novaTarefa,
+            modulo: 'Exames',
+            registroId: referenciaTarefa.id,
+            registroNome: novaTarefa.id,
+            acao: 'criou exame'
+        });
 
         // Atualizar contador local de SV (reserva simples)
         try {
@@ -797,7 +825,7 @@ async function carregarConcluidasHoje(lista) {
               <span class="vu-linha-icone" aria-hidden="true"><i class="bi bi-check2"></i></span>
               <div class="vu-linha-texto">
                 <h3 class="vu-tarefa-nome">${textoSeguro(t.tipo)}${t.subTipo ? ` — ${textoSeguro(t.subTipo)}` : ''}</h3>
-                <p class="vu-tarefa-info"><code>${textoSeguro(t.id)}</code>${t.dataConclusao?.toDate ? ' · ' + t.dataConclusao.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}${t.siglaResponsavel ? ' · ' + textoSeguro(t.siglaResponsavel) : ''}</p>
+                <p class="vu-tarefa-info"><code>${textoSeguro(t.id)}</code>${t.dataConclusao?.toDate ? ' · ' + t.dataConclusao.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}${t.siglaResponsavel ? ' · ' + textoSeguro(t.siglaResponsavel) : ''}${t.responsavelExecucao?.nome ? ' · Execução: ' + textoSeguro(t.responsavelExecucao.nome) : ''}</p>
               </div>
             </div>`).join('') + (itens.length > 8 ? `<a class="vu-btn vu-btn-fantasma" href="historico.html">Ver todas no Histórico</a>` : '');
     } catch (erro) {
@@ -856,13 +884,13 @@ async function carregarTarefas(
             window.location.href = "../index.html";
             return;
         }
-
         // Verificar conexão com a internet
         if (!navigator.onLine) {
             muralList.innerHTML = vazioMural('bi-wifi-off', 'Você está sem internet', 'Quando a conexão voltar, toque em “Mural” de novo para ver as tarefas.');
             esconderLoading();
             return;
         }
+        const ehAdministrador = await usuarioEhAdministradorAtual();
 
         // Lógica de filtro atualizada para nova estrutura
         let q;
@@ -1039,9 +1067,9 @@ async function carregarTarefas(
                 ${showResultsButton ? `<button type="button" class="vu-btn vu-btn-mini btn-resultados" data-id="${doc.id}" title="Registrar resultado">
                   <i class="bi bi-clipboard-data"></i><span>Resultado</span>
                 </button>` : ''}
-                <button type="button" class="vu-btn vu-btn-mini vu-btn-principal btn-concluir" data-id="${doc.id}">
+                ${ehAdministrador ? `<button type="button" class="vu-btn vu-btn-mini vu-btn-principal btn-concluir" data-id="${doc.id}">
                   <i class="bi bi-check2-all"></i><span>Concluir</span>
-                </button>
+                </button>` : ''}
                 <div class="dropdown">
                   <button type="button" class="vu-btn vu-btn-mini vu-btn-fantasma vu-btn-icone" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mais ações" title="Mais ações">
                     <i class="bi bi-three-dots-vertical"></i>
@@ -1053,11 +1081,11 @@ async function carregarTarefas(
                         <i class="bi bi-file-earmark-medical me-2"></i>Abrir ficha SV</a></li>` : ''}
                     <li><a class="dropdown-item btn-formulario-cobranca" href="#" data-id="${doc.id}">
                         <i class="bi bi-receipt me-2"></i>Formulário de cobrança</a></li>
-                    <li><a class="dropdown-item btn-editar" href="#" data-id="${doc.id}">
+                    ${ehAdministrador ? `<li><a class="dropdown-item btn-editar" href="#" data-id="${doc.id}">
                         <i class="bi bi-pencil-square me-2"></i>Editar</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger btn-excluir" href="#" data-id="${doc.id}">
-                        <i class="bi bi-trash3 me-2"></i>Excluir</a></li>
+                        <i class="bi bi-trash3 me-2"></i>Excluir</a></li>` : ''}
                   </ul>
                 </div>
               </div>
@@ -1071,13 +1099,16 @@ async function carregarTarefas(
 
             const dono = tarefa.proprietario?.nome ? ` · ${textoSeguro(tarefa.proprietario.nome)}` : '';
             const sigla = tarefa.siglaResponsavel ? ` · ${textoSeguro(tarefa.siglaResponsavel)}` : '';
+            const executor = tarefa.responsavelExecucao?.nome
+                ? ` · Execução: ${textoSeguro(tarefa.responsavelExecucao.nome)}`
+                : '';
             const dataReceb = tarefa.dataRecebimento?.toDate ? tarefa.dataRecebimento.toDate() : (tarefa.criadoEm?.toDate ? tarefa.criadoEm.toDate() : null);
             const recebidaCurta = dataReceb ? dataReceb.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '—';
             amostraItem.innerHTML = `
               <span class="vu-linha-icone" aria-hidden="true"><i class="bi ${areaTeste.icone}"></i></span>
               <div class="vu-linha-texto">
                 <h3 class="vu-tarefa-nome">${textoSeguro(tipoDisplay)}${tarefa.subTipo ? ` — ${textoSeguro(tarefa.subTipo)}` : ''}${tarefa.alvo && (tarefa.subTipo === 'PCR' || tarefa.subTipo === 'RT-PCR') ? ` — ${textoSeguro(tarefa.alvo)}` : ''}</h3>
-                <p class="vu-tarefa-info"><code>${textoSeguro(tarefa.id)}</code> · ${tarefa.quantidade || '0'} amostra${Number(tarefa.quantidade) === 1 ? '' : 's'}${dono} · recebida ${recebidaCurta}${sigla}</p>
+                <p class="vu-tarefa-info"><code>${textoSeguro(tarefa.id)}</code> · ${tarefa.quantidade || '0'} amostra${Number(tarefa.quantidade) === 1 ? '' : 's'}${dono} · recebida ${recebidaCurta}${sigla}${executor}</p>
               </div>
               <div class="vu-linha-prazo">${seloPrazo}</div>
               ${botoesHtml}
@@ -1214,14 +1245,37 @@ window.marcarProgresso = async (id) => {
             botao.classList.add('processing');
         }
         
-        // O resto da função permanece o mesmo...
         const tarefaRef = doc(db, "tarefas", id);
-        const tarefaSnap = await getDoc(tarefaRef);
-        
-        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
-        
-        const tarefa = tarefaSnap.data();
-        const novoStatus = tarefa.status === 'em-progresso' ? 'pendente' : 'em-progresso';
+        const ator = await obterAtorAuditoria();
+        const referenciaAuditoria = novaReferenciaAuditoria();
+        const novoStatus = await runTransaction(db, async transacao => {
+            const tarefaSnap = await transacao.get(tarefaRef);
+            if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
+
+            const tarefa = tarefaSnap.data();
+            const status = tarefa.status === 'em-progresso' ? 'pendente' : 'em-progresso';
+            const dadosAtualizados = {
+                status,
+                atualizadoEm: Timestamp.now()
+            };
+            if (status === 'em-progresso' && !tarefa.responsavelExecucao) {
+                dadosAtualizados.responsavelExecucao = {
+                    ...ator,
+                    iniciadoEm: Timestamp.now()
+                };
+            }
+            transacao.update(tarefaRef, dadosAtualizados);
+            transacao.set(referenciaAuditoria, criarEventoAuditoria({
+                ator,
+                acao: status === 'em-progresso' ? 'iniciou exame' : 'pausou exame',
+                modulo: 'Exames',
+                registroId: id,
+                registroNome: tarefa.id,
+                antes: tarefa,
+                depois: { ...tarefa, ...dadosAtualizados }
+            }));
+            return status;
+        });
         
         // Atualiza o card imediatamente na UI
         const cardElement = document.querySelector(`[data-id="${id}"]`)?.closest('.vu-linha');
@@ -1232,13 +1286,15 @@ window.marcarProgresso = async (id) => {
                 cardElement.classList.remove('em-progresso');
             }
             moverCartaoDeColuna(cardElement, novoStatus);
+            if (novoStatus === 'em-progresso') {
+                const informacoes = cardElement.querySelector('.vu-tarefa-info');
+                if (informacoes && !informacoes.textContent.includes('Execução:')) {
+                    const executor = document.createElement('span');
+                    executor.textContent = ` · Execução: ${ator.nome}`;
+                    informacoes.append(executor);
+                }
+            }
         }
-        
-        // Salva no Firestore
-        await updateDoc(tarefaRef, { 
-            status: novoStatus,
-            atualizadoEm: Timestamp.now()
-        });
         
         mostrarFeedback(`Tarefa atualizada com sucesso!`, "success");
     } catch (error) {
@@ -1269,24 +1325,38 @@ window.concluirTarefa = async (id) => {
         icone: 'bi-check2-all'
     });
     if (!ok) return;
-    if (cartao) cartao.classList.add('saindo');
 
     mostrarLoading();
     try {
+        await exigirAdministradorAtual();
         const tarefaRef = doc(db, "tarefas", id);
         const tarefaSnap = await getDoc(tarefaRef);
         
         if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
         
         const tarefa = tarefaSnap.data();
-        await addDoc(collection(db, "historico"), {
+        const ator = await obterAtorAuditoria();
+        const dataConclusao = Timestamp.now();
+        const referenciaHistorico = doc(collection(db, "historico"));
+        const lote = writeBatch(db);
+        lote.set(referenciaHistorico, {
             ...tarefa,
-            dataConclusao: Timestamp.now(),
+            dataConclusao,
             concluidoPor: auth.currentUser.uid
             // criadoEm já está preservado com o mesmo valor de dataRecebimento
         });
-        
-        await deleteDoc(tarefaRef);
+        lote.delete(tarefaRef);
+        await anexarEventoAuditoria(lote, {
+            ator,
+            acao: 'concluiu exame',
+            modulo: 'Exames',
+            registroId: id,
+            registroNome: tarefa.id,
+            antes: tarefa,
+            depois: { ...tarefa, status: 'concluído', dataConclusao }
+        }, ator);
+        await lote.commit();
+        if (cartao) cartao.classList.add('saindo');
         carregarTarefas();
         mostrarFeedback("Tarefa concluída com sucesso!", "success");
     } catch (error) {
@@ -1311,7 +1381,20 @@ window.excluirTarefa = async (id) => {
 
     mostrarLoading();
     try {
-        await deleteDoc(doc(db, "tarefas", id));
+        await exigirAdministradorAtual();
+        const tarefaRef = doc(db, "tarefas", id);
+        const tarefaSnap = await getDoc(tarefaRef);
+        if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
+        const tarefa = tarefaSnap.data();
+        await gravarComAuditoria({
+            operacao: 'excluir',
+            referencia: tarefaRef,
+            antes: tarefa,
+            modulo: 'Exames',
+            registroId: id,
+            registroNome: tarefa.id,
+            acao: 'excluiu exame'
+        });
         carregarTarefas();
         mostrarFeedback("Tarefa excluída com sucesso!", "success");
     } catch (error) {
@@ -1326,6 +1409,7 @@ window.excluirTarefa = async (id) => {
 window.editarTarefaModal = async (id) => {
     mostrarLoading();
     try {
+        await exigirAdministradorAtual();
         const tarefaRef = doc(db, "tarefas", id);
         const tarefaSnap = await getDoc(tarefaRef);
         
@@ -1513,7 +1597,16 @@ window.editarTarefaModal = async (id) => {
                 };
 
                 // Atualizar a tarefa
-                await updateDoc(tarefaRef, updateData);
+                await gravarComAuditoria({
+                    operacao: 'atualizar',
+                    referencia: tarefaRef,
+                    antes: tarefa,
+                    dados: updateData,
+                    modulo: 'Exames',
+                    registroId: id,
+                    registroNome: tarefa.id,
+                    acao: 'editou exame'
+                });
                 
                 // Fechar o modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('tarefa-modal'));

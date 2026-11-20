@@ -2,6 +2,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  sendEmailVerification,
   fetchSignInMethodsForEmail,
   setPersistence,
   browserLocalPersistence,
@@ -15,7 +16,6 @@ import {
   addDoc,
   getDocs,
   query,
-  setDoc,
   doc,
   where,
   getDoc
@@ -23,8 +23,15 @@ import {
 
 // Firebase centralizado
 import { app, auth, db } from "../firebase.js";
+import { gravarComAuditoria } from "../utils/auditoria.js";
 
 // app, auth e db são importados do módulo compartilhado
+const EMAIL_ADMIN_INICIAL = "setordevirologiab@gmail.com";
+const EMAIL_PROGRAMADOR = "setordevirologia@gmail.com";
+const EMAILS_COM_PRIVILEGIO_TOTAL = new Set([
+  EMAIL_ADMIN_INICIAL,
+  EMAIL_PROGRAMADOR
+]);
 
 // Sincroniza a persistência salva (manter conectado)
 async function applyStoredPersistence() {
@@ -215,16 +222,128 @@ async function handleLogin() {
     const userCredential = await signInWithEmailAndPassword(auth, email, senha);
     const user = userCredential.user;
 
-    // Buscar dados do usuário no Firestore
-    const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
-    const querySnapshot = await getDocs(q);
+    let usuario;
+    const emailAtual = user.email?.toLowerCase();
+    if (emailAtual === EMAIL_ADMIN_INICIAL) {
+      if (!user.emailVerified) {
+        await sendEmailVerification(user);
+        showAlert(
+          "Enviamos um link de verificação para seu email. Confirme o endereço e entre novamente para ativar a conta administradora.",
+          "alert-warning"
+        );
+        await signOut(auth);
+        return;
+      }
 
-    if (querySnapshot.empty) {
-      showAlert('Erro: usuário não encontrado no banco de dados.', 'alert-danger');
-      return;
+      const referencia = doc(db, "usuarios", user.uid);
+      const snapshot = await getDoc(referencia);
+      const antes = snapshot.exists() ? snapshot.data() : {
+        uid: user.uid,
+        nome: user.displayName || "Administrador do Setor",
+        sigla: "SVB",
+        email: user.email,
+        dataCadastro: new Date().toISOString()
+      };
+      const dadosAdmin = {
+        uid: user.uid,
+        role: "admin",
+        perfilAcesso: "admin",
+        aprovado: true,
+        ativo: true,
+        atualizadoEm: new Date().toISOString()
+      };
+      const precisaPromover = !snapshot.exists() ||
+        antes.role !== "admin" ||
+        antes.perfilAcesso !== "admin" ||
+        antes.aprovado !== true ||
+        antes.ativo !== true;
+
+      if (precisaPromover) {
+        await gravarComAuditoria({
+          operacao: snapshot.exists() ? "atualizar" : "criar",
+          referencia,
+          antes: snapshot.exists() ? antes : {},
+          dados: snapshot.exists() ? dadosAdmin : { ...antes, ...dadosAdmin },
+          modulo: "Gestão de pessoas",
+          registroId: user.uid,
+          registroNome: antes.nome || user.email,
+          acao: "ativou o administrador inicial",
+          ator: {
+            uid: user.uid,
+            nome: antes.nome || user.displayName || "Administrador do Setor",
+            role: "admin",
+            perfilAcesso: "admin"
+          }
+        });
+      }
+
+      usuario = { ...antes, ...dadosAdmin };
+    } else if (emailAtual === EMAIL_PROGRAMADOR) {
+      if (!user.emailVerified) {
+        await sendEmailVerification(user);
+        showAlert(
+          "Enviamos um link de verificação para seu email. Confirme o endereço e entre novamente para ativar a conta de programador.",
+          "alert-warning"
+        );
+        await signOut(auth);
+        return;
+      }
+
+      const referencia = doc(db, "usuarios", user.uid);
+      const snapshot = await getDoc(referencia);
+      const antes = snapshot.exists() ? snapshot.data() : {
+        uid: user.uid,
+        nome: user.displayName || "Programador",
+        sigla: "PR",
+        email: user.email,
+        dataCadastro: new Date().toISOString()
+      };
+      const dadosProgramador = {
+        uid: user.uid,
+        role: "admin",
+        perfilAcesso: "programador",
+        aprovado: true,
+        ativo: true,
+        atualizadoEm: new Date().toISOString()
+      };
+      const precisaPromover = !snapshot.exists() ||
+        antes.role !== "admin" ||
+        antes.perfilAcesso !== "programador" ||
+        antes.aprovado !== true ||
+        antes.ativo !== true;
+
+      if (precisaPromover) {
+        await gravarComAuditoria({
+          operacao: snapshot.exists() ? "atualizar" : "criar",
+          referencia,
+          antes: snapshot.exists() ? antes : {},
+          dados: snapshot.exists() ? dadosProgramador : { ...antes, ...dadosProgramador },
+          modulo: "Gestão de pessoas",
+          registroId: user.uid,
+          registroNome: antes.nome || user.email,
+          acao: "ativou o programador",
+          ator: {
+            uid: user.uid,
+            nome: antes.nome || user.displayName || "Programador",
+            role: "admin",
+            perfilAcesso: "programador"
+          }
+        });
+      }
+
+      usuario = { ...antes, ...dadosProgramador };
+    } else {
+      // Buscar dados do usuário no Firestore
+      const q = query(collection(db, "usuarios"), where("uid", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        showAlert('Erro: usuário não encontrado no banco de dados.', 'alert-danger');
+        return;
+      }
+
+      usuario = querySnapshot.docs[0].data();
     }
-
-    const usuario = querySnapshot.docs[0].data();
     
     // Verificar se usuário está aprovado
     if (!usuario.aprovado) {
@@ -431,18 +550,35 @@ async function handleCadastro() {
     const user = userCredential.user;
 
     // Salvar dados no Firestore com role
-    await setDoc(doc(db, "usuarios", user.uid), {
+    const dadosUsuario = {
       uid: user.uid,
       nome,
       sigla,
       email,
       dataCadastro: new Date().toISOString(),
       role: "user", // padrão para usuários normais
+      perfilAcesso: "estagiario",
       ativo: true,  // controle de ativação
       aprovado: false // aguarda aprovação do admin
+    };
+    await gravarComAuditoria({
+      operacao: 'criar',
+      referencia: doc(db, "usuarios", user.uid),
+      dados: dadosUsuario,
+      modulo: 'Gestão de pessoas',
+      registroId: user.uid,
+      registroNome: nome,
+      acao: 'criou conta',
+      ator: { uid: user.uid, nome, perfilAcesso: 'estagiario', role: 'user' }
     });
 
-    showAlert('Cadastro realizado! Aguarde aprovação do administrador.', 'alert-success');
+    if (EMAILS_COM_PRIVILEGIO_TOTAL.has(email.toLowerCase())) {
+      await sendEmailVerification(user);
+      await signOut(auth);
+      showAlert('Cadastro realizado. Verifique seu email; após confirmar o endereço, entre novamente para ativar o perfil com privilégios especiais.', 'alert-success');
+    } else {
+      showAlert('Cadastro realizado! Aguarde aprovação do administrador.', 'alert-success');
+    }
     showForm("login-form");
     
     // Limpar formulário
@@ -494,7 +630,7 @@ function checkAuthState() {
     // Verificar se estamos vindo de um logout recente
     const forceLogin = new URLSearchParams(window.location.search).get('logout') === 'true';
     
-    if (user && !forceLogin) {
+    if (user && !forceLogin && user.email?.toLowerCase() !== EMAIL_ADMIN_INICIAL) {
       // Se usuário já está autenticado, ir direto ao hub; o hub reconstruirá os dados se faltarem
       window.location.href = "pages/hub.html";
     }

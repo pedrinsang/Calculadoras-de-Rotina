@@ -488,6 +488,8 @@ i.bi.vu-ico::before { vertical-align: 0; line-height: 1; }
 .vu-lateral-marca small { display: block; font-size: 14px; line-height: 18px; color: var(--tinta-suave); }
 .vu-lateral .vu-sobrelinha { margin: var(--esp-4) var(--esp-3) var(--esp-1); color: var(--tinta-suave); }
 .vu-nav { position: relative; display: flex; align-items: center; gap: var(--esp-3); min-height: 48px; padding: 0 var(--esp-3); border-radius: var(--raio-medio); color: var(--tinta); font-weight: 700; text-decoration: none; transition: background-color var(--dur-media), color var(--dur-media); }
+.vu-nav[hidden],
+.so-secretaria[hidden] { display: none !important; }
 .vu-nav .vu-ico { width: 22px; height: 22px; color: var(--tinta-suave); transition: color var(--dur-media), translate var(--dur-media) var(--curva-mola); }
 .vu-nav:hover { background: var(--cartao-suave); }
 .vu-nav:hover .vu-ico { translate: 2px 0; color: var(--tinta); }

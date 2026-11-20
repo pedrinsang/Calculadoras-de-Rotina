@@ -5,9 +5,15 @@
 // - Os resultados lançados no Mural (tarefas e histórico) são lidos em tempo real e convertidos
 //   para o formato da ficha: títulos de VN por amostra e resultado por exame.
 import {
-    collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, Timestamp, writeBatch
+    collection, query, where, getDocs, getDoc, doc, onSnapshot, Timestamp, writeBatch
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { db } from "../../firebase.js";
+import {
+    anexarEventoAuditoria,
+    exigirAdministradorAtual,
+    gravarComAuditoria,
+    obterAtorAuditoria
+} from "../../utils/auditoria.js";
 import { calcularDataPrazo, parseDateInputLocal } from "../../utils/prazosMural.js";
 import { idDoc } from "../../utils/svFichasDB.js";
 import { examesMarcados, nomeExame, separarIdentificacoes, amostrasDaVN, classeResultado, resultadoGeral } from "./sv-comum.js";
@@ -146,7 +152,7 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
     for (const { item, alvo } of desejadas) {
         if (jaExiste.has(item.id)) continue;
         const { dataPrazo, prazoInfo } = calcularDataPrazo(recebimento, alvo.tipo, alvo.subTipo);
-        await addDoc(collection(db, 'tarefas'), {
+        const dadosTarefa = {
             id: protocolo,
             tipo: alvo.tipo,
             subTipo: alvo.subTipo,
@@ -164,6 +170,16 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
             fichaSV: protocolo,
             exameFicha: item.id,
             exameFichaNome: nomeExame(ficha, item)
+        };
+        const referencia = doc(collection(db, 'tarefas'));
+        await gravarComAuditoria({
+            operacao: 'criar',
+            referencia,
+            dados: dadosTarefa,
+            modulo: 'Exames',
+            registroId: referencia.id,
+            registroNome: protocolo,
+            acao: 'criou exame a partir da ficha'
         });
         resultado.criadas++;
     }
@@ -172,18 +188,36 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
         if (!semResultados(t)) continue;
         const ref = doc(db, 'tarefas', t.docId);
         if (!idsDesejados.has(t.exameFicha)) {
-            await deleteDoc(ref);
+            await gravarComAuditoria({
+                operacao: 'excluir',
+                referencia: ref,
+                antes: t,
+                modulo: 'Exames',
+                registroId: t.docId,
+                registroNome: protocolo,
+                acao: 'removeu exame desmarcado da ficha'
+            });
             resultado.removidas++;
             continue;
         }
         const item = desejadas.find(x => x.item.id === t.exameFicha);
         const alvoAtual = item?.alvo || {};
-        await updateDoc(ref, {
+        const dadosAtualizados = {
             ...base,
             subTipo: alvoAtual.subTipo ?? t.subTipo ?? null,
             alvo: alvoAtual.alvo ?? t.alvo ?? null,
             exameFichaNome: item ? nomeExame(ficha, item.item) : (t.exameFichaNome || null),
             atualizadoEm: Timestamp.now()
+        };
+        await gravarComAuditoria({
+            operacao: 'atualizar',
+            referencia: ref,
+            antes: t,
+            dados: dadosAtualizados,
+            modulo: 'Exames',
+            registroId: t.docId,
+            registroNome: protocolo,
+            acao: 'sincronizou exame com ficha'
         });
         resultado.atualizadas++;
     }
@@ -333,10 +367,36 @@ export async function tarefasAtivasDaFicha(protocolo) {
 }
 
 export async function excluirFichaComTarefas(protocolo, tarefas) {
+    await exigirAdministradorAtual();
     const lista = tarefas || await tarefasAtivasDaFicha(protocolo);
+    const referenciaFicha = doc(db, 'fichasSV', idDoc(protocolo));
+    const fichaSnapshot = await getDoc(referenciaFicha);
+    if (!fichaSnapshot.exists()) throw new Error(`Ficha ${protocolo} não encontrada.`);
+    const ficha = fichaSnapshot.data();
+    const ator = await obterAtorAuditoria();
     const batch = writeBatch(db);
-    lista.forEach(t => batch.delete(doc(db, 'tarefas', t.docId)));
-    batch.delete(doc(db, 'fichasSV', idDoc(protocolo)));
+    for (const tarefa of lista) {
+        batch.delete(doc(db, 'tarefas', tarefa.docId));
+        await anexarEventoAuditoria(batch, {
+            ator,
+            acao: 'excluiu exame com a ficha',
+            modulo: 'Exames',
+            registroId: tarefa.docId,
+            registroNome: protocolo,
+            antes: tarefa,
+            depois: {}
+        }, ator);
+    }
+    batch.delete(referenciaFicha);
+    await anexarEventoAuditoria(batch, {
+        ator,
+        acao: 'excluiu ficha',
+        modulo: 'Fichas',
+        registroId: idDoc(protocolo),
+        registroNome: protocolo,
+        antes: ficha,
+        depois: {}
+    }, ator);
     await batch.commit();
     return lista.length;
 }

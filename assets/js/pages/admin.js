@@ -22,6 +22,8 @@ import {
     orderBy
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { app, auth, db } from "../firebase.js";
+import { gravarComAuditoria } from "../utils/auditoria.js";
+import { PERFIS_ACESSO, nomeDoPerfil, perfilDoUsuario, usuarioEhAdministrador } from "../utils/perfis.js";
 
 // Firebase centralizado
 
@@ -110,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (detectarBtn) detectarBtn.addEventListener('click', detectarUsuariosDesatualizados);
     if (atualizarBtn) atualizarBtn.addEventListener('click', atualizarTodosUsuarios);
+    document.getElementById('permissoes-usuarios-lista').addEventListener('click', salvarPerfilUsuario);
 
     // Pílulas das abas (indicador deslizante)
     if (ui()) ui().iniciar(document);
@@ -127,7 +130,7 @@ async function verificarPermissaoAdmin(uid) {
         const userDoc = await getDoc(doc(db, "usuarios", uid));
         if (userDoc.exists()) {
             const userData = userDoc.data();
-            return userData.role === "admin";
+            return usuarioEhAdministrador(userData);
         }
         return false;
     } catch (error) {
@@ -146,6 +149,7 @@ async function inicializarPainelAdmin() {
         await Promise.all([
             carregarUsuariosPendentes(),
             carregarUsuariosAtivos(),
+            carregarPermissoesUsuarios(),
             carregarConfiguracoes()
         ]);
         console.log("✅ Painel administrativo carregado com sucesso");
@@ -241,10 +245,23 @@ async function aprovarUsuario(e) {
 
     ocupar(btn, true);
     try {
-        await updateDoc(doc(db, "usuarios", uid), {
+        const referencia = doc(db, "usuarios", uid);
+        const snapshot = await getDoc(referencia);
+        if (!snapshot.exists()) throw new Error('O cadastro não está mais disponível.');
+        const antes = snapshot.data();
+        await gravarComAuditoria({
+            operacao: 'atualizar',
+            referencia,
+            antes,
+            dados: {
             aprovado: true,
             ativo: true,
             dataAprovacao: new Date().toISOString()
+            },
+            modulo: 'Gestão de pessoas',
+            registroId: uid,
+            registroNome: antes.nome || nome,
+            acao: 'aprovou cadastro'
         });
 
         avisar('ok', 'Cadastro aprovado', `${nome} já pode entrar.`);
@@ -272,7 +289,19 @@ async function rejeitarUsuario(e) {
 
     ocupar(btn, true);
     try {
-        await deleteDoc(doc(db, "usuarios", uid));
+        const referencia = doc(db, "usuarios", uid);
+        const snapshot = await getDoc(referencia);
+        if (!snapshot.exists()) throw new Error('O cadastro não está mais disponível.');
+        const antes = snapshot.data();
+        await gravarComAuditoria({
+            operacao: 'excluir',
+            referencia,
+            antes,
+            modulo: 'Gestão de pessoas',
+            registroId: uid,
+            registroNome: antes.nome || nome,
+            acao: 'recusou e excluiu cadastro'
+        });
         avisar('ok', 'Cadastro recusado e excluído');
         await carregarUsuariosPendentes();
 
@@ -286,6 +315,113 @@ async function rejeitarUsuario(e) {
 // ============================================================================
 // GESTÃO DE USUÁRIOS ATIVOS
 // ============================================================================
+
+async function carregarPermissoesUsuarios() {
+    const container = document.getElementById('permissoes-usuarios-lista');
+    try {
+        const snapshot = await getDocs(collection(db, 'usuarios'));
+        const usuarios = snapshot.docs
+            .map(item => ({ uid: item.id, ...item.data() }))
+            .filter(usuario => usuario.aprovado === true)
+            .sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR'));
+
+        if (!usuarios.length) {
+            container.innerHTML = vazio('bi-people', 'Nenhuma pessoa aprovada', 'As pessoas aprovadas aparecerão aqui para receber um perfil.');
+            return;
+        }
+
+        container.innerHTML = usuarios.map(usuario => {
+            const perfil = perfilDoUsuario(usuario);
+            return `
+                <div class="vu-item vu-item--estatico vu-perfil-acesso" data-uid="${esc(usuario.uid)}">
+                    <span class="vu-avatar">${iniciais(usuario)}</span>
+                    <span class="vu-item-texto">
+                        <span class="vu-item-nome">${esc(usuario.nome || 'Sem nome')}</span>
+                        <span class="vu-item-desc">${esc(usuario.email || 'Sem email')} · atual: ${esc(nomeDoPerfil(perfil))}</span>
+                    </span>
+                    <label class="vu-perfil-acesso-campo">
+                        <span class="visually-hidden">Perfil de ${esc(usuario.nome || usuario.email)}</span>
+                        <select class="form-select" data-perfil-uid="${esc(usuario.uid)}" aria-label="Perfil de ${esc(usuario.nome || usuario.email)}">
+                            <option value="">Selecione um perfil</option>
+                            ${Object.entries(PERFIS_ACESSO).map(([valor, rotulo]) =>
+                                `<option value="${valor}"${perfil === valor ? ' selected' : ''}>${esc(rotulo)}</option>`
+                            ).join('')}
+                        </select>
+                    </label>
+                    <button type="button" class="vu-btn vu-btn-principal" data-salvar-perfil="${esc(usuario.uid)}"><i class="bi bi-check2"></i> Salvar</button>
+                </div>`;
+        }).join('');
+    } catch (error) {
+        console.error('Erro ao carregar perfis de acesso:', error);
+        container.innerHTML = vazio('bi-exclamation-circle', 'Não foi possível carregar os perfis', esc(error.message));
+    }
+}
+
+async function salvarPerfilUsuario(evento) {
+    const botao = evento.target.closest('[data-salvar-perfil]');
+    if (!botao) return;
+
+    const uid = botao.dataset.salvarPerfil;
+    const campo = document.querySelector(`[data-perfil-uid="${CSS.escape(uid)}"]`);
+    const novoPerfil = campo?.value;
+    if (!Object.hasOwn(PERFIS_ACESSO, novoPerfil)) {
+        avisar('erro', 'Selecione um perfil válido');
+        return;
+    }
+
+    ocupar(botao, true);
+    try {
+        const referencia = doc(db, 'usuarios', uid);
+        const snapshot = await getDoc(referencia);
+        if (!snapshot.exists()) throw new Error('A pessoa não está mais cadastrada.');
+
+        const antes = snapshot.data();
+        const novoRole = ['admin', 'programador'].includes(novoPerfil) ? 'admin' : 'user';
+        if (antes.role === novoRole && perfilDoUsuario(antes) === novoPerfil) {
+            avisar('info', 'Esse perfil já está atribuído');
+            return;
+        }
+
+        if (usuarioEhAdministrador(antes) && novoRole !== 'admin') {
+            const administradores = await getDocs(query(collection(db, 'usuarios'), where('role', '==', 'admin')));
+            if (administradores.size <= 1) throw new Error('Não é possível remover o último administrador.');
+        }
+
+        await gravarComAuditoria({
+            operacao: 'atualizar',
+            referencia,
+            antes,
+            dados: {
+                role: novoRole,
+                perfilAcesso: novoPerfil,
+                atualizadoEm: new Date().toISOString()
+            },
+            modulo: 'Gestão de pessoas',
+            registroId: uid,
+            registroNome: antes.nome || antes.email || uid,
+            acao: 'alterou perfil de acesso'
+        });
+
+        avisar('ok', `Perfil de ${antes.nome || 'usuário'} atualizado para ${nomeDoPerfil(novoPerfil)}`);
+        await Promise.all([carregarPermissoesUsuarios(), carregarUsuariosAtivos()]);
+        if (uid === auth.currentUser?.uid) {
+            for (const armazenamento of [localStorage, sessionStorage]) {
+                try {
+                    const salvo = JSON.parse(armazenamento.getItem('usuario') || '{}');
+                    if (salvo.uid === uid) armazenamento.setItem('usuario', JSON.stringify({ ...salvo, role: novoRole, perfilAcesso: novoPerfil }));
+                } catch (error) {
+                    console.warn('Não foi possível atualizar o perfil em cache local:', error);
+                }
+            }
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Erro ao alterar perfil de acesso:', error);
+        avisar('erro', 'Não foi possível salvar o perfil', error.message);
+    } finally {
+        ocupar(botao, false);
+    }
+}
 
 /**
  * Carrega usuários ativos do sistema
@@ -348,7 +484,8 @@ async function carregarUsuariosAtivos() {
  * Cria card visual para usuário ativo
  */
 function criarCardUsuarioAtivo(user) {
-    const isAdmin = user.role === 'admin';
+    const isAdmin = usuarioEhAdministrador(user);
+    const perfil = perfilDoUsuario(user);
     const isAtivo = user.ativo !== false;
     const uid = esc(user.uid || user.id);
 
@@ -359,12 +496,11 @@ function criarCardUsuarioAtivo(user) {
                 <span class="vu-item-nome">${esc(user.nome)}</span>
                 <span class="vu-item-desc">${esc(user.email)} · ${esc(user.sigla || 'sem sigla')} · desde ${dataBR(user.dataCadastro)}</span>
                 <span class="vu-admin-selos">
-                    ${isAdmin ? '<span class="vu-selo vu-selo-andamento"><i class="bi bi-shield-check"></i>Admin</span>' : ''}
+                    <span class="vu-selo ${isAdmin ? 'vu-selo-andamento' : ''}"><i class="bi bi-person-badge"></i>${esc(nomeDoPerfil(perfil))}</span>
                     ${isAtivo ? '<span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i>Ativo</span>' : '<span class="vu-selo"><i class="bi bi-pause"></i>Desativado</span>'}
                 </span>
             </span>
             <span class="vu-mini-acoes">
-                ${!isAdmin ? `<button type="button" class="vu-btn btn-promover" data-uid="${uid}"><i class="bi bi-shield-plus"></i> Tornar admin</button>` : ''}
                 <button type="button" class="vu-btn ${isAtivo ? 'vu-btn-perigo' : 'vu-btn-principal'} btn-toggle-ativo" data-uid="${uid}" data-ativo="${isAtivo}">
                     <i class="bi bi-${isAtivo ? 'pause-circle' : 'play-circle'}"></i> ${isAtivo ? 'Desativar' : 'Reativar'}
                 </button>
@@ -377,40 +513,9 @@ function criarCardUsuarioAtivo(user) {
  * Adiciona event listeners para botões de usuários ativos
  */
 function adicionarEventListenersUsuariosAtivos() {
-    document.querySelectorAll('.btn-promover').forEach(btn => {
-        btn.addEventListener('click', promoverUsuario);
-    });
-    
     document.querySelectorAll('.btn-toggle-ativo').forEach(btn => {
         btn.addEventListener('click', toggleAtivarUsuario);
     });
-}
-
-/**
- * Promove usuário para administrador
- */
-async function promoverUsuario(e) {
-    const btn = e.target.closest('.btn-promover');
-    const uid = btn.dataset.uid;
-    const nome = btn.closest('.user-card')?.querySelector('.vu-item-nome')?.textContent || 'esta pessoa';
-
-    if (!await confirmar({ titulo: `Tornar ${nome} administrador?`, texto: 'Ela poderá aprovar cadastros e mudar o código secreto.', sim: 'Tornar admin', icone: 'bi-shield-plus' })) return;
-
-    ocupar(btn, true);
-    try {
-        await updateDoc(doc(db, "usuarios", uid), {
-            role: "admin",
-            promoviadoEm: new Date().toISOString()
-        });
-
-        avisar('ok', `${nome} agora é administrador`);
-        await carregarUsuariosAtivos();
-
-    } catch (error) {
-        console.error("❌ Erro ao promover usuário:", error);
-        avisar('erro', 'Não foi possível promover', error.message);
-        ocupar(btn, false);
-    }
 }
 
 /**
@@ -460,7 +565,16 @@ async function toggleAtivarUsuario(e) {
         }
 
         // Atualizar no Firestore
-        await updateDoc(doc(db, "usuarios", uid), updateData);
+        await gravarComAuditoria({
+            operacao: 'atualizar',
+            referencia: doc(db, "usuarios", uid),
+            antes: userDoc.data(),
+            dados: updateData,
+            modulo: 'Gestão de pessoas',
+            registroId: uid,
+            registroNome: userDoc.data().nome || nome,
+            acao: novoStatus ? 'reativou usuário' : 'desativou usuário'
+        });
 
         avisar('ok', novoStatus ? `${nome} foi reativado` : `${nome} foi desativado`);
         await carregarUsuariosAtivos();
@@ -620,9 +734,16 @@ async function atualizarTodosUsuarios() {
                 camposParaAtualizar.atualizadoEm = new Date().toISOString();
                 camposParaAtualizar.migradoEm = new Date().toISOString();
                 
-                promises.push(
-                    updateDoc(doc(db, "usuarios", docSnapshot.id), camposParaAtualizar)
-                );
+                promises.push(gravarComAuditoria({
+                    operacao: 'atualizar',
+                    referencia: doc(db, "usuarios", docSnapshot.id),
+                    antes: data,
+                    dados: camposParaAtualizar,
+                    modulo: 'Gestão de pessoas',
+                    registroId: docSnapshot.id,
+                    registroNome: data.nome || data.email || docSnapshot.id,
+                    acao: 'corrigiu cadastro e perfil'
+                }));
                 contador++;
             }
         });
@@ -679,7 +800,16 @@ async function corrigirUsuarioIndividual(e) {
         camposParaAtualizar.atualizadoEm = new Date().toISOString();
         camposParaAtualizar.migradoEm = new Date().toISOString();
         
-        await updateDoc(doc(db, "usuarios", uid), camposParaAtualizar);
+        await gravarComAuditoria({
+            operacao: 'atualizar',
+            referencia: doc(db, "usuarios", uid),
+            antes: userData,
+            dados: camposParaAtualizar,
+            modulo: 'Gestão de pessoas',
+            registroId: uid,
+            registroNome: userData.nome || userData.email || uid,
+            acao: 'corrigiu cadastro e perfil'
+        });
         
         // Feedback visual
         userCard.classList.add('fixed');

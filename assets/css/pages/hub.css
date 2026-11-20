@@ -6,6 +6,90 @@
   align-content: start;
 }
 
+.so-secretaria[hidden],
+.vu-laudo-aviso[hidden] {
+  display: none !important;
+}
+
+.vu-laudo-aviso {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #8d1b1b;
+  background: #fff4f3;
+  text-decoration: none;
+}
+
+.vu-laudo-aviso:hover,
+.vu-laudo-aviso:focus-visible {
+  color: #671111;
+  background: #ffe4e1;
+}
+
+.vu-laudo-aviso > i { font-size: 17px; }
+
+.vu-laudo-som {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--linha);
+  border-radius: 50%;
+  background: var(--cartao);
+  color: var(--tinta-suave);
+  cursor: pointer;
+}
+
+.vu-laudo-som:hover,
+.vu-laudo-som[aria-pressed="true"] {
+  border-color: var(--verde);
+  color: var(--verde-escuro);
+}
+
+.vu-laudo-som[hidden] { display: none !important; }
+
+.vu-laudo-pulso {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #fff4f3;
+  border-radius: 50%;
+  background: #c62828;
+  animation: vu-laudo-pulso 1.6s ease-out infinite;
+}
+
+.vu-laudo-aviso-qtd {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  color: #fff;
+  background: #8d1b1b;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+
+@keyframes vu-laudo-pulso {
+  0% { box-shadow: 0 0 0 0 rgba(198, 40, 40, .42); }
+  100% { box-shadow: 0 0 0 7px rgba(198, 40, 40, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vu-laudo-pulso { animation: none; }
+}
+
 /* Saudação mais larga no computador */
 @media (min-width: 900px) {
   .vu-ola-texto h1 {

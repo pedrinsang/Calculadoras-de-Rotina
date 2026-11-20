@@ -96,7 +96,8 @@ async function salvar(emitir) {
             laudo,
             vn: coletarVNForm($('vn')),
             cobranca: coletarCobrancaForm($('cobranca')),
-            status
+            status,
+            ...(emitir ? { envioLaudo: { enviado: false } } : {})
         });
         if (emitir) {
             location.href = `sv-visualizar.html?id=${encodeURIComponent(protocolo)}`;

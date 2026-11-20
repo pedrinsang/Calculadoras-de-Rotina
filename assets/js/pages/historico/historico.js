@@ -8,10 +8,8 @@ import {
     where,
     orderBy,
     Timestamp,
-    deleteDoc,
     doc,
     getDoc,
-    addDoc,
     writeBatch,
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { 
@@ -22,6 +20,14 @@ import {
 // Imports locais
 import { gerarDocx } from './baixarDoc.js';
 import { gerarFormularioCobrancaWord } from "../../utils/formularioCobranca.js";
+import {
+    anexarEventoAuditoria,
+    exigirAdministradorAtual,
+    obterAtorAuditoria,
+    usuarioEhAdministradorAtual
+} from "../../utils/auditoria.js";
+
+let ehAdminAtual = false;
 
 // Prevenir erro da API do Google
 window.__iframefcb190700 = function() {
@@ -141,7 +147,7 @@ const EXCLUSAO_CONFIG = {
     CHAVE_ULTIMA_LIMPEZA: 'historico_ultima_limpeza',
     INTERVALO_VERIFICACAO: 60 * 60 * 1000, // verifica a cada hora
     INTERVALO_ENTRE_LIMPEZAS: 24 * 60 * 60 * 1000, // executa no máximo uma vez por dia
-    BATCH_SIZE: 500 // Máximo de documentos por batch (limite do Firestore)
+    BATCH_SIZE: 250 // Cada exclusão gera também um evento de auditoria no mesmo batch
 };
 
 let limpezaAutomaticaIntervalId = null;
@@ -175,6 +181,7 @@ function registrarLimpeza() {
 // Excluir tarefas antigas com melhor performance e proteção
 async function excluirTarefasAntigas() {
     if (limpezaEmAndamento) return 0;
+    if (!ehAdminAtual || !await usuarioEhAdministradorAtual()) return 0;
     limpezaEmAndamento = true;
 
     return await executarComRetry(async () => {
@@ -200,6 +207,7 @@ async function excluirTarefasAntigas() {
         }
         
         const totalDocumentos = querySnapshot.size;
+        const ator = await obterAtorAuditoria();
         
         // Processar em batches para evitar timeout
         let documentosExcluidos = 0;
@@ -210,9 +218,18 @@ async function excluirTarefasAntigas() {
             const batchDocs = docs.slice(i, i + EXCLUSAO_CONFIG.BATCH_SIZE);
             
             // Adicionar exclusões ao batch
-            batchDocs.forEach(docSnapshot => {
+            for (const docSnapshot of batchDocs) {
                 batch.delete(docSnapshot.ref);
-            });
+                await anexarEventoAuditoria(batch, {
+                    ator,
+                    acao: 'removeu exame expirado',
+                    modulo: 'Histórico',
+                    registroId: docSnapshot.id,
+                    registroNome: docSnapshot.data().id,
+                    antes: docSnapshot.data(),
+                    depois: {}
+                }, ator);
+            }
             
             // Executar batch
             await batch.commit();
@@ -653,11 +670,11 @@ function renderizarTarefas(tarefas) {
                 <div class="vu-tarefa-selos">
                     <span class="vu-selo vu-selo-feito"><i class="bi bi-check2"></i> Concluída em ${tarefa.dataConclusao?.toDate().toLocaleDateString("pt-BR") || '—'}</span>
                 </div>
-                <p class="vu-tarefa-info">Protocolo <code>${id}</code> · ${proprietarioDisplay}</p>
+                <p class="vu-tarefa-info">Protocolo <code>${id}</code> · ${proprietarioDisplay}${tarefa.responsavelExecucao?.nome ? ` · Execução: ${textoSeguroH(tarefa.responsavelExecucao.nome)}` : ''}</p>
                 <div class="vu-tarefa-acoes">
-                    <button class="btn vu-btn" onclick="voltarParaMural('${tarefa.docId}')">
+                    ${ehAdminAtual ? `<button class="btn vu-btn" onclick="voltarParaMural('${tarefa.docId}')">
                         <i class="bi bi-arrow-counterclockwise"></i>Restaurar
-                    </button>
+                    </button>` : ''}
                     ${showResultsButton ? `
                     <button class="btn vu-btn" onclick="mostrarResultados('${tarefa.docId}')">
                         <i class="bi bi-clipboard-data"></i>Resultados
@@ -693,6 +710,7 @@ function renderizarTarefas(tarefas) {
 // Voltar tarefa para o mural
 window.voltarParaMural = async (id) => {
     try {
+        await exigirAdministradorAtual();
         const tarefaInfo = todasTarefas.find(t => t.docId === id);
         const nomeTarefa = tarefaInfo ? `${formatarTipoTeste(tarefaInfo)} (${tarefaInfo.id || 'sem protocolo'})` : 'Esta tarefa';
         const opcoes = {
@@ -716,32 +734,27 @@ window.voltarParaMural = async (id) => {
         }
         
         const tarefa = historicoSnap.data();
-        
-        // Adicionar de volta ao mural com TODOS os campos preservados
-        await addDoc(collection(db, "tarefas"), {
-            id: tarefa.id,
-            tipo: tarefa.tipo,
-            quantidade: tarefa.quantidade,
-            gramatura: tarefa.gramatura || null,
-            // Preservar estrutura nova e antiga de subtipos
-            subTipo: tarefa.subTipo || null,
-            pcrTipo: tarefa.pcrTipo || null,  // Para compatibilidade com dados antigos
-            alvo: tarefa.alvo || null,  // Preservar campo alvo
-            complemento: tarefa.complemento || null,
-            proprietario: tarefa.proprietario || null,
-            veterinario: tarefa.veterinario || null,
-            observacoes: tarefa.observacoes || "",
-            status: "pendente",
-            criadoEm: tarefa.criadoEm || Timestamp.now(),
-            criadoPor: tarefa.criadoPor || auth.currentUser.uid,
-            siglaResponsavel: tarefa.siglaResponsavel || "N/A",
-            resultados: tarefa.resultados || null,
-            // Preservar também a data de recebimento se existir
-            dataRecebimento: tarefa.dataRecebimento || null
-        });
-        
-        // Remover do histórico
-        await deleteDoc(historicoRef);
+        const dadosRestaurados = { ...tarefa, status: 'pendente' };
+        delete dadosRestaurados.dataConclusao;
+        delete dadosRestaurados.concluidoPor;
+        delete dadosRestaurados.docId;
+        delete dadosRestaurados.colecao;
+        if (!dadosRestaurados.criadoPor) dadosRestaurados.criadoPor = auth.currentUser.uid;
+        const referenciaTarefa = doc(collection(db, 'tarefas'));
+        const ator = await obterAtorAuditoria();
+        const lote = writeBatch(db);
+        lote.set(referenciaTarefa, dadosRestaurados);
+        lote.delete(historicoRef);
+        await anexarEventoAuditoria(lote, {
+            ator,
+            acao: 'restaurou exame',
+            modulo: 'Histórico',
+            registroId: referenciaTarefa.id,
+            registroNome: tarefa.id,
+            antes: tarefa,
+            depois: dadosRestaurados
+        }, ator);
+        await lote.commit();
         
         // Recarregar o histórico
         carregarHistorico();
@@ -1234,14 +1247,17 @@ function inicializarAplicacao() {
                 const userDoc = await getDoc(doc(db, "usuarios", user.uid));
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
+                    ehAdminAtual = await usuarioEhAdministradorAtual();
                     if (userData.ativo === false) {
                         window.location.href = "desativado.html";
                         return;
                     }
                 }
 
-                configurarLimpezaAutomatica();
-                await executarLimpezaSeNecessaria();
+                if (ehAdminAtual) {
+                    configurarLimpezaAutomatica();
+                    await executarLimpezaSeNecessaria();
+                }
                 
                 // Se chegou até aqui, usuário está ativo - carregar histórico
                 await carregarHistorico();
