@@ -193,25 +193,6 @@ function validateEmail(email) {
   return re.test(email);
 }
 
-function definirDestinoDoUsuario(usuario) {
-  const perfil = usuario?.perfil || '';
-  const laboratorios = Array.isArray(usuario?.laboratorios)
-    ? usuario.laboratorios
-    : (usuario?.laboratorio ? [usuario.laboratorio] : []);
-
-  if (usuario?.role === 'admin' || perfil === 'Administrador Geral' || perfil === 'Secretaria') {
-    localStorage.setItem('ambienteAtivo', 'SECRETARIA');
-    return 'pages/secretaria.html';
-  }
-
-  const laboratorio = laboratorios.find(item => ['LABAC', 'LADOPAR', 'VIROLOGIA'].includes(item))
-    || usuario?.laboratorio
-    || 'VIROLOGIA';
-
-  localStorage.setItem('ambienteAtivo', laboratorio);
-  return 'pages/hub.html';
-}
-
 // Handlers de ação principais
 async function handleLogin() {
   const email = document.getElementById("login-email").value.trim();
@@ -270,7 +251,8 @@ async function handleLogin() {
       localStorage.removeItem("manterConectado");
     }
 
-    window.location.href = definirDestinoDoUsuario(usuario);
+    // Redirecionar para o hub
+    window.location.href = "pages/hub.html"; 
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     if (error.code === 'auth/user-not-found') {
@@ -508,18 +490,13 @@ async function handlePasswordReset() {
 }
 
 function checkAuthState() {
-  onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, (user) => {
     // Verificar se estamos vindo de um logout recente
     const forceLogin = new URLSearchParams(window.location.search).get('logout') === 'true';
     
     if (user && !forceLogin) {
-      let usuario = JSON.parse(localStorage.getItem('usuario') || sessionStorage.getItem('usuario') || '{}');
-      if (!usuario?.nome) {
-        const q = query(collection(db, 'usuarios'), where('uid', '==', user.uid));
-        const snap = await getDocs(q);
-        if (!snap.empty) usuario = snap.docs[0].data();
-      }
-      window.location.href = definirDestinoDoUsuario(usuario);
+      // Se usuário já está autenticado, ir direto ao hub; o hub reconstruirá os dados se faltarem
+      window.location.href = "pages/hub.html";
     }
   });
 }

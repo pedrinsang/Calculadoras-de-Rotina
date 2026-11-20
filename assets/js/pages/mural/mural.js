@@ -218,10 +218,6 @@ async function getSiglaUsuario(user) {
 async function obterMaiorSVDoAno(yearSuffix) {
     try {
         const tarefasSnapshot = await getDocs(collection(db, 'tarefas'));
-        const ambiente = localStorage.getItem('ambienteAtivo') || 'VIROLOGIA';
-        const laboratorioAtual = ambiente === 'LABAC' ? 'LABAC'
-            : ambiente === 'LADOPAR' ? 'LADOPAR'
-            : 'VIROLOGIA';
         let maiorNumero = 0;
         tarefasSnapshot.forEach(docSnap => {
             const data = docSnap.data();

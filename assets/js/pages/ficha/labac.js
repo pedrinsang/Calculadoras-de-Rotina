@@ -1,5 +1,5 @@
 import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { getDoc, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { app, auth, db } from "../../../js/firebase.js";
 
 // Firebase via módulo compartilhado
@@ -133,17 +133,8 @@ async function salvarFicha(fichaData) {
     submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Salvando...';
     submitBtn.disabled = true;
     
-    const id = globalThis.crypto?.randomUUID
-      ? globalThis.crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    await setDoc(doc(db, 'requisicoes', id), {
-      ...fichaData,
-      id,
-      laboratorio: 'LABAC',
-      status: 'Aguardando analise',
-      criadoEm: serverTimestamp(),
-      criadoPor: auth.currentUser?.uid || null
-    });
+    // Simular salvamento (substitua pela lógica do Firebase)
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     // Sucesso
     submitBtn.innerHTML = '<i class="bi bi-check-lg"></i> Salvo!';

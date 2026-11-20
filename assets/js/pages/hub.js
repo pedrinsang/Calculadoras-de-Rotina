@@ -82,10 +82,6 @@ async function carregarPainelHoje() {
   const proxima = document.getElementById('hoje-proxima');
   try {
     const snap = await getDocs(collection(db, 'tarefas'));
-    const ambiente = localStorage.getItem('ambienteAtivo') || 'VIROLOGIA';
-    const laboratorioAtual = ambiente === 'LABAC' ? 'LABAC'
-      : ambiente === 'LADOPAR' ? 'LADOPAR'
-      : 'VIROLOGIA';
     const fimDeHoje = new Date();
     fimDeHoje.setHours(23, 59, 59, 999);
 
@@ -93,9 +89,6 @@ async function carregarPainelHoje() {
     const pendentes = [];
     snap.forEach(d => {
       const t = d.data();
-      if (ambiente !== 'SECRETARIA' && t.laboratorio && t.laboratorio !== laboratorioAtual) return;
-      if (!t.laboratorio && ambiente === 'LABAC') return;
-      if (!t.laboratorio && ambiente === 'LADOPAR') return;
       if (t.status === 'concluido') return;
       total++;
       if (t.status === 'em-progresso') andando++;

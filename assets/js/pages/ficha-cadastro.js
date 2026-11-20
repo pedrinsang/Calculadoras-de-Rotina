@@ -4,22 +4,6 @@ import { app, auth, db } from "../firebase.js";
 
 // Firebase via módulo compartilhado
 
-function aplicarEscopoLaboratorial(usuario) {
-  if (!usuario) return;
-  const secretaria = usuario.role === 'admin'
-    || usuario.perfil === 'Administrador Geral'
-    || usuario.perfil === 'Secretaria';
-  if (secretaria) return;
-
-  const laboratorios = Array.isArray(usuario.laboratorios)
-    ? usuario.laboratorios
-    : (usuario.laboratorio ? [usuario.laboratorio] : []);
-
-  document.querySelectorAll('[data-laboratorio]').forEach(item => {
-    item.hidden = !laboratorios.includes(item.dataset.laboratorio);
-  });
-}
-
 document.addEventListener('DOMContentLoaded', function () {
   console.log("Página de Ficha de Cadastro carregada");
   
@@ -35,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const userActions = document.querySelector('.user-actions');
     if (userActions) userActions.style.display = 'flex';
   }
-  aplicarEscopoLaboratorial(usuario);
 
   // Event listener para o botão admin
   const adminButton = document.getElementById('admin-button');
@@ -86,7 +69,6 @@ onAuthStateChanged(auth, async (user) => {
       window.location.href = "desativado.html";
       return;
     }
-    aplicarEscopoLaboratorial(stored);
     const userNameEl = document.querySelector('.user-name');
     if (userNameEl && stored?.nome) userNameEl.textContent = stored.nome;
     if (stored?.role === 'admin') {
