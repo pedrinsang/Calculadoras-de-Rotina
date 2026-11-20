@@ -22,7 +22,7 @@ body.tv {
 .tv-data { font: 500 1.7rem/1.1 var(--font-titulo); color: var(--ts); text-align: right; }
 .tv-hora { font: 700 5.2rem/0.9 var(--font-numeros); color: #4f7f3a; letter-spacing: -0.02em; }
 
-.tv-grade { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 4fr) minmax(18rem, 1fr); gap: 1.4rem; }
+.tv-grade { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(22rem, 1fr); gap: 1.4rem; }
 .tv-painel { background: var(--c); border: 1px solid var(--l); border-radius: 1.2rem; padding: 1.1rem 1.4rem; min-height: 0; display: flex; flex-direction: column; box-shadow: 0 0.45rem 1.8rem rgba(35, 73, 52, 0.06); }
 .tv-cab { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.8rem; }
 .tv-pag { color: var(--ts); font: 400 1.05rem var(--font-numeros); }
@@ -52,8 +52,8 @@ body.tv {
 .tv-vazio { grid-row: 1 / -1; align-self: center; text-align: center; color: var(--ts); font: 500 1.6rem var(--font-titulo); }
 .tv-vazio i { display: block; font-size: 3.4rem; color: var(--lima); margin-bottom: 0.5rem; }
 
-.tv-lado { display: grid; grid-template-rows: auto 1fr; gap: 1.1rem; min-height: 0; }
-.tv-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+.tv-lado { min-width: 0; display: grid; grid-template-rows: auto 1fr; gap: 1.1rem; min-height: 0; }
+.tv-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
 .tv-kpi { background: var(--c); border: 1px solid var(--l); border-radius: 1rem; padding: 0.8rem 1rem; box-shadow: 0 0.35rem 1.2rem rgba(35, 73, 52, 0.05); }
 .tv-kpi strong { display: block; font: 700 2.8rem/1 var(--font-numeros); }
 .tv-kpi span { color: var(--ts); font-size: 1.05rem; }
@@ -67,7 +67,7 @@ body.tv {
 .tv-emit > i { color: var(--lima); font-size: 1.3rem; }
 .tv-emit .p { font: 700 1.1rem var(--font-numeros); white-space: nowrap; }
 .tv-emit .e { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tv-emit .e small { color: var(--ts); margin-left: 0.4rem; }
+.tv-emit .e small { display: block; color: var(--ts); overflow: hidden; text-overflow: ellipsis; }
 .tv-emit .q { color: var(--ts); white-space: nowrap; }
 .tv-emit.novo .q { color: var(--lima); font-weight: 700; }
 .tv-emit-vazio { color: var(--ts); align-self: center; text-align: center; grid-row: 1 / -1; }
