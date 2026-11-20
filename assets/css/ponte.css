@@ -769,6 +769,7 @@ body.vu-antiga .vu-protocolos-grupo > .vu-sobrelinha { padding: 0 var(--esp-1); 
    Conta
    ========================================================== */
 body.vu-antiga .vu-conta-secao { margin-top: var(--esp-5); }
+body.vu-antiga .vu-conta-tv { margin-top: var(--esp-3); }
 body.vu-antiga .vu-conta-secao > .vu-sobrelinha { padding: 0 var(--esp-1); color: var(--tinta-suave); }
 body.vu-antiga .conta-dados .row { --bs-gutter-x: var(--esp-4); }
 body.vu-antiga .conta-dados .form-control[readonly] { background: var(--cartao-suave) !important; color: var(--tinta) !important; font-weight: 600; }

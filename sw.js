@@ -3,7 +3,7 @@
 // Assim qualquer coisa enviada ao GitHub aparece na próxima abertura/recarga, sem precisar
 // mudar a versão abaixo. O cache só é usado quando o aparelho está offline.
 // Mude CACHE_NAME apenas se alterar este arquivo (o próprio sw.js).
-const CACHE_NAME = 'cache-v2.2.1';
+const CACHE_NAME = 'cache-v2.2.2';
 const OFFLINE_PAGE = './pages/offline.html';
 // Use caminhos relativos ao escopo para funcionar em subpaths
 const ASSETS = [
@@ -16,6 +16,7 @@ const ASSETS = [
   './pages/protocolos.html',
   './pages/tv.html',
   './pages/secretaria.html',
+  './pages/conta.html',
   './assets/css/tema.css',
   './assets/css/pages/secretaria.css',
   './assets/js/utils/ui.js',

@@ -16,7 +16,7 @@ const arquivo = (location.pathname.split('/').pop() || '').replace('.html', '');
 const chaves = {
   hub: 'inicio', mural: 'mural', historico: 'historico', 'ficha-cadastro': 'fichas',
   soroneutralizacao: 'sn', vacinas: 'vacinas', elisa: 'elisa', protocolos: 'protocolos',
-  auditoria: 'auditoria',
+  auditoria: 'auditoria', tv: 'tv',
   admin: 'admin', secretaria: 'secretaria', conta: 'conta'
 };
 const atual = naPastaFicha ? 'fichas' : (chaves[arquivo] || '');
@@ -35,6 +35,7 @@ const lateral = `
   ${nav('fichas', 'ficha-cadastro.html', 'bi-clipboard2-pulse', 'Fichas')}
   ${nav('historico', 'historico.html', 'bi-clock-history', 'Histórico')}
   ${nav('secretaria', 'secretaria.html', 'bi-envelope-paper', 'Secretaria')}
+  ${nav('tv', 'tv.html', 'bi-tv', 'TV')}
   <p class="vu-sobrelinha">Calculadoras</p>
   ${nav('sn', 'soroneutralizacao.html', 'bi-calculator', 'Soroneutralização')}
   ${nav('vacinas', 'vacinas.html', 'bi-droplet', 'Vacinas')}
