@@ -3,7 +3,7 @@
 // Assim qualquer coisa enviada ao GitHub aparece na próxima abertura/recarga, sem precisar
 // mudar a versão abaixo. O cache só é usado quando o aparelho está offline.
 // Mude CACHE_NAME apenas se alterar este arquivo (o próprio sw.js).
-const CACHE_NAME = 'classico-v2.0.0'; // versão antiga, guardada em /classico/
+const CACHE_NAME = 'classico-v2.0.1';
 const OFFLINE_PAGE = './pages/offline.html';
 // Use caminhos relativos ao escopo para funcionar em subpaths
 const ASSETS = [
@@ -14,6 +14,10 @@ const ASSETS = [
   './pages/vacinas.html',
   './pages/elisa.html',
   './pages/protocolos.html',
+  './pages/tv.html',
+  './assets/css/tema.css',
+  './assets/css/pages/tv.css',
+  './assets/js/pages/tv.js',
   './icons/icon-72x72.png',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',

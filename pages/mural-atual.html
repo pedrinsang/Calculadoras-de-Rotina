@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Mural de Tarefas (versão atual)</title>
+  <script src="../assets/js/utils/tema.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/pages/mural.css">
+  <link rel="stylesheet" href="../assets/css/pages/pcr-menu.css">
+  <link rel="stylesheet" href="../assets/css/tema.css">
+  <link rel="stylesheet" href="../assets/css/ponte.css">
+</head>
+<body>
+  <div class="container mural-card shadow">
+    <header class="vu-pagina-topo">
+      <div>
+        <h1 class="mural-title">Mural</h1>
+        <p id="mural-resumo">Tarefas do setor</p>
+      </div>
+      <div class="vu-acoes-topo">
+        <button id="historico-button" class="vu-btn">
+          <i class="bi bi-clock-history"></i> Histórico
+        </button>
+        <button id="adicionar-tarefa" class="vu-btn vu-btn-principal">
+          <i class="bi bi-plus-lg"></i> Nova tarefa
+        </button>
+        <!-- Mantido escondido: o script ainda procura por ele -->
+        <button id="voltar-hub" class="vu-oculto" type="button">Início</button>
+      </div>
+    </header>
+
+    <!-- Filtros: as pílulas controlam os selects escondidos (o script ouve o "change" deles) -->
+    <div class="vu-barra-filtros">
+      <div class="vu-barra-filtros-linha">
+        <div class="vu-busca">
+          <i class="bi bi-search vu-ico"></i>
+          <input type="search" id="mural-busca" placeholder="Protocolo, teste ou proprietário" aria-label="Buscar no Mural">
+        </div>
+        <div class="vu-filtros" data-espelho="filtro-ordem" role="group" aria-label="Ordem">
+          <span class="vu-filtros-marca"></span>
+          <button type="button" class="vu-filtro" data-valor="recentes">Recentes</button>
+          <button type="button" class="vu-filtro" data-valor="antigas">Antigas</button>
+        </div>
+      </div>
+      <div class="vu-opcoes vu-opcoes--rolar" data-espelho="filtro-tipo" role="group" aria-label="Filtrar por teste">
+        <button type="button" class="vu-opcao" data-valor="Todos"><i class="bi bi-check2"></i>Todos</button>
+        <button type="button" class="vu-opcao" data-valor="SN"><i class="bi bi-check2"></i>SN</button>
+        <button type="button" class="vu-opcao" data-valor="VACINA"><i class="bi bi-check2"></i>Vacina</button>
+        <button type="button" class="vu-opcao" data-valor="ELISA"><i class="bi bi-check2"></i>ELISA</button>
+        <button type="button" class="vu-opcao" data-valor="MOLECULAR"><i class="bi bi-check2"></i>Molecular</button>
+        <button type="button" class="vu-opcao" data-valor="ICC"><i class="bi bi-check2"></i>ICC</button>
+        <button type="button" class="vu-opcao" data-valor="RAIVA"><i class="bi bi-check2"></i>Raiva</button>
+      </div>
+      <select id="filtro-tipo" class="vu-oculto" aria-hidden="true" tabindex="-1">
+        <option value="Todos">Todos</option>
+        <option value="SN">SN</option>
+        <option value="VACINA">VACINA</option>
+        <option value="ELISA">ELISA</option>
+        <option value="MOLECULAR">MOLECULAR</option>
+        <option value="ICC">ICC</option>
+        <option value="RAIVA">RAIVA</option>
+      </select>
+      <select id="filtro-ordem" class="vu-oculto" aria-hidden="true" tabindex="-1">
+        <option value="recentes">Mais recentes</option>
+        <option value="antigas">Mais antigas</option>
+      </select>
+    </div>
+    <form id="mural-form" class="mural-section" style="display:none;">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="id" class="mural-form-label">Identificação:</label>
+          <input type="text" id="id" name="id" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+          <label for="tipo" class="mural-form-label">Teste:</label>
+          <select id="tipo" name="tipo" class="form-select" required>
+            <option value="SN">SN</option>
+            <option value="VACINA">VACINA</option>
+            <option value="ELISA">ELISA</option>
+            <option value="MOLECULAR">MOLECULAR</option>
+            <option value="ICC">ICC</option>
+            <option value="RAIVA">RAIVA</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="quantidade" class="mural-form-label">Quantidade:</label>
+          <input type="number" id="quantidade" name="quantidade" class="form-control" min="1" required>
+        </div>
+        <div class="col-md-4" id="gramatura-container" style="display:none;">
+          <label for="gramatura" class="mural-form-label">Gramatura (Vacina):</label>
+          <input type="number" id="gramatura" name="gramatura" class="form-control" step="0.01">
+        </div>
+        <div class="col-12">
+          <h5 class="mural-form-label mt-3">Proprietário</h5>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label for="proprietario-nome" class="form-label">Nome:</label>
+              <input type="text" id="proprietario-nome" list="proprietarios-list" class="form-control">
+              <datalist id="proprietarios-list"></datalist>
+            </div>
+            <div class="col-md-4">
+              <label for="proprietario-municipio" class="form-label">Município:</label>
+              <input type="text" id="proprietario-municipio" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label for="proprietario-contato" class="form-label">Contato:</label>
+              <input type="text" id="proprietario-contato" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <h5 class="mural-form-label mt-3">Médico Veterinário</h5>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label for="veterinario-nome" class="form-label">Nome:</label>
+              <input type="text" id="veterinario-nome" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label for="veterinario-crmv" class="form-label">CRMV:</label>
+              <input type="text" id="veterinario-crmv" class="form-control" placeholder="Ex.: 12345/RS">
+            </div>
+            <div class="col-md-4">
+              <label for="veterinario-municipio" class="form-label">Município:</label>
+              <input type="text" id="veterinario-municipio" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label for="veterinario-contato" class="form-label">Contato:</label>
+              <input type="text" id="veterinario-contato" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label for="data" class="mural-form-label">Data de Recebimento:</label>
+          <input type="date" id="data" name="data" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+          <label for="hora" class="mural-form-label">Hora de Recebimento:</label>
+          <input type="time" id="hora" name="hora" class="form-control" required>
+        </div>
+        <div class="col-12">
+          <label for="observacoes" class="mural-form-label">Observações:</label>
+          <textarea id="observacoes" name="observacoes" rows="2" class="form-control"></textarea>
+        </div>
+        <div class="col-12 d-flex gap-2 mt-2">
+          <button type="submit" class="mural-btn flex-grow-1"><i class="bi bi-save"></i> Salvar</button>
+          <button type="button" id="cancelar-tarefa" class="mural-btn-outline flex-grow-1"><i class="bi bi-x-circle"></i> Cancelar</button>
+        </div>
+      </div>
+    </form>
+    <div id="mural-list" class="mural-list"></div>
+    <div id="feedback" class="mural-feedback"></div>
+    <!-- Modal de resultados (mantém funcionalidade) -->
+    <div id="modal-resultados" class="modal fade" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-success"><i class="bi bi-clipboard2-data"></i> Resultados</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body" id="modal-resultados-content">
+            <!-- Conteúdo dinâmico -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal de Adição/Edição de Tarefas -->
+    <div class="modal fade" id="tarefa-modal" tabindex="-1" aria-labelledby="tarefaModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tarefaModalLabel">Nova tarefa</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="mural-form-modal">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="id-modal" class="mural-form-label">Identificação:</label>
+                  <input type="text" id="id-modal" name="id" class="form-control" required>
+                </div>
+                <div class="col-12 col-md-8">
+                  <label for="tipo-modal" class="mural-form-label">Teste</label>
+                  <div class="vu-opcoes" data-espelho="tipo-modal" role="group" aria-label="Teste">
+                    <button type="button" class="vu-opcao" data-valor="SN"><i class="bi bi-check2"></i>SN</button>
+                    <button type="button" class="vu-opcao" data-valor="VACINA"><i class="bi bi-check2"></i>Vacina</button>
+                    <button type="button" class="vu-opcao" data-valor="ELISA"><i class="bi bi-check2"></i>ELISA</button>
+                    <button type="button" class="vu-opcao" data-valor="MOLECULAR"><i class="bi bi-check2"></i>Molecular</button>
+                    <button type="button" class="vu-opcao" data-valor="ICC"><i class="bi bi-check2"></i>ICC</button>
+                    <button type="button" class="vu-opcao" data-valor="RAIVA"><i class="bi bi-check2"></i>Raiva</button>
+                  </div>
+                  <select id="tipo-modal" name="tipo" class="form-select vu-oculto" required tabindex="-1" aria-hidden="true">
+                    <option value="SN">SN</option>
+                    <option value="VACINA">VACINA</option>
+                    <option value="ELISA">ELISA</option>
+                    <option value="MOLECULAR">MOLECULAR</option>
+                    <option value="ICC">ICC</option>
+                    <option value="RAIVA">RAIVA</option>
+                  </select>
+                </div>
+                <div class="col-md-4" id="sn-container-modal" style="display:none;">
+                  <label for="sn-tipo-modal" class="mural-form-label">Tipo de SN:</label>
+                  <div class="sn-input-container">
+                    <input type="text" id="sn-tipo-modal" name="subTipo" class="form-control sn-input-readonly" readonly placeholder="Selecione o tipo de SN">
+                    <i class="bi bi-chevron-down sn-dropdown-icon"></i>
+                    <div id="sn-floating-menu" class="sn-floating-menu">
+                      <div class="sn-menu-item" data-value="SN BVDV-1">SN BVDV-1</div>
+                      <div class="sn-menu-item" data-value="SN BVDV-2">SN BVDV-2</div>
+                      <div class="sn-menu-item" data-value="SN IBR">SN IBR</div>
+                      <div class="sn-menu-item" data-value="SN HoBi">SN HoBi</div>
+                      <div class="sn-menu-item" data-value="SN EHV-1">SN EHV-1</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4" id="elisa-container-modal" style="display:none;">
+                  <label for="elisa-tipo-modal" class="mural-form-label">Tipo de ELISA:</label>
+                  <div class="elisa-input-container">
+                    <input type="text" id="elisa-tipo-modal" name="subTipo" class="form-control elisa-input-readonly" readonly placeholder="Selecione o tipo de ELISA">
+                    <i class="bi bi-chevron-down elisa-dropdown-icon"></i>
+                    <div id="elisa-floating-menu" class="elisa-floating-menu">
+                      <div class="elisa-menu-item" data-value="ELISA LEUCOSE">ELISA LEUCOSE</div>
+                      <div class="elisa-menu-item" data-value="ELISA BVDV">ELISA BVDV</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4" id="pcr-container-modal" style="display:none;">
+                  <label for="pcr-tipo-modal" class="mural-form-label">Tipo de Molecular:</label>
+                  <div class="pcr-input-container">
+                    <input type="text" id="pcr-tipo-modal" name="subTipo" class="form-control pcr-input-readonly" readonly placeholder="Selecione o tipo de Molecular">
+                    <i class="bi bi-chevron-down pcr-dropdown-icon"></i>
+                    <div id="pcr-floating-menu" class="pcr-floating-menu">
+                      <div class="pcr-menu-item" data-value="PCR">PCR</div>
+                      <div class="pcr-menu-item" data-value="RT-PCR">RT-PCR</div>
+                      <div class="pcr-menu-item" data-value="Duplex Rota e Corona Bovino">Duplex Rota e Corona Bovino</div>
+                      <div class="pcr-menu-item" data-value="Duplex Rota e Corona Equino">Duplex Rota e Corona Equino</div>
+                      <div class="pcr-menu-item" data-value="Multiplex Crostas Bovina">Multiplex Crostas Bovina</div>
+                      <div class="pcr-menu-item" data-value="Multiplex Diarreia Neonatal Bovina">Multiplex Diarreia Neonatal Bovina</div>
+                      <div class="pcr-menu-item" data-value="Multiplex Doença Respiratória Bovina">Multiplex Doença Respiratória Bovina</div>
+                      <div class="pcr-menu-item" data-value="Multiplex Encefalites Equina">Multiplex Encefalites Equina</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4" id="alvo-container-modal" style="display:none;">
+                  <label for="alvo-modal" class="mural-form-label">Alvo:</label>
+                  <input type="text" id="alvo-modal" name="alvo" class="form-control" placeholder="Ex: Cinomose, Parvovírus, BVDV..." maxlength="100">
+                  <small class="form-text text-muted">Especifique o vírus, bactéria ou patógeno a ser detectado</small>
+                </div>
+                <div class="col-md-4">
+                  <label for="quantidade-modal" class="mural-form-label">Quantidade de amostras</label>
+                  <div class="vu-contador" data-min="1" data-max="999">
+                    <button type="button" aria-label="Diminuir"><i class="bi bi-dash-lg"></i></button>
+                    <input type="number" id="quantidade-modal" name="quantidade" min="1" required inputmode="numeric" placeholder="0">
+                    <button type="button" data-mais aria-label="Aumentar"><i class="bi bi-plus-lg"></i></button>
+                  </div>
+                </div>
+                <div class="col-md-4" id="gramatura-container-modal" style="display:none;">
+                  <label for="gramatura-modal" class="mural-form-label">Gramatura (Vacina):</label>
+                  <input type="number" id="gramatura-modal" name="gramatura" class="form-control" step="0.01">
+                </div>
+                <div class="col-md-4">
+                  <label for="material-recebido-modal" class="mural-form-label">Material Recebido:</label>
+                  <input type="text" id="material-recebido-modal" name="materialRecebido" class="form-control" placeholder="Ex: Soro, Sangue, Swab...">
+                </div>
+                <div class="col-12">
+                  <h5 class="mural-form-label mt-3">Proprietário</h5>
+                  <div class="row g-2">
+                    <div class="col-md-4">
+                      <label for="proprietario-nome-modal" class="form-label">Nome:</label>
+                      <input type="text" id="proprietario-nome-modal" list="proprietarios-list-modal" class="form-control">
+                      <datalist id="proprietarios-list-modal"></datalist>
+                    </div>
+                    <div class="col-md-4">
+                      <label for="proprietario-municipio-modal" class="form-label">Município:</label>
+                      <input type="text" id="proprietario-municipio-modal" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                      <label for="proprietario-contato-modal" class="form-label">Contato:</label>
+                      <input type="text" id="proprietario-contato-modal" class="form-control">
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <h5 class="mural-form-label mt-3">Médico Veterinário</h5>
+                  <div class="row g-2">
+                    <div class="col-md-4">
+                      <label for="veterinario-nome-modal" class="form-label">Nome:</label>
+                      <input type="text" id="veterinario-nome-modal" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                      <label for="veterinario-crmv-modal" class="form-label">CRMV:</label>
+                      <input type="text" id="veterinario-crmv-modal" class="form-control" placeholder="Ex.: 12345/RS">
+                    </div>
+                    <div class="col-md-4">
+                      <label for="veterinario-municipio-modal" class="form-label">Município:</label>
+                      <input type="text" id="veterinario-municipio-modal" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                      <label for="veterinario-contato-modal" class="form-label">Contato:</label>
+                      <input type="text" id="veterinario-contato-modal" class="form-control">
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="data-modal" class="mural-form-label">Data de Recebimento:</label>
+                  <input type="date" id="data-modal" name="data" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label for="hora-modal" class="mural-form-label">Hora de Recebimento:</label>
+                  <input type="time" id="hora-modal" name="hora" class="form-control" required>
+                </div>
+                <div class="col-12">
+                  <label for="observacoes-modal" class="mural-form-label">Observações:</label>
+                  <textarea id="observacoes-modal" name="observacoes" rows="2" class="form-control"></textarea>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="mural-btn-outline" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+            <button type="button" id="salvar-tarefa-modal" class="mural-btn"><i class="bi bi-save"></i> Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/utils/ui.js"></script>
+  <script>
+    // Ao abrir "Nova tarefa" ou "Editar", as pílulas mostram o teste escolhido
+    document.getElementById("tarefa-modal").addEventListener("shown.bs.modal", function () {
+      if (window.VirologiaUFSM) VirologiaUFSM.sincronizarEspelhos(this);
+    });
+  </script>
+  <script type="module" src="../assets/js/utils/casca.js"></script>
+  <script type="module" src="../assets/js/pages/mural/mural.js"></script>
+  <script type="module" src="../assets/js/pages/mural/regresultado.js"></script>
+</body>
+</html>

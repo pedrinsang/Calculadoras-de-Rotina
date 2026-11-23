@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1510">
+  <title>TV | Virologia UFSM</title>
+  <link rel="icon" href="../icons/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/tema.css">
+  <link rel="stylesheet" href="../assets/css/pages/tv.css">
+</head>
+
+<body class="tv">
+  <header class="tv-topo">
+    <div class="tv-marca">
+      <img src="../assets/images/logo-sv.png" alt="">
+      <div><b>Setor de Virologia</b><small>Sala de diagnóstico</small></div>
+    </div>
+    <div class="tv-saudacao" id="tv-saudacao"></div>
+    <div class="tv-data" id="tv-data"></div>
+    <div class="tv-hora" id="tv-hora" aria-live="off">--:--</div>
+  </header>
+
+  <main class="tv-grade">
+    <section class="tv-painel tv-fazer" aria-labelledby="t-fazer">
+      <div class="tv-cab">
+        <h2 id="t-fazer">Exames a fazer</h2>
+        <span class="tv-pag" id="tv-pag"></span>
+      </div>
+      <div class="tv-rotulos" aria-hidden="true">
+        <span>Protocolo</span><span>Exame</span><span>Amostras</span><span>Resp.</span><span>Prazo</span>
+      </div>
+      <ol class="tv-lista" id="tv-lista"></ol>
+    </section>
+
+    <aside class="tv-lado">
+      <section class="tv-kpis" id="tv-kpis" aria-label="Resumo"></section>
+      <section class="tv-painel tv-emitidos" aria-labelledby="t-emit">
+        <div class="tv-cab"><h2 id="t-emit">Emitidos nos últimos 7 dias</h2><span class="tv-pag" id="tv-emit-qtd"></span></div>
+        <ul class="tv-emit-lista" id="tv-emitidos"></ul>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="tv-pe">
+    <span class="tv-status" id="tv-status"><i></i><span>Conectando…</span></span>
+    <span class="tv-atualizacao" id="tv-atualizacao">Atualizado às --:--:--</span>
+    <button type="button" class="tv-tela" id="tv-tela" title="Tela cheia (F)"><i class="bi bi-arrows-fullscreen"></i> Tela cheia</button>
+  </footer>
+
+  <script type="module" src="../assets/js/pages/tv.js"></script>
+</body>
+
+</html>

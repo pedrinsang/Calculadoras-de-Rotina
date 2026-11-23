@@ -40,6 +40,7 @@ A aplicação utiliza Firebase para autenticação de usuários e armazenamento 
     -   **ELISA:** Ferramentas para auxiliar nos cálculos de reagentes para ensaios de ELISA (Leucose e BVDV) com checklists de protocolo.
 -   **POPs e procedimentos técnicos:** Consulta de PDFs, cadastro de novos documentos, substituição de versões e exclusão por administradores.
 -   **Mural de Tarefas (Kanban):** Sistema para gerenciamento de tarefas e amostras laboratoriais, permitindo o acompanhamento do status (pendente, em progresso, concluído) e registro de resultados.
+-   **Painel da TV (versão clássica):** Exibe tarefas pendentes, prazos e laudos recentes em tempo real.
 -   **Histórico de Tarefas Concluídas:** Armazenamento e consulta de tarefas finalizadas, com opção de visualização de detalhes e **exportação de laudos em formato .docx**.
 -   **Auditoria e perfis de acesso:** Histórico de alterações visível a usuários autenticados, perfis para a equipe e identificação de quem iniciou cada exame.
 -   **Secretaria:** Fila em tempo real de laudos emitidos aguardando envio, com acesso à ficha, registro de envio e aviso discreto no início do app. O perfil Secretaria é atribuído pela Administração.
@@ -118,6 +119,7 @@ Para obter uma cópia local funcionando, siga estas etapas.
     -   Após o login, você será direcionado ao Hub.
     -   Navegue para as calculadoras desejadas (Soroneutralização, Vacinas, ELISA).
     -   Acesse o "Mural de Tarefas" para gerenciar amostras e análises.
+    -   Na versão clássica, acesse "Painel da TV" para abrir o painel ao vivo.
     -   Consulte os "Protocolos" disponíveis.
     -   Clique no ícone de engrenagem (⚙️) para acessar as "Configurações da Conta".
 3.  **Calculadoras (`pages/elisa.html`, `pages/soroneutralizacao.html`, `pages/vacinas.html`):**
@@ -127,6 +129,7 @@ Para obter uma cópia local funcionando, siga estas etapas.
     -   Os resultados serão exibidos e poderão ser copiados.
     -   Algumas calculadoras (como ELISA) possuem checklists de protocolo integrados.
 4.  **Mural de Tarefas (`pages/mural.html`):**
+     -   O endereço público redireciona para o mural clássico em `classico/pages/mural.html`.
     -   Adicione novas tarefas (amostras) com detalhes como ID, tipo, quantidade, proprietário, veterinário, etc.
     -   Acompanhe o status: "Pendente", "Em Progresso", "Concluído".
     -   Registre os resultados diretamente do mural para os tipos de teste aplicáveis (SN, ELISA, PCR, Raiva, ICC).
