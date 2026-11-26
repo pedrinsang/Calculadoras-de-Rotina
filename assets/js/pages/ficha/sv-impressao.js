@@ -2,7 +2,7 @@
 // "Requisição de Exames / Laudo" e exporta em PDF.
 import {
     GRUPOS_EXAMES, RESPONSAVEL_TECNICO, classificarVN, resumoVN,
-    esc, dataBR, moedaBR, examesMarcados, nomeExame, virusVN, separarIdentificacoes,
+    esc, dataBR, moedaBR, examesDoLaudo, nomeExame, virusVN, separarIdentificacoes,
     amostrasDaVN, gruposPorResultado, detalheAutomatico
 } from "./sv-comum.js";
 import { STATUS } from "../../utils/svFichasDB.js";
@@ -83,7 +83,7 @@ export function htmlFicha(f) {
     const emitido = f.status === STATUS.LAUDO_EMITIDO;
 
     const gruposPrincipais = GRUPOS_EXAMES.filter(g => !g.secao);
-    const gruposAborto = GRUPOS_EXAMES.filter(g => g.secao);
+    const gruposAborto = GRUPOS_EXAMES.filter(g => g.secao && g.id !== 'aborto_recepcao');
 
     const linhasExames = gruposPrincipais.map(g => {
         let corpo = g.itens.map(i => marca(f, i)).join(' ');
@@ -98,7 +98,7 @@ export function htmlFicha(f) {
         ? virus.map(vv => tabelaVN(vv.nome, f.vn?.[vv.id])).join('')
         : tabelaVN('', []) + tabelaVN('', []);
 
-    const marcados = examesMarcados(f);
+    const marcados = examesDoLaudo(f);
     const resultados = laudo.resultados || {};
     const linhasResultado = marcados.length
         ? marcados.map(i => linhasLaudo(f, i, resultados[i.id] || {})).join('')

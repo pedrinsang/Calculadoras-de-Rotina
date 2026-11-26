@@ -1,7 +1,7 @@
 // Etapa 2 — o responsável técnico preenche resultados, títulos de VN e laudo final
 // na MESMA ficha (mesmo protocolo); ao emitir, o status vira "Laudo emitido".
 import {
-    exigirLogin, esc, dataBR, separarIdentificacoes, hojeISO, mostrarAviso, examesMarcados, nomeExame, OPCOES_RESULTADO,
+    exigirLogin, esc, dataBR, separarIdentificacoes, hojeISO, mostrarAviso, examesDoLaudo, nomeExame, OPCOES_RESULTADO,
     renderVNForm, coletarVNForm, renderCobrancaForm, coletarCobrancaForm,
     amostrasDaVN, gruposPorResultado, resultadoGeral, detalheAutomatico
 } from "./sv-comum.js";
@@ -35,7 +35,7 @@ function renderResumo(f) {
 }
 
 function renderResultados(f) {
-    const marcados = examesMarcados(f);
+    const marcados = examesDoLaudo(f);
     const res = f.laudo?.resultados || {};
     if (!marcados.length) {
         $('resultados').innerHTML = '<p class="sv-dica">Nenhum exame marcado na requisição. <a href="sv-requisicao.html?id=' + encodeURIComponent(f.protocolo) + '">Editar requisição</a></p>';
@@ -233,7 +233,7 @@ function renderPainelMural(tarefas, m) {
             <a href="sv-requisicao.html?id=${encodeURIComponent(protocolo)}">Abra e salve a requisição</a> para criá-las.`;
         return;
     }
-    const nomes = Object.fromEntries(examesMarcados(ficha).map(i => [i.id, nomeExame(ficha, i)]));
+    const nomes = Object.fromEntries(examesDoLaudo(ficha).map(i => [i.id, nomeExame(ficha, i)]));
     const itens = Object.entries(m.tarefasPorExame).flatMap(([exame, ts]) =>
         ts.map(t => `<li><strong>${esc(nomes[exame] || t.exameFichaNome || exame)}</strong> — ${esc(descreverTarefa(t))}: ${esc(statusTarefa(t))}</li>`));
     m.semVinculo.forEach(t => itens.push(`<li class="sv-mural-aviso">${esc(descreverTarefa(t))}: ${esc(statusTarefa(t))} (não ligada a nenhum exame marcado)</li>`));

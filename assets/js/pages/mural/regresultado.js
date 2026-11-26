@@ -505,6 +505,10 @@ async function registrarResultadoMolecularSimples(tarefa, tarefaRef) {
         </div>
     `;
 
+    if (tarefa.alvo && (tarefa.subTipo === "PCR" || tarefa.subTipo === "RT-PCR")) {
+        modal.querySelector("h3").append(document.createTextNode(` - ${tarefa.alvo}`));
+    }
+
     document.body.appendChild(modal);
 
     // Fechar modal

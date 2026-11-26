@@ -222,6 +222,10 @@ export function examesMarcados(ficha) {
     return todosExames().filter(i => ficha?.exames?.[i.id] === true);
 }
 
+export function examesDoLaudo(ficha) {
+    return examesMarcados(ficha).filter(i => i.id !== 'aborto_recepcao');
+}
+
 // Vírus com tabela de vírus-neutralização = sorologias marcadas
 export function virusVN(ficha) {
     const grupo = GRUPOS_EXAMES.find(g => g.id === 'sorologia');

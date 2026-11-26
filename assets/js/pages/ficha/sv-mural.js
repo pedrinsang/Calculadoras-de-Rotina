@@ -152,15 +152,22 @@ function semResultados(t) {
 // (só se ainda estiverem pendentes e sem resultados). Retorna { criadas, atualizadas, removidas }.
 export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
     const protocolo = ficha.protocolo;
-    const [ativas, concluidas] = await Promise.all([
+    const consultas = await Promise.all([
         buscar('tarefas', 'fichaSV', protocolo),
-        buscar('historico', 'fichaSV', protocolo)
+        buscar('tarefas', 'id', protocolo),
+        buscar('historico', 'fichaSV', protocolo),
+        buscar('historico', 'id', protocolo)
     ]);
+    const documentos = new Map();
+    consultas.flat().forEach(t => documentos.set(`${t.colecao}/${t.docId}`, t));
+    const vinculadas = [...documentos.values()];
+    const ativas = vinculadas.filter(t => t.colecao === 'tarefas');
+    const concluidas = vinculadas.filter(t => t.colecao === 'historico');
     const desejadas = examesMarcados(ficha)
         .map(item => ({ item, alvo: tarefaParaExame(ficha, item) }))
         .filter(x => x.alvo);
     const idsDesejados = new Set(desejadas.map(x => x.item.id));
-    const jaExiste = new Set([...ativas, ...concluidas].map(t => t.exameFicha));
+    const jaExiste = new Set(vinculadas.map(t => exameDaTarefa(ficha, t)).filter(Boolean));
     const base = dadosBaseTarefa(ficha);
     const resultado = { criadas: 0, atualizadas: 0, removidas: 0 };
 
@@ -207,8 +214,10 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
 
     for (const t of ativas) {
         if (!semResultados(t)) continue;
+        const exame = exameDaTarefa(ficha, t);
+        if (!exame) continue;
         const ref = doc(db, 'tarefas', t.docId);
-        if (!idsDesejados.has(t.exameFicha)) {
+        if (!idsDesejados.has(exame)) {
             await gravarComAuditoria({
                 operacao: 'excluir',
                 referencia: ref,
@@ -221,10 +230,12 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
             resultado.removidas++;
             continue;
         }
-        const item = desejadas.find(x => x.item.id === t.exameFicha);
+        const item = desejadas.find(x => x.item.id === exame);
         const alvoAtual = item?.alvo || {};
         const dadosAtualizados = {
             ...base,
+            fichaSV: protocolo,
+            exameFicha: exame,
             subTipo: alvoAtual.subTipo ?? t.subTipo ?? null,
             alvo: alvoAtual.alvo ?? t.alvo ?? null,
             exameFichaNome: item ? nomeExame(ficha, item.item) : (t.exameFichaNome || null),
@@ -295,6 +306,16 @@ function amostrasDoMural(amostras) {
     }).filter(a => a.resultado);
 }
 
+function amostrasUnicas(amostras) {
+    const vistas = new Set();
+    return amostras.filter(a => {
+        const chave = `${a.nome}\u0000${a.resultado}`;
+        if (vistas.has(chave)) return false;
+        vistas.add(chave);
+        return true;
+    });
+}
+
 // Converte as tarefas do Mural em { vn, resultados, tarefasPorExame, semVinculo }
 export function resultadosDoMural(ficha, tarefas) {
     const vn = {};
@@ -313,7 +334,10 @@ export function resultadosDoMural(ficha, tarefas) {
             const amostras = amostrasDaVN(vn[exame]);
             resultados[exame] = { resultado: resultadoGeral(amostras), detalhe: '', amostras };
         } else if (Array.isArray(t.resultados.amostras)) {
-            const amostras = [...(resultados[exame]?.amostras || []), ...amostrasDoMural(t.resultados.amostras)];
+            const amostras = amostrasUnicas([
+                ...(resultados[exame]?.amostras || []),
+                ...amostrasDoMural(t.resultados.amostras)
+            ]);
             resultados[exame] = { resultado: resultadoGeral(amostras), detalhe: '', amostras };
         }
     }
