@@ -22,6 +22,7 @@ import {
     obterAtorAuditoria,
     usuarioEhAdministradorAtual
 } from "../../utils/auditoria.js";
+import { separarAlvosPCR } from "../../utils/alvosPCR.js";
 
 // Imports locais
 import { registrarResultadoSN, registrarResultadoELISA, registrarResultadoMolecular, registrarResultadoRAIVA, registrarResultadoICC} from "./regresultado.js";
@@ -388,17 +389,27 @@ async function adicionarTarefaModal() {
         if (isNaN(novaTarefa.quantidade)) throw new Error("Quantidade inválida");
         if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
 
-        // Add to Firestore
-        const referenciaTarefa = doc(collection(db, "tarefas"));
-        await gravarComAuditoria({
-            operacao: 'criar',
-            referencia: referenciaTarefa,
-            dados: novaTarefa,
-            modulo: 'Exames',
-            registroId: referenciaTarefa.id,
-            registroNome: novaTarefa.id,
-            acao: 'criou exame'
-        });
+        const alvosPCR = tipoInput.value === 'MOLECULAR' && subTipo === 'PCR'
+            ? separarAlvosPCR(alvo)
+            : null;
+        const tarefasParaCriar = alvosPCR
+            ? alvosPCR.map(item => ({ ...novaTarefa, alvo: item.nome }))
+            : [novaTarefa];
+        const lote = writeBatch(db);
+        const ator = await obterAtorAuditoria();
+        for (const tarefa of tarefasParaCriar) {
+            const referenciaTarefa = doc(collection(db, "tarefas"));
+            lote.set(referenciaTarefa, tarefa);
+            await anexarEventoAuditoria(lote, {
+                acao: 'criou exame',
+                modulo: 'Exames',
+                registroId: referenciaTarefa.id,
+                registroNome: tarefa.id,
+                antes: {},
+                depois: tarefa
+            }, ator);
+        }
+        await lote.commit();
 
         // Atualizar contador local de SV (reserva simples)
         try {
@@ -417,7 +428,10 @@ async function adicionarTarefaModal() {
         if (modal) modal.hide();
         
         carregarTarefas();
-        mostrarFeedback("Tarefa adicionada com sucesso!", "success");
+        mostrarFeedback(
+            tarefasParaCriar.length > 1 ? "Tarefas adicionadas com sucesso!" : "Tarefa adicionada com sucesso!",
+            "success"
+        );
     } catch (error) {
         console.error("Erro ao adicionar tarefa:", error);
         mostrarFeedback(`Erro: ${error.message}`, "error");

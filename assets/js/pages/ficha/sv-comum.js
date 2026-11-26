@@ -3,6 +3,7 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { getDoc, doc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { auth, db } from "../../firebase.js";
 import { listarFichas } from "../../utils/svFichasDB.js";
+import { separarAlvosPCR } from "../../utils/alvosPCR.js";
 
 // ------------------------------------------------------------------
 // Catálogo de exames: uma única fonte para formulário, banco, laudo e impressão.
@@ -223,7 +224,21 @@ export function examesMarcados(ficha) {
 }
 
 export function examesDoLaudo(ficha) {
-    return examesMarcados(ficha).filter(i => i.id !== 'aborto_recepcao');
+    return examesMarcados(ficha)
+        .filter(i => i.id !== 'aborto_recepcao')
+        .flatMap(item => {
+            if (item.id !== 'pcr_outros') return [item];
+            const alvos = separarAlvosPCR(ficha?.examesOutros?.[item.id]);
+            if (!alvos) return [item];
+            return alvos.map(alvo => ({
+                ...item,
+                id: `${item.id}__${alvo.chave}`,
+                nome: alvo.nome,
+                outro: false,
+                alvoPCR: alvo.nome,
+                exameOriginalId: item.id
+            }));
+        });
 }
 
 // Vírus com tabela de vírus-neutralização = sorologias marcadas

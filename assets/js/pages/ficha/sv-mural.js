@@ -16,7 +16,8 @@ import {
 } from "../../utils/auditoria.js";
 import { calcularDataPrazo, parseDateInputLocal } from "../../utils/prazosMural.js";
 import { idDoc } from "../../utils/svFichasDB.js";
-import { examesMarcados, nomeExame, separarIdentificacoes, amostrasDaVN, classeResultado, resultadoGeral } from "./sv-comum.js";
+import { examesDoLaudo, nomeExame, separarIdentificacoes, amostrasDaVN, classeResultado, resultadoGeral } from "./sv-comum.js";
+import { normalizarAlvoPCR, separarAlvosPCR } from "../../utils/alvosPCR.js";
 
 // ------------------------------------------------------------------
 // Exame da ficha -> tarefa do Mural
@@ -41,6 +42,7 @@ const MOLECULAR_ESPECIAL = {
 // Retorna { tipo, subTipo, alvo } ou null (exame sem tarefa correspondente no Mural)
 export function tarefaParaExame(ficha, item) {
     const outro = (ficha?.examesOutros?.[item.id] || '').trim();
+    if (item.alvoPCR) return { tipo: 'MOLECULAR', subTipo: 'PCR', alvo: item.alvoPCR };
     switch (item.id) {
         case 'sorologia_bvdv': return { tipo: 'SN', subTipo: 'SN BVDV-1', alvo: null };
         case 'sorologia_bohv1_ibr': return { tipo: 'SN', subTipo: 'SN IBR', alvo: null };
@@ -62,8 +64,17 @@ export function tarefaParaExame(ficha, item) {
 
 // Para tarefas antigas/criadas à mão (sem exameFicha): descobre a qual exame da ficha pertencem
 function exameDaTarefa(ficha, t) {
-    if (t.exameFicha) return t.exameFicha;
-    const marcados = examesMarcados(ficha);
+    if (t.exameFicha) {
+        if (t.exameFicha === 'pcr_outros' && t.alvo) {
+            const virtual = examesDoLaudo(ficha).find(i =>
+                i.exameOriginalId === 'pcr_outros' &&
+                normalizarAlvoPCR(i.alvoPCR) === normalizarAlvoPCR(t.alvo)
+            );
+            if (virtual) return virtual.id;
+        }
+        return t.exameFicha;
+    }
+    const marcados = examesDoLaudo(ficha);
     const marcado = (id) => marcados.some(i => i.id === id) ? id : null;
     const tipo = String(t.tipo || '').toUpperCase();
     const sub = String(t.subTipo || '');
@@ -88,8 +99,15 @@ function exameDaTarefa(ficha, t) {
         if (especial) return marcado(especial[0]);
         const grupo = sub === 'RT-PCR' ? 'rtpcr' : sub === 'PCR' ? 'pcr' : null;
         const candidatos = marcados.filter(i => (!grupo || i.grupo.id === grupo) && (i.grupo.id === 'pcr' || i.grupo.id === 'rtpcr'));
-        const porAlvo = candidatos.find(i => alvo && (alvo.includes(i.nome.toLowerCase()) || i.nome.toLowerCase().includes(alvo)));
-        return porAlvo?.id || (candidatos.length === 1 ? candidatos[0].id : null);
+        const nomeDoAlvo = (i) => i.alvoPCR || (i.outro ? ficha.examesOutros?.[i.id] : i.nome) || '';
+        const exatos = candidatos.filter(i => alvo && normalizarAlvoPCR(nomeDoAlvo(i)) === normalizarAlvoPCR(alvo));
+        if (exatos.length === 1) return exatos[0].id;
+        if (exatos.length > 1) return null;
+        const porAlvo = candidatos.filter(i => alvo && (
+            alvo.includes(String(nomeDoAlvo(i)).toLowerCase()) ||
+            String(nomeDoAlvo(i)).toLowerCase().includes(alvo)
+        ));
+        return porAlvo.length === 1 ? porAlvo[0].id : (candidatos.length === 1 ? candidatos[0].id : null);
     }
     return null;
 }
@@ -163,13 +181,67 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
     const vinculadas = [...documentos.values()];
     const ativas = vinculadas.filter(t => t.colecao === 'tarefas');
     const concluidas = vinculadas.filter(t => t.colecao === 'historico');
-    const desejadas = examesMarcados(ficha)
+    const desejadas = examesDoLaudo(ficha)
         .map(item => ({ item, alvo: tarefaParaExame(ficha, item) }))
         .filter(x => x.alvo);
     const idsDesejados = new Set(desejadas.map(x => x.item.id));
+
+    const combinarAlvos = (t) => {
+        if (!['MOLECULAR', 'PCR'].includes(String(t.tipo || '').toUpperCase()) || t.subTipo !== 'PCR') return null;
+        const alvos = separarAlvosPCR(t.alvo);
+        if (!alvos) return null;
+        const correspondencias = alvos.map(alvo => desejadas.filter(x =>
+            x.alvo.tipo === 'MOLECULAR' &&
+            x.alvo.subTipo === 'PCR' &&
+            normalizarAlvoPCR(x.alvo.alvo) === normalizarAlvoPCR(alvo.nome)
+        ));
+        if (correspondencias.some(x => x.length !== 1)) return null;
+        const exames = correspondencias.map(x => x[0]);
+        return new Set(exames.map(x => x.item.id)).size === exames.length ? exames : null;
+    };
+    const tarefasCombinadas = ativas.filter(t =>
+        ['MOLECULAR', 'PCR'].includes(String(t.tipo || '').toUpperCase()) &&
+        t.subTipo === 'PCR' &&
+        separarAlvosPCR(t.alvo)
+    );
+    if (tarefasCombinadas.some(t => t.resultados)) {
+        throw new Error(`A tarefa PCR combinada do protocolo ${protocolo} já tem resultado. Revise esse registro antes de separá-la.`);
+    }
+    if (tarefasCombinadas.length > 1) {
+        throw new Error(`Há mais de uma tarefa PCR combinada no protocolo ${protocolo}. Revise o Mural antes de sincronizar.`);
+    }
+    const tarefaCombinada = tarefasCombinadas[0] || null;
+    if (tarefaCombinada && !combinarAlvos(tarefaCombinada)) {
+        throw new Error(`Não foi possível associar com segurança os alvos PCR da tarefa do protocolo ${protocolo} à ficha.`);
+    }
     const jaExiste = new Set(vinculadas.map(t => exameDaTarefa(ficha, t)).filter(Boolean));
     const base = dadosBaseTarefa(ficha);
     const resultado = { criadas: 0, atualizadas: 0, removidas: 0 };
+
+    if (tarefaCombinada) {
+        const primeiroExame = combinarAlvos(tarefaCombinada)[0];
+        const dadosAtualizados = {
+            fichaSV: protocolo,
+            exameFicha: primeiroExame.item.id,
+            exameFichaNome: nomeExame(ficha, primeiroExame.item),
+            subTipo: primeiroExame.alvo.subTipo,
+            alvo: primeiroExame.alvo.alvo,
+            atualizadoEm: Timestamp.now()
+        };
+        await gravarComAuditoria({
+            operacao: 'atualizar',
+            referencia: doc(db, 'tarefas', tarefaCombinada.docId),
+            antes: tarefaCombinada,
+            dados: dadosAtualizados,
+            modulo: 'Exames',
+            registroId: tarefaCombinada.docId,
+            registroNome: protocolo,
+            acao: 'separou alvos PCR da ficha'
+        });
+        Object.assign(tarefaCombinada, dadosAtualizados);
+        jaExiste.add(primeiroExame.item.id);
+        resultado.atualizadas++;
+    }
 
     const recebimento = parseDateInputLocal(ficha.identificacao?.dataEntrada) || new Date();
     if (ficha.identificacao?.dataEntrada) {
@@ -213,6 +285,7 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
     }
 
     for (const t of ativas) {
+        if (tarefaCombinada && t.docId === tarefaCombinada.docId) continue;
         if (!semResultados(t)) continue;
         const exame = exameDaTarefa(ficha, t);
         if (!exame) continue;

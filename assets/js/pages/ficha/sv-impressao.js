@@ -10,7 +10,8 @@ import { STATUS } from "../../utils/svFichasDB.js";
 const IMG = '../../assets/images/';
 
 function marca(ficha, item) {
-    const marcado = ficha.exames?.[item.id] === true;
+    const idExame = item.exameOriginalId || item.id;
+    const marcado = ficha.exames?.[idExame] === true;
     const outroTexto = item.outro ? (ficha.examesOutros?.[item.id] || '') : '';
     const nome = `<span class="${marcado ? 'exame-marcado' : ''}">${esc(item.nome)}</span>`;
     const extra = item.outro ? ` <span class="pontilhado">${esc(outroTexto) || '&nbsp;'}</span>` : '';
@@ -86,7 +87,12 @@ export function htmlFicha(f) {
     const gruposAborto = GRUPOS_EXAMES.filter(g => g.secao && g.id !== 'aborto_recepcao');
 
     const linhasExames = gruposPrincipais.map(g => {
-        let corpo = g.itens.map(i => marca(f, i)).join(' ');
+        const itens = g.itens.flatMap(i => {
+            if (i.id !== 'pcr_outros' || f.exames?.[i.id] !== true) return [i];
+            const expandidos = examesDoLaudo(f).filter(exame => exame.exameOriginalId === i.id);
+            return expandidos.length ? expandidos : [i];
+        });
+        let corpo = itens.map(i => marca(f, i)).join(' ');
         if (g.id === 'vacina') {
             corpo += ` &nbsp; <span class="rotulo">nº de tratamentos:</span> ${esc(f.vacinaTratamentos ?? '')}`;
         }

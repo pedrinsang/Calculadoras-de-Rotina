@@ -1,11 +1,17 @@
 import { mostrarLoading, esconderLoading, mostrarFeedback } from "./ui-utils.js";
 import { 
+    collection,
     doc,
+    getDocs,
     getDoc,
-    Timestamp
+    query,
+    Timestamp,
+    where,
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { db } from "../../firebase.js";
-import { gravarComAuditoria } from "../../utils/auditoria.js";
+import { anexarEventoAuditoria, gravarComAuditoria, obterAtorAuditoria } from "../../utils/auditoria.js";
+import { normalizarAlvoPCR, separarAlvosPCR } from "../../utils/alvosPCR.js";
 
 async function salvarResultadoAuditado(tarefaRef, dados) {
     const snapshot = await getDoc(tarefaRef);
@@ -21,6 +27,75 @@ async function salvarResultadoAuditado(tarefaRef, dados) {
         registroNome: tarefa.id,
         acao: 'registrou resultado'
     });
+}
+
+async function separarTarefaPCRCombinada(tarefaRef, tarefa) {
+    if (tarefa.tipo !== 'MOLECULAR' || tarefa.subTipo !== 'PCR') return tarefa;
+    const alvos = separarAlvosPCR(tarefa.alvo);
+    if (!alvos) return tarefa;
+    if (tarefa.resultados) {
+        throw new Error('Esta tarefa PCR combinada já tem resultados e não pode ser dividida com segurança. Revise o registro antes de continuar.');
+    }
+    if ((tarefa.status || 'pendente') !== 'pendente') {
+        throw new Error('Coloque a tarefa PCR combinada como pendente antes de separá-la em atividades por alvo.');
+    }
+
+    const existentes = tarefa.id
+        ? (await getDocs(query(collection(db, 'tarefas'), where('id', '==', tarefa.id))))
+            .docs.map(snapshot => ({ docId: snapshot.id, ...snapshot.data() }))
+            .filter(item => item.docId !== tarefaRef.id && item.tipo === 'MOLECULAR' && item.subTipo === 'PCR')
+        : [];
+    if (existentes.some(item => normalizarAlvoPCR(item.alvo) === normalizarAlvoPCR(alvos[0].nome))) {
+        throw new Error('Já existe outra tarefa para o primeiro alvo deste exame. Atualize o Mural e revise as atividades antes de continuar.');
+    }
+
+    const lote = writeBatch(db);
+    const ator = await obterAtorAuditoria();
+    const atualizadoEm = Timestamp.now();
+    const tarefaPrincipal = { ...tarefa, alvo: alvos[0].nome, atualizadoEm };
+    if (tarefa.exameFicha === 'pcr_outros' || String(tarefa.exameFicha || '').startsWith('pcr_outros__')) {
+        tarefaPrincipal.exameFicha = `pcr_outros__${alvos[0].chave}`;
+        tarefaPrincipal.exameFichaNome = alvos[0].nome;
+    }
+    lote.update(tarefaRef, {
+        alvo: tarefaPrincipal.alvo,
+        atualizadoEm,
+        ...(tarefaPrincipal.exameFicha ? {
+            exameFicha: tarefaPrincipal.exameFicha,
+            exameFichaNome: tarefaPrincipal.exameFichaNome
+        } : {})
+    });
+    await anexarEventoAuditoria(lote, {
+        acao: 'separou alvos de tarefa PCR',
+        modulo: 'Exames',
+        registroId: tarefaRef.id,
+        registroNome: tarefa.id,
+        antes: tarefa,
+        depois: tarefaPrincipal
+    }, ator);
+
+    for (const alvo of alvos.slice(1)) {
+        if (existentes.some(item => normalizarAlvoPCR(item.alvo) === normalizarAlvoPCR(alvo.nome))) continue;
+        const novaTarefa = { ...tarefa, alvo: alvo.nome, atualizadoEm };
+        if (tarefa.exameFicha === 'pcr_outros' || String(tarefa.exameFicha || '').startsWith('pcr_outros__')) {
+            novaTarefa.exameFicha = `pcr_outros__${alvo.chave}`;
+            novaTarefa.exameFichaNome = alvo.nome;
+        }
+        delete novaTarefa.resultados;
+        const referencia = doc(collection(db, 'tarefas'));
+        lote.set(referencia, novaTarefa);
+        await anexarEventoAuditoria(lote, {
+            acao: 'criou tarefa para alvo PCR separado',
+            modulo: 'Exames',
+            registroId: referencia.id,
+            registroNome: tarefa.id,
+            antes: {},
+            depois: novaTarefa
+        }, ator);
+    }
+
+    await lote.commit();
+    return tarefaPrincipal;
 }
 
 // Função para registrar resultado SN
@@ -400,7 +475,12 @@ async function registrarResultadoMolecular(id) {
 
         if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
 
-        const tarefa = tarefaSnap.data();
+        let tarefa = tarefaSnap.data();
+        const alvoOriginal = tarefa.alvo;
+        tarefa = await separarTarefaPCRCombinada(tarefaRef, tarefa);
+        if (tarefa.alvo !== alvoOriginal && typeof window.carregarTarefas === 'function') {
+            await window.carregarTarefas();
+        }
 
         // Verificar o tipo específico de Molecular e chamar a função apropriada
         switch(tarefa.subTipo) {
@@ -439,7 +519,7 @@ async function registrarResultadoMolecularSimples(tarefa, tarefaRef) {
         amostras.push({
             id: i + 1,
             identificacao: tarefa.resultados?.amostras?.[i]?.identificacao || "",
-            resultado: tarefa.resultados?.amostras?.[i]?.resultado || "negativo" // Padrão negativo para novos registros
+            resultado: tarefa.resultados?.amostras?.[i]?.resultado || ""
         });
     }
 
@@ -535,6 +615,9 @@ async function registrarResultadoMolecularSimples(tarefa, tarefaRef) {
                     identificacao: identificacoes[i].value.trim(),
                     resultado: resultados[i].value
                 });
+            }
+            if (amostrasAtualizadas.some(amostra => !amostra.resultado)) {
+                throw new Error("Selecione o resultado de cada amostra antes de salvar.");
             }
 
             await salvarResultadoAuditado(tarefaRef, {
