@@ -134,6 +134,13 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
         .filter(x => x.alvo);
     const idsDesejados = new Set(desejadas.map(x => x.item.id));
     const jaExiste = new Set([...ativas, ...concluidas].map(t => t.exameFicha));
+    [...ativas, ...concluidas].forEach(t => {
+        const descricao = [t.subTipo, t.alvo, t.exameFichaNome].filter(Boolean).join(' ');
+        if (!/BVDV/i.test(descricao) || !/(?:BoHV\s*-?\s*1|IBR)/i.test(descricao)) return;
+        ['rtpcr_bvdv', 'pcr_bohv1_bohv5'].forEach(id => {
+            if (idsDesejados.has(id)) jaExiste.add(id);
+        });
+    });
     const base = dadosBaseTarefa(ficha);
     const resultado = { criadas: 0, atualizadas: 0, removidas: 0 };
 
@@ -204,7 +211,7 @@ const ROTULOS_ALVO = {
     coronavirusEquino: 'Coronavírus equino', rotavirusEquino: 'Rotavírus equino',
     vaccinia: 'Vaccinia', pseudocowpox: 'Pseudocowpox', estomatitePapular: 'Estomatite papular', herpesvirus: 'Herpesvírus',
     ecoli: 'E. coli', salmonella: 'Salmonella', cryptosporidium: 'Cryptosporidium',
-    brsv: 'BRSV', bohv: 'BoHV', bvdv: 'BVDV', bpiv3: 'BPIV-3',
+    brsv: 'BRSV', bohv: 'BoHV', bohv1: 'BoHV-1', bvdv: 'BVDV', bpiv3: 'BPIV-3',
     virusRaiva: 'Vírus da raiva', ehv1: 'EHV-1', flavivirus: 'Flavivírus', alphavirus: 'Alphavírus', veev: 'VEEV'
 };
 
@@ -240,6 +247,13 @@ function amostrasDoMural(amostras) {
     }).filter(a => a.resultado);
 }
 
+function atualizarResultado(atual, amostras, detalhe) {
+    const unicas = new Map([...(atual?.amostras || []), ...amostras].map(a => [`${a.nome}\u0000${a.resultado}`, a]));
+    const detalhes = [...new Set([atual?.detalhe, detalhe].filter(Boolean))].join('; ');
+    const amostrasUnicas = [...unicas.values()];
+    return { resultado: resultadoGeral(amostrasUnicas), detalhe: detalhes, amostras: amostrasUnicas };
+}
+
 // Converte as tarefas do Mural em { vn, resultados, tarefasPorExame, semVinculo }
 export function resultadosDoMural(ficha, tarefas) {
     const vn = {};
@@ -258,8 +272,39 @@ export function resultadosDoMural(ficha, tarefas) {
             const amostras = amostrasDaVN(vn[exame]);
             resultados[exame] = { resultado: resultadoGeral(amostras), detalhe: '', amostras };
         } else if (Array.isArray(t.resultados.amostras)) {
-            const amostras = [...(resultados[exame]?.amostras || []), ...amostrasDoMural(t.resultados.amostras)];
-            resultados[exame] = { resultado: resultadoGeral(amostras), detalhe: '', amostras };
+            const camposAlvo = [
+                ['bvdv', 'rtpcr_bvdv', 'BVDV'],
+                ['bohv', 'pcr_bohv1_bohv5', 'BoHV-1'],
+                ['bohv1', 'pcr_bohv1_bohv5', 'BoHV-1']
+            ].filter(([campo]) => t.resultados.amostras.some(a => a[campo] !== '' && a[campo] != null));
+            const itensMarcados = examesMarcados(ficha);
+            if (camposAlvo.length) {
+                const idsAlvoUsados = new Set();
+                camposAlvo.forEach(([campo, idExame, nomeAlvo]) => {
+                    if (idsAlvoUsados.has(idExame)) return;
+                    idsAlvoUsados.add(idExame);
+                    const destino = itensMarcados.some(item => item.id === idExame) ? idExame : exame;
+                    const amostrasAlvo = amostrasDoMural(t.resultados.amostras.map(a => ({
+                        id: a.id,
+                        identificacao: a.identificacao,
+                        resultado: a[campo]
+                    })));
+                    const detalhe = t.resultados.amostras
+                        .map(a => {
+                            const observacao = String(a[`${campo}Detalhe`] || '').trim();
+                            return observacao ? `${nomeAlvo} (${a.identificacao || `Amostra ${a.id || ''}`}): ${observacao}` : '';
+                        })
+                        .filter(Boolean)
+                        .join('; ');
+                    resultados[destino] = atualizarResultado(resultados[destino], amostrasAlvo, detalhe);
+                });
+            } else {
+                resultados[exame] = atualizarResultado(
+                    resultados[exame],
+                    amostrasDoMural(t.resultados.amostras),
+                    ''
+                );
+            }
         }
     }
     return { vn, resultados, tarefasPorExame, semVinculo };

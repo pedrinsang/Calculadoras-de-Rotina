@@ -1,0 +1,98 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  color: #173128;
+  background: #f5f8f6;
+}
+
+* { box-sizing: border-box; }
+body.tv {
+  margin: 0;
+  min-height: 100vh;
+  height: 100vh;
+  padding: 1.4rem 2rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 1.25;
+  background: #f5f8f6;
+}
+.tv h2 { margin: 0; font-size: 1.35rem; }
+.tv-topo { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 2rem; }
+.tv-marca { display: flex; flex-direction: column; }
+.tv-marca b { font-size: 1.5rem; }
+.tv-marca small, .tv-data, .tv-pag { color: #698076; }
+.tv-saudacao { color: #78a85a; font-size: 1.5rem; font-weight: 600; white-space: nowrap; }
+.tv-data { font-size: 1.25rem; text-align: right; }
+.tv-hora { color: #4f7f3a; font-size: 3.8rem; font-weight: 700; line-height: 0.9; }
+.tv-grade { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(20rem, 1fr); gap: 1.2rem; }
+.tv-painel { min-height: 0; display: flex; flex-direction: column; padding: 1rem 1.2rem; background: #fff; border: 1px solid #dfe8e2; border-radius: 1rem; box-shadow: 0 0.4rem 1.5rem #2349340f; }
+.tv-cab { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.8rem; }
+.tv-rotulos, .tv-linha { display: grid; grid-template-columns: 9rem minmax(0, 1fr) 5rem 5.5rem 10rem; align-items: center; gap: 0.8rem; }
+.tv-rotulos { padding: 0 1rem 0.5rem; color: #698076; border-bottom: 1px solid #dfe8e2; font-size: 0.85rem; }
+.tv-lista { --linhas: 7; list-style: none; flex: 1; min-height: 0; display: grid; grid-template-rows: repeat(var(--linhas), minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: 0.25rem; margin: 0.6rem 0 0; padding: 0; overflow-y: hidden; scrollbar-width: none; }
+.tv-lista::-webkit-scrollbar { display: none; }
+.tv-lista.tem-rolagem { overflow-y: auto; }
+.tv-linha { --cor: #78a85a; position: relative; min-height: 0; overflow: hidden; padding: 0 1rem 0 1.2rem; background: #f5f8f6; border: 1px solid #e7eee9; border-radius: 0.7rem; font-size: 1.15rem; }
+.tv-linha::before { content: ""; position: absolute; top: 0.4rem; bottom: 0.4rem; left: 0; width: 0.25rem; border-radius: 0 0.25rem 0.25rem 0; background: var(--cor); }
+.tv-prot { font-weight: 700; white-space: nowrap; }
+.tv-exame { display: flex; flex-wrap: wrap; align-content: center; gap: 0.2rem 0.8rem; min-width: 0; }
+.tv-exame-item { display: flex; flex-direction: column; min-width: 0; }
+.tv-exame-item b { overflow: hidden; color: var(--cor); text-overflow: ellipsis; white-space: nowrap; }
+.tv-exame-item small { color: #698076; font-size: 0.75rem; white-space: nowrap; }
+.tv-chegada { color: #698076; font-size: 0.85rem; text-align: center; white-space: nowrap; }
+.tv-qtd { font-size: 1.25rem; font-weight: 700; text-align: right; }
+.tv-prazo { justify-self: end; font-size: 1rem; font-weight: 700; text-align: right; }
+.tv-prazo small { display: block; color: #698076; font-size: 0.75rem; font-weight: 400; }
+.tv-linha.atrasada { --cor: #c94f45; background: #fff0ed; border-color: #f1c7c1; }
+.tv-linha.atrasada .tv-prazo { color: #c94f45; }
+.tv-linha.hoje { --cor: #a76b12; background: #fff7df; border-color: #efddb2; }
+.tv-linha.hoje .tv-prazo, .tv-linha.breve .tv-prazo { color: #a76b12; }
+.tv-linha.vazia { border: 1px dashed #dfe8e2; background: transparent; opacity: 0.35; }
+.tv-linha.vazia::before { display: none; }
+.tv-vazio { grid-row: 1 / -1; align-self: center; color: #698076; text-align: center; font-size: 1.4rem; }
+.tv-vazio i { display: block; margin-bottom: 0.5rem; color: #78a85a; font-size: 3rem; }
+.tv-lado { display: grid; grid-template-rows: auto 1fr; gap: 1rem; min-width: 0; min-height: 0; }
+.tv-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; }
+.tv-kpi { padding: 0.8rem 1rem; background: #fff; border: 1px solid #dfe8e2; border-radius: 0.8rem; }
+.tv-kpi strong { display: block; font-size: 2.2rem; }
+.tv-kpi span { color: #698076; font-size: 0.9rem; }
+.tv-kpi.alerta { background: #fff0ed; border-color: #efbcb4; }
+.tv-kpi.alerta strong { color: #c94f45; }
+.tv-kpi.aviso strong { color: #a76b12; }
+.tv-emit-lista { display: grid; grid-template-rows: repeat(4, 1fr); flex: 1; min-height: 0; gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
+.tv-emit { display: grid; grid-template-columns: 1.4rem 6rem 1fr auto; gap: 0.6rem; align-items: center; min-height: 0; border-bottom: 1px solid #dfe8e2; font-size: 0.85rem; }
+.tv-emit:last-child { border-bottom: 0; }
+.tv-emit > i, .tv-emit.novo .q { color: #78a85a; }
+.tv-emit .p { font-weight: 700; white-space: nowrap; }
+.tv-emit .e { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-emit .q, .tv-status, .tv-atualizacao { color: #698076; white-space: nowrap; }
+.tv-emit-vazio { grid-row: 1 / -1; align-self: center; color: #698076; text-align: center; }
+.tv-pe { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 1.8rem; font-size: 0.8rem; }
+.tv-status { display: inline-flex; align-items: center; gap: 0.5rem; }
+.tv-status i { width: 0.55rem; height: 0.55rem; border-radius: 50%; background: #78a85a; }
+.tv-status.off { color: #c94f45; }
+.tv-status.off i { background: #c94f45; }
+.tv-atualizacao { text-align: center; }
+.tv-tela { justify-self: end; padding: 0.2rem 0.8rem; color: #698076; background: #fff; border: 1px solid #dfe8e2; border-radius: 999px; cursor: pointer; }
+.tv-tela:hover, .tv-tela:focus-visible { outline: 2px solid #78a85a; }
+:fullscreen .tv-tela { display: none; }
+.tv-lista.troca { animation: tv-fade 500ms ease-out; }
+@keyframes tv-fade { from { opacity: 0.2; } to { opacity: 1; } }
+
+@media (max-width: 850px) {
+  body.tv { height: auto; min-height: 100vh; overflow: auto; padding: 1rem; }
+  .tv-topo { grid-template-columns: 1fr auto; gap: 0.8rem; }
+  .tv-data { grid-column: 1; text-align: left; }
+  .tv-hora { grid-column: 2; grid-row: 1 / span 2; font-size: 3rem; }
+  .tv-grade { grid-template-columns: 1fr; }
+  .tv-rotulos { display: none; }
+  .tv-lista { grid-template-rows: none; grid-auto-rows: minmax(5rem, auto); }
+  .tv-linha { grid-template-columns: 6rem minmax(0, 1fr) 4rem; gap: 0.5rem; padding: 0.6rem 0.7rem 0.6rem 1rem; }
+  .tv-chegada { display: none; }
+  .tv-prazo { grid-column: 2 / span 2; justify-self: start; text-align: left; font-size: 0.8rem; }
+  .tv-pe { grid-template-columns: 1fr auto; }
+  .tv-atualizacao { display: none; }
+}

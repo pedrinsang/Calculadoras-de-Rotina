@@ -1,11 +1,22 @@
 import { mostrarLoading, esconderLoading, mostrarFeedback } from "./ui-utils.js";
 import { 
+    collection,
     doc,
     getDoc,
+    getDocs,
+    query,
     updateDoc,
+    where,
+    writeBatch,
     Timestamp
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { db } from "../../firebase.js";
+
+function escaparHTML(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caractere => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[caractere]);
+}
 
 // Função para registrar resultado SN
 async function registrarResultadoSN(id) {
@@ -417,6 +428,9 @@ async function registrarResultadoMolecular(id) {
 
 // Função para PCR simples (sem seleção de DNA/RNA)
 async function registrarResultadoMolecularSimples(tarefa, tarefaRef) {
+    const alvosDuplos = await buscarAlvosPCR(tarefa, tarefaRef);
+    if (alvosDuplos.length === 2) return registrarResultadoPCRDuplo(tarefa, alvosDuplos);
+
     // Array de amostras baseado na quantidade
     const amostras = [];
     for (let i = 0; i < tarefa.quantidade; i++) {
@@ -546,6 +560,138 @@ async function registrarResultadoMolecularSimples(tarefa, tarefaRef) {
         if (e.key === "Escape") fecharModal();
     };
     document.addEventListener("keydown", handleKeyDown);
+}
+
+async function buscarAlvosPCR(tarefa, tarefaRef) {
+    const documentos = new Map([[tarefaRef.id, { ...tarefa, docId: tarefaRef.id }]]);
+    const consultas = [];
+    if (tarefa.fichaSV) consultas.push(query(collection(db, "tarefas"), where("fichaSV", "==", tarefa.fichaSV)));
+    if (tarefa.id) consultas.push(query(collection(db, "tarefas"), where("id", "==", tarefa.id)));
+    const resultados = await Promise.all(consultas.map(getDocs));
+    resultados.flatMap(resultado => resultado.docs).forEach(documento => {
+        documentos.set(documento.id, { docId: documento.id, ...documento.data() });
+    });
+
+    const alvos = new Map();
+    documentos.forEach(item => {
+        const tipo = String(item.tipo || "").toUpperCase();
+        const subtipo = String(item.subTipo || "").toUpperCase();
+        if (!["MOLECULAR", "PCR"].includes(tipo) || !["PCR", "RT-PCR"].includes(subtipo)) return;
+        const texto = [item.exameFicha, item.subTipo, item.alvo, item.exameFichaNome].filter(Boolean).join(" ");
+        const ref = doc(db, "tarefas", item.docId);
+        if ((item.exameFicha === "rtpcr_bvdv" || /BVDV/i.test(texto)) && !alvos.has("bvdv")) {
+            alvos.set("bvdv", { chave: "bvdv", nome: "BVDV", tarefa: item, referencia: ref });
+        }
+        if ((item.exameFicha === "pcr_bohv1_bohv5" || /(?:BoHV\s*-?\s*1|IBR)/i.test(texto)) && !alvos.has("bohv")) {
+            alvos.set("bohv", { chave: "bohv", nome: "BoHV-1 / IBR", tarefa: item, referencia: ref });
+        }
+    });
+    return [...alvos.values()];
+}
+
+async function registrarResultadoPCRDuplo(tarefa, alvos) {
+    const amostras = Array.from({ length: Number(tarefa.quantidade) || 0 }, (_, indice) => {
+        const resultados = {};
+        const detalhes = {};
+        alvos.forEach((alvo, alvoIndice) => {
+            const salva = alvo.tarefa.resultados?.amostras?.[indice] || {};
+            resultados[alvo.chave] = salva[alvo.chave] || (alvoIndice === 0 ? salva.resultado || "" : "");
+            detalhes[alvo.chave] = salva[`${alvo.chave}Detalhe`] || "";
+        });
+        return {
+            id: indice + 1,
+            identificacao: tarefa.resultados?.amostras?.[indice]?.identificacao || "",
+            resultados,
+            detalhes
+        };
+    });
+    const modal = document.createElement("div");
+    modal.className = "modal-resultados";
+    modal.innerHTML = `
+        <div class="modal-resultados-content">
+            <h3 class="text-primary mb-3"><i class="bi bi-clipboard-data me-2"></i>Resultados PCR - ${escaparHTML(tarefa.subTipo || tarefa.tipo)}</h3>
+            <div class="alert alert-light border-start border-primary border-4">
+                <strong>ID:</strong> ${escaparHTML(tarefa.id)} &nbsp; <strong>Quantidade:</strong> ${escaparHTML(tarefa.quantidade)}
+            </div>
+            <div class="table-responsive">
+                <table class="tabela-resultados table table-hover">
+                    <thead class="table-primary"><tr>
+                        <th>Identificação da amostra</th>
+                        ${alvos.map(alvo => `<th>${escaparHTML(alvo.nome)} · resultado</th><th>${escaparHTML(alvo.nome)} · observação</th>`).join("")}
+                    </tr></thead>
+                    <tbody>${amostras.map((amostra, indice) => `<tr>
+                        <td><input type="text" class="form-control input-identificacao" data-index="${indice}"
+                            value="${escaparHTML(amostra.identificacao)}" placeholder="Identificação #${indice + 1}"></td>
+                        ${alvos.map(alvo => `<td><select class="form-select select-alvo" data-alvo="${alvo.chave}" data-index="${indice}">
+                            <option value="">Selecione...</option>
+                            <option value="positivo" ${amostra.resultados[alvo.chave] === "positivo" ? "selected" : ""}>Positivo</option>
+                            <option value="negativo" ${amostra.resultados[alvo.chave] === "negativo" ? "selected" : ""}>Negativo</option>
+                        </select></td><td><input type="text" class="form-control detalhe-alvo" data-alvo="${alvo.chave}" data-index="${indice}"
+                            value="${escaparHTML(amostra.detalhes[alvo.chave])}" placeholder="Resultado / observação"></td>`).join("")}
+                    </tr>`).join("")}</tbody>
+                </table>
+            </div>
+            <div class="mt-4 d-flex justify-content-end gap-3">
+                <button id="cancelar-resultados" class="btn btn-danger rounded-pill px-4"><i class="bi bi-x-circle me-1"></i>Cancelar</button>
+                <button id="salvar-resultados" class="btn btn-primary rounded-pill px-4"><i class="bi bi-save me-1"></i>Salvar Resultados</button>
+            </div>
+            <button id="fechar-modal-resultados" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-3 rounded-circle"
+                style="width:32px;height:32px;display:flex;align-items:center;justify-content:center" aria-label="Fechar">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>`;
+    document.body.appendChild(modal);
+
+    const fecharModal = () => {
+        modal.remove();
+        document.removeEventListener("keydown", handleKeyDown);
+    };
+    const handleKeyDown = evento => { if (evento.key === "Escape") fecharModal(); };
+    modal.querySelector("#fechar-modal-resultados").onclick = fecharModal;
+    modal.querySelector("#cancelar-resultados").onclick = fecharModal;
+    modal.onclick = evento => { if (evento.target === modal) fecharModal(); };
+    document.addEventListener("keydown", handleKeyDown);
+
+    modal.querySelector("#salvar-resultados").onclick = async () => {
+        try {
+            mostrarLoading();
+            const atualizacoes = new Map();
+            alvos.forEach(alvo => {
+                if (!atualizacoes.has(alvo.tarefa.docId)) {
+                    atualizacoes.set(alvo.tarefa.docId, {
+                        referencia: alvo.referencia,
+                        amostras: amostras.map(amostra => ({
+                            id: amostra.id,
+                            identificacao: modal.querySelector(`.input-identificacao[data-index="${amostra.id - 1}"]`).value.trim()
+                        }))
+                    });
+                }
+                const amostrasTarefa = atualizacoes.get(alvo.tarefa.docId).amostras;
+                amostras.forEach(amostra => {
+                    const indice = amostra.id - 1;
+                    amostrasTarefa[indice][alvo.chave] = modal.querySelector(`.select-alvo[data-alvo="${alvo.chave}"][data-index="${indice}"]`).value;
+                    amostrasTarefa[indice][`${alvo.chave}Detalhe`] = modal.querySelector(`.detalhe-alvo[data-alvo="${alvo.chave}"][data-index="${indice}"]`).value.trim();
+                });
+            });
+            const lote = writeBatch(db);
+            atualizacoes.forEach(({ referencia, amostras: amostrasAtualizadas }) => {
+                lote.update(referencia, {
+                    resultados: { amostras: amostrasAtualizadas, dataRegistro: Timestamp.now() },
+                    status: "resultados-registrados",
+                    atualizadoEm: Timestamp.now()
+                });
+            });
+            await lote.commit();
+            fecharModal();
+            if (typeof window.carregarTarefas === "function") await window.carregarTarefas();
+            mostrarFeedback("Resultados salvos com sucesso!", "success");
+        } catch (error) {
+            console.error("Erro ao salvar resultados PCR:", error);
+            mostrarFeedback(`Erro: ${error.message}`, "error");
+        } finally {
+            esconderLoading();
+        }
+    };
 }
 
 // Função para Duplex Rota e Corona Bovino
