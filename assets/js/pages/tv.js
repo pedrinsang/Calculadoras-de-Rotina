@@ -59,14 +59,19 @@ function pendentes() {
     .sort((a, b) => (a.prazo?.getTime() ?? Infinity) - (b.prazo?.getTime() ?? Infinity));
 }
 
+function ehPCR(tarefa) {
+  const tipo = String(tarefa.tipo || '').trim().toUpperCase();
+  const subTipo = String(tarefa.subTipo || '').trim().toUpperCase();
+  return tipo === 'PCR' || (tipo === 'MOLECULAR' && ['PCR', 'RT-PCR'].includes(subTipo));
+}
+
 function nomeExame(tarefa) {
   const limparNome = valor => String(valor || '').trim().replace(/^Outros\s*:\s*/i, '');
   const ficha = limparNome(tarefa.exameFichaNome);
   const tipo = limparNome(tarefa.tipo);
   const subTipo = limparNome(tarefa.subTipo);
   const alvo = limparNome(tarefa.alvo);
-  const ehMolecular = ['MOLECULAR', 'PCR'].includes(tipo.toUpperCase());
-  if (ehMolecular) {
+  if (ehPCR(tarefa)) {
     const exame = ficha && ficha.toLowerCase() !== 'outros' ? ficha : alvo;
     const fichaJaDescrita = ficha.toUpperCase().startsWith(tipo.toUpperCase()) &&
       (!subTipo || ficha.toUpperCase().includes(subTipo.toUpperCase()));
@@ -74,7 +79,9 @@ function nomeExame(tarefa) {
     return [tipo, subTipo, exame].filter(Boolean).join(' — ');
   }
   if (ficha && ficha.toLowerCase() !== 'outros') return ficha;
-  const base = [subTipo, alvo].filter(Boolean).join(' · ');
+  const base = alvo && /^PCR\b/i.test(alvo)
+    ? alvo
+    : [subTipo, alvo].filter(Boolean).join(' · ');
   if (base) return base;
   if (tipo.toLowerCase() === 'outros') return alvo || tipo;
   return tipo || alvo;
@@ -182,12 +189,12 @@ function desenharLista(lista) {
       const estado = statusExame(t);
       nomesExame(t).forEach(nome => {
         const chave = `${nome}\u0000${estado}`;
-        if (nome && !exames.has(chave)) exames.set(chave, { nome, estado, cor: area(t, nome).cor });
+        if (nome && !exames.has(chave)) exames.set(chave, { nome, estado, cor: area(t, nome).cor, pcr: ehPCR(t) });
       });
     });
     return `<li class="tv-linha ${urg}" style="--cor:${tarefas.length ? area(tarefas[0]).cor : '#8b9b91'}">
       <span class="tv-prot">${esc(protocolo || '—')}</span>
-      <span class="tv-exame">${[...exames.values()].map(e => `<span class="tv-exame-item" style="--cor:${e.cor}"><b>${esc(e.nome)}</b><small>${esc(e.estado)}</small></span>`).join('')}</span>
+      <span class="tv-exame">${[...exames.values()].map(e => `<span class="tv-exame-item${e.pcr ? ' tv-exame-item--pcr' : ''}" style="--cor:${e.cor}"><b>${esc(e.nome)}</b><small>${esc(e.estado)}</small></span>`).join('')}</span>
       <span class="tv-chegada">${chegada ? dd(chegada) : '—'}</span>
       <span class="tv-qtd">${quantidade || '–'}</span>
       ${prazoHtml(prazo, tarefas[0] || {})}
