@@ -36,7 +36,7 @@ async function salvarResultadoAuditado(tarefaRef, dados) {
 }
 
 async function separarTarefaPCRCombinada(tarefaRef, tarefa) {
-    if (tarefa.tipo !== 'MOLECULAR' || tarefa.subTipo !== 'PCR') return tarefa;
+    if (!['MOLECULAR', 'PCR'].includes(tarefa.tipo) || !['PCR', 'RT-PCR'].includes(tarefa.subTipo)) return tarefa;
     const alvos = separarAlvosPCR(tarefa.alvo);
     if (!alvos) return tarefa;
     if (tarefa.resultados) {
@@ -49,7 +49,7 @@ async function separarTarefaPCRCombinada(tarefaRef, tarefa) {
     const existentes = tarefa.id
         ? (await getDocs(query(collection(db, 'tarefas'), where('id', '==', tarefa.id))))
             .docs.map(snapshot => ({ docId: snapshot.id, ...snapshot.data() }))
-            .filter(item => item.docId !== tarefaRef.id && item.tipo === 'MOLECULAR' && item.subTipo === 'PCR')
+            .filter(item => item.docId !== tarefaRef.id && item.tipo === tarefa.tipo && item.subTipo === tarefa.subTipo)
         : [];
     if (existentes.some(item => normalizarAlvoPCR(item.alvo) === normalizarAlvoPCR(alvos[0].nome))) {
         throw new Error('Já existe outra tarefa para o primeiro alvo deste exame. Atualize o Mural e revise as atividades antes de continuar.');
@@ -482,10 +482,10 @@ async function registrarResultadoMolecular(id) {
         if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
 
         let tarefa = tarefaSnap.data();
-        const alvosCombinados = tarefa.tipo === 'MOLECULAR' && tarefa.subTipo === 'PCR'
+        const alvosCombinados = ['MOLECULAR', 'PCR'].includes(tarefa.tipo) && ['PCR', 'RT-PCR'].includes(tarefa.subTipo)
             ? separarAlvosPCR(tarefa.alvo)
             : null;
-        if (alvosCombinados?.length) {
+        if (alvosCombinados?.length && tarefa.resultados) {
             return registrarResultadoPCRDuplo(tarefa, tarefaRef, alvosCombinados);
         }
         const alvoOriginal = tarefa.alvo;

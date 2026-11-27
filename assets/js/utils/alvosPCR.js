@@ -7,7 +7,7 @@ function normalizarTexto(texto) {
 }
 
 export function normalizarAlvoPCR(texto) {
-    const normalizado = normalizarTexto(texto);
+    const normalizado = normalizarTexto(texto).replace(/^(?:RTPCR|PCR)/, '');
     if (normalizado === 'BVDV1') return 'BVDV';
     if (normalizado === 'BHV1') return 'BOHV1';
     return normalizado;
@@ -27,7 +27,7 @@ export function separarAlvosPCR(texto) {
         .filter(Boolean);
     if (partes.length < 2) return null;
 
-    const alvos = partes.map(parte => ALVOS_CONHECIDOS[normalizarTexto(parte)]);
+    const alvos = partes.map(parte => ALVOS_CONHECIDOS[normalizarAlvoPCR(parte)]);
     if (alvos.some(alvo => !alvo) || new Set(alvos.map(alvo => alvo.chave)).size !== alvos.length) {
         return null;
     }

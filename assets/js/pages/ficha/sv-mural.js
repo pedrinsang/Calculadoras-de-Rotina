@@ -222,6 +222,7 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
             fichaSV: protocolo,
             exameFicha: primeiroExame.item.id,
             exameFichaNome: nomeExame(ficha, primeiroExame.item),
+            alvo: primeiroExame.alvo.alvo,
             atualizadoEm: Timestamp.now()
         };
         await gravarComAuditoria({
@@ -235,7 +236,7 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
             acao: 'separou alvos PCR da ficha'
         });
         Object.assign(tarefaCombinada, dadosAtualizados);
-        examesCombinados.forEach(exame => jaExiste.add(exame.item.id));
+        jaExiste.add(primeiroExame.item.id);
         resultado.atualizadas++;
     }
 

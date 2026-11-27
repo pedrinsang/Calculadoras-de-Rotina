@@ -129,7 +129,7 @@ Para obter uma cópia local funcionando, siga estas etapas.
     -   Os resultados serão exibidos e poderão ser copiados.
     -   Algumas calculadoras (como ELISA) possuem checklists de protocolo integrados.
 4.  **Mural de Tarefas (`pages/mural.html`):**
-     -   O endereço público redireciona para o mural clássico em `classico/pages/mural.html`.
+     -   O endereço público redireciona para o mural atualizado em `pages/mural-atual.html`.
     -   Adicione novas tarefas (amostras) com detalhes como ID, tipo, quantidade, proprietário, veterinário, etc.
     -   Acompanhe o status: "Pendente", "Em Progresso", "Concluído".
     -   Registre os resultados diretamente do mural para os tipos de teste aplicáveis (SN, ELISA, PCR, Raiva, ICC).

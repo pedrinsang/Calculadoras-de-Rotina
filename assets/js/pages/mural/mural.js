@@ -389,7 +389,7 @@ async function adicionarTarefaModal() {
         if (isNaN(novaTarefa.quantidade)) throw new Error("Quantidade inválida");
         if (novaTarefa.quantidade <= 0) throw new Error("Quantidade deve ser maior que zero");
 
-        const alvosPCR = tipoInput.value === 'MOLECULAR' && subTipo === 'PCR'
+        const alvosPCR = tipoInput.value === 'MOLECULAR' && ['PCR', 'RT-PCR'].includes(subTipo)
             ? separarAlvosPCR(alvo)
             : null;
         const tarefasParaCriar = alvosPCR

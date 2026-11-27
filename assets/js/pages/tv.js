@@ -60,15 +60,18 @@ function pendentes() {
 }
 
 function nomeExame(tarefa) {
-  const ficha = String(tarefa.exameFichaNome || '').trim();
-  if (ficha) return ficha;
-  const tipo = String(tarefa.tipo || '').trim();
-  const subTipo = String(tarefa.subTipo || '').trim();
-  const alvo = String(tarefa.alvo || '').trim();
-  const base = subTipo
-    ? (tipo && !subTipo.toLowerCase().startsWith(tipo.toLowerCase()) ? `${tipo} ${subTipo}` : subTipo)
-    : tipo;
-  return alvo && !base.toLowerCase().includes(alvo.toLowerCase()) ? `${base} · ${alvo}` : base || alvo;
+  const limparNome = valor => String(valor || '').trim().replace(/^Outros\s*:\s*/i, '');
+  const ficha = limparNome(tarefa.exameFichaNome);
+  if (ficha && ficha.toLowerCase() !== 'outros') return ficha;
+  const tipo = limparNome(tarefa.tipo);
+  const subTipo = limparNome(tarefa.subTipo);
+  const alvo = limparNome(tarefa.alvo);
+  const base = alvo && /^PCR\b/i.test(alvo)
+    ? alvo
+    : [subTipo, alvo].filter(Boolean).join(' · ');
+  if (base) return base;
+  if (tipo.toLowerCase() === 'outros') return alvo || tipo;
+  return tipo || alvo;
 }
 
 function statusExame(tarefa) {
