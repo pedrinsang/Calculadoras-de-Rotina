@@ -205,7 +205,8 @@ function aplicarMural(tarefas) {
             // Por amostra: o resultado geral só é preenchido quando todas concordam (misto fica em branco)
             amostrasPorExame[exame] = r.amostras;
             sel.value = resultadoGeral(r.amostras);
-            if (detalheAutomatico(input.value)) input.value = '';
+            if (r.detalhe) input.value = r.detalhe;
+            else if (detalheAutomatico(input.value)) input.value = '';
         } else {
             if (r.resultado && [...sel.options].some(o => o.value === r.resultado)) sel.value = r.resultado;
             if (r.detalhe) input.value = r.detalhe;

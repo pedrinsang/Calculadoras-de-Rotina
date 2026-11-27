@@ -204,9 +204,6 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
         t.subTipo === 'PCR' &&
         separarAlvosPCR(t.alvo)
     );
-    if (tarefasCombinadas.some(t => t.resultados)) {
-        throw new Error(`A tarefa PCR combinada do protocolo ${protocolo} já tem resultado. Revise esse registro antes de separá-la.`);
-    }
     if (tarefasCombinadas.length > 1) {
         throw new Error(`Há mais de uma tarefa PCR combinada no protocolo ${protocolo}. Revise o Mural antes de sincronizar.`);
     }
@@ -219,13 +216,12 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
     const resultado = { criadas: 0, atualizadas: 0, removidas: 0 };
 
     if (tarefaCombinada) {
-        const primeiroExame = combinarAlvos(tarefaCombinada)[0];
+        const examesCombinados = combinarAlvos(tarefaCombinada);
+        const primeiroExame = examesCombinados[0];
         const dadosAtualizados = {
             fichaSV: protocolo,
             exameFicha: primeiroExame.item.id,
             exameFichaNome: nomeExame(ficha, primeiroExame.item),
-            subTipo: primeiroExame.alvo.subTipo,
-            alvo: primeiroExame.alvo.alvo,
             atualizadoEm: Timestamp.now()
         };
         await gravarComAuditoria({
@@ -239,7 +235,7 @@ export async function sincronizarTarefasDaFicha(ficha, usuario = {}) {
             acao: 'separou alvos PCR da ficha'
         });
         Object.assign(tarefaCombinada, dadosAtualizados);
-        jaExiste.add(primeiroExame.item.id);
+        examesCombinados.forEach(exame => jaExiste.add(exame.item.id));
         resultado.atualizadas++;
     }
 
@@ -389,6 +385,12 @@ function amostrasUnicas(amostras) {
     });
 }
 
+function atualizarResultado(resultadoAtual, amostras, detalhe) {
+    const mescladas = amostrasUnicas([...(resultadoAtual?.amostras || []), ...amostras]);
+    const detalhes = [...new Set([resultadoAtual?.detalhe, detalhe].filter(Boolean))].join('; ');
+    return { resultado: resultadoGeral(mescladas), detalhe: detalhes, amostras: mescladas };
+}
+
 // Converte as tarefas do Mural em { vn, resultados, tarefasPorExame, semVinculo }
 export function resultadosDoMural(ficha, tarefas) {
     const vn = {};
@@ -407,11 +409,37 @@ export function resultadosDoMural(ficha, tarefas) {
             const amostras = amostrasDaVN(vn[exame]);
             resultados[exame] = { resultado: resultadoGeral(amostras), detalhe: '', amostras };
         } else if (Array.isArray(t.resultados.amostras)) {
-            const amostras = amostrasUnicas([
-                ...(resultados[exame]?.amostras || []),
-                ...amostrasDoMural(t.resultados.amostras)
-            ]);
-            resultados[exame] = { resultado: resultadoGeral(amostras), detalhe: '', amostras };
+            const camposAlvo = [
+                ['bvdv', 'BVDV'],
+                ['bohv1', 'BoHV-1'],
+                ['bohv', 'BoHV-1']
+            ].filter(([campo]) => t.resultados.amostras.some(a => a[campo] !== '' && a[campo] != null));
+            if (camposAlvo.length) {
+                camposAlvo.forEach(([campo, nomeAlvo]) => {
+                    const destino = examesDoLaudo(ficha).find(item =>
+                        item.alvoPCR && normalizarAlvoPCR(item.alvoPCR) === normalizarAlvoPCR(nomeAlvo)
+                    )?.id || exame;
+                    const amostrasAlvo = amostrasDoMural(t.resultados.amostras.map(a => ({
+                        id: a.id,
+                        identificacao: a.identificacao,
+                        resultado: a[campo]
+                    })));
+                    const detalhe = t.resultados.amostras
+                        .map(a => {
+                            const observacao = String(a[`${campo}Detalhe`] || '').trim();
+                            return observacao ? `${nomeAlvo} (${a.identificacao || `Amostra ${a.id || ''}`}): ${observacao}` : '';
+                        })
+                        .filter(Boolean)
+                        .join('; ');
+                    resultados[destino] = atualizarResultado(resultados[destino], amostrasAlvo, detalhe);
+                });
+            } else {
+                resultados[exame] = atualizarResultado(
+                    resultados[exame],
+                    amostrasDoMural(t.resultados.amostras),
+                    ''
+                );
+            }
         }
     }
     return { vn, resultados, tarefasPorExame, semVinculo };

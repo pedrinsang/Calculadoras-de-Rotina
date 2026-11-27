@@ -13,6 +13,12 @@ import { db } from "../../firebase.js";
 import { anexarEventoAuditoria, gravarComAuditoria, obterAtorAuditoria } from "../../utils/auditoria.js";
 import { normalizarAlvoPCR, separarAlvosPCR } from "../../utils/alvosPCR.js";
 
+function escaparHTML(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, caractere => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[caractere]);
+}
+
 async function salvarResultadoAuditado(tarefaRef, dados) {
     const snapshot = await getDoc(tarefaRef);
     if (!snapshot.exists()) throw new Error("Tarefa não encontrada");
@@ -476,6 +482,12 @@ async function registrarResultadoMolecular(id) {
         if (!tarefaSnap.exists()) throw new Error("Tarefa não encontrada");
 
         let tarefa = tarefaSnap.data();
+        const alvosCombinados = tarefa.tipo === 'MOLECULAR' && tarefa.subTipo === 'PCR'
+            ? separarAlvosPCR(tarefa.alvo)
+            : null;
+        if (alvosCombinados?.length) {
+            return registrarResultadoPCRDuplo(tarefa, tarefaRef, alvosCombinados);
+        }
         const alvoOriginal = tarefa.alvo;
         tarefa = await separarTarefaPCRCombinada(tarefaRef, tarefa);
         if (tarefa.alvo !== alvoOriginal && typeof window.carregarTarefas === 'function') {
@@ -509,6 +521,96 @@ async function registrarResultadoMolecular(id) {
     } finally {
         esconderLoading();
     }
+}
+
+async function registrarResultadoPCRDuplo(tarefa, tarefaRef, alvos) {
+    const amostras = Array.from({ length: Number(tarefa.quantidade) || 0 }, (_, indice) => {
+        const salva = tarefa.resultados?.amostras?.[indice] || {};
+        return {
+            id: indice + 1,
+            identificacao: salva.identificacao || '',
+            resultados: Object.fromEntries(alvos.map(alvo => [alvo.chave, salva[alvo.chave] || ''])),
+            detalhes: Object.fromEntries(alvos.map(alvo => [alvo.chave, salva[`${alvo.chave}Detalhe`] || '']))
+        };
+    });
+    const modal = document.createElement('div');
+    modal.className = 'modal-resultados';
+    modal.innerHTML = `
+        <div class="modal-resultados-content">
+            <h3 class="text-primary mb-3"><i class="bi bi-clipboard-data me-2"></i>Resultados PCR - ${escaparHTML(alvos.map(alvo => alvo.nome).join(' / '))}</h3>
+            <div class="alert alert-light border-start border-primary border-4">
+                <strong>ID:</strong> ${escaparHTML(tarefa.id)} &nbsp; <strong>Quantidade:</strong> ${escaparHTML(tarefa.quantidade)}
+            </div>
+            <div class="table-responsive">
+                <table class="tabela-resultados table table-hover">
+                    <thead class="table-primary"><tr>
+                        <th>Identificação da amostra</th>
+                        ${alvos.map(alvo => `<th>${escaparHTML(alvo.nome)} · resultado</th><th>${escaparHTML(alvo.nome)} · observação</th>`).join('')}
+                    </tr></thead>
+                    <tbody>${amostras.map((amostra, indice) => `<tr>
+                        <td><input type="text" class="form-control input-identificacao" data-index="${indice}"
+                            value="${escaparHTML(amostra.identificacao)}" placeholder="Identificação #${indice + 1}"></td>
+                        ${alvos.map(alvo => `<td><select class="form-select select-alvo" data-alvo="${alvo.chave}" data-index="${indice}">
+                            <option value="">Selecione...</option>
+                            <option value="positivo" ${amostra.resultados[alvo.chave] === 'positivo' ? 'selected' : ''}>Positivo</option>
+                            <option value="negativo" ${amostra.resultados[alvo.chave] === 'negativo' ? 'selected' : ''}>Negativo</option>
+                        </select></td><td><input type="text" class="form-control detalhe-alvo" data-alvo="${alvo.chave}" data-index="${indice}"
+                            value="${escaparHTML(amostra.detalhes[alvo.chave])}" placeholder="Resultado / observação"></td>`).join('')}
+                    </tr>`).join('')}</tbody>
+                </table>
+            </div>
+            <div class="mt-4 d-flex justify-content-end gap-3">
+                <button id="cancelar-resultados" class="btn btn-danger rounded-pill px-4"><i class="bi bi-x-circle me-1"></i>Cancelar</button>
+                <button id="salvar-resultados" class="btn btn-primary rounded-pill px-4"><i class="bi bi-save me-1"></i>Salvar Resultados</button>
+            </div>
+            <button id="fechar-modal-resultados" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-3 rounded-circle"
+                style="width:32px;height:32px;display:flex;align-items:center;justify-content:center" aria-label="Fechar">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>`;
+    document.body.appendChild(modal);
+
+    const fecharModal = () => {
+        modal.remove();
+        document.removeEventListener('keydown', handleKeyDown);
+    };
+    const handleKeyDown = evento => { if (evento.key === 'Escape') fecharModal(); };
+    modal.querySelector('#fechar-modal-resultados').onclick = fecharModal;
+    modal.querySelector('#cancelar-resultados').onclick = fecharModal;
+    modal.onclick = evento => { if (evento.target === modal) fecharModal(); };
+    document.addEventListener('keydown', handleKeyDown);
+
+    modal.querySelector('#salvar-resultados').onclick = async () => {
+        try {
+            mostrarLoading();
+            const amostrasAtualizadas = amostras.map((amostra, indice) => {
+                const nova = {
+                    id: amostra.id,
+                    identificacao: modal.querySelector(`.input-identificacao[data-index="${indice}"]`).value.trim()
+                };
+                alvos.forEach(alvo => {
+                    nova[alvo.chave] = modal.querySelector(`.select-alvo[data-alvo="${alvo.chave}"][data-index="${indice}"]`).value;
+                    nova[`${alvo.chave}Detalhe`] = modal.querySelector(`.detalhe-alvo[data-alvo="${alvo.chave}"][data-index="${indice}"]`).value.trim();
+                });
+                return nova;
+            });
+            if (amostrasAtualizadas.some(amostra => alvos.some(alvo => !amostra[alvo.chave]))) {
+                throw new Error('Selecione o resultado de cada PCR para todas as amostras.');
+            }
+            await salvarResultadoAuditado(tarefaRef, {
+                resultados: { amostras: amostrasAtualizadas, dataRegistro: Timestamp.now() },
+                status: 'resultados-registrados',
+                atualizadoEm: Timestamp.now()
+            });
+            fecharModal();
+            mostrarFeedback('Resultados salvos com sucesso!', 'success');
+        } catch (error) {
+            console.error('Erro ao salvar resultados PCR:', error);
+            mostrarFeedback(`Erro: ${error.message}`, 'error');
+        } finally {
+            esconderLoading();
+        }
+    };
 }
 
 // Função para PCR simples (sem seleção de DNA/RNA)

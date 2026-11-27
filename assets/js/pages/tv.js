@@ -16,15 +16,26 @@ const dia0 = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
 const dd = d => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 const paraData = v => v?.toDate ? v.toDate() : (v instanceof Date ? v : null);
 
-function area(tipo = '') {
-  const t = String(tipo).toUpperCase();
-  if (t.startsWith('SN')) return { cor: '#7ccf86', nome: 'SN' };
+function area(tarefa = {}, nomeExameTarefa = '') {
+  const t = String(tarefa.tipo || '').toUpperCase();
+  const exame = (nomeExameTarefa || `${tarefa.subTipo || ''} ${tarefa.alvo || ''} ${tarefa.exameFichaNome || ''}`).toUpperCase();
+  if (t.startsWith('SN') && /BVDV/.test(exame)) return { cor: '#a78bfa', nome: 'SN BVDV' };
+  if (t.startsWith('SN') && /IBR|BOHV/.test(exame)) return { cor: '#58b77a', nome: 'SN IBR/BoHV' };
+  if (t.startsWith('SN')) return { cor: '#58b77a', nome: 'SN' };
   if (t.startsWith('ELISA')) return { cor: '#f0b44c', nome: 'ELISA' };
-  if (t.startsWith('MOLECULAR') || t === 'PCR') return { cor: '#5fd0d8', nome: 'PCR' };
+  if (`${t} ${exame}`.includes('PCR')) return { cor: '#438fe0', nome: 'PCR' };
   if (t.startsWith('RAIVA')) return { cor: '#ff8a75', nome: 'Raiva' };
   if (t.startsWith('ICC')) return { cor: '#b9a3ff', nome: 'ICC' };
   if (t.startsWith('VACINA')) return { cor: '#7cb4ff', nome: 'Vacina' };
-  return { cor: '#c6e87a', nome: tipo || 'Outros' };
+  return { cor: '#c6e87a', nome: t || 'Outros' };
+}
+
+function nomesExame(tarefa) {
+  const texto = [tarefa.tipo, tarefa.subTipo, tarefa.alvo, tarefa.exameFichaNome].filter(Boolean).join(' ');
+  if (!/BVDV/i.test(texto) || !/(?:BoHV\s*-?\s*1|IBR)/i.test(texto)) return [nomeExame(tarefa)];
+  if (String(tarefa.tipo || '').toUpperCase().startsWith('SN')) return ['SN BVDV', 'SN IBR/BoHV'];
+  if (`${tarefa.tipo || ''} ${tarefa.subTipo || ''}`.toUpperCase().includes('PCR')) return ['PCR BVDV', 'PCR BoHV-1'];
+  return [nomeExame(tarefa)];
 }
 
 function tique() {
@@ -48,10 +59,43 @@ function pendentes() {
     .sort((a, b) => (a.prazo?.getTime() ?? Infinity) - (b.prazo?.getTime() ?? Infinity));
 }
 
+function nomeExame(tarefa) {
+  const ficha = String(tarefa.exameFichaNome || '').trim();
+  if (ficha) return ficha;
+  const tipo = String(tarefa.tipo || '').trim();
+  const subTipo = String(tarefa.subTipo || '').trim();
+  const alvo = String(tarefa.alvo || '').trim();
+  const base = subTipo
+    ? (tipo && !subTipo.toLowerCase().startsWith(tipo.toLowerCase()) ? `${tipo} ${subTipo}` : subTipo)
+    : tipo;
+  return alvo && !base.toLowerCase().includes(alvo.toLowerCase()) ? `${base} · ${alvo}` : base || alvo;
+}
+
+function statusExame(tarefa) {
+  if (tarefa.status === 'em-progresso' || tarefa.status === 'em_analise') return 'Em processamento';
+  if (tarefa.status === 'resultados-registrados' || tarefa.resultados) return 'Resultados lançados';
+  return 'Pendente';
+}
+
+function agruparPorProtocolo(lista) {
+  const grupos = new Map();
+  lista.forEach(({ t, prazo }, indice) => {
+    const protocolo = String(t.fichaSV || t.id || `__sem-protocolo-${indice}`).trim();
+    if (!grupos.has(protocolo)) grupos.set(protocolo, { tarefas: [], prazo, quantidade: 0, chegada: null });
+    const grupo = grupos.get(protocolo);
+    grupo.tarefas.push(t);
+    if (prazo && (!grupo.prazo || prazo < grupo.prazo)) grupo.prazo = prazo;
+    grupo.quantidade = Math.max(grupo.quantidade, Number(t.quantidade) || 0);
+    const chegada = paraData(t.dataRecebimento) || paraData(t.criadoEm);
+    if (chegada && (!grupo.chegada || chegada < grupo.chegada)) grupo.chegada = chegada;
+  });
+  return [...grupos.entries()].map(([protocolo, grupo]) => ({ protocolo, ...grupo }));
+}
+
 function emitidosRecentes() {
   const limite = dia0(new Date()); limite.setDate(limite.getDate() - DIAS_EMITIDOS);
   const mapa = new Map();
-  const pegar = id => { if (!mapa.has(id)) mapa.set(id, { id, quando: null, exames: new Set(), dono: '', laudo: false }); return mapa.get(id); };
+  const pegar = id => { if (!mapa.has(id)) mapa.set(id, { id, quando: null, exames: new Set(), laudo: false }); return mapa.get(id); };
 
   estado.historico.forEach(h => {
     const q = paraData(h.dataConclusao);
@@ -59,7 +103,6 @@ function emitidosRecentes() {
     const e = pegar(h.id || '—');
     if (!e.quando || q > e.quando) e.quando = q;
     e.exames.add(h.tipo || '');
-    e.dono = e.dono || h.proprietario?.nome || '';
   });
 
   estado.fichas.forEach(f => {
@@ -71,7 +114,6 @@ function emitidosRecentes() {
     const e = pegar(f.protocolo);
     e.laudo = true;
     if (!e.quando || q > e.quando) e.quando = q;
-    e.dono = e.dono || f.proprietario?.nome || '';
   });
 
   return [...mapa.values()].filter(e => e.quando).sort((a, b) => b.quando - a.quando);
@@ -114,35 +156,37 @@ function desenharLista(lista) {
   const el = $('tv-lista');
   el.style.setProperty('--linhas', LINHAS);
   el.style.setProperty('--escala-linha', 1);
-  $('tv-pag').textContent = lista.length ? `${lista.length} no total` : '';
+  const linhas = agruparPorProtocolo(lista);
+  $('tv-pag').textContent = linhas.length ? `${linhas.length} no total` : '';
 
-  if (!lista.length) {
+  if (!linhas.length) {
     configurarRolagem(el, false);
     $('tv-lista').innerHTML = '<li class="tv-vazio"><i class="bi bi-check2-circle"></i>Nenhum exame pendente</li>';
     return;
   }
   const hoje = dia0(new Date());
-  let h = lista.map(({ t, prazo }) => {
+  let h = linhas.map(({ protocolo, tarefas, prazo, quantidade, chegada }) => {
     const n = prazo ? Math.round((dia0(prazo) - hoje) / 864e5) : 99;
     const urg = n < 0 ? 'atrasada' : n === 0 ? 'hoje' : n <= 2 ? 'breve' : '';
-    const a = area(t.tipo);
-    const subtipo = String(t.subTipo || '').trim();
-    const tipo = String(t.tipo || '').trim();
-    const nome = subtipo && subtipo.toLowerCase() !== tipo.toLowerCase() && !subtipo.toLowerCase().startsWith(tipo.toLowerCase())
-      ? subtipo
-      : '';
-    const sub = [t.exameFichaNome, t.proprietario?.nome].filter(Boolean).join(' · ');
-    return `<li class="tv-linha ${urg}" style="--cor:${a.cor}">
-      <span class="tv-prot">${esc(t.id || '—')}</span>
-      <span class="tv-exame"><b>${esc(t.tipo || '')}${nome ? ' ' + esc(nome) : ''}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span>
-      <span class="tv-qtd">${Number(t.quantidade) || '–'}</span>
-      <span class="tv-resp">${esc(t.siglaResponsavel || '')}</span>
-      ${prazoHtml(prazo, t)}
+    const exames = new Map();
+    tarefas.forEach(t => {
+      const estado = statusExame(t);
+      nomesExame(t).forEach(nome => {
+        const chave = `${nome}\u0000${estado}`;
+        if (nome && !exames.has(chave)) exames.set(chave, { nome, estado, cor: area(t, nome).cor });
+      });
+    });
+    return `<li class="tv-linha ${urg}" style="--cor:${tarefas.length ? area(tarefas[0]).cor : '#8b9b91'}">
+      <span class="tv-prot">${esc(protocolo || '—')}</span>
+      <span class="tv-exame">${[...exames.values()].map(e => `<span class="tv-exame-item" style="--cor:${e.cor}"><b>${esc(e.nome)}</b><small>${esc(e.estado)}</small></span>`).join('')}</span>
+      <span class="tv-chegada">${chegada ? dd(chegada) : '—'}</span>
+      <span class="tv-qtd">${quantidade || '–'}</span>
+      ${prazoHtml(prazo, tarefas[0] || {})}
     </li>`;
   }).join('');
-  for (let i = lista.length; i < LINHAS; i++) h += '<li class="tv-linha vazia"></li>';
+  for (let i = linhas.length; i < LINHAS; i++) h += '<li class="tv-linha vazia"></li>';
   $('tv-lista').innerHTML = h;
-  configurarRolagem(el, lista.length > LINHAS);
+  configurarRolagem(el, linhas.length > LINHAS);
 }
 
 let rolagemAutomatica = null;
@@ -185,7 +229,7 @@ function desenharEmitidos() {
     return `<li class="tv-emit${q === 'hoje' ? ' novo' : ''}">
       <i class="bi ${e.laudo ? 'bi-patch-check-fill' : 'bi-check-circle'}"></i>
       <span class="p">${esc(e.id)}</span>
-      <span class="e">${esc(exames || (e.laudo ? 'Laudo' : ''))}${e.dono ? `<small>${esc(e.dono)}</small>` : ''}</span>
+      <span class="e">${esc(exames || (e.laudo ? 'Laudo' : ''))}</span>
       <span class="q">${q}</span></li>`;
   }).join('');
 }
