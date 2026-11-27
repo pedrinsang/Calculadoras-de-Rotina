@@ -62,13 +62,19 @@ function pendentes() {
 function nomeExame(tarefa) {
   const limparNome = valor => String(valor || '').trim().replace(/^Outros\s*:\s*/i, '');
   const ficha = limparNome(tarefa.exameFichaNome);
-  if (ficha && ficha.toLowerCase() !== 'outros') return ficha;
   const tipo = limparNome(tarefa.tipo);
   const subTipo = limparNome(tarefa.subTipo);
   const alvo = limparNome(tarefa.alvo);
-  const base = alvo && /^PCR\b/i.test(alvo)
-    ? alvo
-    : [subTipo, alvo].filter(Boolean).join(' · ');
+  const ehMolecular = ['MOLECULAR', 'PCR'].includes(tipo.toUpperCase());
+  if (ehMolecular) {
+    const exame = ficha && ficha.toLowerCase() !== 'outros' ? ficha : alvo;
+    const fichaJaDescrita = ficha.toUpperCase().startsWith(tipo.toUpperCase()) &&
+      (!subTipo || ficha.toUpperCase().includes(subTipo.toUpperCase()));
+    if (fichaJaDescrita) return ficha;
+    return [tipo, subTipo, exame].filter(Boolean).join(' — ');
+  }
+  if (ficha && ficha.toLowerCase() !== 'outros') return ficha;
+  const base = [subTipo, alvo].filter(Boolean).join(' · ');
   if (base) return base;
   if (tipo.toLowerCase() === 'outros') return alvo || tipo;
   return tipo || alvo;

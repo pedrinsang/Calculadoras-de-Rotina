@@ -35,11 +35,11 @@ body.tv {
 .tv-linha { --cor: var(--lima); position: relative; padding: 0 1.2rem 0 1.5rem; background: var(--c2); border: 1px solid #e7eee9; border-radius: 0.8rem; font-size: calc(1.62rem * var(--escala-linha)); min-height: 0; overflow: hidden; }
 .tv-linha::before { content: ""; position: absolute; left: 0; top: 0.5rem; bottom: 0.5rem; width: 0.3rem; border-radius: 0 0.3rem 0.3rem 0; background: var(--cor); }
 .tv-prot { font: 700 calc(1.68rem * var(--escala-linha)) var(--font-numeros); white-space: nowrap; }
-.tv-exame { display: flex; flex-wrap: wrap; align-content: center; gap: 0.25rem 0.8rem; min-width: 0; }
+.tv-exame { display: flex; flex-direction: column; justify-content: center; gap: 0.25rem; min-width: 0; }
 .tv-exame-item { display: flex; flex-direction: column; min-width: 0; }
-.tv-exame b { font-weight: 700; color: var(--cor); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-exame b { font-weight: 700; color: var(--cor); white-space: normal; overflow-wrap: break-word; }
 .tv-exame-item b { color: var(--cor); }
-.tv-exame small { color: var(--ts); font-size: calc(0.95rem * var(--escala-linha)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-exame small { color: var(--ts); font-size: calc(0.95rem * var(--escala-linha)); }
 .tv-qtd { font: 700 calc(1.86rem * var(--escala-linha)) var(--font-numeros); text-align: right; }
 .tv-chegada { color: var(--ts); font: 500 calc(1.05rem * var(--escala-linha)) var(--font-numeros); text-align: center; white-space: nowrap; }
 .tv-prazo { justify-self: end; text-align: right; font-weight: 700; font-size: calc(1.48rem * var(--escala-linha)); line-height: 1.15; }
